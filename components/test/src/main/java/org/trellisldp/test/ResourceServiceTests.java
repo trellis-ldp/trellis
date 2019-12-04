@@ -95,6 +95,7 @@ public interface ResourceServiceTests {
                     .toCompletableFuture().join(), "Check that the resource was successfully created");
             final Resource res = getResourceService().get(identifier).toCompletableFuture().join();
             assertAll("Check resource stream", res.stream(Trellis.PreferUserManaged)
+                    .filter(quad -> !quad.getPredicate().equals(type))
                     .map(q -> () -> assertTrue(dataset.contains(q), "Verify that the quad is from the dataset: " + q)));
         }
     }
@@ -118,15 +119,16 @@ public interface ResourceServiceTests {
             dataset.clear();
             dataset.add(Trellis.PreferUserManaged, identifier, SKOS.prefLabel, rdf.createLiteral("preferred label"));
             dataset.add(Trellis.PreferUserManaged, identifier, SKOS.altLabel, rdf.createLiteral("alternate label"));
-            dataset.add(Trellis.PreferUserManaged, identifier, type, SKOS.Concept);
+            dataset.add(Trellis.PreferUserManaged, identifier, DC.type, SKOS.Concept);
 
             assertDoesNotThrow(() -> getResourceService().replace(Metadata.builder(identifier)
                         .interactionModel(LDP.RDFSource).container(ROOT_CONTAINER).build(), dataset)
                     .toCompletableFuture().join(), "Check that the LDP-RS was successfully replaced");
             final Resource res = getResourceService().get(identifier).toCompletableFuture().join();
             assertAll("Check the replaced LDP-RS stream", res.stream(Trellis.PreferUserManaged)
+                .filter(q -> !q.getPredicate().equals(type))
                 .map(q -> () -> assertTrue(dataset.contains(q), "Check that the quad comes from the dataset: " + q)));
-            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(),
+            assertEquals(3L, res.stream(Trellis.PreferUserManaged).filter(q -> !q.getPredicate().equals(type)).count(),
                     "Check the total user-managed triple count");
         }
     }
@@ -227,7 +229,8 @@ public interface ResourceServiceTests {
                     .toCompletableFuture().join(), "Check the creation of an LDP-RS");
             final Resource res = getResourceService().get(identifier).toCompletableFuture().join();
             assertAll("Check the LDP-RS resource", checkResource(res, identifier, LDP.RDFSource, time, dataset));
-            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user triple count");
+            assertEquals(3L, res.stream(Trellis.PreferUserManaged).filter(q -> !q.getPredicate().equals(type)).count(),
+                    "Check the user triple count");
         }
     }
 
@@ -252,7 +255,7 @@ public interface ResourceServiceTests {
                     .toCompletableFuture().join(), "Check the creation of an LDP-NR");
             final Resource res = getResourceService().get(identifier).toCompletableFuture().join();
             assertAll("Check the LDP-NR resource", checkResource(res, identifier, LDP.NonRDFSource, time, dataset));
-            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(),
+            assertEquals(3L, res.stream(Trellis.PreferUserManaged).filter(q -> !q.getPredicate().equals(type)).count(),
                     "Check the user-managed count of the LDP-NR");
             res.getBinaryMetadata().ifPresent(b -> {
                 assertEquals(binaryLocation, b.getIdentifier(), "Check the binary identifier");
@@ -308,7 +311,8 @@ public interface ResourceServiceTests {
             res.stream(LDP.PreferContainment).map(Quad::asTriple).forEach(graph::add);
             assertTrue(graph.contains(identifier, LDP.contains, child1), "Check that child1 is contained in the LDP-C");
             assertTrue(graph.contains(identifier, LDP.contains, child2), "Check that child2 is contained in the LDP-C");
-            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed triple count");
+            assertEquals(3L, res.stream(Trellis.PreferUserManaged).filter(q -> !q.getPredicate().equals(type)).count(),
+                    "Check the user-managed triple count");
         }
     }
 
@@ -360,7 +364,8 @@ public interface ResourceServiceTests {
                     "Check that child1 is contained in the LDP-BC");
             assertTrue(graph.contains(identifier, LDP.contains, child2),
                     "Check that child2 is contained in the LDP-BC");
-            assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed triple count");
+            assertEquals(3L, res.stream(Trellis.PreferUserManaged).filter(q -> !q.getPredicate().equals(type)).count(),
+                    "Check the user-managed triple count");
             assertEquals(0L, res.stream(LDP.PreferMembership).count(), "Check for an absence of membership triples");
          }
     }
@@ -426,7 +431,8 @@ public interface ResourceServiceTests {
                     "Check that child1 is contained in the LDP-DC");
             assertTrue(graph.contains(identifier, LDP.contains, child2),
                     "Check that child2 is contained in the LDP-DC");
-            assertEquals(5L, res.stream(Trellis.PreferUserManaged).count(), "Check the user-managed triple count");
+            assertEquals(5L, res.stream(Trellis.PreferUserManaged).filter(q -> !q.getPredicate().equals(type)).count(),
+                    "Check the user-managed triple count");
         }
     }
 
@@ -491,7 +497,8 @@ public interface ResourceServiceTests {
                     "Check that child1 is contained in the LDP-IC");
             assertTrue(graph.contains(identifier, LDP.contains, child2),
                     "Check that child2 is contained in the LDP-IC");
-            assertEquals(6L, res.stream(Trellis.PreferUserManaged).count(), "Check the total triple count");
+            assertEquals(6L, res.stream(Trellis.PreferUserManaged).filter(q -> !q.getPredicate().equals(type)).count(),
+                    "Check the total triple count");
         }
     }
 
@@ -532,7 +539,7 @@ public interface ResourceServiceTests {
                        "Check ldp:hasMemberRelation or ldp:isMemberOfRelation"),
                 () -> assertEquals(asList(LDP.DirectContainer, LDP.IndirectContainer).contains(ldpType),
                        res.getInsertedContentRelation().isPresent(), "Check ldp:insertedContentRelation"),
-                () -> res.stream(Trellis.PreferUserManaged).forEach(q ->
+                () -> res.stream(Trellis.PreferUserManaged).filter(q -> !q.getPredicate().equals(type)).forEach(q ->
                         assertTrue(dataset.contains(q))));
     }
 
@@ -547,7 +554,7 @@ public interface ResourceServiceTests {
         final Dataset dataset = getInstance().createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, getInstance().createLiteral(title));
         dataset.add(Trellis.PreferUserManaged, resource, DC.subject, getInstance().createIRI(subject));
-        dataset.add(Trellis.PreferUserManaged, resource, type, SKOS.Concept);
+        dataset.add(Trellis.PreferUserManaged, resource, DC.type, SKOS.Concept);
         return dataset;
     }
 }

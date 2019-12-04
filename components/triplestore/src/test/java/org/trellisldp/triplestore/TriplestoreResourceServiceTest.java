@@ -151,7 +151,8 @@ class TriplestoreResourceServiceTest {
         final Dataset data = rdf.createDataset();
         svc.get(root).thenAccept(res ->
                 res.stream().filter(q -> !q.getGraphName().filter(Trellis.PreferServerManaged::equals).isPresent())
-                            .forEach(data::add)).toCompletableFuture().join();
+                        .filter(q -> !q.getPredicate().equals(RDF.type) && !q.getObject().equals(LDP.BasicContainer))
+                        .forEach(data::add)).toCompletableFuture().join();
         data.add(Trellis.PreferUserManaged, root, RDFS.label, rdf.createLiteral("Resource Label"));
         data.add(Trellis.PreferUserManaged, root, RDFS.seeAlso, rdf.createIRI("http://example.com"));
         data.add(Trellis.PreferUserManaged, root, LDP.inbox, rdf.createIRI("http://ldn.example.com/"));
@@ -1363,9 +1364,10 @@ class TriplestoreResourceServiceTest {
 
     private static Stream<Executable> checkResourceStream(final Resource res, final long userManaged,
             final long accessControl, final long audit, final long membership, final long containment) {
-        final long total = userManaged + accessControl + audit + membership + containment;
+        final long ldpTriples = 1;
+        final long total = userManaged + accessControl + audit + membership + containment + ldpTriples;
         return Stream.of(
-                () -> assertEquals(userManaged, res.stream(Trellis.PreferUserManaged).count(),
+                () -> assertEquals(userManaged + ldpTriples, res.stream(Trellis.PreferUserManaged).count(),
                                    "Incorrect user triple count!"),
                 () -> assertEquals(accessControl, res.stream(Trellis.PreferAccessControl).count(),
                                    "Incorrect ACL triple count!"),

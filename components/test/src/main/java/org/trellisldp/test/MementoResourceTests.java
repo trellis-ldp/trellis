@@ -14,6 +14,7 @@
 package org.trellisldp.test;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
@@ -38,6 +39,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
+import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -178,7 +180,8 @@ public interface MementoResourceTests extends MementoCommonTests {
                         "Check for a skos:prefLabel property");
                 assertTrue(g.contains(subject, DC.subject, rdf.createIRI("http://example.org/subject/1")),
                         "Check for a dc:subject property");
-                assertEquals(3L, g.size(), "Check for three triples");
+                assertEquals(2L, g.stream().map(Triple::getPredicate).filter(isEqual(type).negate()).count(),
+                        "Check for two non-type triples");
             });
 
             assertTrue(dataset.getGraph(urls.get(1)).isPresent(), "Check that the last graph is present");
@@ -192,7 +195,8 @@ public interface MementoResourceTests extends MementoCommonTests {
                         "Check for a dc:title property");
                 assertTrue(g.contains(subject, DC.alternative, rdf.createLiteral("Alternative Title")),
                         "Check for a dc:alternative property");
-                assertEquals(5L, g.size(), "Check for five triples");
+                assertEquals(4L, g.stream().map(Triple::getPredicate).filter(isEqual(type).negate()).count(),
+                        "Check for four non-type triples");
             });
         }
     }
