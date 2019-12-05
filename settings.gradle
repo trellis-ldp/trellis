@@ -29,8 +29,8 @@ include ':trellis-triplestore'
 include ':trellis-webac'
 include ':trellis-webdav'
 
-include ':trellis-app-triplestore'
 include ':trellis-bom'
+include ':trellis-dropwizard-triplestore'
 include ':trellis-karaf'
 include ':trellis-openliberty'
 include ':trellis-osgi'
@@ -54,7 +54,6 @@ project(':trellis-auth-basic').projectDir = "$rootDir/auth/basic" as File
 project(':trellis-auth-jwt').projectDir = "$rootDir/auth/jwt" as File
 
 project(':trellis-app').projectDir = "$rootDir/components/app" as File
-project(':trellis-app-triplestore').projectDir = "$rootDir/components/app-triplestore" as File
 project(':trellis-audit').projectDir = "$rootDir/components/audit" as File
 project(':trellis-cache').projectDir = "$rootDir/components/cache" as File
 project(':trellis-cdi').projectDir = "$rootDir/components/cdi" as File
@@ -71,6 +70,7 @@ project(':trellis-webdav').projectDir = "$rootDir/components/webdav" as File
 project(':trellis-rdfa').projectDir = "$rootDir/components/rdfa" as File
 
 project(':trellis-bom').projectDir = "$rootDir/platform/bom" as File
+project(':trellis-dropwizard-triplestore').projectDir = "$rootDir/platform/dropwizard" as File
 project(':trellis-karaf').projectDir = "$rootDir/platform/karaf" as File
 project(':trellis-openliberty').projectDir = "$rootDir/platform/openliberty" as File
 project(':trellis-osgi').projectDir = "$rootDir/platform/osgi" as File

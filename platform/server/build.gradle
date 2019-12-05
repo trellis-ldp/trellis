@@ -11,7 +11,7 @@ application {
 }
 
 dependencies {
-    implementation project(':trellis-app-triplestore')
+    implementation project(':trellis-dropwizard-triplestore')
 
     runtimeClasspath "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
 
