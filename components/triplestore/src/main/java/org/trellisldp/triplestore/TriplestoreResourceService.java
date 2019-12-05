@@ -133,7 +133,7 @@ public class TriplestoreResourceService implements ResourceService {
     @Inject
     public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService) {
         this.includeLdpType = getConfig().getOptionalValue(CONFIG_TRIPLESTORE_LDP_TYPE, Boolean.class)
-            .orElse(Boolean.FALSE);
+            .orElse(Boolean.TRUE);
         this.rdfConnection = requireNonNull(rdfConnection, "RDFConnection may not be null!");
         this.supplier = requireNonNull(identifierService, "IdentifierService may not be null!").getSupplier();
         this.supportedIxnModels = unmodifiableSet(new HashSet<>(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,

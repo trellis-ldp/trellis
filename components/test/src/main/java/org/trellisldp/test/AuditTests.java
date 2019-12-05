@@ -13,6 +13,7 @@
  */
 package org.trellisldp.test;
 
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Stream.of;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
@@ -36,6 +37,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.RDF;
+import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -125,7 +127,8 @@ public interface AuditTests extends CommonTests {
     default void testNoAuditTriples() throws Exception {
         try (final Response res = target(getResourceLocation()).request().get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
-            assertEquals(2L, g.size(), "Check that the graph has 2 triples");
+            assertEquals(2L, g.stream().map(Triple::getPredicate).filter(isEqual(type).negate()).count(),
+                    "Check that the graph has 2 triples");
         }
     }
 
@@ -139,7 +142,8 @@ public interface AuditTests extends CommonTests {
         try (final Response res = target(getResourceLocation()).request().header("Prefer",
                     "return=representation; omit=\"" + Trellis.PreferAudit.getIRIString() + "\"").get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
-            assertEquals(2L, g.size(), "Check that the graph has only 2 triples");
+            assertEquals(2L, g.stream().map(Triple::getPredicate).filter(isEqual(type).negate()).count(),
+                    "Check that the graph has only 2 triples");
         }
     }
 
@@ -171,7 +175,8 @@ public interface AuditTests extends CommonTests {
                         rdf.createIRI("https://people.apache.org/~acoburn/#i")), "Verify agent 3");
             assertEquals(2L, g.stream(null, type, AS.Update).count(), "Count the number of update events");
             assertEquals(1L, g.stream(null, type, AS.Create).count(), "Count the number of create events");
-            assertEquals(17L, g.size(), "Get the total graph size");
+            assertEquals(11L, g.stream().map(Triple::getPredicate).filter(isEqual(type).negate()).count(),
+                        "Get the total graph size, absent any type triples");
         }
     }
 }

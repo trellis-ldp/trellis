@@ -13,6 +13,7 @@
  */
 package org.trellisldp.test;
 
+import static java.util.function.Predicate.isEqual;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
@@ -48,6 +49,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
+import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -192,7 +194,11 @@ public interface LdpRdfTests extends CommonTests {
             assertTrue(obj.containsKey("@context"), "Check for a @context property");
             assertEquals("http://www.w3.org/ns/anno.jsonld", obj.get("@context"), "Check the @context value");
             assertEquals(location, obj.get("id"), "Check the id value");
-            assertEquals("Annotation", obj.get("type"), "Check the type value");
+            if (obj.get("type") instanceof List) {
+                assertTrue(((List) obj.get("type")).contains("Annotation"), "Check the type value");
+            } else {
+                assertEquals("Annotation", obj.get("type"), "Check the type value");
+            }
             assertEquals("http://example.org/post1", obj.get("body"), "Check the body value");
             assertEquals("http://example.org/page1", obj.get("target"), "Check the target value");
         } catch (final ProcessingException ex) {
@@ -242,7 +248,8 @@ public interface LdpRdfTests extends CommonTests {
         try (final Response res = target(getResourceLocation()).request().get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check an LDP-RS resource", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
-            assertEquals(3L, g.size(), "Check the size of the resulting graph");
+            assertEquals(2L, g.stream().map(Triple::getPredicate).filter(isEqual(type).negate()).count(),
+                    "Check the size of the resulting graph, absent any type triples");
             final IRI identifier = rdf.createIRI(getResourceLocation());
             assertTrue(g.contains(identifier, type, SKOS.Concept), "Check for a rdf:type triple");
             assertTrue(g.contains(identifier, SKOS.prefLabel, rdf.createLiteral("Resource Name", "eng")),
@@ -278,7 +285,8 @@ public interface LdpRdfTests extends CommonTests {
         try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), NTRIPLES)) {
             assertAll("Check an updated resource", checkRdfResponse(res, LDP.RDFSource, APPLICATION_N_TRIPLES_TYPE));
-            assertEquals(4L, g.size(), "Check the graph size");
+            assertEquals(3L, g.stream().map(Triple::getPredicate).filter(isEqual(type).negate()).count(),
+                    "Check the graph size");
             assertTrue(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
                     "Check for a dc:title triple");
             assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
@@ -298,7 +306,8 @@ public interface LdpRdfTests extends CommonTests {
         try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), NTRIPLES)) {
             assertAll("Check an updated resource", checkRdfResponse(res, LDP.RDFSource, APPLICATION_N_TRIPLES_TYPE));
-            assertEquals(3L, g.size(), "Check the graph size");
+            assertEquals(2L, g.stream().map(Triple::getPredicate).filter(isEqual(type).negate()).count(),
+                    "Check the graph size, absent any type triples");
             assertFalse(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
                     "Check for a dc:title triple");
             assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
