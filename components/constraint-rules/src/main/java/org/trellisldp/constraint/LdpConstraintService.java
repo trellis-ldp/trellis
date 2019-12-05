@@ -19,6 +19,8 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
+import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.vocabulary.RDF.type;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,15 +33,17 @@ import java.util.stream.Stream;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.OA;
-import org.trellisldp.vocabulary.RDF;
+import org.trellisldp.vocabulary.RDFS;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
@@ -63,6 +67,8 @@ import org.trellisldp.vocabulary.Trellis;
 @ApplicationScoped
 public class LdpConstraintService implements ConstraintService {
 
+    private static final String EN = "en";
+    private static final RDF rdf = getInstance();
     private static final Set<IRI> propertiesWithInDomainRange = singleton(LDP.membershipResource);
 
     // Properties that need to be used with objects that are IRIs
@@ -72,7 +78,7 @@ public class LdpConstraintService implements ConstraintService {
 
     // Properties that cannot be used as dynamic Membership properties
     private static final List<IRI> restrictedMemberProperties = unmodifiableList(Arrays.asList(ACL.accessControl,
-                    LDP.contains, RDF.type, LDP.membershipResource, LDP.hasMemberRelation, LDP.inbox,
+                    LDP.contains, type, LDP.membershipResource, LDP.hasMemberRelation, LDP.inbox,
                     LDP.insertedContentRelation, OA.annotationService));
 
     private static final Map<IRI, Predicate<Triple>> typeMap;
@@ -117,7 +123,7 @@ public class LdpConstraintService implements ConstraintService {
         return invalidMembershipProperty(triple)
                         || (propertiesWithUriRange.contains(triple.getPredicate())
                                         && !(triple.getObject() instanceof IRI))
-                        || (RDF.type.equals(triple.getPredicate()) && !(triple.getObject() instanceof IRI));
+                        || (type.equals(triple.getPredicate()) && !(triple.getObject() instanceof IRI));
     }
 
     // Ensure that any LDP properties are appropriate for the interaction model
@@ -149,15 +155,30 @@ public class LdpConstraintService implements ConstraintService {
     private List<ConstraintViolation> violatesModelConstraints(final Triple triple, final IRI model,
                     final String domain) {
         requireNonNull(model, "The interaction model must not be null!");
+        final BlankNode bnode = rdf.createBlankNode();
         final List<ConstraintViolation> violations = new ArrayList<>();
+        final List<Triple> triples = new ArrayList<>();
+        triples.add(triple);
         if (propertyFilter(triple, model)) {
-            violations.add(new ConstraintViolation(Trellis.InvalidProperty, triple));
+            triples.add(rdf.createTriple(bnode, RDFS.label, rdf.createLiteral("Invalid property", EN)));
+            triples.add(rdf.createTriple(bnode, RDFS.comment, rdf.createLiteral(
+                            "The supplied RDF triple contained a property that was not accepted "
+                            + "for the provided interaction model.", EN)));
+            violations.add(new ConstraintViolation(Trellis.InvalidProperty, triples));
         }
         if (uriRangeFilter(triple)) {
-            violations.add(new ConstraintViolation(Trellis.InvalidRange, triple));
+            triples.add(rdf.createTriple(bnode, RDFS.label, rdf.createLiteral("Invalid object value", EN)));
+            triples.add(rdf.createTriple(bnode, RDFS.comment, rdf.createLiteral(
+                            "The supplied RDF triple contained object value that was not accepted. "
+                            + "Typically, this means that a literal was provided where an IRI is required.", EN)));
+            violations.add(new ConstraintViolation(Trellis.InvalidRange, triples));
         }
         if (inDomainRangeFilter(triple, domain)) {
-            violations.add(new ConstraintViolation(Trellis.InvalidRange, triple));
+            triples.add(rdf.createTriple(bnode, RDFS.label, rdf.createLiteral("Invalid domain", EN)));
+            triples.add(rdf.createTriple(bnode, RDFS.comment, rdf.createLiteral(
+                            "The supplied RDF triple contained an out-of-domain IRI value where an "
+                            + "in-domain IRI value was expected.", EN)));
+            violations.add(new ConstraintViolation(Trellis.InvalidRange, triples));
         }
         return violations;
     }
@@ -167,8 +188,14 @@ public class LdpConstraintService implements ConstraintService {
         final Stream<ConstraintViolation> violations = graph.stream()
                         .flatMap(t -> violatesModelConstraints(t, model, domain).stream());
         if (violatesCardinality(graph, model)) {
+            final List<Triple> triples = new ArrayList<>(graph.stream().collect(toList()));
+            final BlankNode bnode = rdf.createBlankNode();
+            triples.add(rdf.createTriple(bnode, RDFS.label, rdf.createLiteral("Invalid cardinality", EN)));
+            triples.add(rdf.createTriple(bnode, RDFS.comment, rdf.createLiteral(
+                        "The supplied graph contains at least one property with an invalid cardinality "
+                        + "for the provided interaction model", EN)));
             final ConstraintViolation cardinalityViolation = new ConstraintViolation(Trellis.InvalidCardinality,
-                            graph.stream().collect(toList()));
+                    triples);
             return concat(violations, Stream.of(cardinalityViolation));
         }
         return violations;
