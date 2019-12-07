@@ -39,11 +39,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
-import org.trellisldp.api.CacheService;
-import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.Session;
+import org.trellisldp.api.*;
 import org.trellisldp.http.core.ServiceBundler;
+import org.trellisldp.io.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
@@ -57,6 +55,7 @@ import org.trellisldp.vocabulary.VCARD;
 class WebAcServiceTest {
 
     private static final RDF rdf = new JenaRDF();
+    private static final IOService ioService = new JenaIOService();
 
     private static final IRI memberIRI = rdf.createIRI(TRELLIS_DATA_PREFIX + "member");
     private static final IRI nonexistentIRI = rdf.createIRI(TRELLIS_DATA_PREFIX + "parent/child/nonexistent");
@@ -149,6 +148,16 @@ class WebAcServiceTest {
     @Test
     void testDefaultResourceService() {
         assertDoesNotThrow(() -> new WebAcService());
+    }
+
+    @Test
+    void testDefaultRootAcl() {
+        try {
+            System.setProperty(WebAcService.CONFIG_WEBAC_ROOT_ACL_LOCATION, "non-existent.ttl");
+            assertDoesNotThrow(() -> new WebAcService(mockResourceService, ioService));
+        } finally {
+            System.clearProperty(WebAcService.CONFIG_WEBAC_ROOT_ACL_LOCATION);
+        }
     }
 
     @Test
@@ -286,7 +295,7 @@ class WebAcServiceTest {
 
     @Test
     void testCanWrite6() {
-        final WebAcService testService2 = new WebAcService(mockResourceService,
+        final WebAcService testService2 = new WebAcService(mockResourceService, ioService,
                 new WebAcService.NoopAuthorizationCache(), false);
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
@@ -308,7 +317,7 @@ class WebAcServiceTest {
 
     @Test
     void testCanWrite7() {
-        final WebAcService testService2 = new WebAcService(mockResourceService,
+        final WebAcService testService2 = new WebAcService(mockResourceService, ioService,
                 new WebAcService.NoopAuthorizationCache(), false);
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
@@ -711,7 +720,7 @@ class WebAcServiceTest {
 
     @Test
     void testCacheCanWrite1() {
-        final WebAcService testCacheService = new WebAcService(mockResourceService, mockCache);
+        final WebAcService testCacheService = new WebAcService(mockResourceService, ioService, mockCache);
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         assertAll("Check writability with cache", checkCannotWrite(testCacheService, nonexistentIRI),
                 checkCannotWrite(testCacheService, resourceIRI),
@@ -722,7 +731,7 @@ class WebAcServiceTest {
 
     @Test
     void testCacheCanWrite2() {
-        final WebAcService testCacheService = new WebAcService(mockResourceService, mockCache);
+        final WebAcService testCacheService = new WebAcService(mockResourceService, ioService, mockCache);
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         assertAll("Check writability with cache", checkCanWrite(testCacheService, nonexistentIRI),
                 checkCanWrite(testCacheService, resourceIRI), checkCanWrite(testCacheService, childIRI),
@@ -732,7 +741,7 @@ class WebAcServiceTest {
 
     @Test
     void testCacheCanWrite3() {
-        final WebAcService testCacheService = new WebAcService(mockResourceService, mockCache);
+        final WebAcService testCacheService = new WebAcService(mockResourceService, ioService, mockCache);
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockSession.getDelegatedBy()).thenReturn(of(addisonIRI));
         assertAll("Check delegated writability with cache", checkCanWrite(testCacheService, nonexistentIRI),

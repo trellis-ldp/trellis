@@ -129,7 +129,8 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                     config.getCache().getMustRevalidate(), config.getCache().getNoCache()));
 
         // Authorization
-        ofNullable(getWebacService(config, getServiceBundler().getResourceService())).ifPresent(webac -> {
+        ofNullable(getWebacService(config, getServiceBundler().getResourceService(),
+                    getServiceBundler().getIOService())).ifPresent(webac -> {
             final List<String> challenges = new ArrayList<>();
             of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled).map(x -> "Bearer")
                 .ifPresent(challenges::add);
