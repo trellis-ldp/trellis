@@ -21,12 +21,21 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.trellisldp.api.MementoService;
+import org.trellisldp.file.FileMementoService;
 
 @ApplicationScoped
 class ServiceProducers {
 
     private RDFConnection rdfConnection = buildRDFConnection(getConfig()
             .getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class).orElse(null));
+
+    private MementoService mementoService = new FileMementoService();
+
+    @Produces
+    MementoService getMementoService() {
+        return mementoService;
+    }
 
     @Produces
     RDFConnection getRdfConnection() {

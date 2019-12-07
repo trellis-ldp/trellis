@@ -29,9 +29,6 @@ import java.util.TreeSet;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -42,7 +39,6 @@ import org.trellisldp.api.Resource;
 /**
  * A file-based versioning system.
  */
-@ApplicationScoped
 public class FileMementoService implements MementoService {
 
     /** The configuration key controlling the base filesystem path for memento storage. */
@@ -55,7 +51,6 @@ public class FileMementoService implements MementoService {
     /**
      * Create a file-based memento service.
      */
-    @Inject
     public FileMementoService() {
         this(ConfigProvider.getConfig().getValue(CONFIG_FILE_MEMENTO_BASE_PATH, String.class));
     }
