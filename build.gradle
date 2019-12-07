@@ -83,7 +83,6 @@ ext {
 
     /* OSGi */
     commonsCompressVersion = '1.19'
-    glassfishInjectVersion = '2.5.0-b62'
     elVersion = '3.0.3'
     failureaccessVersion = '1.0.1'
     interceptorVersion = '1.2.5'
