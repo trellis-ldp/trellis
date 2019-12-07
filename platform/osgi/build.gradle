@@ -40,7 +40,6 @@ dependencies {
     testImplementation "org.osgi:org.osgi.core:$osgiVersion"
     testImplementation "org.osgi:org.osgi.compendium:$osgiCompendiumVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
-    testImplementation "org.glassfish.hk2.external:javax.inject:$glassfishInjectVersion"
 
     testImplementation project(':trellis-api')
     testImplementation project(':trellis-amqp')
