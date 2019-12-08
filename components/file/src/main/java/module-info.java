@@ -17,6 +17,8 @@ module org.trellisldp.file {
     requires transitive org.trellisldp.api;
     requires transitive org.trellisldp.vocabulary;
 
+    requires com.fasterxml.jackson.core;
+    requires com.fasterxml.jackson.databind;
     requires org.apache.commons.io;
     requires org.apache.commons.rdf.api;
     requires org.apache.commons.rdf.jena;
@@ -32,4 +34,6 @@ module org.trellisldp.file {
         with org.trellisldp.file.FileBinaryService;
     provides org.trellisldp.api.MementoService
         with org.trellisldp.file.FileMementoService;
+    provides org.trellisldp.api.NamespaceService
+        with org.trellisldp.file.FileNamespaceService;
 }

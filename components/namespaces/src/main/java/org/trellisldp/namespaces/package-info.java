@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 /**
- * Trellis Namespace Service, based on a readable/writable JSON file
+ * Trellis Namespace Service using an in-memory map of namespaces
  *
  * <p>This package provides a mechanism for associating prefixes to namespaces.
- * Writes are persisted to a JSON file; reads are from memory.</p>
  *
  * @author acoburn
  */

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.namespaces;
+package org.trellisldp.file;
 
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
@@ -27,8 +27,7 @@ import java.nio.file.Files;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import javax.enterprise.inject.Alternative;
 
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
@@ -39,13 +38,13 @@ import org.trellisldp.api.NamespaceService;
  *
  * @author acoburn
  */
-@ApplicationScoped
-public class JsonNamespaceService implements NamespaceService {
+@Alternative
+public class FileNamespaceService implements NamespaceService {
 
     /** The configuration key controlling the path to a JSON-formatted namespace file. */
     public static final String CONFIG_NAMESPACES_PATH = "trellis.namespaces.path";
 
-    private static final Logger LOGGER = getLogger(JsonNamespaceService.class);
+    private static final Logger LOGGER = getLogger(FileNamespaceService.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final String filePath;
@@ -55,8 +54,7 @@ public class JsonNamespaceService implements NamespaceService {
     /**
      * Create a JSON-based Namespace service.
      */
-    @Inject
-    public JsonNamespaceService() {
+    public FileNamespaceService() {
         this(ConfigProvider.getConfig().getValue(CONFIG_NAMESPACES_PATH, String.class));
     }
 
@@ -64,7 +62,7 @@ public class JsonNamespaceService implements NamespaceService {
      * Create a JSON-based Namespace service.
      * @param path the path to the JSON file
      */
-    public JsonNamespaceService(final String path) {
+    public FileNamespaceService(final String path) {
         this.filePath = path;
         this.data = read(path);
         init();
@@ -93,7 +91,7 @@ public class JsonNamespaceService implements NamespaceService {
 
     private void init() {
         if (data.isEmpty()) {
-            data.putAll(read(getClass().getResource("/defaultNamespaces.json").getPath()));
+            data.putAll(read(getClass().getResource("/org/trellisldp/file/defaultNamespaces.json").getPath()));
             write(filePath, data);
         }
         data.forEach((k, v) -> dataRev.put(v, k));

@@ -15,15 +15,14 @@ module org.trellisldp.namespaces {
     exports org.trellisldp.namespaces;
 
     requires transitive org.trellisldp.api;
+    requires transitive org.trellisldp.vocabulary;
 
     requires org.apache.commons.rdf.api;
-    requires com.fasterxml.jackson.core;
-    requires com.fasterxml.jackson.databind;
     requires jakarta.enterprise.cdi.api;
     requires jakarta.inject.api;
     requires microprofile.config.api;
     requires org.slf4j;
 
     provides org.trellisldp.api.NamespaceService
-        with org.trellisldp.namespaces.JsonNamespaceService;
+        with org.trellisldp.namespaces.SimpleNamespaceService;
 }
