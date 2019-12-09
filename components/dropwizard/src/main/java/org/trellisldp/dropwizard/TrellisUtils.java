@@ -27,7 +27,6 @@ import java.util.Set;
 import javax.ws.rs.container.ContainerRequestFilter;
 
 import org.apache.commons.rdf.api.IRI;
-import org.trellisldp.api.IOService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.auth.basic.BasicAuthFilter;
@@ -69,12 +68,12 @@ final class TrellisUtils {
     }
 
     public static WebAcService getWebacService(final TrellisConfiguration config,
-            final ResourceService resourceService, final IOService ioService) {
+            final ResourceService resourceService) {
         if (config.getAuth().getWebac().getEnabled()) {
             final Cache<String, Set<IRI>> authCache = newBuilder().maximumSize(config.getAuth().getWebac()
                     .getCacheSize()).expireAfterWrite(config.getAuth().getWebac()
                     .getCacheExpireSeconds(), SECONDS).build();
-            final WebAcService webac = new WebAcService(resourceService, ioService, new TrellisCache<>(authCache));
+            final WebAcService webac = new WebAcService(resourceService, new TrellisCache<>(authCache));
             try {
                 webac.initialize();
             } catch (final Exception ex) {
