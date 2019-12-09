@@ -29,4 +29,5 @@ module org.trellisldp.webac {
     requires microprofile.config.api;
 
     uses org.trellisldp.api.ResourceService;
+    uses org.trellisldp.api.IOService;
 }
