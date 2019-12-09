@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.quarkus;
+package org.trellisldp.namespaces;
 
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;

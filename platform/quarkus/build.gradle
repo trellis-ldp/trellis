@@ -12,6 +12,7 @@ def installForQuarkus = [
     "trellis-file",
     "trellis-http",
     "trellis-io-jena",
+    "trellis-namespaces",
     "trellis-rdfa",
     "trellis-reactive",
     "trellis-triplestore",
@@ -33,6 +34,7 @@ dependencies {
     implementation "org.trellisldp:trellis-file:${project.version}"
     implementation "org.trellisldp:trellis-http:${project.version}"
     implementation "org.trellisldp:trellis-io-jena:${project.version}"
+    implementation "org.trellisldp:trellis-namespaces:${project.version}"
     implementation "org.trellisldp:trellis-rdfa:${project.version}"
     implementation "org.trellisldp:trellis-reactive:${project.version}"
     implementation "org.trellisldp:trellis-triplestore:${project.version}"

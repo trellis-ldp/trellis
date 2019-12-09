@@ -34,9 +34,9 @@ import org.trellisldp.cache.TrellisCache;
 import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
+import org.trellisldp.file.FileNamespaceService;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.io.JenaIOService;
-import org.trellisldp.namespaces.JsonNamespaceService;
 import org.trellisldp.rdfa.DefaultRdfaWriterService;
 import org.trellisldp.triplestore.TriplestoreResourceService;
 
@@ -79,7 +79,7 @@ public class TrellisServiceBundler extends BaseServiceBundler {
         final long hours = config.getJsonld().getCacheExpireHours();
         final Cache<String, String> cache = newBuilder().maximumSize(cacheSize).expireAfterAccess(hours, HOURS).build();
         final TrellisCache<String, String> profileCache = new TrellisCache<>(cache);
-        final NamespaceService namespaceService = new JsonNamespaceService(config.getNamespaces());
+        final NamespaceService namespaceService = new FileNamespaceService(config.getNamespaces());
         final RDFaWriterService htmlSerializer = new DefaultRdfaWriterService(namespaceService,
                 config.getAssets().getTemplate(), config.getAssets().getCss(), config.getAssets().getJs(),
                 config.getAssets().getIcon());
