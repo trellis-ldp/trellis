@@ -36,7 +36,6 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.trellisldp.api.IOService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -45,14 +44,11 @@ import org.trellisldp.auth.oauth.JwksAuthenticator;
 import org.trellisldp.auth.oauth.JwtAuthenticator;
 import org.trellisldp.auth.oauth.NullAuthenticator;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
-import org.trellisldp.io.JenaIOService;
 
 /**
  * @author acoburn
  */
 class TrellisUtilsTest {
-
-    private IOService ioService = new JenaIOService();
 
     @Mock
     private Environment mockEnv;
@@ -95,12 +91,11 @@ class TrellisUtilsTest {
         when(mockResourceService.get(any())).thenAnswer(inv -> completedFuture(mockResource));
         when(mockResource.hasAcl()).thenReturn(true);
 
-        assertNotNull(TrellisUtils.getWebacService(config, mockResourceService, ioService),
-                "WebAC configuration not present!");
+        assertNotNull(TrellisUtils.getWebacService(config, mockResourceService), "WebAC configuration not present!");
 
         config.getAuth().getWebac().setEnabled(false);
 
-        assertNull(TrellisUtils.getWebacService(config, mockResourceService, ioService),
+        assertNull(TrellisUtils.getWebacService(config, mockResourceService),
                 "WebAC config persists after disabling it!");
 
         config.getAuth().getWebac().setEnabled(true);
@@ -108,9 +103,9 @@ class TrellisUtilsTest {
         final ResourceService mockRS = mock(ResourceService.class, inv -> {
             throw new RuntimeTrellisException("expected");
         });
-        assertThrows(RuntimeTrellisException.class, () -> TrellisUtils.getWebacService(config, mockRS, ioService));
+        assertThrows(RuntimeTrellisException.class, () -> TrellisUtils.getWebacService(config, mockRS));
         config.getAuth().getWebac().setEnabled(false);
-        assertNull(TrellisUtils.getWebacService(config, mockRS, ioService),
+        assertNull(TrellisUtils.getWebacService(config, mockRS),
                 "WebAC config persists after disabling it!");
     }
 
