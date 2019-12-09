@@ -146,7 +146,7 @@ public final class TestUtils {
      * @return the resource as a string
      */
     public static String getResourceAsString(final String path) {
-        try (final InputStream is = TestUtils.class.getResourceAsStream(path)) {
+        try (final InputStream is = TestUtils.class.getResourceAsStream("/org/trellisldp/test" + path)) {
             if (is != null) {
                 return IOUtils.toString(is, UTF_8);
             }
