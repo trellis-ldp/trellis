@@ -85,9 +85,18 @@ rootProject.childProjects.each { n, p ->
     }
 }
 
+quarkusDev {
+    doFirst {
+        project.buildscript.repositories.gradlePluginPortal()
+        project.buildscript.dependencies.add('classpath', "io.quarkus:quarkus-gradle-plugin:$quarkusVersion")
+    }
+}
+
 java {
     // because this isn't built as a JPMS module
     if (project.hasProperty("jpms") && JavaVersion.current().isJava11Compatible()) {
         disableAutoTargetJvm()
     }
 }
+
+
