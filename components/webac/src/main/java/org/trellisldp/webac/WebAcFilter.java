@@ -81,21 +81,21 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * <p>Values defined here will be in addition to GET, HEAD and OPTIONS. Multiple methods should
      * be separated with commas.
      */
-    public static final String CONFIG_WEBAC_METHOD_READABLE = "trellis.webac.method.readable";
+    public static final String CONFIG_WEBAC_READABLE_METHODS = "trellis.webac.readable-methods";
     /**
      * The configuration key controlling with HTTP methods should apply to the acl:Write.
      *
      * <p>Values defined here will be in addition to GET, HEAD and OPTIONS. Multiple methods should
      * be separated with commas.
      */
-    public static final String CONFIG_WEBAC_METHOD_WRITABLE = "trellis.webac.method.writable";
+    public static final String CONFIG_WEBAC_WRITABLE_METHODS = "trellis.webac.writable-methods";
     /**
      * The configuration key controlling with HTTP methods should apply to the acl:Append.
      *
      * <p>Values defined here will be in addition to GET, HEAD and OPTIONS. Multiple methods should
      * be separated with commas.
      */
-    public static final String CONFIG_WEBAC_METHOD_APPENDABLE = "trellis.webac.method.appendable";
+    public static final String CONFIG_WEBAC_APPENDABLE_METHODS = "trellis.webac.appendable-methods";
 
     /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. */
     public static final String CONFIG_WEBAC_REALM = "trellis.webac.realm";
@@ -164,11 +164,11 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             .collect(toList());
         this.baseUrl = baseUrl;
         final Config config = getConfig();
-        config.getOptionalValue(CONFIG_WEBAC_METHOD_READABLE, String.class).ifPresent(r ->
+        config.getOptionalValue(CONFIG_WEBAC_READABLE_METHODS, String.class).ifPresent(r ->
                 stream(r.split(",")).map(String::trim).map(String::toUpperCase).forEach(readable::add));
-        config.getOptionalValue(CONFIG_WEBAC_METHOD_WRITABLE, String.class).ifPresent(w ->
+        config.getOptionalValue(CONFIG_WEBAC_WRITABLE_METHODS, String.class).ifPresent(w ->
                 stream(w.split(",")).map(String::trim).map(String::toUpperCase).forEach(writable::add));
-        config.getOptionalValue(CONFIG_WEBAC_METHOD_APPENDABLE, String.class).ifPresent(a ->
+        config.getOptionalValue(CONFIG_WEBAC_APPENDABLE_METHODS, String.class).ifPresent(a ->
                 stream(a.split(",")).map(String::trim).map(String::toUpperCase).forEach(appendable::add));
     }
 

@@ -87,16 +87,16 @@ class WebAcFilterTest {
 
     @BeforeAll
     static void setUpProperties() {
-        System.setProperty(WebAcFilter.CONFIG_WEBAC_METHOD_READABLE, "READ");
-        System.setProperty(WebAcFilter.CONFIG_WEBAC_METHOD_WRITABLE, "WRITE");
-        System.setProperty(WebAcFilter.CONFIG_WEBAC_METHOD_APPENDABLE, "APPEND");
+        System.setProperty(WebAcFilter.CONFIG_WEBAC_READABLE_METHODS, "READ");
+        System.setProperty(WebAcFilter.CONFIG_WEBAC_WRITABLE_METHODS, "WRITE");
+        System.setProperty(WebAcFilter.CONFIG_WEBAC_APPENDABLE_METHODS, "APPEND");
     }
 
     @AfterAll
     static void cleanUpProperties() {
-        System.clearProperty(WebAcFilter.CONFIG_WEBAC_METHOD_READABLE);
-        System.clearProperty(WebAcFilter.CONFIG_WEBAC_METHOD_WRITABLE);
-        System.clearProperty(WebAcFilter.CONFIG_WEBAC_METHOD_APPENDABLE);
+        System.clearProperty(WebAcFilter.CONFIG_WEBAC_READABLE_METHODS);
+        System.clearProperty(WebAcFilter.CONFIG_WEBAC_WRITABLE_METHODS);
+        System.clearProperty(WebAcFilter.CONFIG_WEBAC_APPENDABLE_METHODS);
     }
 
     @BeforeEach

@@ -83,7 +83,7 @@ import org.trellisldp.vocabulary.VCARD;
 public class WebAcService {
 
     /** The configuration key controlling whether to check member resources at the AuthZ enforcement point. */
-    public static final String CONFIG_WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership.check";
+    public static final String CONFIG_WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership-check";
 
     private static final Logger LOGGER = getLogger(WebAcService.class);
     private static final CompletionStage<Void> DONE = CompletableFuture.completedFuture(null);

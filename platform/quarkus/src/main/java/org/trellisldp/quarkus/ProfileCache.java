@@ -31,10 +31,10 @@ import org.trellisldp.cache.TrellisCache;
 public class ProfileCache extends TrellisCache<String, String> {
 
     /** A configuration key that sets the profile cache maximum size. */
-    public static final String CONFIG_PROFILE_CACHE_SIZE = "trellis.profile.cache.size";
+    public static final String CONFIG_QUARKUS_PROFILE_CACHE_SIZE = "trellis.quarkus.profile-cache-size";
 
     /** A configuration key that sets the profile cache expiry time (in hours). */
-    public static final String CONFIG_PROFILE_CACHE_EXPIRE_HOURS = "trellis.profile.cache.expireHours";
+    public static final String CONFIG_QUARKUS_PROFILE_CACHE_EXPIRE_HOURS = "trellis.quarkus.profile-cache-expire-hours";
 
     /** Create a cache suitable for JSON-LD profile requests. */
     public ProfileCache() {
@@ -42,8 +42,8 @@ public class ProfileCache extends TrellisCache<String, String> {
     }
 
     private static Cache<String, String> buildCache(final Config config) {
-        final int size = config.getOptionalValue(CONFIG_PROFILE_CACHE_SIZE, Integer.class).orElse(100);
-        final int expire = config.getOptionalValue(CONFIG_PROFILE_CACHE_EXPIRE_HOURS, Integer.class).orElse(24);
+        final int size = config.getOptionalValue(CONFIG_QUARKUS_PROFILE_CACHE_SIZE, Integer.class).orElse(100);
+        final int expire = config.getOptionalValue(CONFIG_QUARKUS_PROFILE_CACHE_EXPIRE_HOURS, Integer.class).orElse(24);
         return newBuilder().maximumSize(size).expireAfterWrite(expire, HOURS).build();
     }
 }

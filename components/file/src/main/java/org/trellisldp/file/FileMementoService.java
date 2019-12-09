@@ -45,7 +45,7 @@ import org.trellisldp.api.Resource;
 public class FileMementoService implements MementoService {
 
     /** The configuration key controlling the base filesystem path for memento storage. */
-    public static final String CONFIG_FILE_MEMENTO_BASE_PATH = "trellis.file.memento.basepath";
+    public static final String CONFIG_FILE_MEMENTO_PATH = "trellis.file.memento-path";
 
     private static final Logger LOGGER = getLogger(FileMementoService.class);
 
@@ -55,7 +55,7 @@ public class FileMementoService implements MementoService {
      * Create a file-based memento service.
      */
     public FileMementoService() {
-        this(ConfigProvider.getConfig().getValue(CONFIG_FILE_MEMENTO_BASE_PATH, String.class));
+        this(ConfigProvider.getConfig().getValue(CONFIG_FILE_MEMENTO_PATH, String.class));
     }
 
     /**
