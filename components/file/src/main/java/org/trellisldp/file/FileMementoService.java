@@ -29,6 +29,8 @@ import java.util.TreeSet;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
+import javax.enterprise.inject.Alternative;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -39,6 +41,7 @@ import org.trellisldp.api.Resource;
 /**
  * A file-based versioning system.
  */
+@Alternative
 public class FileMementoService implements MementoService {
 
     /** The configuration key controlling the base filesystem path for memento storage. */
