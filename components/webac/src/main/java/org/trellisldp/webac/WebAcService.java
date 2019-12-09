@@ -25,6 +25,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -34,6 +35,8 @@ import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toGraph;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -57,14 +60,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
-import org.trellisldp.api.CacheService;
-import org.trellisldp.api.Metadata;
-import org.trellisldp.api.NoopResourceService;
-import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.api.Session;
-import org.trellisldp.api.TrellisUtils;
+import org.trellisldp.api.*;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
@@ -85,6 +81,9 @@ public class WebAcService {
     /** The configuration key controlling whether to check member resources at the AuthZ enforcement point. */
     public static final String CONFIG_WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership.check";
 
+    /** The configuration key controlling the location of a default root ACL. */
+    public static final String CONFIG_WEBAC_ROOT_ACL_LOCATION = "trellis.webac.root.acl";
+
     private static final Logger LOGGER = getLogger(WebAcService.class);
     private static final CompletionStage<Void> DONE = CompletableFuture.completedFuture(null);
     private static final RDF rdf = getInstance();
@@ -92,18 +91,16 @@ public class WebAcService {
     private static final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
     private static final Set<IRI> allModes = new HashSet<>();
 
-    /** The permissive Authorizations in effect when no ACL is present on the root node. */
-    private static final List<Authorization> defaultRootAuthorizations =
-        unmodifiableList(getDefaultRootAuthorizations());
-
     static {
         allModes.add(ACL.Read);
         allModes.add(ACL.Write);
         allModes.add(ACL.Control);
         allModes.add(ACL.Append);
     }
-
+    /** The permissive Authorizations in effect when no ACL is present on the root node. */
+    private final List<Authorization> defaultRootAuthorizations;
     private final ResourceService resourceService;
+    private final IOService ioService;
     private final CacheService<String, Set<IRI>> cache;
     private final boolean checkMembershipResources;
 
@@ -111,10 +108,10 @@ public class WebAcService {
      * Create a WebAC-based authorization service.
      */
     public WebAcService() {
-        this(new NoopResourceService());
+        this(new NoopResourceService(), null);
     }
 
-    private static List<Authorization> getDefaultRootAuthorizations() {
+    private List<Authorization> getDefaultRootAuthorizations() {
         try (final Dataset dataset = generateDefaultRootAuthorizationsDataset()) {
             return dataset.getGraph(Trellis.PreferAccessControl).map(graph -> Authorization.from(rootAuth, graph))
                 .map(Collections::singletonList).orElse(emptyList());
@@ -123,15 +120,30 @@ public class WebAcService {
         }
     }
 
-    private static Dataset generateDefaultRootAuthorizationsDataset() {
+    private Dataset generateDefaultRootAuthorizationsDataset() {
         final Dataset dataset = rdf.createDataset();
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Append));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.default_, root));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
+        final String location = getConfig().getOptionalValue(CONFIG_WEBAC_ROOT_ACL_LOCATION, String.class)
+            .orElse("/org/trellisldp/webac/defaultAcl.ttl");
+        try (final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(location)) {
+            if (ioService != null && is != null) {
+                ioService.read(is, TURTLE, TRELLIS_DATA_PREFIX)
+                    .map(triple -> rdf.createQuad(Trellis.PreferAccessControl, triple.getSubject(),
+                                triple.getPredicate(), triple.getObject()))
+                    .forEach(dataset::add);
+            }
+        } catch (final IOException ex) {
+            LOGGER.warn("Error reading ACL from {}: {}", location, ex.getMessage());
+        }
+
+        if (dataset.size() == 0) {
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Append));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.default_, root));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
+        }
         return dataset;
     }
 
@@ -183,26 +195,29 @@ public class WebAcService {
     @Inject
     public WebAcService(final ServiceBundler services,
             @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
-        this(services.getResourceService(), cache);
+        this(services.getResourceService(), services.getIOService(), cache);
     }
 
     /**
      * Create a WebAC-based authorization service.
      *
      * @param resourceService the resource service
+     * @param ioService the IO service (may be {@code null})
      */
-    public WebAcService(final ResourceService resourceService) {
-        this(resourceService, new NoopAuthorizationCache());
+    public WebAcService(final ResourceService resourceService, final IOService ioService) {
+        this(resourceService, ioService, new NoopAuthorizationCache());
     }
 
     /**
      * Create a WebAC-based authorization service.
      *
      * @param resourceService the resource service
+     * @param ioService the IO service (may be {@code null})
      * @param cache a cache
      */
-    public WebAcService(final ResourceService resourceService, final CacheService<String, Set<IRI>> cache) {
-        this(resourceService, cache, getConfig()
+    public WebAcService(final ResourceService resourceService, final IOService ioService,
+            final CacheService<String, Set<IRI>> cache) {
+        this(resourceService, ioService, cache, getConfig()
                 .getOptionalValue(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class).orElse(Boolean.FALSE));
     }
 
@@ -210,14 +225,17 @@ public class WebAcService {
      * Create a WebAC-based authorization service.
      *
      * @param resourceService the resource service
+     * @param ioService the IO service (may be {@code null})
      * @param cache a cache
      * @param checkMembershipResources whether to check membership resource permissions (default=false)
      */
-    public WebAcService(final ResourceService resourceService,
+    public WebAcService(final ResourceService resourceService, final IOService ioService,
             final CacheService<String, Set<IRI>> cache, final boolean checkMembershipResources) {
         this.resourceService = requireNonNull(resourceService, "A non-null ResourceService must be provided!");
+        this.ioService = ioService;
         this.cache = cache;
         this.checkMembershipResources = checkMembershipResources;
+        this.defaultRootAuthorizations = unmodifiableList(getDefaultRootAuthorizations());
     }
 
     /**
@@ -319,7 +337,7 @@ public class WebAcService {
                 throw new RuntimeTrellisException("Error closing graph", ex);
             }
         } else if (root.equals(resource.getIdentifier())) {
-            return WebAcService.defaultRootAuthorizations.stream();
+            return defaultRootAuthorizations.stream();
         }
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());
