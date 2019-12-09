@@ -123,7 +123,7 @@ public class WebAcService {
     private Dataset generateDefaultRootAuthorizationsDataset() {
         final Dataset dataset = rdf.createDataset();
         final String location = getConfig().getOptionalValue(CONFIG_WEBAC_ROOT_ACL_LOCATION, String.class)
-            .orElse("org/trellisldp/webac/defaultAcl.ttl");
+            .orElse("/org/trellisldp/webac/defaultAcl.ttl");
         try (final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(location)) {
             if (ioService != null && is != null) {
                 ioService.read(is, TURTLE, TRELLIS_DATA_PREFIX)
