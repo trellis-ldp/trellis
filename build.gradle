@@ -470,7 +470,7 @@ configure(rootProject) {
     dependencyUpdates.resolutionStrategy = {
         componentSelection { rules ->
             rules.all { ComponentSelection selection ->
-                boolean rejected = ['alpha', 'beta', 'b', 'rc', 'm', 'mr'].any { qualifier ->
+                boolean rejected = ['alpha', 'beta', 'b', 'cr', 'rc', 'm', 'mr'].any { qualifier ->
                     // This matcher is needed until Dropwizard releases 2.0
                     def dropwizard = "(?:\\+test\\d+)?"
                     selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*${dropwizard}/
