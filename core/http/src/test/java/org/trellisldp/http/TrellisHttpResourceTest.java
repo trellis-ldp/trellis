@@ -108,10 +108,8 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         when(mockHttpHeaders.getRequestHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
 
-        matcher.getResourceHeaders(mockResponse, mockRequest, mockUriInfo, mockHttpHeaders);
-        verify(mockResponse).resume(captor.capture());
-
-        try (final Response res = captor.getValue()) {
+        try (final Response res = matcher.getResourceHeaders(mockRequest, mockUriInfo, mockHttpHeaders)
+                .toCompletableFuture().join()) {
             assertTrue(getLinks(res).stream().anyMatch(l ->
                         l.getRel().equals("self") && l.getUri().toString().startsWith("http://my.example.com/")),
                     "Missing rel=self header with correct prefix!");
