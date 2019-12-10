@@ -33,6 +33,7 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
 import org.trellisldp.vocabulary.LDP;
 
@@ -41,14 +42,16 @@ import org.trellisldp.vocabulary.LDP;
  */
 class TrellisApplicationTest {
 
-    private static final DropwizardTestSupport<TrellisConfiguration> APP
-        = new DropwizardTestSupport<>(SimpleTrellisApp.class,
-                resourceFilePath("trellis-config.yml"));
-
+    private static final DropwizardTestSupport<TrellisConfiguration> APP;
     private static final Client CLIENT;
 
     static {
-        APP.before();
+        APP = new DropwizardTestSupport<>(SimpleTrellisApp.class, resourceFilePath("trellis-config.yml"));
+        try {
+            APP.before();
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error starting application", ex);
+        }
         CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
         CLIENT.property(CONNECT_TIMEOUT, 10000);
         CLIENT.property(READ_TIMEOUT, 12000);

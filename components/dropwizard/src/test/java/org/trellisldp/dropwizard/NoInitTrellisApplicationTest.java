@@ -22,6 +22,7 @@ import io.dropwizard.testing.DropwizardTestSupport;
 
 import javax.ws.rs.client.Client;
 
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
 
 /**
@@ -29,14 +30,16 @@ import org.trellisldp.dropwizard.config.TrellisConfiguration;
  */
 class NoInitTrellisApplicationTest extends TrellisApplicationTest {
 
-    private static final DropwizardTestSupport<TrellisConfiguration> APP
-        = new DropwizardTestSupport<>(SimpleNoInitTrellisApp.class,
-                    resourceFilePath("trellis-config.yml"));
-
+    private static final DropwizardTestSupport<TrellisConfiguration> APP;
     private static final Client CLIENT;
 
     static {
-        APP.before();
+        APP = new DropwizardTestSupport<>(SimpleNoInitTrellisApp.class, resourceFilePath("trellis-config.yml"));
+        try {
+            APP.before();
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error starting application", ex);
+        }
         CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client 2");
         CLIENT.property(CONNECT_TIMEOUT, 10000);
         CLIENT.property(READ_TIMEOUT, 12000);
