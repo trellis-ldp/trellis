@@ -22,6 +22,7 @@ import javax.enterprise.inject.Produces;
 
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.api.*;
+import org.trellisldp.file.FileMementoService;
 
 /**
  * A managed bean that generates an RDF connection for the triplestore resource service.
@@ -34,6 +35,8 @@ public class TrellisServiceSupplier {
 
     private EventService eventService = new NoopEventService();
 
+    private MementoService mementoService = new FileMementoService();
+
     @Produces
     RDFConnection getRdfConnection() {
         return rdfConnection;
@@ -42,5 +45,10 @@ public class TrellisServiceSupplier {
     @Produces
     EventService getEventService() {
         return eventService;
+    }
+
+    @Produces
+    MementoService getMementoService() {
+        return mementoService;
     }
 }
