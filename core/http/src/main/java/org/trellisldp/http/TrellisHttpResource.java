@@ -42,8 +42,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
@@ -195,10 +193,10 @@ public class TrellisHttpResource {
      *
      * @implNote The Memento implemenation pattern exactly follows
      *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
-     * @param response the async response
      * @param uriInfo the URI info
      * @param headers the HTTP headers
      * @param request the request
+     * @return the async response
      */
     @GET
     @Timed
@@ -216,10 +214,10 @@ public class TrellisHttpResource {
                 responseCode = "200",
                 description = "The linked data resource, serialized as JSON-LD",
                 content = @Content(mediaType = "application/ld+json"))})
-    public void getResource(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
-        fetchResource(new TrellisRequest(request, uriInfo, headers))
-            .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
+    public CompletionStage<Response> getResource(@Context final Request request, @Context final UriInfo uriInfo,
+            @Context final HttpHeaders headers) {
+        return fetchResource(new TrellisRequest(request, uriInfo, headers))
+            .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
 
     /**
@@ -227,62 +225,61 @@ public class TrellisHttpResource {
      *
      * @implNote The Memento implemenation pattern exactly follows
      *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
-     * @param response the async response
      * @param uriInfo the URI info
      * @param headers the HTTP headers
      * @param request the request
+     * @return the async response
      */
     @HEAD
     @Timed
     @Operation(summary = "Get the headers for a linked data resource")
     @APIResponse(description = "The headers for a linked data resource")
-    public void getResourceHeaders(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
-        fetchResource(new TrellisRequest(request, uriInfo, headers))
-            .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
+    public CompletionStage<Response> getResourceHeaders(@Context final Request request, @Context final UriInfo uriInfo,
+            @Context final HttpHeaders headers) {
+        return fetchResource(new TrellisRequest(request, uriInfo, headers))
+            .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
 
     /**
      * Perform an OPTIONS operation on an LDP Resource.
      *
-     * @param response the async response
      * @param uriInfo the URI info
      * @param headers the HTTP headers
      * @param request the request
+     * @return the async response
      */
     @OPTIONS
     @Timed
     @Operation(summary = "Get the interaction options for a linked data resource")
     @APIResponse(description = "The interaction options for a linked data resource")
-    public void options(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers) {
+    public CompletionStage<Response> options(@Context final Request request, @Context final UriInfo uriInfo,
+            @Context final HttpHeaders headers) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, extensions, req.getVersion() != null,
                 urlBase);
 
-        fetchTrellisResource(identifier, req.getVersion()).thenApply(optionsHandler::initialize)
+        return fetchTrellisResource(identifier, req.getVersion()).thenApply(optionsHandler::initialize)
             .thenApply(optionsHandler::ldpOptions).thenApply(ResponseBuilder::build)
-            .exceptionally(this::handleException).thenApply(response::resume);
+            .exceptionally(this::handleException);
     }
 
     /**
      * Perform a PATCH operation on an LDP Resource.
      *
-     * @param response the async response
      * @param uriInfo the URI info
      * @param secContext the security context
      * @param headers the HTTP headers
      * @param request the request
      * @param body the body
+     * @return the async response
      */
     @PATCH
     @Timed
     @Operation(summary = "Update a linked data resource")
-    public void updateResource(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext secContext,
+    public CompletionStage<Response> updateResource(@Context final Request request, @Context final UriInfo uriInfo,
+            @Context final HttpHeaders headers, @Context final SecurityContext secContext,
             @RequestBody(description = "The update request for RDF resources, typically as SPARQL-Update",
                          required = true,
                          content = @Content(mediaType = "application/sparql-update")) final String body) {
@@ -292,52 +289,51 @@ public class TrellisHttpResource {
         final PatchHandler patchHandler = new PatchHandler(req, body, trellis, extensions, supportsCreateOnPatch,
                 defaultJsonLdProfile, urlBase);
 
-        getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), patchHandler::initialize)
+        return getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), patchHandler::initialize)
             .thenCompose(patchHandler::updateResource).thenCompose(patchHandler::updateMemento)
-            .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
+            .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
 
     /**
      * Perform a DELETE operation on an LDP Resource.
      *
-     * @param response the async response
      * @param uriInfo the URI info
      * @param secContext the security context
      * @param headers the HTTP headers
      * @param request the request
+     * @return the async response
      */
     @DELETE
     @Timed
     @Operation(summary = "Delete a linked data resource")
-    public void deleteResource(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext secContext) {
+    public CompletionStage<Response> deleteResource(@Context final Request request, @Context final UriInfo uriInfo,
+            @Context final HttpHeaders headers, @Context final SecurityContext secContext) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, extensions, urlBase);
 
-        getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), deleteHandler::initialize)
+        return getParent(identifier)
+            .thenCombine(trellis.getResourceService().get(identifier), deleteHandler::initialize)
             .thenCompose(deleteHandler::deleteResource).thenApply(ResponseBuilder::build)
-            .exceptionally(this::handleException).thenApply(response::resume);
+            .exceptionally(this::handleException);
     }
 
     /**
      * Perform a POST operation on a LDP Resource.
      *
-     * @param response the async response
      * @param uriInfo the URI info
      * @param secContext the security context
      * @param headers the HTTP headers
      * @param request the request
      * @param body the body
+     * @return the async response
      */
     @POST
     @Timed
     @Operation(summary = "Create a linked data resource")
-    public void createResource(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext secContext,
+    public CompletionStage<Response> createResource(@Context final Request request, @Context final UriInfo uriInfo,
+            @Context final HttpHeaders headers, @Context final SecurityContext secContext,
             @RequestBody(description = "The new resource") final InputStream body) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
@@ -349,28 +345,27 @@ public class TrellisHttpResource {
         final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier);
         final PostHandler postHandler = new PostHandler(req, parent, identifier, body, trellis, extensions, urlBase);
 
-        trellis.getResourceService().get(parent)
+        return trellis.getResourceService().get(parent)
             .thenCombine(trellis.getResourceService().get(child), postHandler::initialize)
             .thenCompose(postHandler::createResource).thenCompose(postHandler::updateMemento)
-            .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
+            .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
 
     /**
      * Perform a PUT operation on a LDP Resource.
      *
-     * @param response the async response
      * @param uriInfo the URI info
      * @param secContext the security context
      * @param headers the HTTP headers
      * @param request the request
      * @param body the body
+     * @return the async response
      */
     @PUT
     @Timed
     @Operation(summary = "Create or update a linked data resource")
-    public void setResource(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext secContext,
+    public CompletionStage<Response> setResource(@Context final Request request, @Context final UriInfo uriInfo,
+            @Context final HttpHeaders headers, @Context final SecurityContext secContext,
             @RequestBody(description = "The updated resource") final InputStream body) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
@@ -378,9 +373,9 @@ public class TrellisHttpResource {
         final PutHandler putHandler = new PutHandler(req, body, trellis, extensions, preconditionRequired,
                 createUncontained, urlBase);
 
-        getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), putHandler::initialize)
+        return getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), putHandler::initialize)
             .thenCompose(putHandler::setResource).thenCompose(putHandler::updateMemento)
-            .thenApply(ResponseBuilder::build).exceptionally(this::handleException).thenApply(response::resume);
+            .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
 
     private CompletionStage<? extends Resource> getParent(final IRI identifier) {
