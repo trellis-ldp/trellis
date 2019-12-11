@@ -21,7 +21,7 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
     implementation "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
 
-    testRuntimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"

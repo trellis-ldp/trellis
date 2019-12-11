@@ -18,5 +18,5 @@ dependencies {
     testImplementation "org.apache.jena:jena-arq:$jenaVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
 
-    testRuntimeClasspath "ch.qos.logback:logback-classic:$logbackVersion"
+    testRuntimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
 }

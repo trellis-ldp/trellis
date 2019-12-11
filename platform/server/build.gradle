@@ -13,16 +13,16 @@ application {
 dependencies {
     implementation project(':trellis-dropwizard-triplestore')
 
-    runtimeClasspath "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    runtimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
 
     if (project.sourceCompatibility.isJava11Compatible()) {
-        runtimeClasspath "io.dropwizard:dropwizard-core:$dropwizardVersion"
-        runtimeClasspath "io.dropwizard:dropwizard-metrics:$dropwizardVersion"
-        runtimeClasspath "io.dropwizard:dropwizard-http2:$dropwizardVersion"
+        runtimeOnly "io.dropwizard:dropwizard-core:$dropwizardVersion"
+        runtimeOnly "io.dropwizard:dropwizard-metrics:$dropwizardVersion"
+        runtimeOnly "io.dropwizard:dropwizard-http2:$dropwizardVersion"
 
-        runtimeClasspath "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
-        runtimeClasspath "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
-        runtimeClasspath "io.jsonwebtoken:jjwt-api:$jjwtVersion"
+        runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
+        runtimeOnly "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
+        runtimeOnly "io.jsonwebtoken:jjwt-api:$jjwtVersion"
     }
 }
 

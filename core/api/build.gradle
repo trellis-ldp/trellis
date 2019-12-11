@@ -22,6 +22,6 @@ dependencies {
     testImplementation "org.apache.commons:commons-text:$commonsTextVersion"
     testImplementation project(':trellis-vocabulary')
 
-    testRuntimeClasspath "ch.qos.logback:logback-classic:$logbackVersion"
+    testRuntimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
 }
 

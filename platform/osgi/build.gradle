@@ -63,8 +63,8 @@ dependencies {
 
     testImplementation group: 'org.apache.karaf.features', name: 'standard', version: karafVersion, classifier:'features', ext: 'xml'
 
-    testRuntimeClasspath "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
-    testRuntimeClasspath "org.junit.vintage:junit-vintage-engine:${junitVersion}"
+    testRuntimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junitVersion}"
 
     karafDistro group: 'org.apache.karaf', name: 'apache-karaf', version: karafVersion, ext: 'zip'
 }

@@ -66,8 +66,8 @@ allprojects { subproj ->
     dependencies {
         testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
         testImplementation "org.apiguardian:apiguardian-api:${apiguardianVersion}"
-        testRuntimeClasspath "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-        testRuntimeClasspath "org.junit.platform:junit-platform-launcher:${junitLauncherVersion}"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+        testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junitLauncherVersion}"
     }
 
     dependencyCheck {

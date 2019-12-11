@@ -37,9 +37,9 @@ dependencies {
     testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-io-jena')
 
-    testRuntimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
-    testRuntimeClasspath "ch.qos.logback:logback-classic:$logbackVersion"
-    testRuntimeClasspath "org.glassfish.jaxb:jaxb-runtime:$glassfishJaxbVersion"
+    testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    testRuntimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
+    testRuntimeOnly "org.glassfish.jaxb:jaxb-runtime:$glassfishJaxbVersion"
 }
 
 if (project.sourceCompatibility.isJava11Compatible()) {
