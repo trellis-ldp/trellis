@@ -55,10 +55,10 @@ dependencies {
         exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
     }
 
-    runtimeClasspath "ch.qos.logback:logback-classic:$logbackVersion"
-    runtimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
-    runtimeClasspath "jakarta.validation:jakarta.validation-api:$validationApiVersion"
-    runtimeClasspath "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    runtimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
+    runtimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    runtimeOnly "jakarta.validation:jakarta.validation-api:$validationApiVersion"
+    runtimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
 
     testImplementation project(':trellis-test')
 

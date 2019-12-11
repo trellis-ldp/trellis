@@ -59,8 +59,8 @@ dependencies {
     implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
     implementation "org.apache.jena:jena-tdb2:$jenaVersion"
 
-    runtimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
-    runtimeClasspath "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    runtimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    runtimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
 
     testImplementation "io.quarkus:quarkus-junit5"
     testImplementation "io.rest-assured:rest-assured"

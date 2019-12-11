@@ -29,8 +29,8 @@ dependencies {
     }
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
 
-    testRuntimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
-    testRuntimeClasspath "ch.qos.logback:logback-classic:$logbackVersion"
+    testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    testRuntimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
 }
 
 if (project.sourceCompatibility.isJava11Compatible()) {

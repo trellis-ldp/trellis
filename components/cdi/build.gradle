@@ -13,7 +13,7 @@ dependencies {
     api project(':trellis-api')
     api project(':trellis-app')
 
-    testRuntimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"

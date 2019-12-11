@@ -41,8 +41,8 @@ dependencies {
     testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-io-jena')
 
-    testRuntimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
-    testRuntimeClasspath "ch.qos.logback:logback-classic:$logbackVersion"
+    testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    testRuntimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
 }
 
 if (project.sourceCompatibility.isJava11Compatible()) {

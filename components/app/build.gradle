@@ -17,7 +17,7 @@ dependencies {
 
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
-    testRuntimeClasspath "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
