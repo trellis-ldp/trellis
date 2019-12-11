@@ -52,12 +52,12 @@ class FileBinaryServiceTest {
 
     @BeforeAll
     static void setUpEverything() {
-        System.setProperty(FileBinaryService.CONFIG_FILE_BINARY_BASE_PATH, directory);
+        System.setProperty(FileBinaryService.CONFIG_FILE_BINARY_PATH, directory);
     }
 
     @AfterAll
     static void cleanUp() {
-        System.clearProperty(FileBinaryService.CONFIG_FILE_BINARY_BASE_PATH);
+        System.clearProperty(FileBinaryService.CONFIG_FILE_BINARY_PATH);
     }
 
     @Test

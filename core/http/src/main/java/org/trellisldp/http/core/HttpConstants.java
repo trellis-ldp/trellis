@@ -53,28 +53,28 @@ public final class HttpConstants {
     public static final String APPLICATION_LINK_FORMAT = "application/link-format";
 
     /** Configuration key defining the server's base URL. */
-    public static final String CONFIG_HTTP_BASE_URL = "trellis.http.baseUrl";
+    public static final String CONFIG_HTTP_BASE_URL = "trellis.http.base-url";
 
     /** Configuration key defining the extension graph mapping. */
-    public static final String CONFIG_HTTP_EXTENSION_GRAPHS = "trellis.http.extension.graphs";
+    public static final String CONFIG_HTTP_EXTENSION_GRAPHS = "trellis.http.extension-graphs";
 
     /** Configuration key defining whether to include dates in memento headers. */
-    public static final String CONFIG_HTTP_MEMENTO_HEADER_DATES = "trellis.http.memento.headerdates";
+    public static final String CONFIG_HTTP_MEMENTO_HEADER_DATES = "trellis.http.memento-header-dates";
 
     /** Configuration key defining whether to use weak ETags for RDF responses. */
-    public static final String CONFIG_HTTP_WEAK_ETAG = "trellis.http.weak.etag";
+    public static final String CONFIG_HTTP_WEAK_ETAG = "trellis.http.weak-etag";
 
     /** Configuration key defining the default JSON-LD profile. */
-    public static final String CONFIG_HTTP_JSONLD_PROFILE = "trellis.http.jsonld.profile";
+    public static final String CONFIG_HTTP_JSONLD_PROFILE = "trellis.http.jsonld-profile";
 
     /** Configuration key defining whether to require precondition headers for PUT operations. */
-    public static final String CONFIG_HTTP_PRECONDITION_REQUIRED = "trellis.http.precondition.required";
+    public static final String CONFIG_HTTP_PRECONDITION_REQUIRED = "trellis.http.precondition-required";
 
     /** Configuration key defining whether PATCH requests can create resources. */
-    public static final String CONFIG_HTTP_PATCH_CREATE = "trellis.http.patch.create";
+    public static final String CONFIG_HTTP_PATCH_CREATE = "trellis.http.patch-create";
 
     /** Configuration key defining whether PUT-on-create generates contained or uncontained resources. */
-    public static final String CONFIG_HTTP_PUT_UNCONTAINED = "trellis.http.put.uncontained";
+    public static final String CONFIG_HTTP_PUT_UNCONTAINED = "trellis.http.put-uncontained";
 
     /** The Trellis query parameter for extended features of a given resource. */
     public static final String EXT = "ext";

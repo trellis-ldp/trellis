@@ -39,7 +39,7 @@ public class JwtAuthFilter implements ContainerRequestFilter {
     private static final Logger LOGGER = getLogger(JwtAuthFilter.class);
 
     /** The configuration key controlling the list of of admin WebID values. */
-    public static final String CONFIG_AUTH_ADMIN_USERS = "trellis.auth.adminusers";
+    public static final String CONFIG_AUTH_ADMIN_USERS = "trellis.auth.admin-users";
 
     private final Set<String> admins;
 

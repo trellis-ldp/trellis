@@ -45,7 +45,7 @@ import org.trellisldp.vocabulary.XSD;
 @ApplicationScoped
 public class SimpleNamespaceService implements NamespaceService {
 
-    public static final String CONFIG_NAMESPACE_PREFIXES = "trellis.namespace.prefixes";
+    public static final String CONFIG_NAMESPACES_MAPPING = "trellis.namespaces.mapping";
 
     private final Map<String, String> namespaces = new HashMap<>();
 
@@ -63,7 +63,7 @@ public class SimpleNamespaceService implements NamespaceService {
         namespaces.put("xsd", XSD.getNamespace());
         namespaces.put("foaf", FOAF.getNamespace());
         namespaces.put("vcard", VCARD.getNamespace());
-        getConfig().getOptionalValue(CONFIG_NAMESPACE_PREFIXES, String.class).map(SimpleNamespaceService::configToMap)
+        getConfig().getOptionalValue(CONFIG_NAMESPACES_MAPPING, String.class).map(SimpleNamespaceService::configToMap)
             .ifPresent(data -> data.forEach(namespaces::put));
     }
 

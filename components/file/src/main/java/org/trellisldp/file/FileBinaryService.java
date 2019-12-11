@@ -48,13 +48,13 @@ import org.trellisldp.api.IdentifierService;
 public class FileBinaryService implements BinaryService {
 
     /** The configuration key controlling the base filesystem path for the binary service. */
-    public static final String CONFIG_FILE_BINARY_BASE_PATH = "trellis.file.binary.basepath";
+    public static final String CONFIG_FILE_BINARY_PATH = "trellis.file.binary-path";
 
     /** The configuration key controlling the levels of hierarchy in a binary storage layout. */
-    public static final String CONFIG_FILE_BINARY_HIERARCHY = "trellis.file.binary.hierarchy";
+    public static final String CONFIG_FILE_BINARY_HIERARCHY = "trellis.file.binary-hierarchy";
 
     /** The configuration key controlling the length of each level of hierarchy in a filesystem layout. */
-    public static final String CONFIG_FILE_BINARY_LENGTH = "trellis.file.binary.length";
+    public static final String CONFIG_FILE_BINARY_LENGTH = "trellis.file.binary-length";
 
     private static final Logger LOGGER = getLogger(FileBinaryService.class);
     private static final int DEFAULT_HIERARCHY = 3;
@@ -96,7 +96,7 @@ public class FileBinaryService implements BinaryService {
     }
 
     private FileBinaryService(final IdentifierService idService, final Config config) {
-        this(idService, config.getValue(CONFIG_FILE_BINARY_BASE_PATH, String.class),
+        this(idService, config.getValue(CONFIG_FILE_BINARY_PATH, String.class),
                 config.getOptionalValue(CONFIG_FILE_BINARY_HIERARCHY, Integer.class).orElse(DEFAULT_HIERARCHY),
                 config.getOptionalValue(CONFIG_FILE_BINARY_LENGTH, Integer.class).orElse(DEFAULT_LENGTH));
     }

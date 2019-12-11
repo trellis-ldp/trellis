@@ -41,10 +41,10 @@ public class AmqpEventService implements EventService {
     private static final Logger LOGGER = getLogger(AmqpEventService.class);
 
     /** The configuration key controlling the AMQP exchange name. */
-    public static final String CONFIG_AMQP_EXCHANGE_NAME = "trellis.amqp.exchangename";
+    public static final String CONFIG_AMQP_EXCHANGE_NAME = "trellis.amqp.exchange-name";
 
     /** The configuration key controlling the AMQP routing key. */
-    public static final String CONFIG_AMQP_ROUTING_KEY = "trellis.amqp.routingkey";
+    public static final String CONFIG_AMQP_ROUTING_KEY = "trellis.amqp.routing-key";
 
     /** The configuration key controlling whether publishing is mandatory. */
     public static final String CONFIG_AMQP_MANDATORY = "trellis.amqp.mandatory";

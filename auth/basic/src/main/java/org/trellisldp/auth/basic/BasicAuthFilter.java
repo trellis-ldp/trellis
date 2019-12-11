@@ -50,7 +50,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     public static final String CONFIG_AUTH_REALM = "trellis.auth.realm";
 
     /** The configuration key controlling the list of of admin WebID values. */
-    public static final String CONFIG_AUTH_ADMIN_USERS = "trellis.auth.adminusers";
+    public static final String CONFIG_AUTH_ADMIN_USERS = "trellis.auth.admin-users";
 
     /** The admin role. */
     public static final String ADMIN_ROLE = "admin";
