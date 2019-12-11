@@ -87,7 +87,7 @@ task generateDependsFile {
         properties.setProperty( "${project.group}/${project.name}/version", "${project.version}" )
 
         // then for all our deps
-        project.configurations.testRuntimeOnly.resolvedConfiguration.resolvedArtifacts.each {
+        project.configurations.testRuntimeClasspath.resolvedConfiguration.resolvedArtifacts.each {
             final String keyBase = it.moduleVersion.id.group + '/' + it.moduleVersion.id.name
             properties.setProperty( "${keyBase}/scope", "compile" )
             properties.setProperty( "${keyBase}/type", it.extension )
