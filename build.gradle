@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    configurations.maybeCreate('pitest')
+    dependencies {
+        classpath "info.solidsoft.gradle.pitest:gradle-pitest-plugin:$pitestVersion"
+        pitest "org.pitest:pitest-junit5-plugin:$pitestJunit5Version"
+    }
+}
+
 plugins {
     id 'com.github.ben-manes.versions' version "$versionsVersion"
     id 'com.github.hierynomus.license' version "$licenseVersion"
