@@ -3,7 +3,6 @@ plugins {
     id 'com.github.hierynomus.license' version "$licenseVersion"
     id 'com.github.kt3k.coveralls' version "$coverallsVersion"
     id 'com.github.spotbugs' version "$spotbugsVersion"
-    id 'com.gradle.build-scan' version "$scanVersion"
     id 'net.researchgate.release' version "$releasesVersion"
     id 'org.owasp.dependencycheck' version "$owaspVersion"
     id 'org.sonarqube' version "$sonarVersion"
@@ -369,6 +368,10 @@ subprojects { subproj ->
     signing {
         required { !version.endsWith("SNAPSHOT") && gradle.taskGraph.hasTask("publish") }
         sign publishing.publications
+    }
+
+    tasks.withType(Sign) {
+        onlyIf { !version.endsWith("SNAPSHOT") }
     }
 
     processResources {
