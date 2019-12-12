@@ -1,5 +1,6 @@
 apply plugin: 'java-library'
 apply plugin: 'biz.aQute.bnd.builder'
+apply plugin: 'info.solidsoft.pitest'
 
 description = 'Trellis Kafka'
 
@@ -22,5 +23,11 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-vocabulary')
+}
+
+pitest {
+    testPlugin = 'junit5'
+    pitestVersion = pitestToolVersion
+    threads = 4
 }
 

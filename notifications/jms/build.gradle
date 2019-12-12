@@ -1,5 +1,6 @@
 apply plugin: 'java-library'
 apply plugin: 'biz.aQute.bnd.builder'
+apply plugin: 'info.solidsoft.pitest'
 
 description = 'Trellis JMS'
 
@@ -36,6 +37,12 @@ dependencies {
     if (!project.sourceCompatibility.isJava11Compatible()) {
         testImplementation "org.apache.activemq:activemq-broker:$activeMqVersion"
     }
+}
+
+pitest {
+    testPlugin = 'junit5'
+    pitestVersion = pitestToolVersion
+    threads = 4
 }
 
 if (project.sourceCompatibility.isJava11Compatible()) {

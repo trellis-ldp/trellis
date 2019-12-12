@@ -1,5 +1,6 @@
 apply plugin: 'java-library'
 apply plugin: 'biz.aQute.bnd.builder'
+apply plugin: 'info.solidsoft.pitest'
 
 description = 'Trellis Microprofile JWT-Auth'
 
@@ -31,6 +32,12 @@ dependencies {
 
     testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
     testRuntimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
+}
+
+pitest {
+    testPlugin = 'junit5'
+    pitestVersion = pitestToolVersion
+    threads = 4
 }
 
 if (project.sourceCompatibility.isJava11Compatible()) {

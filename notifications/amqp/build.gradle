@@ -1,5 +1,6 @@
 apply plugin: 'java-library'
 apply plugin: 'biz.aQute.bnd.builder'
+apply plugin: 'info.solidsoft.pitest'
 
 description = 'Trellis AMQP'
 
@@ -33,6 +34,13 @@ dependencies {
     if (!project.sourceCompatibility.isJava11Compatible()) {
         testImplementation("org.apache.qpid:qpid-broker:$qpidVersion")
     }
+}
+
+pitest {
+    testPlugin = 'junit5'
+    pitestVersion = pitestToolVersion
+    threads = 4
+    jvmArgs = ["-Dderby.stream.error.file=$buildDir/derby.log"]
 }
 
 configurations.all {
