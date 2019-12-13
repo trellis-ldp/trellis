@@ -14,9 +14,13 @@ if [[ $VERSION == *SNAPSHOT* ]]; then
     TAG=develop
 fi
 
-# Don't use latest/develop tags for maintenance branches
+# Don't use develop tags for maintenance branches
 if [[ $BRANCH == *.x ]]; then
-    docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$VERSION" .
+    if [[ $TAG == "latest" ]]; then
+        docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$TAG" -t "$IMAGE:$VERSION" .
+    else
+        docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$VERSION" .
+    fi
 else
     docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$TAG" -t "$IMAGE:$VERSION" .
 fi
