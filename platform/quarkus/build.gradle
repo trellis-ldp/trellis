@@ -101,4 +101,9 @@ java {
     }
 }
 
+// This subproject is not part of the release and its dependencies should not
+// be considered during the release process.
+release {
+    ignoredSnapshotDependencies = installForQuarkus.collect { "org.trellisldp:" + it }
+}
 
