@@ -387,8 +387,6 @@ subprojects { subproj ->
             links 'https://activemq.apache.org/maven/apidocs/'
             links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
             links 'https://kafka.apache.org/20/javadoc/'
-            links 'https://rabbitmq.github.io/rabbitmq-java-client/api/current/'
-            links 'https://www.dropwizard.io/1.3.5/dropwizard-core/apidocs/'
         }
 
         if (JavaVersion.current().isJava11Compatible()) {
@@ -444,8 +442,6 @@ configure(rootProject) {
             links 'https://activemq.apache.org/maven/apidocs/'
             links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
             links 'https://kafka.apache.org/20/javadoc/'
-            links 'https://rabbitmq.github.io/rabbitmq-java-client/api/current/'
-            links 'https://www.dropwizard.io/1.3.5/dropwizard-core/apidocs/'
         }
 
         if (JavaVersion.current().isJava9Compatible()) {
@@ -471,9 +467,7 @@ configure(rootProject) {
         componentSelection { rules ->
             rules.all { ComponentSelection selection ->
                 boolean rejected = ['alpha', 'beta', 'b', 'cr', 'rc', 'm', 'mr'].any { qualifier ->
-                    // This matcher is needed until Dropwizard releases 2.0
-                    def dropwizard = "(?:\\+test\\d+)?"
-                    selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*${dropwizard}/
+                    selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
                 }
                 if (rejected) {
                     selection.reject("Release Candidate")
