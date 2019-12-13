@@ -89,7 +89,7 @@ jobs:
     - name: "Publish to Docker hub"
       stage: deploy
       jdk: openjdk8
-      if: branch = trellis-0.9.x AND type = push
+      if: (branch = trellis-0.9.x OR branch =~ /^trellis-\d+\.\d+\.\d+$/) AND type = push
       env: JOB=docker
       before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       # Note: for maintenance branches, remove the dockerPushDevelop task
@@ -102,7 +102,7 @@ jobs:
       stage: deploy
       jdk: openjdk8
       env: JOB=aws
-      if: branch = trellis-0.9.x AND type = push
+      if: (branch = trellis-0.9.x OR branch =~ /^trellis-\d+\.\d+\.\d+$/) AND type = push
       script: ./gradlew apidocs
       deploy:
           provider: s3
