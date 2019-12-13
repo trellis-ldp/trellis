@@ -4,7 +4,7 @@ plugins {
     id 'com.github.kt3k.coveralls' version "$coverallsVersion"
     id 'com.github.spotbugs' version "$spotbugsVersion"
     id 'com.gradle.build-scan' version "$scanVersion"
-    id 'net.researchgate.release' version "$releaseVersion"
+    id 'net.researchgate.release' version "$releasesVersion"
     id 'org.owasp.dependencycheck' version "$owaspVersion"
     id 'org.sonarqube' version "$sonarVersion"
     id 'biz.aQute.bnd.builder' version "$bndVersion" apply false
