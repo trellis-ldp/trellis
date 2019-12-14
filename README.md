@@ -34,13 +34,13 @@ releases starting with Trellis 0.8. More details are available on the
 Docker pull command
 
 ```
-docker pull trellisldp/trellis
+docker pull trellisldp/trellis-triplestore
 ```
 
 Or, for the database persistence layer
 
 ```
-docker pull trellisldp/trellis-ext-db
+docker pull trellisldp/trellis-database
 ```
 
 ## Building Trellis
