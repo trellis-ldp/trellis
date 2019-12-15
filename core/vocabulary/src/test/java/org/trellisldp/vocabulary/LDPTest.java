@@ -14,7 +14,12 @@
 package org.trellisldp.vocabulary;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.trellisldp.vocabulary.RDF.type;
 
+import java.util.ServiceLoader;
+
+import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -22,6 +27,8 @@ import org.junit.jupiter.api.Test;
  * @author acoburn
  */
 class LDPTest extends AbstractVocabularyTest {
+
+    private static final RDF rdf = ServiceLoader.load(RDF.class).iterator().next();
 
     @Override
     String namespace() {
@@ -38,5 +45,14 @@ class LDPTest extends AbstractVocabularyTest {
         assertEquals(LDP.Resource, LDP.getSuperclassOf(LDP.NonRDFSource), "LDP-R isn't a superclass of LDP-NR!");
         assertEquals(LDP.Container, LDP.getSuperclassOf(LDP.BasicContainer), "LDP-C isn't a superclass of LDP-BC!");
         assertNull(LDP.getSuperclassOf(LDP.Resource), "Astonishingly, LDP-R has a superclass!");
+    }
+
+    @Test
+    void testIsLdpTypeTriple() {
+        final IRI subject = rdf.createIRI("http://example.com/");
+        assertTrue(LDP.isLdpTypeTriple(rdf.createTriple(subject, type, LDP.Container)));
+        assertFalse(LDP.isLdpTypeTriple(rdf.createTriple(subject, type, SKOS.Concept)));
+        assertFalse(LDP.isLdpTypeTriple(rdf.createTriple(subject, DC.relation, LDP.Container)));
+        assertFalse(LDP.isLdpTypeTriple(rdf.createTriple(subject, type, rdf.createBlankNode())));
     }
 }
