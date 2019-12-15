@@ -1364,10 +1364,12 @@ class TriplestoreResourceServiceTest {
 
     private static Stream<Executable> checkResourceStream(final Resource res, final long userManaged,
             final long accessControl, final long audit, final long membership, final long containment) {
-        final long ldpTriples = 1;
-        final long total = userManaged + accessControl + audit + membership + containment + ldpTriples;
+        final long serverManaged = 1; // LDP type triple
+        final long total = userManaged + accessControl + audit + membership + containment + serverManaged;
         return Stream.of(
-                () -> assertEquals(userManaged + ldpTriples, res.stream(Trellis.PreferUserManaged).count(),
+                () -> assertEquals(serverManaged, res.stream(Trellis.PreferServerManaged).count(),
+                                   "Incorrect server triple count!"),
+                () -> assertEquals(userManaged, res.stream(Trellis.PreferUserManaged).count(),
                                    "Incorrect user triple count!"),
                 () -> assertEquals(accessControl, res.stream(Trellis.PreferAccessControl).count(),
                                    "Incorrect ACL triple count!"),

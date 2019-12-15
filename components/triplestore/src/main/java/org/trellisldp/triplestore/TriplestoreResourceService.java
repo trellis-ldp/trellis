@@ -37,7 +37,6 @@ import static org.trellisldp.triplestore.TriplestoreUtils.SUBJECT;
 import static org.trellisldp.triplestore.TriplestoreUtils.asJenaDataset;
 import static org.trellisldp.triplestore.TriplestoreUtils.getInstance;
 import static org.trellisldp.triplestore.TriplestoreUtils.getObject;
-import static org.trellisldp.triplestore.TriplestoreUtils.isLdpTypeTriple;
 import static org.trellisldp.vocabulary.Trellis.DeletedResource;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferAudit;
@@ -274,7 +273,6 @@ public class TriplestoreResourceService implements ResourceService {
             dataset.stream().filter(q -> q.getGraphName().filter(PreferServerManaged::equals).isPresent())
                     .map(rdf::asJenaQuad).forEach(sink::addQuad);
             dataset.getGraph(PreferUserManaged).ifPresent(g -> g.stream()
-                    .filter(t -> !isLdpTypeTriple(t, identifier))
                     .map(t -> new Quad(rdf.asJenaNode(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
             dataset.getGraph(PreferAccessControl).ifPresent(g -> g.stream()
                     .map(t -> new Quad(getAclIRI(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));

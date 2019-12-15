@@ -31,8 +31,6 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.Var;
-import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.RDF;
 
 /**
  * Utilities for the Triplestore resource service.
@@ -89,20 +87,6 @@ final class TriplestoreUtils {
             dataset.stream().map(rdf::asJenaQuad).forEach(dsg::add);
         }
         return wrap(dsg);
-    }
-
-    /**
-     * Test whether the triple is an LDP type triple.
-     * @param triple the triple
-     * @param identifier the identifier
-     * @return true if this is an ldp type triple
-     */
-    public static boolean isLdpTypeTriple(final Triple triple, final IRI identifier) {
-        if (triple.getObject() instanceof IRI) {
-            return triple.getSubject().equals(identifier) && triple.getPredicate().equals(RDF.type)
-                && ((IRI) triple.getObject()).getIRIString().startsWith(LDP.getNamespace());
-        }
-        return false;
     }
 
     private TriplestoreUtils() {

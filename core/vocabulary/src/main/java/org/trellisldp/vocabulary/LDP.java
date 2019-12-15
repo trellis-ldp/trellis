@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.Triple;
 
 /**
  * RDF Terms from the LDP Vocabulary.
@@ -104,18 +103,6 @@ public final class LDP {
      */
     public static IRI getSuperclassOf(final IRI type) {
         return superclassOf.get(type);
-    }
-
-    /**
-     * Test whether this triple is an LDP type triple.
-     * @param triple the triple
-     * @return true if it is an LDP type triple; false otherwise
-     */
-    public static boolean isLdpTypeTriple(final Triple triple) {
-        if (triple.getObject() instanceof IRI) {
-            return RDF.type.equals(triple.getPredicate()) && ((IRI) triple.getObject()).getIRIString().startsWith(URI);
-        }
-        return false;
     }
 
     private LDP() {

@@ -14,12 +14,14 @@
 package org.trellisldp.file;
 
 import static java.nio.file.Files.lines;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.empty;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.vocabulary.RDF.type;
+import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 
 import java.io.File;
 import java.io.IOException;
@@ -118,7 +120,8 @@ public class FileResource implements Resource {
 
     @Override
     public Stream<Quad> stream() {
-        return fetchContent(identifier, file);
+        return fetchContent(identifier, file).filter(quad ->
+                    !quad.getGraphName().equals(of(PreferServerManaged)) || quad.getPredicate().equals(type));
     }
 
     private Optional<IRI> asIRI(final IRI predicate) {
@@ -132,7 +135,7 @@ public class FileResource implements Resource {
 
     private static Map<IRI, RDFTerm> init(final IRI identifier, final File file) {
         try (final Stream<Triple> triples = fetchContent(identifier, file).filter(q ->
-                    q.getGraphName().filter(isEqual(Trellis.PreferServerManaged)).isPresent()).map(Quad::asTriple)) {
+                    q.getGraphName().filter(isEqual(PreferServerManaged)).isPresent()).map(Quad::asTriple)) {
             return triples.collect(toMap(t -> !t.getSubject().equals(identifier) && DC.modified.equals(t.getPredicate())
                         ? Time.hasTime : t.getPredicate(), Triple::getObject));
         }
