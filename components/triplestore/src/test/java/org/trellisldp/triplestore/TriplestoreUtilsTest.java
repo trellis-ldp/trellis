@@ -30,6 +30,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.DC;
+import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
 
 /**
@@ -71,6 +72,21 @@ class TriplestoreUtilsTest {
                 "Confirm presence of trellis:PreferUserManaged named graph");
         assertNotEquals(TriplestoreUtils.asJenaDataset(dataset).asDatasetGraph(),
                 TriplestoreUtils.asJenaDataset(dataset).asDatasetGraph(), "Confirm dataset has been converted");
+    }
+
+    @Test
+    void testIsLdpTypeTriple() {
+        final IRI identifier1 = jenaRdf.createIRI("https://www.example.com/resource1");
+        final IRI identifier2 = jenaRdf.createIRI("https://www.example.com/resource2");
+
+        assertTrue(TriplestoreUtils.isLdpTypeTriple(jenaRdf.createTriple(identifier1, type, LDP.Container),
+                    identifier1));
+        assertFalse(TriplestoreUtils.isLdpTypeTriple(jenaRdf.createTriple(identifier1, type, LDP.Container),
+                    identifier2));
+        assertFalse(TriplestoreUtils.isLdpTypeTriple(jenaRdf.createTriple(identifier1, DC.relation, LDP.Container),
+                    identifier2));
+        assertFalse(TriplestoreUtils.isLdpTypeTriple(jenaRdf.createTriple(identifier1, type, identifier2),
+                    identifier1));
     }
 
     @Test
