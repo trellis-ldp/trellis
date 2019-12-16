@@ -14,7 +14,6 @@
 package org.trellisldp.file;
 
 import static java.nio.file.Files.lines;
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toMap;
@@ -120,8 +119,7 @@ public class FileResource implements Resource {
 
     @Override
     public Stream<Quad> stream() {
-        return fetchContent(identifier, file).filter(quad ->
-                    !quad.getGraphName().equals(of(PreferServerManaged)) || quad.getPredicate().equals(type));
+        return fetchContent(identifier, file).filter(FileUtils::filterServerManagedQuads);
     }
 
     private Optional<IRI> asIRI(final IRI predicate) {
