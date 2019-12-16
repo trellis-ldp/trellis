@@ -17,6 +17,7 @@ import static java.time.Instant.now;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.vocabulary.RDF.type;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
+import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
@@ -141,5 +143,17 @@ class FileUtilsTest {
         final File dir = new File(file.getParentFile(), "nonexistent");
 
         assertThrows(UncheckedIOException.class, () -> FileUtils.writeMemento(dir, res, now()));
+    }
+
+    @Test
+    void testFilterServerManaged() {
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        try {
+            System.setProperty(FileUtils.CONFIG_FILE_LDP_TYPE, "false");
+            assertFalse(FileUtils.filterServerManagedQuads(rdf.createQuad(Trellis.PreferServerManaged,
+                            identifier, type, LDP.Container)));
+        } finally {
+            System.clearProperty(FileUtils.CONFIG_FILE_LDP_TYPE);
+        }
     }
 }

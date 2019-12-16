@@ -95,6 +95,7 @@ public class TriplestoreResource implements Resource {
         this.rdfConnection = rdfConnection;
         this.includeLdpType = includeLdpType;
         graphMapper.put(Trellis.PreferUserManaged, this::fetchUserQuads);
+        graphMapper.put(Trellis.PreferServerManaged, this::fetchServerQuads);
         graphMapper.put(Trellis.PreferAudit, this::fetchAuditQuads);
         graphMapper.put(Trellis.PreferAccessControl, this::fetchAclQuads);
         graphMapper.put(LDP.PreferContainment, this::fetchContainmentQuads);
@@ -504,13 +505,16 @@ public class TriplestoreResource implements Resource {
      * </code></pre>
      */
     private Stream<Quad> fetchUserQuads() {
+        return fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged);
+    }
+
+    private Stream<Quad> fetchServerQuads() {
         if (includeLdpType) {
             final IRI ixnModel = getInteractionModel();
-            return concat(of(rdf.createQuad(Trellis.PreferUserManaged, adjustIdentifier(identifier, ixnModel),
-                            RDF.type, ixnModel)),
-                    fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged));
+            return of(rdf.createQuad(Trellis.PreferServerManaged, adjustIdentifier(identifier, ixnModel),
+                            RDF.type, ixnModel));
         }
-        return fetchAllFromGraph(identifier.getIRIString(), Trellis.PreferUserManaged);
+        return Stream.empty();
     }
 
     private static IRI adjustIdentifier(final IRI identifier, final IRI type) {

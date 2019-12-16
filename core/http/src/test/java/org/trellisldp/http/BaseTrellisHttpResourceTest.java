@@ -32,7 +32,7 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.RDF.type;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
-import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
+import static org.trellisldp.vocabulary.Trellis.PreferAudit;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -204,7 +204,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockResourceService.touch(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockResource.stream()).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral("A title")),
-                rdf.createQuad(PreferServerManaged, identifier, DC.created,
+                rdf.createQuad(PreferAudit, identifier, DC.created,
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
                 rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));

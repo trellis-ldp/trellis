@@ -30,6 +30,7 @@ import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.apache.jena.riot.tokens.TokenizerFactory.makeTokenizerString;
 import static org.apache.jena.sparql.core.Quad.create;
 import static org.apache.jena.sparql.core.Quad.defaultGraphIRI;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.vocabulary.RDF.type;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
@@ -46,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 import java.util.zip.CRC32;
@@ -67,6 +69,8 @@ import org.trellisldp.vocabulary.XSD;
  */
 public final class FileUtils {
 
+    /** The configuration key for controlling LDP type triples. */
+    public static final String CONFIG_FILE_LDP_TYPE = "trellis.file.ldp-type";
     private static final Logger LOGGER = getLogger(FileUtils.class);
     private static final JenaRDF rdf = new JenaRDF();
     private static final String SEP = " ";
@@ -119,6 +123,19 @@ public final class FileUtils {
             LOGGER.warn("Skipping invalid data value: {}", line);
             return empty();
         }
+    }
+
+    /**
+     * Filter any server-managed triples from the resource stream.
+     * @param quad the quad
+     * @return true if the quad should be kept, false otherwise
+     */
+    public static boolean filterServerManagedQuads(final Quad quad) {
+        if (quad.getGraphName().equals(Optional.of(PreferServerManaged))) {
+            return quad.getPredicate().equals(type) && getConfig()
+                .getOptionalValue(CONFIG_FILE_LDP_TYPE, Boolean.class).orElse(Boolean.TRUE);
+        }
+        return true;
     }
 
     /**
