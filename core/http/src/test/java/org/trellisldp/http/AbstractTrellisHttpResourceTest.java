@@ -66,6 +66,7 @@ import static org.trellisldp.vocabulary.RDF.type;
 import static org.trellisldp.vocabulary.Trellis.InvalidCardinality;
 import static org.trellisldp.vocabulary.Trellis.InvalidRange;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
+import static org.trellisldp.vocabulary.Trellis.PreferAudit;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
@@ -2391,7 +2392,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     private Stream<Quad> getPreferQuads() {
         return Stream.of(
             rdf.createQuad(PreferUserManaged, identifier, DC.title, rdf.createLiteral(TITLE_VALUE)),
-            rdf.createQuad(PreferServerManaged, identifier, DC.created,
+            rdf.createQuad(PreferAudit, identifier, DC.created,
                 rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
             rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains,
                 rdf.createIRI("trellis:data/resource/child1")),
@@ -2486,7 +2487,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                 include.stream().map(key ->
                     () -> assertTrue(obj.containsKey(key), "JSON-LD didn't contain expected key: " + key)),
                 omit.stream().map(key ->
-                    () -> assertFalse(obj.containsKey(key), "JSON-LD caontained extraneous key: " + key)));
+                    () -> assertFalse(obj.containsKey(key), "JSON-LD contained extraneous key: " + key)));
     }
 
     private Stream<Executable> checkSimpleJsonLdResponse(final Response res, final IRI ldpType) {

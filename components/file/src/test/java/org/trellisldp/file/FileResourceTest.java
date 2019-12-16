@@ -55,8 +55,8 @@ class FileResourceTest {
         assertFalse(res.getContainer().isPresent(), "Unexpected parent resource!");
         assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment count!");
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
-        assertEquals(2L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server managed count!");
-        assertEquals(8L, res.stream().count(), "Incorrect total triple count!");
+        assertEquals(1L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server managed count!");
+        assertEquals(7L, res.stream().count(), "Incorrect total triple count!");
     }
 
     @Test
@@ -82,8 +82,8 @@ class FileResourceTest {
         assertFalse(res.hasAcl(), "Unexpected ACL present!");
         assertEquals(0L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
         assertEquals(2L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
-        assertEquals(6L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server managed count!");
-        assertEquals(8L, res.stream().count(), "Incorrect total triple count!");
+        assertEquals(1L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server managed count!");
+        assertEquals(3L, res.stream().count(), "Incorrect total triple count!");
     }
 
     @Test
@@ -121,8 +121,8 @@ class FileResourceTest {
         assertFalse(res.hasAcl(), "Unexpected ACL!");
         assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
         assertEquals(6L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
-        assertEquals(5L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server triple count!");
-        assertEquals(14L, res.stream().count(), "Incorrect total triple count!");
+        assertEquals(1L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server triple count!");
+        assertEquals(10L, res.stream().count(), "Incorrect total triple count!");
     }
 
     @Test
@@ -146,7 +146,7 @@ class FileResourceTest {
         assertFalse(res.hasAcl(), "Unexpected ACL!");
         assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
         assertEquals(5L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
-        assertEquals(4L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server triple count!");
-        assertEquals(12L, res.stream().count(), "Incorrect total triple count!");
+        assertEquals(1L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server triple count!");
+        assertEquals(9L, res.stream().count(), "Incorrect total triple count!");
     }
 }

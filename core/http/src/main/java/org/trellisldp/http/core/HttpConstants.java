@@ -17,6 +17,7 @@ import static java.util.Collections.addAll;
 import static java.util.Collections.unmodifiableSet;
 import static org.trellisldp.vocabulary.LDP.PreferContainment;
 import static org.trellisldp.vocabulary.LDP.PreferMembership;
+import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.util.HashSet;
@@ -127,7 +128,8 @@ public final class HttpConstants {
     private static final Set<IRI> DEFAULT_REPRESENTATION_ELEMENTS = new HashSet<>();
 
     static {
-        addAll(DEFAULT_REPRESENTATION_ELEMENTS, PreferContainment, PreferMembership, PreferUserManaged);
+        addAll(DEFAULT_REPRESENTATION_ELEMENTS, PreferContainment, PreferMembership, PreferUserManaged,
+                PreferServerManaged);
     }
 
     /** The implied or default set of IRIs used with a Prefer header. */

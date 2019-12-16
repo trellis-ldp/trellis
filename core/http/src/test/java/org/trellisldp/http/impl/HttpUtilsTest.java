@@ -133,9 +133,9 @@ class HttpUtilsTest {
                     Prefer.valueOf("return=representation; include=\"" +
                         Trellis.PreferServerManaged.getIRIString() + "\""));
 
-        assertFalse(filtered.contains(Trellis.PreferServerManaged), "Prefer filter doesn't catch server managed quad!");
+        assertTrue(filtered.contains(Trellis.PreferServerManaged), "Prefer filter misses server managed quad!");
         assertTrue(filtered.contains(Trellis.PreferUserManaged), "Prefer filter misses user managed quad!");
-        assertEquals(3, filtered.size(), "Incorrect size of filtered quad list");
+        assertEquals(4, filtered.size(), "Incorrect size of filtered quad list");
     }
 
     @Test
@@ -143,7 +143,7 @@ class HttpUtilsTest {
         final Set<IRI> filtered2 = HttpUtils.triplePreferences(Prefer.valueOf("return=representation"));
 
         assertTrue(filtered2.contains(Trellis.PreferUserManaged), "Prefer filter omits user managed quad!");
-        assertEquals(3, filtered2.size(), "Incorrect size of filtered quad list!");
+        assertEquals(4, filtered2.size(), "Incorrect size of filtered quad list!");
     }
 
     @Test
@@ -152,10 +152,10 @@ class HttpUtilsTest {
                         Trellis.PreferAudit.getIRIString() + "\""));
 
         assertTrue(filtered3.contains(Trellis.PreferAudit), "Prefer filter omits audit quad!");
-        assertFalse(filtered3.contains(Trellis.PreferServerManaged),
-                "Prefe filter doesn't catch server managed quad!");
+        assertTrue(filtered3.contains(Trellis.PreferServerManaged),
+                "Prefe filter omits server managed quad!");
         assertTrue(filtered3.contains(Trellis.PreferUserManaged), "Prefer filter omits user managed quad!");
-        assertEquals(4, filtered3.size(), "Incorrect size of filtered quad list!");
+        assertEquals(5, filtered3.size(), "Incorrect size of filtered quad list!");
     }
 
     @Test
@@ -164,9 +164,9 @@ class HttpUtilsTest {
                         Trellis.PreferUserManaged.getIRIString() + "\""));
 
         assertFalse(filtered4.contains(Trellis.PreferAudit), "Prefer filter doesn't omit audit quad!");
-        assertFalse(filtered4.contains(Trellis.PreferServerManaged), "Prefer filter doesn't omit server managed quad!");
+        assertTrue(filtered4.contains(Trellis.PreferServerManaged), "Prefer filter omits server managed quad!");
         assertTrue(filtered4.contains(Trellis.PreferUserManaged), "Prefer filter omits user managed quad!");
-        assertEquals(3, filtered4.size(), "Incorrect size of filtered quad list!");
+        assertEquals(4, filtered4.size(), "Incorrect size of filtered quad list!");
     }
 
     @Test

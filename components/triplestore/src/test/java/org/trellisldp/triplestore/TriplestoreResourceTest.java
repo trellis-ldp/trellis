@@ -113,7 +113,7 @@ class TriplestoreResourceTest {
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, false, false));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
-        assertAll("Check RDF stream", checkRdfStream(res, 2L, 0L, 0L, 0L, 0L));
+        assertAll("Check RDF stream", checkRdfStream(res, 2L, 0L, 0L, 0L, 0L, 0L));
     }
 
     @Test
@@ -128,7 +128,7 @@ class TriplestoreResourceTest {
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, false, false));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
-        assertAll("Check RDF stream", checkRdfStream(res, 2L, 0L, 5L, 0L, 0L));
+        assertAll("Check RDF stream", checkRdfStream(res, 2L, 0L, 0L, 5L, 0L, 0L));
     }
 
     @Test
@@ -143,7 +143,7 @@ class TriplestoreResourceTest {
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, false, false));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
-        assertAll("Check RDF stream", checkRdfStream(res, 3L, 0L, 5L, 0L, 0L));
+        assertAll("Check RDF stream", checkRdfStream(res, 2L, 1L, 0L, 5L, 0L, 0L));
     }
 
     @Test
@@ -161,7 +161,7 @@ class TriplestoreResourceTest {
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, true, false));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
-        assertAll("Check RDF stream", checkRdfStream(res, 2L, 3L, 5L, 0L, 0L));
+        assertAll("Check RDF stream", checkRdfStream(res, 2L, 0L, 3L, 5L, 0L, 0L));
     }
 
     @Test
@@ -185,7 +185,7 @@ class TriplestoreResourceTest {
         });
         assertAll("Check resource", checkResource(res, identifier, LDP.NonRDFSource, true, false, false));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
-        assertAll("Check RDF stream", checkRdfStream(res, 3L, 0L, 5L, 0L, 0L));
+        assertAll("Check RDF stream", checkRdfStream(res, 2L, 1L, 0L, 5L, 0L, 0L));
     }
 
     @Test
@@ -204,7 +204,7 @@ class TriplestoreResourceTest {
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.Container, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
-        assertAll("Check RDF stream", checkRdfStream(res, 2L, 0L, 0L, 0L, 4L));
+        assertAll("Check RDF stream", checkRdfStream(res, 2L, 0L, 0L, 0L, 0L, 4L));
     }
 
     @Test
@@ -219,7 +219,7 @@ class TriplestoreResourceTest {
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
-        assertAll("Check RDF stream", checkRdfStream(res, 3L, 0L, 0L, 0L, 0L));
+        assertAll("Check RDF stream", checkRdfStream(res, 2L, 1L, 0L, 0L, 0L, 0L));
     }
 
     @Test
@@ -243,14 +243,14 @@ class TriplestoreResourceTest {
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.DirectContainer, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res, member, DC.subject, null, LDP.MemberSubject));
-        assertAll("Check RDF stream", checkRdfStream(res, 3L, 0L, 0L, 0L, 4L));
+        assertAll("Check RDF stream", checkRdfStream(res, 2L, 1L, 0L, 0L, 0L, 4L));
 
         final TriplestoreResource memberRes = new TriplestoreResource(rdfConnection, member, false);
         memberRes.fetchData();
         assertTrue(memberRes.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(memberRes, member, LDP.RDFSource, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(memberRes, null, null, null, null));
-        assertAll("Check RDF stream", checkRdfStream(memberRes, 1L, 0L, 0L, 4L, 0L));
+        assertAll("Check RDF stream", checkRdfStream(memberRes, 1L, 0L, 0L, 0L, 4L, 0L));
         assertEquals(4L, memberRes.stream(singleton(LDP.PreferMembership)).map(Quad::getPredicate)
                 .filter(isEqual(DC.subject)).count(), "Incorrect triple count!");
 
@@ -280,14 +280,14 @@ class TriplestoreResourceTest {
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.IndirectContainer, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res, member, DC.relation, null, DC.subject));
-        assertAll("Check RDF stream", checkRdfStream(res, 3L, 0L, 0L, 0L, 4L));
+        assertAll("Check RDF stream", checkRdfStream(res, 3L, 0L, 0L, 0L, 0L, 4L));
 
         final TriplestoreResource res2 = new TriplestoreResource(rdfConnection, member, false);
         res2.fetchData();
         assertTrue(res2.exists(), "Missing resource (2)!");
         assertAll("Check resource", checkResource(res2, member, LDP.RDFSource, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res2, null, null, null, null));
-        assertAll("Check RDF stream", checkRdfStream(res2, 2L, 0L, 0L, 4L, 0L));
+        assertAll("Check RDF stream", checkRdfStream(res2, 2L, 0L, 0L, 0L, 4L, 0L));
         assertEquals(4L, res2.stream(singleton(LDP.PreferMembership)).map(Quad::getPredicate)
                 .filter(isEqual(DC.relation)).count(), "Incorrect triple count!");
 
@@ -344,9 +344,11 @@ class TriplestoreResourceTest {
     }
 
     private static Stream<Executable> checkRdfStream(final Resource res, final long userManaged,
-            final long acl, final long audit, final long membership, final long containment) {
-        final long total = userManaged + acl + audit + membership + containment;
+            final long serverManaged, final long acl, final long audit, final long membership, final long containment) {
+        final long total = userManaged + acl + audit + membership + containment + serverManaged;
         return Stream.of(
+                () -> assertEquals(serverManaged, res.stream(singleton(Trellis.PreferServerManaged)).count(),
+                                   "Incorrect server managed triple count!"),
                 () -> assertEquals(userManaged, res.stream(singleton(Trellis.PreferUserManaged)).count(),
                                    "Incorrect user managed triple count!"),
                 () -> assertEquals(acl, res.stream(singleton(Trellis.PreferAccessControl)).count(),

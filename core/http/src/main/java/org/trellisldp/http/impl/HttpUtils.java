@@ -129,6 +129,7 @@ public final class HttpUtils {
             }
             if (prefer.getOmit().contains(LDP.PreferMinimalContainer.getIRIString())) {
                 include.remove(Trellis.PreferUserManaged);
+                include.remove(Trellis.PreferServerManaged);
             }
             prefer.getOmit().stream().map(rdf::createIRI).forEach(include::remove);
             prefer.getInclude().stream().map(rdf::createIRI)
