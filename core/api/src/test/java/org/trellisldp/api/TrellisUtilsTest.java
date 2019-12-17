@@ -86,6 +86,15 @@ class TrellisUtilsTest {
         assertEquals(child, TrellisUtils.normalizeIdentifier(childSlashHash));
     }
 
+    @Test
+    void testBuildTrellisIdentifier() {
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        assertEquals(identifier, TrellisUtils.buildTrellisIdentifier("/resource"));
+        assertEquals(identifier, TrellisUtils.buildTrellisIdentifier("/resource/"));
+        assertEquals(identifier, TrellisUtils.buildTrellisIdentifier("resource"));
+        assertEquals(identifier, TrellisUtils.buildTrellisIdentifier("resource/"));
+    }
+
     private IRI getIRI() {
         return rdf.createIRI("ex:" + generator.generate(5));
     }

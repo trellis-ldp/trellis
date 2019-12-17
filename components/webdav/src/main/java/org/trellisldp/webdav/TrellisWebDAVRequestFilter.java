@@ -23,8 +23,7 @@ import static javax.ws.rs.core.Response.status;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.buildTrellisIdentifier;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
@@ -44,7 +43,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.RDF;
 import org.eclipse.microprofile.config.Config;
 import org.trellisldp.api.Resource;
 import org.trellisldp.http.core.HttpSession;
@@ -54,8 +52,6 @@ import org.trellisldp.vocabulary.LDP;
 @Provider
 @PreMatching
 public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
-
-    private static final RDF rdf = getInstance();
 
     private final ServiceBundler services;
     private final boolean createUncontained;
@@ -103,7 +99,7 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(final ContainerRequestContext ctx) {
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + ctx.getUriInfo().getPath());
+        final IRI identifier = buildTrellisIdentifier(ctx.getUriInfo().getPath());
         if (PUT.equals(ctx.getMethod()) && createUncontained) {
             final Resource res = services.getResourceService().get(identifier).toCompletableFuture().join();
             final List<PathSegment> segments = ctx.getUriInfo().getPathSegments();
