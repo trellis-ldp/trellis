@@ -26,8 +26,7 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
+import static org.trellisldp.api.TrellisUtils.buildTrellisIdentifier;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 
@@ -47,7 +46,6 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.api.RDF;
 import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 import org.trellisldp.api.Session;
@@ -104,7 +102,6 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     public static final String CONFIG_WEBAC_SCOPE = "trellis.webac.scope";
 
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
-    private static final RDF rdf = getInstance();
     private static final Set<String> readable = new HashSet<>(asList("GET", "HEAD", "OPTIONS"));
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
     private static final Set<String> appendable = new HashSet<>(singletonList("POST"));
@@ -262,13 +259,5 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             throw new ForbiddenException();
         }
         LOGGER.debug("User: {} can read {}", session.getAgent(), path);
-    }
-
-    static IRI buildTrellisIdentifier(final String path) {
-        final String normalized = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
-        if (normalized.startsWith("/")) {
-            return rdf.createIRI(TRELLIS_DATA_PREFIX + normalized.substring(1));
-        }
-        return rdf.createIRI(TRELLIS_DATA_PREFIX + normalized);
     }
 }
