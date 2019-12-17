@@ -21,6 +21,8 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.security.Principal;
 import java.util.HashSet;
@@ -39,6 +41,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +58,7 @@ import org.trellisldp.vocabulary.Trellis;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WebAcFilterTest {
 
+    private static final RDF rdf = getInstance();
     private static final Set<IRI> allModes = new HashSet<>();
 
     static {
@@ -413,6 +417,15 @@ class WebAcFilterTest {
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
         assertTrue(headers.isEmpty());
+    }
+
+    @Test
+    void testBuildTrellisIdentifier() {
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        assertEquals(identifier, WebAcFilter.buildTrellisIdentifier("/resource"));
+        assertEquals(identifier, WebAcFilter.buildTrellisIdentifier("/resource/"));
+        assertEquals(identifier, WebAcFilter.buildTrellisIdentifier("resource"));
+        assertEquals(identifier, WebAcFilter.buildTrellisIdentifier("resource/"));
     }
 
     @Test
