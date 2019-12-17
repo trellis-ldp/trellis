@@ -47,6 +47,7 @@ public final class TrellisUtils {
 
     private static final RDF rdf = findFirst(RDF.class)
                     .orElseThrow(() -> new RuntimeTrellisException("No RDF Commons implementation available!"));
+    private static final String SLASH = "/";
 
     /**
      * The internal trellis scheme.
@@ -106,14 +107,27 @@ public final class TrellisUtils {
         final String iri = identifier.getIRIString();
         if (iri.contains("#")) {
             final String normalized = iri.split("#")[0];
-            if (normalized.endsWith("/")) {
+            if (normalized.endsWith(SLASH)) {
                 return rdf.createIRI(normalized.substring(0, normalized.length() - 1));
             }
             return rdf.createIRI(normalized);
-        } else if (iri.endsWith("/") && !TRELLIS_DATA_PREFIX.equals(iri)) {
+        } else if (iri.endsWith(SLASH) && !TRELLIS_DATA_PREFIX.equals(iri)) {
             return rdf.createIRI(iri.substring(0, iri.length() - 1));
         }
         return identifier;
+    }
+
+    /**
+     * Build a Trellis identifier from a path string.
+     * @param path the resource path
+     * @return the trellis identifier
+     */
+    public static IRI buildTrellisIdentifier(final String path) {
+        final String normalized = path.endsWith(SLASH) ? path.substring(0, path.length() - 1) : path;
+        if (normalized.startsWith(SLASH)) {
+            return rdf.createIRI(TRELLIS_DATA_PREFIX + normalized.substring(1));
+        }
+        return rdf.createIRI(TRELLIS_DATA_PREFIX + normalized);
     }
 
     /**
