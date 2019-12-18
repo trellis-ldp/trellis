@@ -113,4 +113,6 @@ jobs:
           local_dir: docs/apidocs/$(./gradlew -q getVersion)
           upload-dir: docs/trellis/$(./gradlew -q getVersion)/apidocs
           default_text_charset: 'utf-8'
+          on:
+              all_branches: true
 
