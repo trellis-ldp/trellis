@@ -85,6 +85,7 @@ rootProject.childProjects.each { n, p ->
     }
 }
 
+buildNative.enabled = false
 quarkusDev {
     doFirst {
         project.buildscript.repositories.gradlePluginPortal()
