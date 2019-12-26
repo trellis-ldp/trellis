@@ -100,7 +100,10 @@ allprojects { subproj ->
             exclude group: 'com.google.code.findbugs', module: 'jsr305'
         }
         resolutionStrategy {
+            // use version 0.13 until Jena releases 3.14
             force "org.apache.thrift:libthrift:$thriftVersion"
+            // use version 1.25 until jackson-dataformat-yaml updates dependency
+            force "org.yaml:snakeyaml:$snakeyamlVersion"
         }
         resolutionStrategy.dependencySubstitution {
             substitute module("org.apache.geronimo.specs:geronimo-annotation_1.2_spec") with module ("jakarta.annotation:jakarta.annotation-api:$annotationApiVersion")
