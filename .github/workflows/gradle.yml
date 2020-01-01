@@ -1,18 +1,31 @@
-name: Java CI
+name: Trellis CI
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+      - trellis-[0-9]+.[0-9]+.x
+    tags:
+      - trellis-[0-9]+.[0-9]+.[0-9]+
+  pull_requests:
+    branches:
+      - master
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [8, 11]
 
+    name: Java ${{ matrix.java }} environment
     steps:
     - uses: actions/checkout@v1
-    - name: Set up JDK 1.8
+    - name: Set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v1
       with:
-        java-version: 1.8
+        java-version: ${{ matrix.java }}
 
     - name: Cache
       uses: actions/cache@v1.0.3
@@ -23,4 +36,5 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Build with Gradle
-      run: ./gradlew check assemble
+      run: ./gradlew check assemble javadoc -x pmdMain -x spotbugsMain || ./gradlew check assemble javadoc -x pmdMain -x spotbugsMain
+
