@@ -184,7 +184,8 @@ public class PatchHandler extends MutatingLdpHandler {
     @Override
     protected String getIdentifier() {
         final boolean isContainer = getResource() != null && HttpUtils.isContainer(getResource().getInteractionModel());
-        return super.getIdentifier() + (isContainer ? "/" : "")
+        final String iri = super.getIdentifier();
+        return iri + (isContainer && !iri.endsWith("/") ? "/" : "")
             + (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : "");
     }
 
