@@ -205,6 +205,27 @@ class PatchHandlerTest extends BaseTestHandler {
         }
     }
 
+    @Test
+    void testRootResource() {
+        when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
+        when(mockTrellisRequest.getPath()).thenReturn("");
+        when(mockTrellisRequest.getBaseUrl()).thenReturn("http://localhost/");
+
+        final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,
+                false, null, null);
+        try (final Response res = patchHandler.updateResource(patchHandler.initialize(MISSING_RESOURCE, mockParent))
+                .toCompletableFuture().join().build()) {
+            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
+
+            final ArgumentCaptor<Event> event = ArgumentCaptor.forClass(Event.class);
+            verify(mockEventService).emit(event.capture());
+            assertEquals(Optional.of("http://localhost/"),
+                    event.getValue().getObject().map(IRI::getIRIString));
+            verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE),
+                    eq("http://localhost/"));
+            verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));
+        }
+    }
 
     @Test
     void testPreferRepresentation() {

@@ -282,5 +282,7 @@ class BaseTestHandler {
         when(mockParent.getInteractionModel()).thenReturn(LDP.Container);
         when(mockParent.getIdentifier()).thenReturn(root);
         when(mockParent.getMembershipResource()).thenReturn(empty());
+        when(mockParent.getModified()).thenReturn(time);
+        doCallRealMethod().when(mockParent).getRevision();
     }
 }

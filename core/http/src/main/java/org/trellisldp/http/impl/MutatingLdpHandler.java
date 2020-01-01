@@ -320,9 +320,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * Convert an internal identifier to an external identifier, suitable for notifications.
      */
     private String getUrl(final IRI identifier, final IRI interactionModel) {
-        final String url = getServices().getResourceService().toExternal(identifier, getBaseUrl()).getIRIString()
-                + (HttpUtils.isContainer(interactionModel) ? "/" : "");
+        final String url = getServices().getResourceService().toExternal(identifier, getBaseUrl()).getIRIString();
+        final String modifiedUrl = url + (!url.endsWith("/") && HttpUtils.isContainer(interactionModel) ? "/" : "");
         final String ext = getRequest().getExt();
-        return ext != null ? url + "?ext=" + ext : url;
+        return ext != null ? modifiedUrl + "?ext=" + ext : modifiedUrl;
     }
 }
