@@ -7,7 +7,7 @@ on:
       - trellis-[0-9]+.[0-9]+.x
     tags:
       - trellis-[0-9]+.[0-9]+.[0-9]+
-  pull_requests:
+  pull_request:
     branches:
       - master
 
