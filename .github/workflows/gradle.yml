@@ -58,4 +58,6 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Build with Gradle
-      run: ./buildtools/src/main/resources/docker/publishToGitHub.sh
+      run:
+        - docker login docker.pkg.github.com -u ${{ GITHUB_ACTOR }} -p ${{ secrets.GITHUB_TOKEN }}
+        - ./buildtools/src/main/resources/docker/publishToGitHub.sh
