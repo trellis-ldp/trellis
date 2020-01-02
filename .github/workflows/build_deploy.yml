@@ -96,5 +96,5 @@ jobs:
 
     - name: Publish Docker Container
       run: |
-        docker login docker.pkg.github.com -u acoburn -p "${{ secrets.GITHUB_TOKEN }}"
+        docker login docker.pkg.github.com -u $GITHUB_ACTOR -p "${{ secrets.GITHUB_TOKEN }}"
         ./buildtools/src/main/resources/docker/publishToGitHub.sh
