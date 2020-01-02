@@ -17,8 +17,10 @@ fi
 # Don't use latest/develop tags for maintenance branches
 if [[ $BRANCH == *.x ]]; then
     docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$VERSION" .
+    docker push "$IMAGE:$VERSION"
 else
     docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$TAG" -t "$IMAGE:$VERSION" .
+    docker push "$IMAGE:$TAG"
+    docker push "$IMAGE:$VERSION"
 fi
 
-docker push $IMAGE
