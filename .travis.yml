@@ -61,20 +61,20 @@ jobs:
       script: travis_retry ./gradlew check install -x pmdMain -x spotbugsMain
 
     # JDK 8 (OSGi)
-    - name: "Java 8 (OSGi)"
-      stage: test
-      jdk: openjdk8
-      env: JOB=osgi
-      script: ./gradlew -p platform/osgi -x pmdMain -x spotbugsMain check -Posgi
+    #- name: "Java 8 (OSGi)"
+      #stage: test
+      #jdk: openjdk8
+      #env: JOB=osgi
+      #script: ./gradlew -p platform/osgi -x pmdMain -x spotbugsMain check -Posgi
 
     # JDK 11 (modules)
-    - name: "Java 11 (modules)"
-      stage: test
-      jdk: openjdk11
-      dist: xenial
-      env: JOB=jpms
-      install: ./gradlew assemble -Pjpms
-      script: travis_retry ./gradlew check install -x pmdMain -x spotbugsMain -Pjpms
+    #- name: "Java 11 (modules)"
+      #stage: test
+      #jdk: openjdk11
+      #dist: xenial
+      #env: JOB=jpms
+      #install: ./gradlew assemble -Pjpms
+      #script: travis_retry ./gradlew check install -x pmdMain -x spotbugsMain -Pjpms
 
     # deploy JDK 8 builds to Sonatype
     - name: "Publish to Sonatype"
