@@ -96,5 +96,5 @@ jobs:
 
     - name: Publish Docker Container
       run: |
-        echo "${{ secrets.GITHUB_TOKEN }}" | login docker.pkg.github.com -u $GITHUB_ACTOR --password-stdin
+        docker login docker.pkg.github.com -u $GITHUB_ACTOR -p "${{ secrets.GITHUB_TOKEN }}"
         ./buildtools/src/main/resources/docker/publishToGitHub.sh
