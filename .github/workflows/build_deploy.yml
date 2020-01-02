@@ -5,8 +5,6 @@ on:
     branches:
       - master
       - trellis-[0-9]+.[0-9]+.x
-    tags:
-      - trellis-[0-9]+.[0-9]+.[0-9]+
 
 jobs:
   build:
@@ -43,6 +41,7 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 8
+
     - name: Cache
       uses: actions/cache@v1.0.3
       with:
@@ -63,6 +62,7 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
+
     - name: Cache
       uses: actions/cache@v1.0.3
       with:
@@ -73,29 +73,4 @@ jobs:
 
     - name: Build with Gradle
       run: ./gradlew check install -x pmdMain -x spotbugsMain -Pjpms || ./gradlew check install -x pmdMain -x spotbugsMain -Pjpms
-
-  docker:
-    needs: [build]
-    runs-on: ubuntu-latest
-
-    name: Deploy docker container
-    steps:
-    - uses: actions/checkout@v1
-    - name: Set up JDK 8
-      uses: actions/setup-java@v1
-      with:
-        java-version: 8
-
-    - name: Cache
-      uses: actions/cache@v1.0.3
-      with:
-        path: ~/.gradle/caches
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-
-    - name: Publish Docker Container
-      run: |
-        docker login docker.pkg.github.com -u $GITHUB_ACTOR -p "${{ secrets.GITHUB_TOKEN }}"
-        ./buildtools/src/main/resources/docker/publishToGitHub.sh
 
