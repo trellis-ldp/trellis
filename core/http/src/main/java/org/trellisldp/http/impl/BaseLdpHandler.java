@@ -19,7 +19,7 @@ import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
 import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
@@ -178,7 +178,7 @@ class BaseLdpHandler {
      * @return an etag
      */
     protected EntityTag generateEtag(final Resource res, final boolean weakEtag) {
-        return new EntityTag(md5Hex(res.getRevision()), weakEtag);
+        return new EntityTag(sha256Hex(res.getRevision()), weakEtag);
     }
 
     private static String getRequestBaseUrl(final TrellisRequest req, final String baseUrl) {
