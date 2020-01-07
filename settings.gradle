@@ -1,3 +1,7 @@
+plugins {
+    id "com.gradle.enterprise" version "$scanVersion"
+}
+
 rootProject.name = 'trellis'
 
 include ':trellis-api'
