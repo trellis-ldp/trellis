@@ -319,6 +319,10 @@ subprojects { subproj ->
                 pom.withXml {
                     // eliminate test-scoped dependencies
                     asNode().dependencies.removeAll { dep -> dep.scope == "test" }
+                    // use provided scope for JavaEE dependencies
+                    asNode().dependencies.each {
+                        deps -> deps.findAll { dep -> dep.groupId[0].text().startsWith("jakarta.") }
+                                    .each { dep -> dep.scope[0].value = "provided" } }
                 }
 
                 from components.java
