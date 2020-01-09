@@ -469,6 +469,7 @@ configure(rootProject) {
             property "sonar.links.homepage", "https://www.trellisldp.org"
             property "sonar.links.issue", "https://github.com/trellis-ldp/trellis/issues"
             property "sonar.links.scm_dev", "scm:git:git@github.com:trellis-ldp/trellis.git"
+            property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
         }
     }
 
