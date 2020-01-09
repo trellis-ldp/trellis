@@ -102,7 +102,7 @@ jobs:
       stage: deploy
       jdk: openjdk8
       env: JOB=aws
-      if: (branch = master OR branch =~ /^trellis-\d+\.\d+\.\d+$/) AND type = push
+      if: branch =~ /^trellis-\d+\.\d+\.\d+$/ AND type = push
       script: ./gradlew apidocs
       deploy:
           provider: s3
