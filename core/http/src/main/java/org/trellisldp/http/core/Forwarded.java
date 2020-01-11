@@ -41,38 +41,39 @@ public class Forwarded {
     public static final String HTTP = "http";
     public static final String HTTPS = "https";
 
-    private final String by;
+    private final String forwardedBy;
     private final String forwardedFor;
-    private final String host;
-    private final String proto;
+    private final String forwardedHost;
+    private final String forwardedProto;
     private final String hostname;
     private final String port;
 
     /**
      * Create a Forwarded object.
-     * @param by the interface where the request came in to the proxy server
+     * @param forwardedBy the interface where the request came in to the proxy server
      * @param forwardedFor the client that initiated the request
-     * @param host the host request header field, as received by the proxy
-     * @param proto the protocol used to make the request
+     * @param forwardedHost the host request header field, as received by the proxy
+     * @param forwardedProto the protocol used to make the request
      */
-    public Forwarded(final String by, final String forwardedFor, final String host, final String proto) {
-        this.by = by;
+    public Forwarded(final String forwardedBy, final String forwardedFor, final String forwardedHost,
+            final String forwardedProto) {
+        this.forwardedBy = forwardedBy;
         this.forwardedFor = forwardedFor;
-        this.host = host;
-        this.proto = checkProto(proto);
-        if (host != null) {
-            final String[] parts = host.split(":", 2);
+        this.forwardedHost = forwardedHost;
+        this.forwardedProto = checkProto(forwardedProto);
+        if (forwardedHost != null) {
+            final String[] parts = forwardedHost.split(":", 2);
             this.hostname = parts[0];
             this.port = parts.length == 2 && !parts[1].isEmpty() ? parts[1] : "-1";
         } else {
-            this.hostname = host;
-            this.port = host;
+            this.hostname = forwardedHost;
+            this.port = forwardedHost;
         }
     }
 
     /** @return the by parameter, if present */
     public Optional<String> getBy() {
-        return ofNullable(by);
+        return ofNullable(forwardedBy);
     }
 
     /** @return the for parameter, if present */
@@ -82,12 +83,12 @@ public class Forwarded {
 
     /** @return the host parameter, if present */
     public Optional<String> getHost() {
-        return ofNullable(host);
+        return ofNullable(forwardedHost);
     }
 
     /** @return the proto parameter, if present */
     public Optional<String> getProto() {
-        return ofNullable(proto);
+        return ofNullable(forwardedProto);
     }
 
     /** @return the port, if present */
