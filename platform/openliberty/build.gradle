@@ -6,7 +6,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'net.wasdev.wlp.gradle.plugins:liberty-gradle-plugin:2.7'
+        classpath "net.wasdev.wlp.gradle.plugins:liberty-gradle-plugin:$openLibertyVersion"
     }
 }
 
@@ -71,7 +71,7 @@ dependencies {
     testImplementation("org.hamcrest:hamcrest:$hamcrestVersion")
     testImplementation("org.mockito:mockito-core:$mockitoVersion")
 
-    libertyRuntime group:'io.openliberty', name:'openliberty-runtime', version:'[19.0.0.7,)'
+    libertyRuntime group:'io.openliberty', name:'openliberty-runtime', version:'[19.0.0.12,)'
 }
 
 liberty {
