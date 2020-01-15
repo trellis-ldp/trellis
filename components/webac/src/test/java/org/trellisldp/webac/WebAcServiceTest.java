@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.jena.JenaRDF;
@@ -739,6 +740,54 @@ class WebAcServiceTest {
                 checkCanWrite(testCacheService, resourceIRI), checkCanWrite(testCacheService, childIRI),
                 checkCannotWrite(testCacheService, parentIRI),
                 checkCannotWrite(testCacheService, rootIRI));
+    }
+
+    @Test
+    void testGenerateDefaultRootAclNonExistentResource() throws Exception {
+        final String resource = "org/trellisldp/webac/nonexistentResource.ttl";
+        final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
+        try (final Dataset dataset = WebAcService.generateDefaultRootAuthorizationsDataset(resource)) {
+            assertEquals(7L, dataset.size());
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Read));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Write));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Append));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Control));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.default_, rootIRI));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.accessTo, rootIRI));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.agentClass, FOAF.Agent));
+        }
+    }
+
+    @Test
+    void testGenerateDefaultRootAclBadResource() throws Exception {
+        final String resource = "badTurtle.ttl";
+        final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
+        try (final Dataset dataset = WebAcService.generateDefaultRootAuthorizationsDataset(resource)) {
+            assertEquals(7L, dataset.size());
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Read));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Write));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Append));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Control));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.default_, rootIRI));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.accessTo, rootIRI));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.agentClass, FOAF.Agent));
+        }
+    }
+
+    @Test
+    void testGenerateDefaultRootAclCustomResource() throws Exception {
+        final String resource = "customAcl.ttl";
+        final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
+        try (final Dataset dataset = WebAcService.generateDefaultRootAuthorizationsDataset(resource)) {
+            assertEquals(4L, dataset.size());
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Read));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.default_, rootIRI));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.accessTo, rootIRI));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.agentClass, FOAF.Agent));
+            assertFalse(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Write));
+            assertFalse(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Append));
+            assertFalse(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Control));
+        }
     }
 
     private Stream<Executable> checkAllCanRead() {

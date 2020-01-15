@@ -25,15 +25,18 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
+import static org.apache.jena.riot.Lang.TURTLE;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toGraph;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -53,9 +56,13 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
-import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
+import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RiotException;
+import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.Metadata;
@@ -84,17 +91,18 @@ public class WebAcService {
 
     /** The configuration key controlling whether to check member resources at the AuthZ enforcement point. */
     public static final String CONFIG_WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership-check";
+    /** The configuration key controlling the classpath location of the default root acl. */
+    public static final String CONFIG_WEBAC_DEFAULT_ACL_LOCATION = "trellis.webac.default-acl-location";
+    /** The default classpath location of the default root acl. */
+    public static final String DEFAULT_ACL_LOCATION = "org/trellisldp/webac/defaultAcl.ttl";
 
     private static final Logger LOGGER = getLogger(WebAcService.class);
     private static final CompletionStage<Void> DONE = CompletableFuture.completedFuture(null);
-    private static final RDF rdf = getInstance();
+    private static final JenaRDF rdf = new JenaRDF();
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     private static final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
     private static final Set<IRI> allModes = new HashSet<>();
 
-    /** The permissive Authorizations in effect when no ACL is present on the root node. */
-    private static final List<Authorization> defaultRootAuthorizations =
-        unmodifiableList(getDefaultRootAuthorizations());
 
     static {
         allModes.add(ACL.Read);
@@ -105,6 +113,8 @@ public class WebAcService {
 
     private final ResourceService resourceService;
     private final CacheService<String, Set<IRI>> cache;
+    private final String defaultAuthResourceLocation;
+    private final List<Authorization> defaultRootAuthorizations;
     private final boolean checkMembershipResources;
 
     /**
@@ -112,57 +122,6 @@ public class WebAcService {
      */
     public WebAcService() {
         this(new NoopResourceService());
-    }
-
-    private static List<Authorization> getDefaultRootAuthorizations() {
-        try (final Dataset dataset = generateDefaultRootAuthorizationsDataset()) {
-            return dataset.getGraph(Trellis.PreferAccessControl).map(graph -> Authorization.from(rootAuth, graph))
-                .map(Collections::singletonList).orElse(emptyList());
-        } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error closing dataset", ex);
-        }
-    }
-
-    private static Dataset generateDefaultRootAuthorizationsDataset() {
-        final Dataset dataset = rdf.createDataset();
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Append));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.default_, root));
-        dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
-        return dataset;
-    }
-
-    /**
-     * Initializes the root ACL, if there is no root ACL.
-     */
-    @PostConstruct
-    public void initialize() {
-        try (final Dataset dataset = generateDefaultRootAuthorizationsDataset()) {
-            this.resourceService.get(root).thenCompose(res -> initialize(res, dataset))
-                .exceptionally(err -> {
-                    LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
-                    LOGGER.debug("Error auto-initializing Trellis", err);
-                    return null;
-                }).toCompletableFuture().join();
-        } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error initializing Trellis ACL", ex);
-        }
-    }
-
-    private CompletionStage<Void> initialize(final Resource res, final Dataset dataset) {
-        if (!res.hasAcl()) {
-            LOGGER.info("Initializing root ACL: {}", res.getIdentifier());
-            try (final Stream<Quad> quads = res.stream(Trellis.PreferUserManaged)) {
-                quads.forEach(dataset::add);
-            }
-            return this.resourceService.replace(Metadata.builder(res).hasAcl(true).build(), dataset);
-        } else {
-            LOGGER.info("Root ACL is present, not initializing: {}", res.getIdentifier());
-            return DONE;
-        }
     }
 
     /**
@@ -202,8 +161,14 @@ public class WebAcService {
      * @param cache a cache
      */
     public WebAcService(final ResourceService resourceService, final CacheService<String, Set<IRI>> cache) {
-        this(resourceService, cache, getConfig()
-                .getOptionalValue(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class).orElse(Boolean.FALSE));
+        this(resourceService, cache, getConfig());
+    }
+
+    private WebAcService(final ResourceService resourceService, final CacheService<String, Set<IRI>> cache,
+            final Config config) {
+        this(resourceService, cache,
+                config.getOptionalValue(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class).orElse(Boolean.FALSE),
+                config.getOptionalValue(CONFIG_WEBAC_DEFAULT_ACL_LOCATION, String.class).orElse(DEFAULT_ACL_LOCATION));
     }
 
     /**
@@ -215,9 +180,54 @@ public class WebAcService {
      */
     public WebAcService(final ResourceService resourceService,
             final CacheService<String, Set<IRI>> cache, final boolean checkMembershipResources) {
+        this(resourceService, cache, checkMembershipResources, DEFAULT_ACL_LOCATION);
+    }
+
+    /**
+     * Create a WebAC-based authorization service.
+     *
+     * @param resourceService the resource service
+     * @param cache a cache
+     * @param checkMembershipResources whether to check membership resource permissions (default=false)
+     * @param defaultAuthResourceLocation a classpath location of a default root ACL (in Turtle)
+     */
+    public WebAcService(final ResourceService resourceService, final CacheService<String, Set<IRI>> cache,
+            final boolean checkMembershipResources, final String defaultAuthResourceLocation) {
         this.resourceService = requireNonNull(resourceService, "A non-null ResourceService must be provided!");
         this.cache = cache;
         this.checkMembershipResources = checkMembershipResources;
+        this.defaultAuthResourceLocation = requireNonNull(defaultAuthResourceLocation, "ACL location may not be null!");
+        this.defaultRootAuthorizations = unmodifiableList(getDefaultRootAuthorizations(defaultAuthResourceLocation));
+    }
+
+    /**
+     * Initializes the root ACL, if there is no root ACL.
+     */
+    @PostConstruct
+    public void initialize() {
+        try (final Dataset dataset = generateDefaultRootAuthorizationsDataset(defaultAuthResourceLocation)) {
+            this.resourceService.get(root).thenCompose(res -> initialize(res, dataset))
+                .exceptionally(err -> {
+                    LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
+                    LOGGER.debug("Error auto-initializing Trellis", err);
+                    return null;
+                }).toCompletableFuture().join();
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error initializing Trellis ACL", ex);
+        }
+    }
+
+    private CompletionStage<Void> initialize(final Resource res, final Dataset dataset) {
+        if (!res.hasAcl()) {
+            LOGGER.info("Initializing root ACL: {}", res.getIdentifier());
+            try (final Stream<Quad> quads = res.stream(Trellis.PreferUserManaged)) {
+                quads.forEach(dataset::add);
+            }
+            return this.resourceService.replace(Metadata.builder(res).hasAcl(true).build(), dataset);
+        } else {
+            LOGGER.info("Root ACL is present, not initializing: {}", res.getIdentifier());
+            return DONE;
+        }
     }
 
     /**
@@ -319,7 +329,7 @@ public class WebAcService {
                 throw new RuntimeTrellisException("Error closing graph", ex);
             }
         } else if (root.equals(resource.getIdentifier())) {
-            return WebAcService.defaultRootAuthorizations.stream();
+            return defaultRootAuthorizations.stream();
         }
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());
@@ -370,4 +380,44 @@ public class WebAcService {
     @java.lang.annotation.Target({TYPE, METHOD, FIELD, PARAMETER})
     @javax.inject.Qualifier
     public @interface TrellisAuthorizationCache { }
+
+
+    static List<Authorization> getDefaultRootAuthorizations(final String resource) {
+        try (final Dataset dataset = generateDefaultRootAuthorizationsDataset(resource)) {
+            return dataset.getGraph(Trellis.PreferAccessControl).map(graph -> Authorization.from(rootAuth, graph))
+                .map(Collections::singletonList).orElse(emptyList());
+        } catch (final Exception ex) {
+            throw new RuntimeTrellisException("Error closing dataset", ex);
+        }
+    }
+
+    static Dataset generateDefaultRootAuthorizationsDataset(final String resource) {
+        final Dataset dataset = rdf.createDataset();
+        final Model model = createDefaultModel();
+        try (final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
+            if (is != null) {
+                RDFParser.source(is).lang(TURTLE).base(TRELLIS_DATA_PREFIX).parse(model);
+                rdf.asGraph(model).stream().map(triple -> rdf.createQuad(Trellis.PreferAccessControl,
+                            triple.getSubject(), triple.getPredicate(), triple.getObject())).forEach(dataset::add);
+            } else {
+                LOGGER.warn("Could not locate ACL location at {}, falling back to system default", resource);
+            }
+        } catch (final IOException | RiotException ex) {
+            LOGGER.warn("Could initialize root ACL with {}, falling back to default: {}", resource, ex.getMessage());
+        } finally {
+            model.close();
+        }
+
+        // Fallback to manual creation
+        if (dataset.size() == 0) {
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Read));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Write));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Control));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.mode, ACL.Append));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.agentClass, FOAF.Agent));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.default_, root));
+            dataset.add(rdf.createQuad(Trellis.PreferAccessControl, rootAuth, ACL.accessTo, root));
+        }
+        return dataset;
+    }
 }
