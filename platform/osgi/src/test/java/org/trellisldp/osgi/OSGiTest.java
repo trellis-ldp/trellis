@@ -88,6 +88,8 @@ public class OSGiTest {
                         .type("xml").classifier("features").versionAsInProject(),
                         "trellis-io-jena"),
 
+            editConfigurationFilePut("etc/org.ops4j.pax.url.mvn.cfg", "org.ops4j.pax.url.mvn.repositories",
+                    "https://repo1.maven.org/maven2@id=central"),
             editConfigurationFilePut("etc/org.apache.karaf.management.cfg", "rmiRegistryPort", rmiRegistryPort),
             editConfigurationFilePut("etc/org.apache.karaf.management.cfg", "rmiServerPort", rmiServerPort),
             editConfigurationFilePut("etc/org.apache.karaf.shell.cfg", "sshPort", sshPort)
