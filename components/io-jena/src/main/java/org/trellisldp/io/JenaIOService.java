@@ -37,9 +37,7 @@ import static org.apache.jena.update.UpdateFactory.create;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
-import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
-import static org.trellisldp.vocabulary.JSONLD.expanded_flattened;
 import static org.trellisldp.vocabulary.JSONLD.flattened;
 import static org.trellisldp.vocabulary.JSONLD.getNamespace;
 
@@ -107,9 +105,7 @@ public class JenaIOService implements IOService {
     private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(Stream.of(
                 new SimpleEntry<>(compacted, JSONLD_COMPACT_FLAT),
                 new SimpleEntry<>(flattened, JSONLD_FLATTEN_FLAT),
-                new SimpleEntry<>(expanded, JSONLD_EXPAND_FLAT),
-                new SimpleEntry<>(compacted_flattened, JSONLD_FLATTEN_FLAT),
-                new SimpleEntry<>(expanded_flattened, JSONLD_FLATTEN_FLAT))
+                new SimpleEntry<>(expanded, JSONLD_EXPAND_FLAT))
             .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
 
     private final NamespaceService nsService;
@@ -361,26 +357,16 @@ public class JenaIOService implements IOService {
     }
 
     static IRI mergeProfiles(final IRI... profiles) {
-        boolean isExpanded = false;
-        boolean isFlattened = false;
-
         for (final IRI uri : profiles) {
-            if (compacted_flattened.equals(uri) || expanded_flattened.equals(uri)) {
-                return uri;
-            }
-
             if (flattened.equals(uri)) {
-                isFlattened = true;
+                return flattened;
             } else if (compacted.equals(uri)) {
-                isExpanded = false;
+                return compacted;
             } else if (expanded.equals(uri)) {
-                isExpanded = true;
+                return expanded;
             }
         }
-        if (isFlattened) {
-            return isExpanded ? expanded_flattened : compacted_flattened;
-        }
-        return isExpanded ? expanded : compacted;
+        return compacted;
     }
 
     static RDFFormat getJsonLdProfile(final IRI... profiles) {

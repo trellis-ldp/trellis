@@ -38,9 +38,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Syntax.LD_PATCH;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
-import static org.trellisldp.vocabulary.JSONLD.compacted_flattened;
 import static org.trellisldp.vocabulary.JSONLD.expanded;
-import static org.trellisldp.vocabulary.JSONLD.expanded_flattened;
 import static org.trellisldp.vocabulary.JSONLD.flattened;
 
 import java.io.ByteArrayInputStream;
@@ -150,6 +148,16 @@ class JenaIOServiceTest {
     void testJsonLdExpandedFlatSerializer() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, JSONLD, expanded, flattened);
+        final String output = out.toString("UTF-8");
+        final Graph graph = rdf.createGraph();
+        service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
+        assertAll("Check expanded serialization", checkExpandedSerialization(output, graph));
+    }
+
+    @Test
+    void testJsonLdFlatExpandedSerializer() throws UnsupportedEncodingException {
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        service.write(getTriples(), out, JSONLD, flattened, expanded);
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
@@ -266,7 +274,7 @@ class JenaIOServiceTest {
     @Test
     void testJsonLdFlattenedSerializer2() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getTriples(), out, JSONLD, compacted_flattened);
+        service.write(getTriples(), out, JSONLD, flattened, compacted);
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
@@ -276,7 +284,7 @@ class JenaIOServiceTest {
     @Test
     void testJsonLdFlattenedSerializer3() throws UnsupportedEncodingException {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getTriples(), out, JSONLD, expanded_flattened);
+        service.write(getTriples(), out, JSONLD, flattened, expanded);
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
@@ -290,7 +298,7 @@ class JenaIOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll("Check flattened serialization", checkFlattenedSerialization(output, graph));
+        assertAll("Check flattened serialization", checkCompactSerialization(output, graph));
     }
 
     @Test
