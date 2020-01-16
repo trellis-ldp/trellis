@@ -37,11 +37,13 @@ public final class RDF {
     public static final IRI Seq = createIRI(getNamespace() + "Seq");
     public static final IRI Alt = createIRI(getNamespace() + "Alt");
     public static final IRI List = createIRI(getNamespace() + "List");
+    public static final IRI CompoundLiteral = createIRI(getNamespace() + "CompoundLiteral");
 
     /* Datatypes */
     public static final IRI XMLLiteral = createIRI(getNamespace() + "XMLLiteral");
     public static final IRI HTML = createIRI(getNamespace() + "HTML");
     public static final IRI langString = createIRI(getNamespace() + "langString");
+    public static final IRI JSON = createIRI(getNamespace() + "JSON");
 
     /* List */
     public static final IRI nil = createIRI(getNamespace() + "nil");
@@ -54,6 +56,8 @@ public final class RDF {
     public static final IRI value = createIRI(getNamespace() + "value");
     public static final IRI first = createIRI(getNamespace() + "first");
     public static final IRI rest = createIRI(getNamespace() + "rest");
+    public static final IRI language = createIRI(getNamespace() + "language");
+    public static final IRI direction = createIRI(getNamespace() + "direction");
 
     /**
      * get the namespace.

@@ -20,11 +20,6 @@ package org.trellisldp.vocabulary;
 class JSONLDTest extends AbstractVocabularyTest {
 
     @Override
-    boolean isStrict() {
-        return false;
-    }
-
-    @Override
     String namespace() {
         return "http://www.w3.org/ns/json-ld#";
     }

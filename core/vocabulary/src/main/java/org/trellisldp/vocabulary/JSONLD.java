@@ -29,15 +29,17 @@ public final class JSONLD {
     /* Namespace */
     private static final String URI = "http://www.w3.org/ns/json-ld#";
 
-    /* Profiles */
+    /* Properties */
     public static final IRI context = createIRI(getNamespace() + "context");
+    public static final IRI id = createIRI(getNamespace() + "id");
+    public static final IRI type = createIRI(getNamespace() + "type");
 
-    /* Extra definitions */
+    /* Named Individuals */
     public static final IRI compacted = createIRI(getNamespace() + "compacted");
-    public static final IRI compacted_flattened = createIRI(getNamespace() + "compacted-flattened");
     public static final IRI expanded = createIRI(getNamespace() + "expanded");
-    public static final IRI expanded_flattened = createIRI(getNamespace() + "expanded-flattened");
     public static final IRI flattened = createIRI(getNamespace() + "flattened");
+    public static final IRI frame = createIRI(getNamespace() + "frame");
+    public static final IRI framed = createIRI(getNamespace() + "framed");
 
     /**
      * get the namespace.
