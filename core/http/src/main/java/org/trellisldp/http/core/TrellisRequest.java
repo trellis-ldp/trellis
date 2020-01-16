@@ -20,6 +20,7 @@ import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.RANGE;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 
+import java.net.URI;
 import java.util.List;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -28,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 /**
@@ -72,7 +74,7 @@ public class TrellisRequest {
 
         // Extract URI values
         this.parameters = uriInfo.getQueryParameters();
-        this.baseUrl = uriInfo.getBaseUri().toString();
+        this.baseUrl = buildBaseUrl(uriInfo.getBaseUri(), this.headers);
         this.path = uriInfo.getPathParameters().getFirst("path");
         this.trailingSlash = uriInfo.getPath().endsWith("/");
 
@@ -229,5 +231,26 @@ public class TrellisRequest {
      */
     public List<MediaType> getAcceptableMediaTypes() {
         return acceptableMediaTypes;
+    }
+
+    static String buildBaseUrl(final URI uri, final MultivaluedMap<String, String> headers) {
+        // Start with the baseURI from the request
+        final UriBuilder builder = UriBuilder.fromUri(uri);
+
+        // Adjust the protocol, using the non-spec X-Forwarded-* header, if present
+        final Forwarded nonSpec = new Forwarded(null, headers.getFirst("X-Forwarded-For"),
+                headers.getFirst("X-Forwarded-Host"), headers.getFirst("X-Forwarded-Proto"));
+        nonSpec.getHostname().ifPresent(builder::host);
+        nonSpec.getPort().ifPresent(builder::port);
+        nonSpec.getProto().ifPresent(builder::scheme);
+
+        // The standard Forwarded header overrides these values
+        final Forwarded forwarded = Forwarded.valueOf(headers.getFirst("Forwarded"));
+        if (forwarded != null) {
+            forwarded.getHostname().ifPresent(builder::host);
+            forwarded.getPort().ifPresent(builder::port);
+            forwarded.getProto().ifPresent(builder::scheme);
+        }
+        return builder.build().toString();
     }
 }
