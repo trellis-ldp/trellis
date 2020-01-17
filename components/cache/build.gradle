@@ -1,5 +1,6 @@
 apply plugin: 'java-library'
 apply plugin: 'biz.aQute.bnd.builder'
+apply plugin: 'info.solidsoft.pitest'
 
 description = "Trellis Cache Implementation"
 
@@ -12,5 +13,11 @@ dependencies {
     api "com.google.guava:guava:$guavaVersion"
 
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+}
+
+pitest {
+    testPlugin = 'junit5'
+    pitestVersion = pitestToolVersion
+    threads = 4
 }
 

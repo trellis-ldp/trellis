@@ -1,5 +1,6 @@
 apply plugin: 'java-library'
 apply plugin: 'biz.aQute.bnd.builder'
+apply plugin: 'info.solidsoft.pitest'
 
 description = 'Trellis WebAC'
 
@@ -32,4 +33,10 @@ dependencies {
     testImplementation "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation project(':trellis-triplestore')
+}
+
+pitest {
+    testPlugin = 'junit5'
+    pitestVersion = pitestToolVersion
+    threads = 4
 }
