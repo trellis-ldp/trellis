@@ -30,7 +30,6 @@ import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import java.net.URI;
 import java.util.stream.Stream;
 
-import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -42,8 +41,6 @@ import org.apache.commons.rdf.api.Dataset;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.ResourceService;
@@ -56,9 +53,6 @@ import org.trellisldp.http.core.TrellisRequest;
 class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
 
     @Mock
-    private AsyncResponse mockResponse;
-
-    @Mock
     private TrellisRequest mockTrellisRequest;
 
     @Mock
@@ -69,9 +63,6 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
 
     @Mock
     private UriInfo mockUriInfo;
-
-    @Captor
-    private ArgumentCaptor<Response> captor;
 
     @Override
     String getBaseUrl() {
