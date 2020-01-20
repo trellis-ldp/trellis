@@ -110,8 +110,6 @@ allprojects { subproj ->
             exclude group: 'com.google.code.findbugs', module: 'jsr305'
         }
         resolutionStrategy {
-            // use version 0.13 until Jena releases 3.14
-            force "org.apache.thrift:libthrift:$thriftVersion"
             // use version 1.25 until jackson-dataformat-yaml updates dependency
             force "org.yaml:snakeyaml:$snakeyamlVersion"
         }
