@@ -1,4 +1,6 @@
-apply plugin: 'io.quarkus'
+plugins {
+    id 'io.quarkus'
+}
 
 def installForQuarkus = [
     "trellis-api",
@@ -86,12 +88,6 @@ rootProject.childProjects.each { n, p ->
 }
 
 buildNative.enabled = false
-quarkusDev {
-    doFirst {
-        project.buildscript.repositories.gradlePluginPortal()
-        project.buildscript.dependencies.add('classpath', "io.quarkus:io.quarkus.gradle.plugin:$quarkusVersion")
-    }
-}
 
 java {
     // because this isn't built as a JPMS module
