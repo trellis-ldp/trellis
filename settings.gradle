@@ -4,12 +4,12 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        id 'io.quarkus' version "$quarkusVersion"
+        id 'io.quarkus' version "1.2.0.Final"
     }
 }
 
 plugins {
-    id "com.gradle.enterprise" version "$scanVersion"
+    id "com.gradle.enterprise" version "3.1.1"
 }
 
 rootProject.name = 'trellis'
