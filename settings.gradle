@@ -1,3 +1,13 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    plugins {
+        id 'io.quarkus' version "$quarkusVersion"
+    }
+}
+
 plugins {
     id "com.gradle.enterprise" version "$scanVersion"
 }
