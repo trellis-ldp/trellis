@@ -20,7 +20,6 @@ plugins {
     id 'biz.aQute.bnd.builder' version "$bndVersion" apply false
     id 'com.palantir.docker' version "$dockerVersion" apply false
     id 'nebula.ospackage' version "$nebulaVersion" apply false
-    id 'io.quarkus' version "$quarkusVersion" apply false
 }
 
 ext {
