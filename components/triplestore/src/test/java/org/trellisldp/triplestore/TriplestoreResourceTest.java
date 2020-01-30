@@ -23,29 +23,31 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
 import static java.util.function.Predicate.isEqual;
+import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.query.DatasetFactory.create;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.triplestore.TriplestoreUtils.getInstance;
+import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
-import org.apache.commons.rdf.jena.JenaDataset;
-import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.AuditService;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.Session;
 import org.trellisldp.audit.DefaultAuditService;
@@ -53,7 +55,6 @@ import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.RDF;
 import org.trellisldp.vocabulary.SKOS;
 import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.XSD;
@@ -63,7 +64,7 @@ import org.trellisldp.vocabulary.XSD;
  */
 class TriplestoreResourceTest {
 
-    private static final JenaRDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final IRI root = rdf.createIRI("trellis:");
     private static final IRI identifier = rdf.createIRI("trellis:data/resource");
     private static final IRI child1 = rdf.createIRI("trellis:data/resource/child1");
@@ -103,9 +104,9 @@ class TriplestoreResourceTest {
 
     @Test
     void testPartialResource() {
-        final JenaDataset dataset = rdf.createDataset();
+        final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferServerManaged, identifier, DC.modified, rdf.createLiteral(time, XSD.dateTime));
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
+        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
                 identifier, extensions, false);
         res.fetchData();
         assertFalse(res.exists(), "Unexpected resource!");
@@ -113,8 +114,8 @@ class TriplestoreResourceTest {
 
     @Test
     void testMinimalResource() {
-        final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
+        final Dataset dataset = buildLdpDataset(LDP.RDFSource);
+        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
                 identifier, extensions, false);
 
         res.fetchData();
@@ -126,10 +127,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithAuditQuads() {
-        final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
+        final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
+        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
                 identifier, extensions, false);
 
         res.fetchData();
@@ -141,10 +142,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithAuditQuads2() {
-        final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
+        final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
+        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
                 identifier, extensions, true);
 
         res.fetchData();
@@ -156,13 +157,13 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithAclQuads() {
-        final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
+        final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         dataset.add(aclId, aclSubject, ACL.mode, ACL.Read);
         dataset.add(aclId, aclSubject, ACL.agentClass, FOAF.Agent);
         dataset.add(aclId, aclSubject, ACL.accessTo, identifier);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
+        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
                 identifier, extensions, false);
 
         res.fetchData();
@@ -180,14 +181,14 @@ class TriplestoreResourceTest {
         ext.put("foo", fooGraph);
         ext.put("bar", barGraph);
 
-        final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
+        final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         dataset.add(fooId, identifier, DC.references, rdf.createIRI("https://example.com/Resource"));
         dataset.add(aclId, aclSubject, ACL.mode, ACL.Read);
         dataset.add(aclId, aclSubject, ACL.agentClass, FOAF.Agent);
         dataset.add(aclId, aclSubject, ACL.accessTo, identifier);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
+        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
                 identifier, ext, false);
 
         res.fetchData();
@@ -213,13 +214,13 @@ class TriplestoreResourceTest {
     void testBinaryResource() {
         final String mimeType = "image/jpeg";
         final IRI binaryIdentifier = rdf.createIRI("file:///binary");
-        final JenaDataset dataset = buildLdpDataset(LDP.NonRDFSource);
+        final Dataset dataset = buildLdpDataset(LDP.NonRDFSource);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.hasPart, binaryIdentifier);
         dataset.add(Trellis.PreferServerManaged, binaryIdentifier, DC.format, rdf.createLiteral(mimeType));
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
 
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
+        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
                 identifier, extensions, true);
 
         res.fetchData();
@@ -235,14 +236,14 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithChildren() {
-        final JenaDataset dataset = buildLdpDataset(LDP.Container);
+        final Dataset dataset = buildLdpDataset(LDP.Container);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.isPartOf, root);
         getChildIRIs().forEach(c -> {
             dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier);
-            dataset.add(Trellis.PreferServerManaged, c, RDF.type, LDP.RDFSource);
+            dataset.add(Trellis.PreferServerManaged, c, type, LDP.RDFSource);
         });
 
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
+        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
                 identifier, extensions, false);
 
         res.fetchData();
@@ -254,11 +255,11 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithoutChildren() {
-        final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
+        final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.isPartOf, root);
         getChildIRIs().forEach(c -> dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier));
 
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
+        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
                 identifier, extensions, true);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
@@ -269,7 +270,7 @@ class TriplestoreResourceTest {
 
     @Test
     void testDirectContainer() {
-        final JenaDataset dataset = buildLdpDataset(LDP.DirectContainer);
+        final Dataset dataset = buildLdpDataset(LDP.DirectContainer);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.isPartOf, root);
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.member, member);
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.membershipResource, member);
@@ -279,10 +280,10 @@ class TriplestoreResourceTest {
         dataset.add(Trellis.PreferServerManaged, member, DC.isPartOf, root);
         getChildIRIs().forEach(c -> {
             dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier);
-            dataset.add(Trellis.PreferServerManaged, c, RDF.type, LDP.RDFSource);
+            dataset.add(Trellis.PreferServerManaged, c, type, LDP.RDFSource);
         });
 
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
+        final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
         final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier, extensions, true);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
@@ -304,7 +305,7 @@ class TriplestoreResourceTest {
 
     @Test
     void testIndirectContainer() {
-        final JenaDataset dataset = buildLdpDataset(LDP.IndirectContainer);
+        final Dataset dataset = buildLdpDataset(LDP.IndirectContainer);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.isPartOf, root);
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.member, member);
         dataset.add(Trellis.PreferServerManaged, identifier, LDP.membershipResource, member);
@@ -315,11 +316,11 @@ class TriplestoreResourceTest {
         dataset.add(member, member, DC.alternative, rdf.createLiteral("A membership resource"));
         getChildIRIs().forEach(c -> {
             dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier);
-            dataset.add(Trellis.PreferServerManaged, c, RDF.type, LDP.RDFSource);
+            dataset.add(Trellis.PreferServerManaged, c, type, LDP.RDFSource);
             dataset.add(c, c, DC.subject, rdf.createIRI("http://example.org/" + randomUUID()));
         });
 
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
+        final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
         final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier, extensions, false);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
@@ -343,14 +344,14 @@ class TriplestoreResourceTest {
         return Stream.of(child1, child2, child3, child4);
     }
 
-    private static JenaDataset buildLdpDataset(final IRI ldpType) {
-        final JenaDataset dataset = rdf.createDataset();
-        dataset.add(identifier, identifier, RDF.type, SKOS.Concept);
+    private static Dataset buildLdpDataset(final IRI ldpType) {
+        final Dataset dataset = rdf.createDataset();
+        dataset.add(identifier, identifier, type, SKOS.Concept);
         dataset.add(identifier, identifier, SKOS.prefLabel, rdf.createLiteral("resource"));
         dataset.add(member, member, SKOS.prefLabel, rdf.createLiteral("member resource"));
-        dataset.add(Trellis.PreferServerManaged, identifier, RDF.type, ldpType);
+        dataset.add(Trellis.PreferServerManaged, identifier, type, ldpType);
         dataset.add(Trellis.PreferServerManaged, identifier, DC.modified, rdf.createLiteral(time, XSD.dateTime));
-        dataset.add(Trellis.PreferServerManaged, member, RDF.type, LDP.RDFSource);
+        dataset.add(Trellis.PreferServerManaged, member, type, LDP.RDFSource);
         dataset.add(Trellis.PreferServerManaged, member, DC.modified, rdf.createLiteral(time, XSD.dateTime));
         return dataset;
     }

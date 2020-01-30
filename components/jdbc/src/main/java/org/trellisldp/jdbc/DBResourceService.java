@@ -25,6 +25,7 @@ import static java.util.Optional.of;
 import static java.util.ServiceLoader.load;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.riot.Lang.NTRIPLES;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -54,8 +55,8 @@ import javax.sql.DataSource;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.riot.RDFDataMgr;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
@@ -66,6 +67,7 @@ import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.Metadata;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -108,7 +110,7 @@ public class DBResourceService implements ResourceService {
     public static final int DEFAULT_BATCH_SIZE = 1000;
 
     private static final Logger LOGGER = getLogger(DBResourceService.class);
-    private static final JenaRDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final String ACL_EXT = "acl";
 
     private final Supplier<String> supplier;
@@ -438,7 +440,7 @@ public class DBResourceService implements ResourceService {
      */
     static String serializeGraph(final Graph graph) {
         try (final StringWriter writer = new StringWriter()) {
-            RDFDataMgr.write(writer, rdf.asJenaGraph(graph), NTRIPLES);
+            RDFDataMgr.write(writer, toJena(graph), NTRIPLES);
             return writer.toString();
         } catch (final IOException ex) {
             throw new UncheckedIOException("Error writing extension data", ex);

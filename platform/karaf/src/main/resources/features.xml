@@ -201,10 +201,6 @@
 
     <bundle dependency="true">mvn:jakarta.annotation/jakarta.annotation-api/${annotationApiVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
-    <!-- commons-rdf-jena depends on commons-rdf-simple -->
-    <bundle dependency="true">mvn:org.apache.commons/commons-rdf-simple/${commonsRdfVersion}</bundle>
-
-    <bundle>mvn:org.apache.commons/commons-rdf-jena/${commonsRdfVersion}</bundle>
   </feature>
 
   <!-- notification features -->

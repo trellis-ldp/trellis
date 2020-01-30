@@ -19,6 +19,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.jena.commonsrdf.JenaCommonsRDF.fromJena;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.riot.Lang.NTRIPLES;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -42,13 +43,14 @@ import javax.sql.DataSource;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
-import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFParser;
 import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
@@ -59,7 +61,7 @@ import org.trellisldp.vocabulary.Trellis;
 public class DBResource implements Resource {
 
     private static final Logger LOGGER = getLogger(DBResource.class);
-    private static final JenaRDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     private static final String SLASH = "/";
     private static final String OBJECT = "object";
@@ -411,7 +413,7 @@ public class DBResource implements Resource {
         jdbi.withHandle(handle -> handle.select(query, data.getId(), extensions.get(graphName))
                 .map((rs, ctx) -> rs.getString("data")).findFirst())
             .ifPresent(triples -> RDFParser.fromString(triples).lang(NTRIPLES).parse(model));
-        return rdf.asGraph(model).stream().map(triple -> rdf.createQuad(graphName, triple.getSubject(),
+        return fromJena(model.getGraph()).stream().map(triple -> rdf.createQuad(graphName, triple.getSubject(),
                     triple.getPredicate(), triple.getObject())).map(Quad.class::cast);
     }
 

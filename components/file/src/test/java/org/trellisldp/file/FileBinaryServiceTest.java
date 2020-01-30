@@ -31,13 +31,13 @@ import java.util.concurrent.CompletionException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
+import org.trellisldp.api.RDFFactory;
 
 /**
  * Test the file-based binary service.
@@ -46,7 +46,7 @@ class FileBinaryServiceTest {
 
     private static final String testDoc = "test.txt";
 
-    private static final RDF rdf = new SimpleRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     private static final String directory = new File(FileBinaryService.class.getResource("/" + testDoc).getPath())
         .getParent();

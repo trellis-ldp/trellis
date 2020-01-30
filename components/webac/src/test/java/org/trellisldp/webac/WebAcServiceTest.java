@@ -38,12 +38,12 @@ import java.util.stream.Stream;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.CacheService;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
@@ -60,7 +60,7 @@ import org.trellisldp.vocabulary.VCARD;
  */
 class WebAcServiceTest {
 
-    private static final RDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     private static final IRI memberIRI = rdf.createIRI(TRELLIS_DATA_PREFIX + "member");
     private static final IRI nonexistentIRI = rdf.createIRI(TRELLIS_DATA_PREFIX + "parent/child/nonexistent");

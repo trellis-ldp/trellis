@@ -100,8 +100,6 @@ public class OSGiTest {
 
     @Test
     public void testCoreInstallation() throws Exception {
-        assertTrue("commons-rdf-jena not installed!",
-                featuresService.isInstalled(featuresService.getFeature("commons-rdf-jena")));
         assertTrue("trellis-io-jena not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-io-jena")));
         assertTrue("trellis-api not installed!",

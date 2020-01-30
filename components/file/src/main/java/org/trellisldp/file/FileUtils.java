@@ -29,6 +29,7 @@ import static java.util.stream.IntStream.range;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+import static org.apache.jena.commonsrdf.JenaCommonsRDF.fromJena;
 import static org.apache.jena.riot.tokens.TokenizerFactory.makeTokenizerString;
 import static org.apache.jena.sparql.core.Quad.create;
 import static org.apache.jena.sparql.core.Quad.defaultGraphIRI;
@@ -57,10 +58,11 @@ import java.util.zip.CRC32;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
-import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.tokens.Token;
 import org.slf4j.Logger;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -74,7 +76,7 @@ public final class FileUtils {
     /** The configuration key for controlling LDP type triples. */
     public static final String CONFIG_FILE_LDP_TYPE = "trellis.file.ldp-type";
     private static final Logger LOGGER = getLogger(FileUtils.class);
-    private static final JenaRDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final String SEP = " ";
 
     /**
@@ -118,9 +120,9 @@ public final class FileUtils {
             .collect(toList());
 
         if (nodes.size() == 3) {
-            return of(rdf.asQuad(create(defaultGraphIRI, nodes.get(0), nodes.get(1), nodes.get(2))));
+            return of(fromJena(create(defaultGraphIRI, nodes.get(0), nodes.get(1), nodes.get(2))));
         } else if (nodes.size() == 4) {
-            return of(rdf.asQuad(create(nodes.get(3), nodes.get(0), nodes.get(1), nodes.get(2))));
+            return of(fromJena(create(nodes.get(3), nodes.get(0), nodes.get(1), nodes.get(2))));
         } else {
             LOGGER.warn("Skipping invalid data value: {}", line);
             return empty();

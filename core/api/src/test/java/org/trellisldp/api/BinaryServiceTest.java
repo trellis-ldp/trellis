@@ -28,7 +28,6 @@ import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -38,7 +37,7 @@ import org.mockito.Mock;
  */
 class BinaryServiceTest {
 
-    private static final RDF rdf = new SimpleRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     @Mock
     private BinaryService mockBinaryService;

@@ -33,8 +33,8 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -45,7 +45,7 @@ import org.trellisldp.vocabulary.Trellis;
  */
 class FileUtilsTest {
 
-    private static final RDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     @Test
     void testParseQuad() {

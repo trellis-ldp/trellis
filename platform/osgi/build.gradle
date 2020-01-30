@@ -62,6 +62,7 @@ dependencies {
     testImplementation project(':trellis-file')
     testImplementation project(':trellis-http')
     testImplementation project(':trellis-io-jena')
+    testImplementation project(':trellis-jdbc')
     testImplementation project(':trellis-jms')
     testImplementation project(':trellis-kafka')
     testImplementation project(':trellis-namespaces')

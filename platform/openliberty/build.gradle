@@ -43,10 +43,7 @@ dependencies {
     implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation "org.apache.commons:commons-rdf-api:$commonsRdfVersion"
-    implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
-        exclude group: 'org.apache.jena', module: 'jena-osgi'
-        exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
-    }
+    implementation "org.apache.jena:jena-commonsrdf:$jenaVersion"
 
     runtimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
     runtimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"

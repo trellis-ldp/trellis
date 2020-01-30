@@ -61,10 +61,10 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.atlas.AtlasException;
 import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.atlas.web.TypedInputStream;
+import org.apache.jena.commonsrdf.JenaCommonsRDF;
 import org.apache.jena.query.QueryParseException;
 import org.apache.jena.riot.JsonLDWriteContext;
 import org.apache.jena.riot.Lang;
@@ -107,7 +107,6 @@ public class JenaIOService implements IOService {
     public static final String CONFIG_IO_RELATIVE_IRIS = "trellis.io.relative-iris";
 
     private static final Logger LOGGER = getLogger(JenaIOService.class);
-    private static final JenaRDF rdf = new JenaRDF();
     private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(Stream.of(
                 new SimpleEntry<>(compacted, JSONLD_COMPACT_FLAT),
                 new SimpleEntry<>(flattened, JSONLD_FLATTEN_FLAT),
@@ -242,26 +241,26 @@ public class JenaIOService implements IOService {
             if (RDFA.equals(syntax)) {
                 writeHTML(triples, output, baseUrl);
             } else {
-                final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
+                final Lang lang = JenaCommonsRDF.toJena(syntax).orElseThrow(() ->
                         new RuntimeTrellisException("Invalid content type: " + syntax.mediaType()));
 
                 final RDFFormat format = defaultSerialization(lang);
 
                 if (format != null) {
                     LOGGER.debug("Writing stream-based RDF: {}", format);
-                    final StreamRDF stream = getWriterStream(output, format);
+                    final StreamRDF stream = getWriterStream(output, format, null);
                     stream.start();
                     nsService.getNamespaces().forEach(stream::prefix);
                     if (shouldUseRelativeIRIs(relativeIRIs, profiles)) {
                         stream.base(baseUrl);
                     }
-                    triples.map(rdf::asJenaTriple).forEachOrdered(stream::triple);
+                    triples.map(JenaCommonsRDF::toJena).forEachOrdered(stream::triple);
                     stream.finish();
                 } else {
                     LOGGER.debug("Writing buffered RDF: {}", lang);
                     final org.apache.jena.graph.Graph graph = createDefaultGraph();
                     graph.getPrefixMapping().setNsPrefixes(nsService.getNamespaces());
-                    triples.map(rdf::asJenaTriple).forEachOrdered(graph::add);
+                    triples.map(JenaCommonsRDF::toJena).forEachOrdered(graph::add);
                     if (JSONLD.equals(lang)) {
                         writeJsonLd(output, DatasetGraphFactory.create(graph), profiles);
                     } else {
@@ -332,7 +331,7 @@ public class JenaIOService implements IOService {
 
         try {
             final org.apache.jena.graph.Graph graph = createDefaultGraph();
-            final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
+            final Lang lang = JenaCommonsRDF.toJena(syntax).orElseThrow(() ->
                     new RuntimeTrellisException("Unsupported RDF Syntax: " + syntax.mediaType()));
 
             RDFParser.source(input).lang(lang).base(base).parse(graph);
@@ -345,7 +344,7 @@ public class JenaIOService implements IOService {
                     nsService.setPrefix(prefix, namespace);
                 }
             });
-            return rdf.asGraph(graph).stream().map(Triple.class::cast);
+            return JenaCommonsRDF.fromJena(graph).stream().map(Triple.class::cast);
         } catch (final RiotException | AtlasException | IllegalArgumentException ex) {
             throw new RuntimeTrellisException(ex);
         }
@@ -361,7 +360,7 @@ public class JenaIOService implements IOService {
         }
 
         try {
-            final org.apache.jena.graph.Graph g = rdf.asJenaGraph(graph);
+            final org.apache.jena.graph.Graph g = JenaCommonsRDF.toJena(graph);
             execute(create(update, base), g);
         } catch (final UpdateException | QueryParseException ex) {
             throw new RuntimeTrellisException(ex);

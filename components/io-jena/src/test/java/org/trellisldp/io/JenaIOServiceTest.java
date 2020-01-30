@@ -24,6 +24,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFXML;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.apache.jena.commonsrdf.JenaCommonsRDF.fromJena;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.graph.NodeFactory.createBlankNode;
 import static org.apache.jena.graph.NodeFactory.createLiteral;
@@ -34,6 +35,7 @@ import static org.apache.jena.vocabulary.DCTerms.subject;
 import static org.apache.jena.vocabulary.DCTerms.title;
 import static org.apache.jena.vocabulary.DCTypes.Text;
 import static org.apache.jena.vocabulary.RDF.Nodes.type;
+import static org.apache.jena.vocabulary.RDF.uri;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -56,15 +58,15 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Graph;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.jena.commonsrdf.JenaCommonsRDF;
 import org.apache.jena.graph.Node;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -72,6 +74,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.RDFaWriterService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.vocabulary.Trellis;
@@ -81,7 +84,7 @@ import org.trellisldp.vocabulary.Trellis;
  */
 class JenaIOServiceTest {
 
-    private static final JenaRDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
     private IOService service, service2, service3;
     private static final String identifier = "http://example.com/resource";
 
@@ -109,7 +112,7 @@ class JenaIOServiceTest {
         initMocks(this);
         final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("dcterms", DCTerms.NS);
-        namespaces.put("rdf", RDF.uri);
+        namespaces.put("rdf", uri);
 
         service = new JenaIOService(mockNamespaceService, null, mockCache,
                 "http://www.w3.org/ns/anno.jsonld,,,", "http://www.trellisldp.org/ns/", false);
@@ -319,7 +322,7 @@ class JenaIOServiceTest {
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         final org.apache.jena.graph.Graph graph = createDefaultGraph();
         RDFDataMgr.read(graph, in, Lang.NTRIPLES);
-        assertTrue(validateGraph(rdf.asGraph(graph)), "Failed round-trip for N-Triples!");
+        assertTrue(validateGraph(fromJena(graph)), "Failed round-trip for N-Triples!");
     }
 
     @Test
@@ -329,7 +332,7 @@ class JenaIOServiceTest {
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         final org.apache.jena.graph.Graph graph = createDefaultGraph();
         RDFDataMgr.read(graph, in, Lang.RDFXML);
-        assertTrue(validateGraph(rdf.asGraph(graph)), "Failed round-trip for RDFXML!");
+        assertTrue(validateGraph(fromJena(graph)), "Failed round-trip for RDFXML!");
     }
 
     @Test
@@ -339,7 +342,7 @@ class JenaIOServiceTest {
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         final org.apache.jena.graph.Graph graph = createDefaultGraph();
         RDFDataMgr.read(graph, in, Lang.TURTLE);
-        assertTrue(validateGraph(rdf.asGraph(graph)), "Failed round-trip for Turtle!");
+        assertTrue(validateGraph(fromJena(graph)), "Failed round-trip for Turtle!");
     }
 
     @Test
@@ -375,7 +378,7 @@ class JenaIOServiceTest {
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         final org.apache.jena.graph.Graph graph = createDefaultGraph();
         RDFDataMgr.read(graph, in, Lang.TURTLE);
-        assertTrue(validateGraph(rdf.asGraph(graph)), "null HTML serialization didn't default to Turtle!");
+        assertTrue(validateGraph(fromJena(graph)), "null HTML serialization didn't default to Turtle!");
     }
 
     @Test
@@ -520,7 +523,7 @@ class JenaIOServiceTest {
                 create(sub, title.asNode(), createLiteral("A title")),
                 create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
                 create(sub, type, Text.asNode()))
-            .map(rdf::asTriple);
+            .map(JenaCommonsRDF::fromJena);
     }
 
     private static Stream<Triple> getComplexTriples() {
@@ -532,7 +535,7 @@ class JenaIOServiceTest {
                 create(bn, title.asNode(), createLiteral("Other title")),
                 create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
                 create(sub, type, Text.asNode()))
-            .map(rdf::asTriple);
+            .map(JenaCommonsRDF::fromJena);
 
     }
 

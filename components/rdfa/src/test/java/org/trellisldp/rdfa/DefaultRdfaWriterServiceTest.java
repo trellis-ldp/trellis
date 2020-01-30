@@ -39,17 +39,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.jena.commonsrdf.JenaCommonsRDF;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopNamespaceService;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.RDFaWriterService;
 
 /**
@@ -57,7 +58,7 @@ import org.trellisldp.api.RDFaWriterService;
  */
 class DefaultRdfaWriterServiceTest {
 
-    private static final JenaRDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     @Mock
     private NamespaceService mockNamespaceService;
@@ -72,7 +73,7 @@ class DefaultRdfaWriterServiceTest {
         initMocks(this);
         final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("dc", DCTerms.NS);
-        namespaces.put("rdf", RDF.uri);
+        namespaces.put("rdf", org.apache.jena.vocabulary.RDF.uri);
         namespaces.put("dcmitype", "http://purl.org/dc/dcmitype/");
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
 
@@ -197,7 +198,7 @@ class DefaultRdfaWriterServiceTest {
                 create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929023/")),
                 create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929024/")),
                 create(sub, type, Text.asNode()))
-            .map(rdf::asTriple);
+            .map(JenaCommonsRDF::fromJena);
     }
 
     private static Stream<Triple> getTriples2() {
@@ -210,6 +211,6 @@ class DefaultRdfaWriterServiceTest {
                 create(bn, type, Text.asNode()),
                 create(bn, subject.asNode(), other),
                 create(sub, type, Text.asNode()))
-            .map(rdf::asTriple);
+            .map(JenaCommonsRDF::fromJena);
     }
 }

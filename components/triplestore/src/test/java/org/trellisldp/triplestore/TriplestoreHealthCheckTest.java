@@ -15,20 +15,22 @@
  */
 package org.trellisldp.triplestore;
 
+import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.apache.commons.rdf.jena.JenaDataset;
-import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.commons.rdf.api.Dataset;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.RDFFactory;
 
 class TriplestoreHealthCheckTest {
 
-    private static final JenaRDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     @Test
     void testUnhealthyDefault() {
@@ -38,16 +40,16 @@ class TriplestoreHealthCheckTest {
 
     @Test
     void testHealthy() {
-        final JenaDataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
+        final Dataset dataset = rdf.createDataset();
+        final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
         final HealthCheck check = new TriplestoreHealthCheck(rdfConnection);
         assertEquals(HealthCheckResponse.State.UP, check.call().getState(), "RDFConnection isn't healthy!");
     }
 
     @Test
     void testUnhealthy() {
-        final JenaDataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
+        final Dataset dataset = rdf.createDataset();
+        final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
         rdfConnection.close();
         final HealthCheck check = new TriplestoreHealthCheck(rdfConnection);
         assertEquals(HealthCheckResponse.State.DOWN, check.call().getState(),

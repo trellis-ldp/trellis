@@ -17,6 +17,7 @@ package org.trellisldp.constraint;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
+import static org.apache.jena.commonsrdf.JenaCommonsRDF.fromJena;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.riot.Lang.TURTLE;
 import static org.apache.jena.riot.RDFDataMgr.read;
@@ -27,11 +28,12 @@ import java.util.Optional;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
-import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.jena.rdf.model.Model;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.ConstraintViolation;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -42,7 +44,7 @@ import org.trellisldp.vocabulary.Trellis;
  */
 class LdpConstraintServiceTest {
 
-    private static final JenaRDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     private final String domain = "trellis:data/";
     private final IRI identifier = rdf.createIRI(domain + "resource");
@@ -307,6 +309,6 @@ class LdpConstraintServiceTest {
     private Graph asGraph(final String resource, final String context) {
         final Model model = createDefaultModel();
         read(model, getClass().getResourceAsStream(resource), context, TURTLE);
-        return rdf.asGraph(model);
+        return fromJena(model.getGraph());
     }
 }

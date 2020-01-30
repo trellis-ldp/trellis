@@ -27,6 +27,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.jena.commonsrdf.JenaCommonsRDF.fromJena;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.riot.Lang.TURTLE;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -58,9 +59,9 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFParser;
 import org.apache.jena.riot.RiotException;
@@ -69,6 +70,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.NoopResourceService;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -100,7 +102,7 @@ public class WebAcService {
 
     private static final Logger LOGGER = getLogger(WebAcService.class);
     private static final CompletionStage<Void> DONE = CompletableFuture.completedFuture(null);
-    private static final JenaRDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     private static final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
     private static final Set<IRI> allModes = new HashSet<>();
@@ -405,7 +407,7 @@ public class WebAcService {
                 LOGGER.debug("Using external resource for default root ACL: {}", resource);
                 RDFParser.source(resource).lang(TURTLE).base(TRELLIS_DATA_PREFIX).parse(model);
             }
-            rdf.asGraph(model).stream().map(triple -> rdf.createQuad(Trellis.PreferAccessControl,
+            fromJena(model.getGraph()).stream().map(triple -> rdf.createQuad(Trellis.PreferAccessControl,
                         triple.getSubject(), triple.getPredicate(), triple.getObject())).forEach(dataset::add);
         } catch (final IOException | RiotException ex) {
             LOGGER.warn("Couldn't initialize root ACL with {}, falling back to default: {}", resource, ex.getMessage());

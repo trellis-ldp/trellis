@@ -21,8 +21,8 @@ module org.trellisldp.jdbc {
 
     requires org.apache.commons.lang3;
     requires org.apache.commons.rdf.api;
-    requires org.apache.commons.rdf.jena;
     requires org.apache.jena.arq;
+    requires org.apache.jena.commonsrdf;
     requires org.jdbi.v3.core;
     requires org.slf4j;
 
