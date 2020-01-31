@@ -37,9 +37,10 @@ public interface IOService {
      * @param triples the stream of triples
      * @param output the output stream
      * @param syntax the output format
+     * @param context the context to resolve relative IRIs
      * @param profiles additional profile information used for output
      */
-    void write(Stream<Triple> triples, OutputStream output, RDFSyntax syntax, IRI... profiles);
+    void write(Stream<Triple> triples, OutputStream output, RDFSyntax syntax, String context, IRI... profiles);
 
     /**
      * Read an input stream into a stream of triples.

@@ -281,7 +281,7 @@ public class PatchHandler extends MutatingLdpHandler {
                         .type(outputSyntax.mediaType()).entity((StreamingOutput) out ->
                             getServices().getIOService().write(triples.stream()
                                         .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())),
-                                        out, outputSyntax, profile));
+                                        out, outputSyntax, getIdentifier(), profile));
                 }
                 return builder.status(getResource() == null ? CREATED : NO_CONTENT);
             });

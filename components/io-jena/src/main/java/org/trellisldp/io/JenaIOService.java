@@ -34,6 +34,7 @@ import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.apache.jena.update.UpdateAction.execute;
 import static org.apache.jena.update.UpdateFactory.create;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
@@ -76,7 +77,6 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
 import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.CacheService.TrellisProfileCache;
@@ -100,6 +100,9 @@ public class JenaIOService implements IOService {
     /** The configuration key listing valid JSON-LD profile domains. */
     public static final String CONFIG_IO_JSONLD_DOMAINS = "trellis.io.jsonld-domains";
 
+    /** The configuration key controling whether to use relative IRIs for Turtle serializations. */
+    public static final String CONFIG_IO_RELATIVE_IRIS = "trellis.io.relative-iris";
+
     private static final Logger LOGGER = getLogger(JenaIOService.class);
     private static final JenaRDF rdf = new JenaRDF();
     private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(Stream.of(
@@ -116,6 +119,7 @@ public class JenaIOService implements IOService {
     private final List<RDFSyntax> readable;
     private final List<RDFSyntax> writable;
     private final List<RDFSyntax> updatable;
+    private final boolean relativeIRIs;
 
     /**
      * Create a serialization service.
@@ -153,13 +157,14 @@ public class JenaIOService implements IOService {
     public JenaIOService(final NamespaceService namespaceService,
             final RDFaWriterService htmlSerializer,
             @TrellisProfileCache final CacheService<String, String> cache) {
-        this(namespaceService, htmlSerializer, cache, ConfigProvider.getConfig());
+        this(namespaceService, htmlSerializer, cache, getConfig());
     }
 
     private JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
             final CacheService<String, String> cache, final Config config) {
         this(namespaceService, htmlSerializer, cache, config.getOptionalValue(CONFIG_IO_JSONLD_PROFILES, String.class)
-                .orElse(""), config.getOptionalValue(CONFIG_IO_JSONLD_DOMAINS, String.class).orElse(""));
+                .orElse(""), config.getOptionalValue(CONFIG_IO_JSONLD_DOMAINS, String.class).orElse(""),
+                config.getOptionalValue(CONFIG_IO_RELATIVE_IRIS, Boolean.class).orElse(Boolean.FALSE));
     }
 
     /**
@@ -170,10 +175,12 @@ public class JenaIOService implements IOService {
      * @param cache a cache for custom JSON-LD profile resolution
      * @param whitelist a whitelist of JSON-LD profiles
      * @param whitelistDomains a whitelist of JSON-LD profile domains
+     * @param relativeIRIs whether to use relative IRIs for Turtle output
      */
     public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
-            final CacheService<String, String> cache, final String whitelist, final String whitelistDomains) {
-        this(namespaceService, htmlSerializer, cache, intoSet(whitelist), intoSet(whitelistDomains));
+            final CacheService<String, String> cache, final String whitelist, final String whitelistDomains,
+            final boolean relativeIRIs) {
+        this(namespaceService, htmlSerializer, cache, intoSet(whitelist), intoSet(whitelistDomains), relativeIRIs);
     }
 
 
@@ -185,14 +192,17 @@ public class JenaIOService implements IOService {
      * @param cache a cache for custom JSON-LD profile resolution
      * @param whitelist a whitelist of JSON-LD profiles
      * @param whitelistDomains a whitelist of JSON-LD profile domains
+     * @param relativeIRIs whether to use relative IRIs for Turtle output
      */
     public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
-            final CacheService<String, String> cache, final Set<String> whitelist, final Set<String> whitelistDomains) {
+            final CacheService<String, String> cache, final Set<String> whitelist, final Set<String> whitelistDomains,
+            final boolean relativeIRIs) {
         this.nsService = requireNonNull(namespaceService, "The NamespaceService may not be null!");
         this.cache = requireNonNull(cache, "The CacheService may not be null!");
         this.htmlSerializer = htmlSerializer;
         this.whitelist = whitelist;
         this.whitelistDomains = whitelistDomains;
+        this.relativeIRIs = relativeIRIs;
 
         final List<RDFSyntax> reads = new ArrayList<>(asList(TURTLE, RDFSyntax.JSONLD, NTRIPLES));
         if (htmlSerializer != null) {
@@ -220,14 +230,14 @@ public class JenaIOService implements IOService {
 
     @Override
     public void write(final Stream<Triple> triples, final OutputStream output, final RDFSyntax syntax,
-            final IRI... profiles) {
+            final String baseUrl, final IRI... profiles) {
         requireNonNull(triples, "The triples stream may not be null!");
         requireNonNull(output, "The output stream may not be null!");
         requireNonNull(syntax, "The RDF syntax value may not be null!");
 
         try {
             if (RDFA.equals(syntax)) {
-                writeHTML(triples, output, profiles.length > 0 ? profiles[0].getIRIString() : null);
+                writeHTML(triples, output, baseUrl);
             } else {
                 final Lang lang = rdf.asJenaLang(syntax).orElseThrow(() ->
                         new RuntimeTrellisException("Invalid content type: " + syntax.mediaType()));
@@ -239,6 +249,9 @@ public class JenaIOService implements IOService {
                     final StreamRDF stream = getWriterStream(output, format);
                     stream.start();
                     nsService.getNamespaces().forEach(stream::prefix);
+                    if (relativeIRIs) {
+                        stream.base(baseUrl);
+                    }
                     triples.map(rdf::asJenaTriple).forEachOrdered(stream::triple);
                     stream.finish();
                 } else {
@@ -258,11 +271,11 @@ public class JenaIOService implements IOService {
         }
     }
 
-    private void writeHTML(final Stream<Triple> triples, final OutputStream output, final String subject) {
+    private void writeHTML(final Stream<Triple> triples, final OutputStream output, final String context) {
         if (htmlSerializer != null) {
-            htmlSerializer.write(triples, output, subject);
+            htmlSerializer.write(triples, output, context);
         } else {
-            write(triples, output, TURTLE);
+            write(triples, output, TURTLE, context);
         }
     }
 

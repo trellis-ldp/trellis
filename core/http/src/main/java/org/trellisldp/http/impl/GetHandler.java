@@ -321,7 +321,7 @@ public class GetHandler extends BaseLdpHandler {
             try (final Stream<Quad> stream = getResource().stream(getPreferredGraphs(prefer))) {
                 getServices().getIOService().write(stream.map(Quad::asTriple)
                                 .map(unskolemizeTriples(getServices().getResourceService(), getBaseUrl())), out,
-                        syntax, getJsonLdProfile(profile, syntax));
+                        syntax, getIdentifier(), getJsonLdProfile(profile, syntax));
             }
         });
     }

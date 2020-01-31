@@ -119,7 +119,7 @@ public final class MementoResource {
 
             return builder.type(syntax.mediaType()).entity((StreamingOutput) out ->
                 trellis.getIOService().write(trellis.getTimemapGenerator()
-                        .asRdf(identifier, allLinks), out, syntax, jsonldProfile));
+                        .asRdf(identifier, allLinks), out, syntax, baseUrl, jsonldProfile));
         }
 
         return builder.type(APPLICATION_LINK_FORMAT)

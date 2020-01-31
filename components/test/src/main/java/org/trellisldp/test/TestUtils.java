@@ -56,7 +56,7 @@ import org.trellisldp.vocabulary.PROV;
 public final class TestUtils {
 
     private static final IOService ioService = new JenaIOService(new NoopNamespaceService(), null,
-            new NoopProfileCache(), emptySet(), emptySet());
+            new NoopProfileCache(), emptySet(), emptySet(), false);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
