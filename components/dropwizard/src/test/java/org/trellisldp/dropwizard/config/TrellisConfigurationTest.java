@@ -54,6 +54,9 @@ class TrellisConfigurationTest {
         // Hub tests
         assertEquals("http://hub.example.com/", config.getHubUrl(), "Incorrect hubUrl");
 
+        // Relative IRI configuration
+        assertTrue(config.getUseRelativeIris(), "Incorrect relative IRI configuration");
+
         // Auth tests
         assertTrue(config.getAuth().getAdminUsers().contains("zoyd"), "zoyd missing from auth/adminUsers");
         assertTrue(config.getAuth().getAdminUsers().contains("wheeler"), "wheeler missing from auth/adminUsers");

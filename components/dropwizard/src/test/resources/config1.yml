@@ -86,6 +86,8 @@ cors:
     maxAge: 180
     allowCredentials: true
 
+useRelativeIris: true
+
 cassandraAddress: my.cluster.address
 cassandraPort: 245994
 
