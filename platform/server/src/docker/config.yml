@@ -72,6 +72,8 @@ cache:
     maxAge: ${TRELLIS_CACHE_MAX_AGE:-86400}
     mustRevalidate: ${TRELLIS_CACHE_MUST_REVALIDATE:-true}
 
+useRelativeIris: ${TRELLIS_IO_RELATIVE_IRIS:-false}
+
 notifications:
     enabled: ${TRELLIS_NOTIFICATIONS_ENABLED:-false}
     type: ${TRELLIS_NOTIFICATIONS_TYPE:-JMS}

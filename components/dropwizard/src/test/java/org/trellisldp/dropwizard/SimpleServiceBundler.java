@@ -49,7 +49,7 @@ public class SimpleServiceBundler extends BaseServiceBundler {
         timemapGenerator = new DefaultTimemapGenerator();
         constraintServices = new DefaultConstraintServices(singletonList(new LdpConstraintService()));
         ioService = new JenaIOService(new NoopNamespaceService(), null, new NoopProfileCache(),
-                emptySet(), emptySet());
+                emptySet(), emptySet(), false);
         binaryService = new FileBinaryService(new DefaultIdentifierService(),
                 resourceFilePath("data") + "/binaries", 2, 2);
     }

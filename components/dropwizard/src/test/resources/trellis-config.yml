@@ -58,6 +58,8 @@ notifications:
     enabled: true
     type: NONE
 
+useRelativeIris: true
+
 # JSON-LD configuration
 jsonld:
     cacheSize: 10

@@ -230,7 +230,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
             violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
             throw new ClientErrorException(err.entity((StreamingOutput) out ->
                     getServices().getIOService().write(violations.stream().flatMap(v2 -> v2.getTriples().stream()),
-                            out, syntax)).build());
+                            out, syntax, getIdentifier())).build());
         }
     }
 

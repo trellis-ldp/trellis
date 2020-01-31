@@ -52,6 +52,8 @@ public class TrellisConfiguration extends Configuration {
     @NotNull
     private NotificationsConfiguration notifications = new NotificationsConfiguration();
 
+    private boolean useRelativeIris;
+
     private String hubUrl;
 
     private String baseUrl;
@@ -221,6 +223,24 @@ public class TrellisConfiguration extends Configuration {
     @JsonProperty
     public JsonLdConfiguration getJsonld() {
         return jsonld;
+    }
+
+    /**
+     * Set the configuration for relative IRIs.
+     * @param useRelativeIris whether to use relative IRIs
+     */
+    @JsonProperty
+    public void setUseRelativeIris(final boolean useRelativeIris) {
+        this.useRelativeIris = useRelativeIris;
+    }
+
+    /**
+     * Get the configuration for relative IRIs.
+     * @return true if using relative IRIs; false otherwise
+     */
+    @JsonProperty
+    public boolean getUseRelativeIris() {
+        return useRelativeIris;
     }
 
     /**
