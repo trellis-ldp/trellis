@@ -111,9 +111,9 @@ ext {
 
     // Tooling
     jacocoToolVersion = "0.8.5"
-    checkstyleToolVersion = "8.26"
+    checkstyleToolVersion = "8.29"
     pitestToolVersion = "1.4.11"
-    pmdToolVersion = "6.20.0"
+    pmdToolVersion = "6.21.0"
     spotbugsToolVersion = "3.1.12"
 
     // OSGi
