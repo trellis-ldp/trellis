@@ -42,7 +42,7 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        command: monitor --all-sub-projects
+        command: monitor --all-sub-projects --org=trellisldp
 
   osgi:
     runs-on: ubuntu-latest
