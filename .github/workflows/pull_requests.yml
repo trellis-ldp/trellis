@@ -38,7 +38,7 @@ jobs:
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
-        command: monitor
+        command: monitor --all-sub-projects
 
   osgi:
     runs-on: ubuntu-latest
