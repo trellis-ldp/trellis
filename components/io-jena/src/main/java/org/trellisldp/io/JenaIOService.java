@@ -85,6 +85,7 @@ import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.RDFaWriterService;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * An IOService implemented using Jena.
@@ -249,7 +250,7 @@ public class JenaIOService implements IOService {
                     final StreamRDF stream = getWriterStream(output, format);
                     stream.start();
                     nsService.getNamespaces().forEach(stream::prefix);
-                    if (relativeIRIs) {
+                    if (shouldUseRelativeIRIs(relativeIRIs, profiles)) {
                         stream.base(baseUrl);
                     }
                     triples.map(rdf::asJenaTriple).forEachOrdered(stream::triple);
@@ -399,5 +400,16 @@ public class JenaIOService implements IOService {
             }
         }
         return false;
+    }
+
+    static boolean shouldUseRelativeIRIs(final boolean defaultValue, final IRI... profiles) {
+        for (final IRI profile : profiles) {
+            if (Trellis.SerializationRelative.equals(profile)) {
+                return true;
+            } else if (Trellis.SerializationAbsolute.equals(profile)) {
+                return false;
+            }
+        }
+        return defaultValue;
     }
 }

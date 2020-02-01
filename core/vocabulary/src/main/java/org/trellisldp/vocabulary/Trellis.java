@@ -44,6 +44,8 @@ public final class Trellis {
     public static final IRI PreferAudit = createIRI(getNamespace() + "PreferAudit");
     public static final IRI PreferServerManaged = createIRI(getNamespace() + "PreferServerManaged");
     public static final IRI PreferUserManaged = createIRI(getNamespace() + "PreferUserManaged");
+    public static final IRI SerializationAbsolute = createIRI(getNamespace() + "SerializationAbsolute");
+    public static final IRI SerializationRelative = createIRI(getNamespace() + "SerializationRelative");
     public static final IRI UnsupportedInteractionModel = createIRI(getNamespace() + "UnsupportedInteractionModel");
 
     /**
