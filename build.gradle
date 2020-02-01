@@ -163,11 +163,6 @@ allprojects { subproj ->
         mavenLocal()
         mavenCentral()
         jcenter()
-        // This is required for snyk integration with the quarkus project
-        // Once quarkus has better support for multi-project builds, this can be removed
-        maven {
-            url "https://oss.sonatype.org/content/repositories/snapshots"
-        }
     }
 
     dependencies {
