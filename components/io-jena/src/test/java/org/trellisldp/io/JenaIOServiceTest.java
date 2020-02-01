@@ -72,6 +72,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RDFaWriterService;
 import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -469,6 +470,21 @@ class JenaIOServiceTest {
     void testUpdateSyntaxes() {
         assertTrue(service.supportedUpdateSyntaxes().contains(SPARQL_UPDATE), "SPARQL-Update not supported!");
         assertFalse(service.supportedUpdateSyntaxes().contains(LD_PATCH), "LD-PATCH unexpectedly supported!");
+    }
+
+    @Test
+    void testShouldUseRelativeIRIs() {
+        assertTrue(JenaIOService.shouldUseRelativeIRIs(true));
+        assertTrue(JenaIOService.shouldUseRelativeIRIs(false, Trellis.SerializationRelative));
+        assertTrue(JenaIOService.shouldUseRelativeIRIs(false, Trellis.SerializationRelative,
+                    Trellis.SerializationAbsolute));
+        assertTrue(JenaIOService.shouldUseRelativeIRIs(true, Trellis.PreferUserManaged));
+
+        assertFalse(JenaIOService.shouldUseRelativeIRIs(false));
+        assertFalse(JenaIOService.shouldUseRelativeIRIs(true, Trellis.SerializationAbsolute));
+        assertFalse(JenaIOService.shouldUseRelativeIRIs(true, Trellis.SerializationAbsolute,
+                    Trellis.SerializationRelative));
+        assertFalse(JenaIOService.shouldUseRelativeIRIs(false, Trellis.PreferServerManaged));
     }
 
     @Test
