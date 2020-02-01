@@ -30,6 +30,7 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
+    name: Security analysis
     steps:
     - uses: actions/checkout@v2
     - name: Run Snyk to check for vulnerabilities
