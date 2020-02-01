@@ -36,6 +36,8 @@ jobs:
       uses: snyk/actions/gradle@0.1.1
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        command: monitor
 
   osgi:
     runs-on: ubuntu-latest
