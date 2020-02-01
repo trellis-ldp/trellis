@@ -160,9 +160,12 @@ allprojects { subproj ->
     group = 'org.trellisldp'
 
     repositories {
+        mavenLocal()
         mavenCentral()
         jcenter()
-        mavenLocal()
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots"
+        }
     }
 
     dependencies {
