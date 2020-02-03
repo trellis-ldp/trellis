@@ -125,7 +125,7 @@ ext {
     jenaVersionRange = "[3.13,4)"
     jsonApiVersion = "1.1.6"
     kafkaOsgiVersion = "2.3.1_1"
-    karafVersion = "4.2.7"
+    karafVersion = "4.2.8"
     mustacheOsgiVersion = "0.9.6_1"
     osgiVersion = "6.0.0"
     osgiCompendiumVersion = "5.0.0"
