@@ -66,7 +66,7 @@ ext {
     microprofileHealthVersion = "2.1"
     microprofileMetricsVersion = "2.2.1"
     microprofileJwtVersion = "1.1.1"
-    microprofileOpenapiVersion = "1.1.2"
+    microprofileOpenapiVersion = "2.0-MR1"
     microprofileReactiveMessagingVersion = "1.0"
 
     // Component dependencies
