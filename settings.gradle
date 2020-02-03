@@ -52,42 +52,42 @@ include ':trellis-quarkus'
 include ':trellis-server'
 include ':trellis-test'
 
-project(':trellis-api').projectDir = "$rootDir/core/api" as File
-project(':trellis-http').projectDir = "$rootDir/core/http" as File
-project(':trellis-vocabulary').projectDir = "$rootDir/core/vocabulary" as File
+project(':trellis-api').projectDir = new File(rootDir, "core/api")
+project(':trellis-http').projectDir = new File(rootDir, "core/http")
+project(':trellis-vocabulary').projectDir = new File(rootDir, "core/vocabulary")
 
-project(':trellis-amqp').projectDir = "$rootDir/notifications/amqp" as File
-project(':trellis-event-jackson').projectDir = "$rootDir/notifications/event-jackson" as File
-project(':trellis-event-jsonb').projectDir = "$rootDir/notifications/event-jsonb" as File
-project(':trellis-jms').projectDir = "$rootDir/notifications/jms" as File
-project(':trellis-kafka').projectDir = "$rootDir/notifications/kafka" as File
-project(':trellis-reactive').projectDir = "$rootDir/notifications/reactive" as File
+project(':trellis-amqp').projectDir = new File(rootDir, "notifications/amqp")
+project(':trellis-event-jackson').projectDir = new File(rootDir, "notifications/event-jackson")
+project(':trellis-event-jsonb').projectDir = new File(rootDir, "notifications/event-jsonb")
+project(':trellis-jms').projectDir = new File(rootDir, "notifications/jms")
+project(':trellis-kafka').projectDir = new File(rootDir, "notifications/kafka")
+project(':trellis-reactive').projectDir = new File(rootDir, "notifications/reactive")
 
-project(':trellis-auth-oauth').projectDir = "$rootDir/auth/oauth" as File
-project(':trellis-auth-basic').projectDir = "$rootDir/auth/basic" as File
-project(':trellis-auth-jwt').projectDir = "$rootDir/auth/jwt" as File
+project(':trellis-auth-oauth').projectDir = new File(rootDir, "auth/oauth")
+project(':trellis-auth-basic').projectDir = new File(rootDir, "auth/basic")
+project(':trellis-auth-jwt').projectDir = new File(rootDir, "auth/jwt")
 
-project(':trellis-app').projectDir = "$rootDir/components/app" as File
-project(':trellis-audit').projectDir = "$rootDir/components/audit" as File
-project(':trellis-cache').projectDir = "$rootDir/components/cache" as File
-project(':trellis-cdi').projectDir = "$rootDir/components/cdi" as File
-project(':trellis-constraint-rules').projectDir = "$rootDir/components/constraint-rules" as File
-project(':trellis-dropwizard').projectDir = "$rootDir/components/dropwizard" as File
-project(':trellis-file').projectDir = "$rootDir/components/file" as File
-project(':trellis-io-jena').projectDir = "$rootDir/components/io-jena" as File
-project(':trellis-namespaces').projectDir = "$rootDir/components/namespaces" as File
-project(':trellis-rdfa').projectDir = "$rootDir/components/rdfa" as File
-project(':trellis-test').projectDir = "$rootDir/components/test" as File
-project(':trellis-triplestore').projectDir = "$rootDir/components/triplestore" as File
-project(':trellis-webac').projectDir = "$rootDir/components/webac" as File
-project(':trellis-webdav').projectDir = "$rootDir/components/webdav" as File
-project(':trellis-rdfa').projectDir = "$rootDir/components/rdfa" as File
+project(':trellis-app').projectDir = new File(rootDir, "components/app")
+project(':trellis-audit').projectDir = new File(rootDir, "components/audit")
+project(':trellis-cache').projectDir = new File(rootDir, "components/cache")
+project(':trellis-cdi').projectDir = new File(rootDir, "components/cdi")
+project(':trellis-constraint-rules').projectDir = new File(rootDir, "components/constraint-rules")
+project(':trellis-dropwizard').projectDir = new File(rootDir, "components/dropwizard")
+project(':trellis-file').projectDir = new File(rootDir, "components/file")
+project(':trellis-io-jena').projectDir = new File(rootDir, "components/io-jena")
+project(':trellis-namespaces').projectDir = new File(rootDir, "components/namespaces")
+project(':trellis-rdfa').projectDir = new File(rootDir, "components/rdfa")
+project(':trellis-test').projectDir = new File(rootDir, "components/test")
+project(':trellis-triplestore').projectDir = new File(rootDir, "components/triplestore")
+project(':trellis-webac').projectDir = new File(rootDir, "components/webac")
+project(':trellis-webdav').projectDir = new File(rootDir, "components/webdav")
+project(':trellis-rdfa').projectDir = new File(rootDir, "components/rdfa")
 
-project(':trellis-bom').projectDir = "$rootDir/platform/bom" as File
-project(':trellis-dropwizard-triplestore').projectDir = "$rootDir/platform/dropwizard" as File
-project(':trellis-karaf').projectDir = "$rootDir/platform/karaf" as File
-project(':trellis-openliberty').projectDir = "$rootDir/platform/openliberty" as File
-project(':trellis-osgi').projectDir = "$rootDir/platform/osgi" as File
-project(':trellis-quarkus').projectDir = "$rootDir/platform/quarkus" as File
-project(':trellis-server').projectDir = "$rootDir/platform/server" as File
+project(':trellis-bom').projectDir = new File(rootDir, "platform/bom")
+project(':trellis-dropwizard-triplestore').projectDir = new File(rootDir, "platform/dropwizard")
+project(':trellis-karaf').projectDir = new File(rootDir, "platform/karaf")
+project(':trellis-openliberty').projectDir = new File(rootDir, "platform/openliberty")
+project(':trellis-osgi').projectDir = new File(rootDir, "platform/osgi")
+project(':trellis-quarkus').projectDir = new File(rootDir, "platform/quarkus")
+project(':trellis-server').projectDir = new File(rootDir, "platform/server")
 

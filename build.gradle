@@ -160,7 +160,6 @@ allprojects { subproj ->
     group = 'org.trellisldp'
 
     repositories {
-        mavenLocal()
         mavenCentral()
         jcenter()
         // This is required for snyk integration with the quarkus project
@@ -168,6 +167,7 @@ allprojects { subproj ->
         maven {
             url "https://oss.sonatype.org/content/repositories/snapshots"
         }
+        mavenLocal()
     }
 
     dependencies {
