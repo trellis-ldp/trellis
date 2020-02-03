@@ -28,18 +28,6 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew check assemble javadoc -x pmdMain -x spotbugsMain || ./gradlew check assemble javadoc -x pmdMain -x spotbugsMain
 
-  security:
-    runs-on: ubuntu-latest
-    name: Security analysis
-    steps:
-    - uses: actions/checkout@v2
-    - name: Run Snyk to check for vulnerabilities
-      uses: snyk/actions/gradle@0.1.1
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        command: monitor --all-sub-projects --org=trellisldp
-
   osgi:
     runs-on: ubuntu-latest
     name: Java 8 OSGi environment
