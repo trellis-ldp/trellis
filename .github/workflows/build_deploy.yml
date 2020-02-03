@@ -38,11 +38,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Run Snyk to check for vulnerabilities
-      uses: snyk/actions/gradle@0.1.1
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        command: monitor --all-sub-projects --org=trellisldp
+        PROJECT_PATH: /project/trellis
+      run:
+        docker run --name snyk -e SNYK_TOKEN -e PROJECT_PATH -v "/home/runner/work/trellis":"/project" snyk/snyk-cli:gradle-5.4 "monitor --all-sub-projects --org=trellisldp"
 
   osgi:
     runs-on: ubuntu-latest
