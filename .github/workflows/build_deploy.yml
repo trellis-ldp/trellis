@@ -39,10 +39,14 @@ jobs:
     - uses: actions/checkout@v2
     - name: Run Snyk to check for vulnerabilities
       env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         PROJECT_PATH: /project/trellis
-      run:
-        docker run --name snyk -e SNYK_TOKEN -e PROJECT_PATH -v "/home/runner/work/trellis":"/project" snyk/snyk-cli:gradle-5.4 "monitor --all-sub-projects --org=trellisldp"
+        SNYK_ORG: ${{ secrets.SNYK_ORG }}
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      # Only run security scans if integration is set up
+      run: |
+          if [ "$SNYK_ORG" != "" ]; then
+            docker run --name snyk -e SNYK_TOKEN -e PROJECT_PATH -v "/home/runner/work/trellis":"/project" snyk/snyk-cli:gradle-5.4 "monitor --all-sub-projects --org=$SNYK_ORG"
+          fi
 
   osgi:
     runs-on: ubuntu-latest
