@@ -37,7 +37,6 @@ jobs:
     name: Security analysis
     steps:
     - uses: actions/checkout@v2
-
     - name: Run Snyk to check for vulnerabilities
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
