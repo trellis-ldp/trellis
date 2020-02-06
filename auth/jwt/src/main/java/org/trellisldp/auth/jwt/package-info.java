@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 /**
- * Trellis Microprofile Auth filter
+ * Trellis MicroProfile Auth filter
  *
- * <p>This package implements a microprofile-based OAuth filter for Trellis.
+ * <p>This package implements a MicroProfile-based OAuth filter for Trellis.
  */
 package org.trellisldp.auth.jwt;

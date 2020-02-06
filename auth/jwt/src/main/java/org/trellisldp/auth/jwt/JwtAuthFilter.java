@@ -47,7 +47,7 @@ public class JwtAuthFilter implements ContainerRequestFilter {
     private JsonWebToken jwt;
 
     /**
-     * Create an auth filter that augments Microprofile-JWT authentication with WebID support.
+     * Create an auth filter that augments MicroProfile-JWT authentication with WebID support.
      */
     public JwtAuthFilter() {
         this.admins = getConfiguredAdmins(getConfig().getOptionalValue(CONFIG_AUTH_ADMIN_USERS, String.class)

@@ -2,7 +2,7 @@ apply plugin: 'java-library'
 apply plugin: 'biz.aQute.bnd.builder'
 apply plugin: 'info.solidsoft.pitest'
 
-description = 'Trellis Microprofile JWT-Auth'
+description = 'Trellis MicroProfile JWT-Auth'
 
 ext {
     moduleName = 'org.trellisldp.auth.jwt'

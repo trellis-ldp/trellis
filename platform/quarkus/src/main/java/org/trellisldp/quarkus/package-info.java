@@ -13,6 +13,6 @@
  */
 
 /**
- * A microprofile-based Trellis application.
+ * A MicroProfile-based Trellis application.
  */
 package org.trellisldp.quarkus;

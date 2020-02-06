@@ -28,7 +28,7 @@ import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.trellisldp.api.*;
 
 /**
- * A microprofile-based event service.
+ * A MicroProfile-based event service.
  */
 @ApplicationScoped
 public class ReactiveEventService implements EventService {

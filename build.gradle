@@ -23,24 +23,6 @@ plugins {
 }
 
 ext {
-
-    omitFromJacocoReporting = [
-        'trellis-bom',
-        'trellis-karaf',
-        'trellis-openliberty',
-        'trellis-osgi',
-        'trellis-server',
-        'trellis-test'
-    ]
-
-    omitFromMavenPublishing = [
-        'trellis-dropwizard-triplestore',
-        'trellis-osgi',
-        'trellis-server',
-        'trellis-quarkus',
-        'trellis-openliberty'
-    ]
-
     // Core dependencies
     commonsCodecVersion = "1.14"
     commonsIoVersion = "2.6"
@@ -61,7 +43,7 @@ ext {
     managementApiVersion = "1.1.4"
     validationApiVersion = "2.0.2"
 
-    // Microprofile
+    // MicroProfile
     microprofileConfigVersion = "1.3"
     microprofileHealthVersion = "2.1"
     microprofileMetricsVersion = "2.2.1"
@@ -133,6 +115,23 @@ ext {
     spiflyVersion = "1.2.3"
     // Note: ActiveMQ requires Spring4, but Karaf 4.2 includes Spring5, so this forces an earlier spring dependency
     springFeatureVersion = "4.1.0"
+
+    omitFromJacocoReporting = [
+        'trellis-bom',
+        'trellis-karaf',
+        'trellis-openliberty',
+        'trellis-osgi',
+        'trellis-server',
+        'trellis-test'
+    ]
+
+    omitFromMavenPublishing = [
+        'trellis-dropwizard-triplestore',
+        'trellis-osgi',
+        'trellis-server',
+        'trellis-quarkus',
+        'trellis-openliberty'
+    ]
 }
 
 allprojects { subproj ->

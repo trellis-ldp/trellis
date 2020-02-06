@@ -24,7 +24,7 @@ import org.trellisldp.app.ConstraintServices;
 
 /**
  * A CDI-based implementation of the {@link ConstraintServices} interface, suitable
- * for any CDI or microprofile-based application.
+ * for any CDI or MicroProfile-based application.
  */
 @ApplicationScoped
 public class CDIConstraintServices implements ConstraintServices {
