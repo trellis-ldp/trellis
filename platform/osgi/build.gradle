@@ -2,7 +2,11 @@ description = """Trellis OSGi"""
 
 repositories {
     mavenCentral()
-    mavenLocal()
+    mavenLocal() {
+        content {
+            includeGroup "org.trellisldp"
+        }
+    }
 }
 
 ext {

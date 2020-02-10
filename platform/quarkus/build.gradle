@@ -9,7 +9,11 @@ repositories {
     maven {
         url "https://oss.sonatype.org/content/repositories/snapshots"
     }
-    mavenLocal()
+    mavenLocal() {
+        content {
+            includeGroup "org.trellisldp"
+        }
+    }
 }
 
 def installForQuarkus = [
