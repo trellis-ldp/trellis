@@ -1,5 +1,10 @@
 description = """Trellis OSGi"""
 
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
 ext {
     moduleName = 'org.trellisldp.osgi'
 }
