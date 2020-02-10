@@ -1,5 +1,7 @@
-apply plugin: 'java-library'
-apply plugin: 'biz.aQute.bnd.builder'
+plugins {
+    id 'java-library'
+    id 'biz.aQute.bnd.builder'
+}
 
 description = 'Trellis HTTP'
 
