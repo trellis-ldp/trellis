@@ -13,6 +13,7 @@
  */
 package org.trellisldp.webac;
 
+import static java.net.URI.create;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static javax.ws.rs.HttpMethod.DELETE;
@@ -56,6 +57,7 @@ import org.trellisldp.vocabulary.Trellis;
 class WebAcFilterTest {
 
     private static final Set<IRI> allModes = new HashSet<>();
+    private static final String webid = "https://example.com/user#me";
 
     static {
         allModes.add(ACL.Append);
@@ -104,12 +106,14 @@ class WebAcFilterTest {
         initMocks(this);
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(allModes);
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
         when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
-        when(mockPrincipal.getName()).thenReturn("https://example.com/user#me");
+        when(mockPrincipal.getName()).thenReturn(webid);
     }
 
     @Test
@@ -418,5 +422,28 @@ class WebAcFilterTest {
     @Test
     void testNoParamCtor() {
         assertDoesNotThrow(() -> new WebAcFilter());
+    }
+
+    @Test
+    void testSessionBuilder() {
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
+        final String baseUrl = "https://example.com/";
+        final Session session = WebAcFilter.buildSession(mockContext, baseUrl);
+        assertEquals("trellis:data/user#me", session.getAgent().getIRIString());
+    }
+
+    @Test
+    void testSessionBuilderNoSlash() {
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
+        final String baseUrl = "https://example.com";
+        final Session session = WebAcFilter.buildSession(mockContext, baseUrl);
+        assertEquals("trellis:data/user#me", session.getAgent().getIRIString());
+    }
+
+    @Test
+    void testSessionBuilderNoBaseUrl() {
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
+        final Session session = WebAcFilter.buildSession(mockContext, null);
+        assertEquals(webid, session.getAgent().getIRIString());
     }
 }

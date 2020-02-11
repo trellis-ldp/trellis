@@ -233,7 +233,7 @@ public class TrellisRequest {
         return acceptableMediaTypes;
     }
 
-    static String buildBaseUrl(final URI uri, final MultivaluedMap<String, String> headers) {
+    public static String buildBaseUrl(final URI uri, final MultivaluedMap<String, String> headers) {
         // Start with the baseURI from the request
         final UriBuilder builder = UriBuilder.fromUri(uri);
 
