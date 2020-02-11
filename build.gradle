@@ -81,7 +81,7 @@ ext {
     sleepycatVersion = "18.3.12"
     smallryeConfigVersion = "1.5.0"
     smallryeHealthVersion = "2.1.0"
-    smallryeJwtVersion = "2.0.12"
+    smallryeJwtVersion = "2.0.13"
     smallryeReactiveVersion = "1.0.8"
     smallryeReactiveOperatorsVersion = "1.0.10"
     weldVersion = "2.0.1.Final"
@@ -95,7 +95,7 @@ ext {
     spotbugsToolVersion = "3.1.12"
 
     // OSGi
-    commonsCompressVersion = "1.19"
+    commonsCompressVersion = "1.20"
     elVersion = "3.0.3"
     failureaccessVersion = "1.0.1"
     interceptorVersion = "1.2.5"
