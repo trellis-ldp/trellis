@@ -8,6 +8,7 @@ description = 'Trellis OAuth'
 
 ext {
     moduleName = 'org.trellisldp.auth.oauth'
+    testModules = ['smallrye.config']
 }
 
 dependencies {

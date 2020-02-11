@@ -25,7 +25,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SigningKeyResolverAdapter;
 import io.jsonwebtoken.io.Deserializer;
-import io.jsonwebtoken.io.JacksonDeserializer;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import io.jsonwebtoken.security.SecurityException;
 
 import java.io.IOException;
@@ -62,7 +62,7 @@ public class JwksAuthenticator implements Authenticator {
 
     @Override
     public Claims parse(final String token) {
-        return Jwts.parser().setSigningKeyResolver(new SigningKeyResolverAdapter() {
+        return Jwts.parserBuilder().setSigningKeyResolver(new SigningKeyResolverAdapter() {
             @Override
             public Key resolveSigningKey(final JwsHeader header, final Claims claims) {
                 final String keyid = header.getKeyId();
@@ -74,7 +74,7 @@ public class JwksAuthenticator implements Authenticator {
                 }
                 throw new SecurityException("Could not locate key: " + keyid);
             }
-        }).parseClaimsJws(token).getBody();
+        }).build().parseClaimsJws(token).getBody();
     }
 
     private static Map<String, Key> buildKeys(final String location) {

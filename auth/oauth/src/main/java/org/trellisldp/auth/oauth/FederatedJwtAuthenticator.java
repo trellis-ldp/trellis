@@ -46,7 +46,7 @@ public class FederatedJwtAuthenticator implements Authenticator {
     @Override
     public Claims parse(final String credentials) {
         // Parse the JWT claims
-        return Jwts.parser().setSigningKeyResolver(new SigningKeyResolverAdapter() {
+        return Jwts.parserBuilder().setSigningKeyResolver(new SigningKeyResolverAdapter() {
             @Override
             public Key resolveSigningKey(final JwsHeader header, final Claims claims) {
                 if (header.getKeyId() == null) {
@@ -61,6 +61,6 @@ public class FederatedJwtAuthenticator implements Authenticator {
                 }
                 throw new SecurityException("Could not locate key in keystore: " + header.getKeyId());
             }
-        }).parseClaimsJws(credentials).getBody();
+        }).build().parseClaimsJws(credentials).getBody();
     }
 }
