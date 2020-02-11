@@ -36,6 +36,6 @@ public class JwtAuthenticator implements Authenticator {
     @Override
     public Claims parse(final String token) {
         // Parse the JWT claims
-        return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
 }
