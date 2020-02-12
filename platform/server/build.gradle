@@ -1,7 +1,9 @@
-apply plugin: 'application'
-apply plugin: 'distribution'
-apply plugin: 'nebula.ospackage-application'
-apply plugin: 'com.palantir.docker'
+plugins {
+    id 'application'
+    id 'distribution'
+    id 'com.palantir.docker'
+    id 'nebula.ospackage'
+}
 
 description = 'Trellis Triplestore Application'
 

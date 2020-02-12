@@ -1,13 +1,6 @@
-apply plugin: 'liberty'
-apply plugin: 'war'
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "net.wasdev.wlp.gradle.plugins:liberty-gradle-plugin:2.7"
-    }
+plugins {
+    id "war"
+    id "net.wasdev.wlp.gradle.plugins.Liberty"
 }
 
 ext {

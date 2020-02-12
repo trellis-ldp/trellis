@@ -1,11 +1,14 @@
-apply plugin: 'java-library'
-apply plugin: 'biz.aQute.bnd.builder'
-apply plugin: 'info.solidsoft.pitest'
+plugins {
+    id 'java-library'
+    id 'biz.aQute.bnd.builder'
+    id 'info.solidsoft.pitest'
+}
 
 description = 'Trellis OAuth'
 
 ext {
     moduleName = 'org.trellisldp.auth.oauth'
+    testModules = ['smallrye.config']
 }
 
 dependencies {
