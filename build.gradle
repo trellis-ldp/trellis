@@ -41,9 +41,9 @@ ext {
     validationApiVersion = "2.0.2"
 
     // MicroProfile
-    microprofileConfigVersion = "1.3"
-    microprofileHealthVersion = "2.1"
-    microprofileMetricsVersion = "2.2.1"
+    microprofileConfigVersion = "1.4"
+    microprofileHealthVersion = "2.2"
+    microprofileMetricsVersion = "2.3"
     microprofileJwtVersion = "1.1.1"
     microprofileOpenapiVersion = "1.1.2"
     microprofileReactiveMessagingVersion = "1.0"

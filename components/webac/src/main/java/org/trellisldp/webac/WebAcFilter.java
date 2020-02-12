@@ -26,9 +26,12 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.buildTrellisIdentifier;
+import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
+import static org.trellisldp.http.core.TrellisRequest.buildBaseUrl;
 
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +49,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.commons.rdf.api.RDF;
 import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 import org.trellisldp.api.Session;
@@ -105,6 +109,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private static final Set<String> readable = new HashSet<>(asList("GET", "HEAD", "OPTIONS"));
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
     private static final Set<String> appendable = new HashSet<>(singletonList("POST"));
+    private static final RDF rdf = getInstance();
 
     protected final WebAcService accessService;
     private final List<String> challenges;
@@ -172,7 +177,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     @Override
     public void filter(final ContainerRequestContext ctx) {
         final String path = ctx.getUriInfo().getPath();
-        final Session s = HttpSession.from(ctx.getSecurityContext());
+        final Session s = buildSession(ctx, baseUrl);
         final String method = ctx.getMethod();
 
         final Set<IRI> modes = accessService.getAccessModes(buildTrellisIdentifier(path), s);
@@ -259,5 +264,25 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             throw new ForbiddenException();
         }
         LOGGER.debug("User: {} can read {}", session.getAgent(), path);
+    }
+
+    static String getBaseUrl(final ContainerRequestContext ctx, final String baseUrl) {
+        if (baseUrl != null) {
+            return baseUrl;
+        }
+        return buildBaseUrl(ctx.getUriInfo().getBaseUri(), ctx.getHeaders());
+    }
+
+    static Session buildSession(final ContainerRequestContext ctx, final String baseUrl) {
+        final Session session = HttpSession.from(ctx.getSecurityContext());
+        final String context = getBaseUrl(ctx, baseUrl);
+        if (session.getAgent().getIRIString().startsWith(context)) {
+            final String path = session.getAgent().getIRIString().substring(context.length());
+            if (path.startsWith("/")) {
+                return new HttpSession(rdf.createIRI(TRELLIS_DATA_PREFIX + path.substring(1)));
+            }
+            return new HttpSession(rdf.createIRI(TRELLIS_DATA_PREFIX + path));
+        }
+        return session;
     }
 }
