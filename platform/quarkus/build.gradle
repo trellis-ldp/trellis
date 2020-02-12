@@ -68,9 +68,6 @@ dependencies {
 
     implementation "com.github.spullara.mustache.java:compiler:$mustacheVersion"
     implementation "com.google.guava:guava:$guavaVersion"
-    implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
-    implementation "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
-    implementation "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
     implementation "org.apache.jena:jena-arq:$jenaVersion"
     implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
     implementation "org.apache.jena:jena-tdb2:$jenaVersion"
