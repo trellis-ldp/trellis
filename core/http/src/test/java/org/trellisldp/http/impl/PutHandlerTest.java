@@ -52,6 +52,7 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.audit.DefaultAuditService;
+import org.trellisldp.http.core.HttpConstants;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -93,6 +94,28 @@ class PutHandlerTest extends BaseTestHandler {
         assertThrows(CompletionException.class, () ->
                 unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
                 "No exception when the audit backend completes exceptionally!");
+    }
+
+    @Test
+    void testNoVersioning() {
+        final MementoService mockMementoService = mock(MementoService.class);
+        when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
+        when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
+        when(mockBundler.getMementoService()).thenReturn(mockMementoService);
+
+        try {
+            System.setProperty(HttpConstants.CONFIG_HTTP_VERSIONING, "false");
+            final PutHandler handler = buildPutHandler(RESOURCE_TURTLE, null, false);
+            try (final Response res = handler.setResource(handler.initialize(mockParent, MISSING_RESOURCE))
+                    .thenCompose(handler::updateMemento).toCompletableFuture().join().build()) {
+                assertEquals(CREATED, res.getStatusInfo(), ERR_RESPONSE_CODE);
+
+                verify(mockMementoService, never()).put(any(ResourceService.class), any(IRI.class));
+            }
+
+        } finally {
+            System.clearProperty(HttpConstants.CONFIG_HTTP_VERSIONING);
+        }
     }
 
     @Test

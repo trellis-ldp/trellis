@@ -62,7 +62,7 @@ class FileMementoServiceTest {
     @Test
     void testPutThenDelete() {
         final File dir = new File(getClass().getResource("/versions").getFile());
-        final FileMementoService svc = new FileMementoService(dir.getAbsolutePath());
+        final FileMementoService svc = new FileMementoService(dir.getAbsolutePath(), true);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "another-resource");
         final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
         final Instant time = parse("2019-08-16T14:21:01Z");
@@ -96,6 +96,44 @@ class FileMementoServiceTest {
         assertEquals(MISSING_RESOURCE, svc.get(identifier, time).toCompletableFuture().join());
     }
 
+    @Test
+    void testPutDisabled() {
+        final File dir = new File(getClass().getResource("/versions").getFile());
+        final FileMementoService svc = new FileMementoService(dir.getAbsolutePath(), false);
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "another-resource");
+        final Instant time = parse("2019-08-16T14:21:01Z");
+
+        final Resource mockResource = mock(Resource.class);
+
+        when(mockResource.getModified()).thenReturn(time);
+
+        svc.put(mockResource).toCompletableFuture().join();
+
+        final Resource res = svc.get(identifier, time).toCompletableFuture().join();
+        assertEquals(MISSING_RESOURCE, res);
+        assertDoesNotThrow(() -> svc.delete(identifier, time).toCompletableFuture().join());
+    }
+
+    @Test
+    void testListDisabled() {
+        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final File dir = new File(getClass().getResource("/versions").getFile());
+        assertTrue(dir.exists(), "Resource directory doesn't exist!");
+        assertTrue(dir.isDirectory(), "Resource directory isn't a valid directory");
+
+        try {
+            System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO_PATH, dir.getAbsolutePath());
+            System.setProperty(FileMementoService.CONFIG_FILE_MEMENTO, "false");
+
+            final MementoService svc = new FileMementoService();
+
+            assertEquals(0L, svc.mementos(identifier).toCompletableFuture().join().size(),
+                    "Incorrect count of Mementos!");
+        } finally {
+            System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO_PATH);
+            System.clearProperty(FileMementoService.CONFIG_FILE_MEMENTO);
+        }
+    }
 
     @Test
     void testList() {
@@ -132,7 +170,7 @@ class FileMementoServiceTest {
     @Test
     void testPutBinary() {
         final File dir = new File(getClass().getResource("/versions").getFile());
-        final MementoService svc = new FileMementoService(dir.getAbsolutePath());
+        final MementoService svc = new FileMementoService(dir.getAbsolutePath(), true);
         final IRI identifier = rdf.createIRI("trellis:data/a-binary");
         final IRI binaryId = rdf.createIRI("file:binary");
         final IRI root = rdf.createIRI("trellis:data/");
@@ -177,7 +215,7 @@ class FileMementoServiceTest {
     @Test
     void testPutIndirectContainer() {
         final File dir = new File(getClass().getResource("/versions").getFile());
-        final MementoService svc = new FileMementoService(dir.getAbsolutePath());
+        final MementoService svc = new FileMementoService(dir.getAbsolutePath(), true);
         final IRI identifier = rdf.createIRI("trellis:data/a-resource");
         final IRI member = rdf.createIRI("trellis:data/membership-resource");
         final IRI root = rdf.createIRI("trellis:data/");

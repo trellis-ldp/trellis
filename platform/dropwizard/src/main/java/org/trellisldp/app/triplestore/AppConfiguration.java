@@ -31,6 +31,8 @@ class AppConfiguration extends TrellisConfiguration {
     @NotNull
     private String namespaces;
 
+    private boolean isVersioningEnabled = true;
+
     private int levels = 3;
 
     private int length =  2;
@@ -53,6 +55,24 @@ class AppConfiguration extends TrellisConfiguration {
     @JsonProperty
     public void setMementos(final String config) {
         this.mementos = config;
+    }
+
+    /**
+     * Get whether versioning is enabled.
+     * @return true if memento versioning is enabled; false otherwise
+     */
+    @JsonProperty
+    public boolean getIsVersioningEnabled() {
+        return isVersioningEnabled;
+    }
+
+    /**
+     * Set whether mementos are enabled.
+     * @param isVersioningEnabled whether versioning is enabled
+     */
+    @JsonProperty
+    public void setIsVersioningEnabled(final boolean isVersioningEnabled) {
+        this.isVersioningEnabled = isVersioningEnabled;
     }
 
     /**
