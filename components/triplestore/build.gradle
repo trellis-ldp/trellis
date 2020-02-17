@@ -29,7 +29,9 @@ dependencies {
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
-    testImplementation "io.smallrye:smallrye-health:$smallryeHealthVersion"
+    testImplementation("io.smallrye:smallrye-health:$smallryeHealthVersion") {
+        exclude group: 'io.smallrye', module: 'smallrye-health-extension-api'
+    }
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-test')
