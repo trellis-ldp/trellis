@@ -45,7 +45,8 @@ jobs:
       # Only run security scans if integration is set up
       run: |
           if [ "$SNYK_ORG" != "" ]; then
-            docker run --name snyk -e SNYK_TOKEN -e PROJECT_PATH -v "/home/runner/work/trellis":"/project" snyk/snyk-cli:gradle-5.4 "monitor --all-sub-projects --org=$SNYK_ORG"
+            # don't fail the build if snyk doesn't complete successfully
+            docker run --name snyk -e SNYK_TOKEN -e PROJECT_PATH -v "/home/runner/work/trellis":"/project" snyk/snyk-cli:gradle-5.4 "monitor --all-sub-projects --org=$SNYK_ORG" || true
           fi
 
   osgi:
