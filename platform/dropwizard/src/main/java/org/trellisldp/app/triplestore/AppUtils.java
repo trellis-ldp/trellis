@@ -14,6 +14,7 @@
 package org.trellisldp.app.triplestore;
 
 import static java.lang.Boolean.parseBoolean;
+import static java.util.Collections.singletonList;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.dropwizard.config.NotificationsConfiguration.Type.JMS;
@@ -61,8 +62,8 @@ final class AppUtils {
     }
 
     public static ActiveMQConnectionFactory getJmsFactory(final NotificationsConfiguration config) {
-        final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(
-                config.getConnectionString());
+        final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(config.getConnectionString());
+        factory.setTrustedPackages(singletonList(String.class.getPackage().getName()));
         if (config.any().containsKey(PW_KEY) && config.any().containsKey(UN_KEY)) {
             factory.setUserName(config.any().get(UN_KEY));
             factory.setPassword(config.any().get(PW_KEY));
