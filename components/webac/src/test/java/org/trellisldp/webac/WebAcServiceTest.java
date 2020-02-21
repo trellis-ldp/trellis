@@ -790,6 +790,27 @@ class WebAcServiceTest {
         }
     }
 
+    @Test
+    void testDisconnectedHierarchy() throws Exception {
+        when(mockResourceService.get(eq(parentIRI))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockChildResource.hasAcl()).thenReturn(false);
+        when(mockResource.hasAcl()).thenReturn(false);
+        when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+                rdf.createQuad(PreferAccessControl, authIRI8, type, ACL.Authorization),
+                rdf.createQuad(PreferAccessControl, authIRI8, ACL.agent, agentIRI),
+                rdf.createQuad(PreferAccessControl, authIRI8, ACL.accessTo, rootIRI),
+                rdf.createQuad(PreferAccessControl, authIRI8, ACL.mode, ACL.Read),
+                rdf.createQuad(PreferAccessControl, authIRI8, ACL.mode, ACL.Append)));
+
+        when(mockSession.getAgent()).thenReturn(agentIRI);
+
+        assertAll("Test default ACL readability",
+                checkCanRead(resourceIRI),
+                checkCanRead(childIRI),
+                checkCanRead(parentIRI),
+                checkCanRead(rootIRI));
+    }
+
     private Stream<Executable> checkAllCanRead() {
         return Stream.of(checkCanRead(nonexistentIRI), checkCanRead(resourceIRI),
                 checkCanRead(childIRI), checkCanRead(parentIRI), checkCanRead(rootIRI));

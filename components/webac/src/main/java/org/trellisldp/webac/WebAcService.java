@@ -333,8 +333,7 @@ public class WebAcService {
         }
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());
-        return getContainer(resource.getIdentifier()).map(resourceService::get)
-            .map(CompletionStage::toCompletableFuture).map(CompletableFuture::join)
+        return getContainer(resource.getIdentifier()).flatMap(this::getNearestResource)
             .map(res -> getAllAuthorizationsFor(res, true)).orElseGet(Stream::empty);
     }
 
