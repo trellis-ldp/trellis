@@ -44,6 +44,7 @@ class TrellisConfigurationTest {
         assertFalse(config.getCache().getNoCache(), "Incorrect cache/noCache value!");
         assertEquals(10L, config.getJsonld().getCacheSize(), "Incorrect jsonld/cacheSize value!");
         assertEquals(48L, config.getJsonld().getCacheExpireHours(), "Incorrect jsonld/cacheExpireHours value!");
+        assertFalse(config.getIsVersioningEnabled(), "Incorrect versioning value!");
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty(), "Incorrect jsonld/contextDomainWhitelist");
         assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"),
                 "Incorrect jsonld/contextWhitelist value!");

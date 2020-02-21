@@ -56,7 +56,7 @@ public class TrellisServiceBundler extends BaseServiceBundler {
      */
     public TrellisServiceBundler(final AppConfiguration config, final Environment environment) {
         auditService = new DefaultAuditService();
-        mementoService = new FileMementoService(config.getMementos());
+        mementoService = new FileMementoService(config.getMementos(), config.getIsVersioningEnabled());
         timemapGenerator = new DefaultTimemapGenerator();
         constraintServices = new DefaultConstraintServices(singletonList(new LdpConstraintService()));
         resourceService = buildResourceService(config, environment);

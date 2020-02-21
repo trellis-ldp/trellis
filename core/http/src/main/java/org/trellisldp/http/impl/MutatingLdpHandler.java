@@ -20,7 +20,9 @@ import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_VERSIONING;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.http.impl.HttpUtils.matchIdentifier;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
@@ -72,8 +74,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
     private static final Logger LOGGER = getLogger(MutatingLdpHandler.class);
 
     private final Session session;
-
     private final InputStream entity;
+    private final boolean versioningEnabled;
 
     private Resource parent;
 
@@ -104,6 +106,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
         super(req, trellis, extensions, baseUrl);
         this.entity = entity;
         this.session = HttpSession.from(req.getSecurityContext());
+        this.versioningEnabled = getConfig().getOptionalValue(CONFIG_HTTP_VERSIONING, Boolean.class)
+            .orElse(Boolean.TRUE);
     }
 
     protected void setParent(final Resource parent) {
@@ -131,12 +135,15 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @return a response builder promise
      */
     public CompletionStage<ResponseBuilder> updateMemento(final ResponseBuilder builder) {
-        return getServices().getMementoService().put(getServices().getResourceService(), getInternalId())
-            .exceptionally(ex -> {
-                    LOGGER.warn("Unable to store memento for {}: {}", getInternalId(), ex.getMessage());
-                    return null;
-                })
-            .thenApply(stage -> builder);
+        if (versioningEnabled) {
+            return getServices().getMementoService().put(getServices().getResourceService(), getInternalId())
+                .exceptionally(ex -> {
+                        LOGGER.warn("Unable to store memento for {}: {}", getInternalId(), ex.getMessage());
+                        return null;
+                    })
+                .thenApply(stage -> builder);
+        }
+        return completedFuture(builder);
     }
 
     /**
