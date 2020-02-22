@@ -8,7 +8,6 @@ pluginManagement {
         id 'com.palantir.docker' version "0.24.0"
         id 'info.solidsoft.pitest' version "1.4.6"
         id 'io.quarkus' version "1.2.0.Final"
-        id 'nebula.ospackage' version "8.1.0"
         id "net.wasdev.wlp.gradle.plugins.Liberty" version "2.7"
     }
 }
