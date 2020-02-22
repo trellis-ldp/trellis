@@ -2,7 +2,6 @@ plugins {
     id 'application'
     id 'distribution'
     id 'com.palantir.docker'
-    id 'nebula.ospackage'
 }
 
 description = 'Trellis Triplestore Application'
@@ -26,55 +25,6 @@ dependencies {
         runtimeOnly "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
         runtimeOnly "io.jsonwebtoken:jjwt-api:$jjwtVersion"
     }
-}
-
-ospackage {
-    packageName = 'trellis'
-    release = '1'
-    os = LINUX
-    license = 'ASL 2.0'
-    url = 'https://www.trellisldp.org'
-    summary = 'Trellis is a linked data server.'
-    packageDescription = '''\
-Trellis is a linked data server that can be used for storing large volumes of content,
-particularly in cases where that content is stored for years and decades.'''
-
-    user = 'trellis'
-    // Note: the linux installers do not depend on Java because it is too complicated to
-    // reliably navigate this dependency across linux distributions and supported JRE versions.
-    requires('systemd')
-    into '/opt/trellis'
-
-    from ('scripts') {
-        into 'bin'
-        fileMode = 0550
-    }
-
-    from ('jar.outputs.files') {
-        into 'lib'
-    }
-
-    from ('src/dist/etc') {
-        fileType CONFIG | NOREPLACE
-        into '/opt/trellis/etc'
-    }
-
-    from ('src/dist/data') {
-        fileType CONFIG | NOREPLACE
-        into '/opt/trellis/data'
-    }
-}
-
-buildRpm {
-    preInstall file('src/rpm/preInstall.sh')
-    postInstall file('src/rpm/postInstall.sh')
-    preUninstall file('src/rpm/preUninstall.sh')
-}
-
-buildDeb {
-    preInstall file('src/deb/preInstall.sh')
-    postInstall file('src/deb/postInstall.sh')
-    preUninstall file('src/deb/preUninstall.sh')
 }
 
 docker {
@@ -101,8 +51,6 @@ docker {
 }
 
 signing {
-    sign buildRpm
-    sign buildDeb
     sign distTar
     sign distZip
 }
@@ -115,8 +63,6 @@ task copyDistTask(type: Copy) {
 
 assembleDist {
     dependsOn copyDistTask
-    dependsOn signBuildRpm
-    dependsOn signBuildDeb
 }
 
 gradle.taskGraph.whenReady({ graph ->
