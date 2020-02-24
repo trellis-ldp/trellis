@@ -60,7 +60,7 @@ ext {
     mustacheVersion = "0.9.6"
     quarkusVersion = "1.2.1.Final"
     rabbitMqVersion = "5.8.0"
-    rxjavaVersion = "2.2.17"
+    rxjavaVersion = "2.2.18"
 
     // Transitive dependencies
     snakeyamlVersion = "1.25"
