@@ -63,7 +63,7 @@ ext {
     rxjavaVersion = "2.2.18"
 
     // Transitive dependencies
-    snakeyamlVersion = "1.25"
+    snakeyamlVersion = "1.26"
 
     // Testing
     apiguardianVersion = "1.1.0"
@@ -198,7 +198,7 @@ allprojects { subproj ->
             exclude group: 'com.google.code.findbugs', module: 'jsr305'
         }
         resolutionStrategy {
-            // use version 1.25 until jackson-dataformat-yaml updates dependency
+            // use managed version until jackson-dataformat-yaml updates dependency
             force "org.yaml:snakeyaml:$snakeyamlVersion"
         }
         resolutionStrategy.dependencySubstitution {
