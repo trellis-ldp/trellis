@@ -2,7 +2,6 @@ plugins {
     id 'application'
     id 'distribution'
     id 'java-library'
-    id 'com.palantir.docker'
 }
 
 description = "Trellis Triplestore Application"
@@ -85,29 +84,6 @@ jar {
     manifest {
         attributes('Automatic-Module-Name': moduleName)
     }
-}
-
-docker {
-    name "trellisldp/trellis:${project.version}"
-    tags 'latest', 'develop'
-    dockerfile file('src/docker/Dockerfile')
-    files tasks.distTar.outputs, './src/docker/config.yml', './src/docker/command.sh'
-    buildArgs([BUILD_VERSION: project.version])
-    def gitLabels = ['git.url':'https://github.com/trellis-ldp/trellis']
-    try {
-        def stdout = new ByteArrayOutputStream()
-        exec {
-            commandLine 'git', 'rev-parse', '--short', 'HEAD'
-            standardOutput = stdout
-        }
-        def hash = stdout.toString('UTF-8').trim()
-        if (!hash.isEmpty()) {
-            gitLabels.put('git.commit', hash)
-        }
-    } catch (all) { }
-    labels(gitLabels)
-    pull false
-    noCache false
 }
 
 signing {
