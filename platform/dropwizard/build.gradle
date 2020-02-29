@@ -1,11 +1,19 @@
 plugins {
+    id 'application'
+    id 'distribution'
     id 'java-library'
+    id 'com.palantir.docker'
 }
 
 description = "Trellis Triplestore Application"
 
 ext {
     moduleName = 'org.trellisldp.app.triplestore'
+}
+
+application {
+    mainClassName = 'org.trellisldp.app.triplestore.TrellisApplication'
+    applicationName = 'trellis'
 }
 
 configurations.all {
@@ -58,6 +66,8 @@ dependencies {
     implementation "io.dropwizard:dropwizard-metrics:$dropwizardVersion"
     implementation "io.dropwizard:dropwizard-http2:$dropwizardVersion"
 
+    runtimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+
     testImplementation("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: "org.hamcrest", module: 'hamcrest-core'
         exclude group: 'org.hamcrest', module: 'hamcrest-library'
@@ -76,6 +86,52 @@ jar {
         attributes('Automatic-Module-Name': moduleName)
     }
 }
+
+docker {
+    name "trellisldp/trellis:${project.version}"
+    tags 'latest', 'develop'
+    dockerfile file('src/docker/Dockerfile')
+    files tasks.distTar.outputs, './src/docker/config.yml', './src/docker/command.sh'
+    buildArgs([BUILD_VERSION: project.version])
+    def gitLabels = ['git.url':'https://github.com/trellis-ldp/trellis']
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-parse', '--short', 'HEAD'
+            standardOutput = stdout
+        }
+        def hash = stdout.toString('UTF-8').trim()
+        if (!hash.isEmpty()) {
+            gitLabels.put('git.commit', hash)
+        }
+    } catch (all) { }
+    labels(gitLabels)
+    pull false
+    noCache false
+}
+
+signing {
+    sign distTar
+    sign distZip
+}
+
+task copyDistTask(type: Copy) {
+    from '../LICENSE'
+    from 'README.md'
+    into 'src/dist'
+}
+
+assembleDist {
+    dependsOn copyDistTask
+}
+
+gradle.taskGraph.whenReady({ graph ->
+    tasks.withType(AbstractArchiveTask).each { archive ->
+        archive.doLast {
+            ant.checksum file: archive.archiveFile.get(), algorithm: 'sha-256', format: 'MD5SUM', fileext: '.sha256'
+        }
+    }
+})
 
 java {
     // because this isn't built as a JPMS module
