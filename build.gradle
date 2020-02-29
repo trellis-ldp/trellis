@@ -490,7 +490,7 @@ subprojects { subproj ->
                     "implSpec:a:Implementation Requirements:",
                     "implNote:a:Implementation Note:"]
             links "https://docs.oracle.com/javase/8/docs/api/"
-            links 'https://docs.oracle.com/javaee/7/api/'
+            links 'https://javaee.github.io/javaee-spec/javadocs/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
             links 'https://commons.apache.org/proper/commons-codec/apidocs/'
             links 'https://activemq.apache.org/maven/apidocs/'
@@ -545,7 +545,7 @@ configure(rootProject) {
                     "implNote:a:Implementation Note:"]
             memberLevel = JavadocMemberLevel.PUBLIC
             links "https://docs.oracle.com/javase/8/docs/api/"
-            links 'https://docs.oracle.com/javaee/7/api/'
+            links 'https://javaee.github.io/javaee-spec/javadocs/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
             links 'https://commons.apache.org/proper/commons-codec/apidocs/'
             links 'https://activemq.apache.org/maven/apidocs/'
