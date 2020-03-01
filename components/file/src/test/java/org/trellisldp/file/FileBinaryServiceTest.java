@@ -83,12 +83,15 @@ class FileBinaryServiceTest {
     }
 
     @Test
-    void testFileContent() {
+    void testFileContent() throws Exception {
         final BinaryService service = new FileBinaryService();
-        assertEquals("A test document.\n",
-                        service.get(file).thenApply(Binary::getContent).thenApply(this::uncheckedToString)
-                        .toCompletableFuture().join(),
-                        "Incorrect content when fetching from a file!");
+        try (final InputStream input = FileBinaryService.class.getResourceAsStream("/test.txt")) {
+            final String doc = uncheckedToString(input);
+            assertNotNull(doc);
+            assertEquals(doc, service.get(file).thenApply(Binary::getContent).thenApply(this::uncheckedToString)
+                            .toCompletableFuture().join(),
+                            "Incorrect content when fetching from a file!");
+        }
     }
 
     @Test
