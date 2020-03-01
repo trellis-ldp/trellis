@@ -48,8 +48,6 @@ jobs:
     - name: Build with Gradle
       run: gradlew.bat -x pmdMain -x spotbugsMain check
 
-    strategy:
-
   osgi:
     runs-on: ubuntu-latest
     name: Java 8 OSGi environment
