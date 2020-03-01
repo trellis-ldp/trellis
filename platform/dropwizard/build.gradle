@@ -92,9 +92,9 @@ signing {
 }
 
 task copyDistTask(type: Copy) {
-    from '../LICENSE'
+    from '../../LICENSE'
     from 'README.md'
-    into 'src/dist'
+    into 'src/main/dist'
 }
 
 assembleDist {

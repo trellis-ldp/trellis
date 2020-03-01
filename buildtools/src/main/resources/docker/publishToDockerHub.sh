@@ -37,6 +37,7 @@ else
     docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$TAG" -t "$IMAGE:$VERSION" .
 fi
 
+docker push $IMAGE
 
 
 
