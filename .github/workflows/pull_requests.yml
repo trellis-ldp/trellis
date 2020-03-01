@@ -46,7 +46,8 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Build with Gradle
-      run: gradlew.bat -x pmdMain -x spotbugsMain check
+      shell: bash
+      run: ./gradlew.bat -x pmdMain -x spotbugsMain check
 
   osgi:
     runs-on: ubuntu-latest
