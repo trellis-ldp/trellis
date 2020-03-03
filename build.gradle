@@ -52,7 +52,7 @@ ext {
     activeMqVersion = "5.15.11"
     dropwizardVersion = "2.0.2"
     guavaVersion = "28.2-jre"
-    jacksonVersion = "2.10.2"
+    jacksonVersion = "2.10.3"
     jenaVersion = "3.14.0"
     jjwtVersion = "0.11.0"
     jsonldVersion = "0.13.0"
