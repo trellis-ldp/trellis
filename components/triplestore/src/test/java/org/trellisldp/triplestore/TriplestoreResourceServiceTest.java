@@ -32,6 +32,7 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
 import java.io.File;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -1305,6 +1306,23 @@ class TriplestoreResourceServiceTest {
         assertNotNull(rdfConnection, "Missing RDFConnection, using local HTTP!");
         assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");
         assertTrue(rdfConnection instanceof RDFConnectionRemote, "Incorrect type");
+    }
+
+    @Test
+    void testBuildExtensionMap() {
+        final Map<String, IRI> extensions = TriplestoreResourceService.buildExtensionMap(
+                "foo=http://example.com/Foo,bar=http://example.com/Bar");
+        assertEquals(2, extensions.size());
+        assertEquals(rdf.createIRI("http://example.com/Foo"), extensions.get("foo"));
+        assertEquals(rdf.createIRI("http://example.com/Bar"), extensions.get("bar"));
+    }
+
+    @Test
+    void testBuildExtensionMapOddities() {
+        final Map<String, IRI> extensions = TriplestoreResourceService.buildExtensionMap(
+                "foo, ,bar=http://example.com/Bar, baz = , = baz ");
+        assertEquals(1, extensions.size());
+        assertEquals(rdf.createIRI("http://example.com/Bar"), extensions.get("bar"));
     }
 
     private static Consumer<Resource> checkChild(final Instant time, final long properties, final long audit) {

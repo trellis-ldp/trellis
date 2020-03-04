@@ -15,11 +15,14 @@ package org.trellisldp.triplestore;
 
 import static java.time.Instant.now;
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static java.util.Collections.synchronizedList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.runAsync;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.builder;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
@@ -46,6 +49,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
@@ -94,6 +98,8 @@ import org.trellisldp.vocabulary.XSD;
 @ApplicationScoped
 public class TriplestoreResourceService implements ResourceService {
 
+    /** Copied from trellis-http in order to avoid an explicit dependency. */
+    private static final String CONFIG_HTTP_EXTENSION_GRAPHS = "trellis.http.extension-graphs";
     /** The configuration key used to set where the RDF is stored. */
     public static final String CONFIG_TRIPLESTORE_RDF_LOCATION = "trellis.triplestore.rdf-location";
     /** The configuration key used to set whether the LDP type should be included in the body of the RDF. */
@@ -103,11 +109,13 @@ public class TriplestoreResourceService implements ResourceService {
 
     private static final Logger LOGGER = getLogger(TriplestoreResourceService.class);
     private static final JenaRDF rdf = getInstance();
+    private static final String ACL_EXT = "acl";
 
     private final Supplier<String> supplier;
     private final RDFConnection rdfConnection;
     private final boolean includeLdpType;
     private final Set<IRI> supportedIxnModels;
+    private final Map<String, IRI> extensions;
 
     /**
      * Create a triplestore-backed resource service.
@@ -138,6 +146,7 @@ public class TriplestoreResourceService implements ResourceService {
         this.supplier = requireNonNull(identifierService, "IdentifierService may not be null!").getSupplier();
         this.supportedIxnModels = unmodifiableSet(new HashSet<>(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
                 LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer)));
+        this.extensions = buildExtensionMap();
     }
 
     @Override
@@ -213,12 +222,8 @@ public class TriplestoreResourceService implements ResourceService {
         }
     }
 
-    private Node getAclIRI(final IRI identifier) {
-        return createURI(identifier.getIRIString() + "?ext=acl");
-    }
-
-    private Node getAuditIRI(final IRI identifier) {
-        return createURI(identifier.getIRIString() + "?ext=audit");
+    private Node getExtIRI(final IRI identifier, final String ext) {
+        return createURI(identifier.getIRIString() + "?ext=" + ext);
     }
 
     private enum OperationType {
@@ -254,8 +259,10 @@ public class TriplestoreResourceService implements ResourceService {
         final UpdateRequest req = new UpdateRequest();
         req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(rdf.asJenaNode(identifier),
                                 SUBJECT, PREDICATE, OBJECT)))));
-        req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(
-                                getAclIRI(identifier), SUBJECT, PREDICATE, OBJECT)))));
+        extensions.forEach((ext, graph) ->
+            req.add(new UpdateDeleteWhere(new QuadAcc(singletonList(new Quad(
+                                getExtIRI(identifier, ext), SUBJECT, PREDICATE, OBJECT))))));
+
         req.add(new UpdateDeleteWhere(new QuadAcc(asList(
                             new Quad(rdf.asJenaNode(PreferServerManaged), rdf.asJenaNode(identifier),
                                 rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.NonRDFSource)),
@@ -274,10 +281,11 @@ public class TriplestoreResourceService implements ResourceService {
                     .map(rdf::asJenaQuad).forEach(sink::addQuad);
             dataset.getGraph(PreferUserManaged).ifPresent(g -> g.stream()
                     .map(t -> new Quad(rdf.asJenaNode(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
-            dataset.getGraph(PreferAccessControl).ifPresent(g -> g.stream()
-                    .map(t -> new Quad(getAclIRI(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
             dataset.getGraph(PreferAudit).ifPresent(g -> g.stream()
-                    .map(t -> new Quad(getAuditIRI(identifier), rdf.asJenaTriple(t))).forEach(sink::addQuad));
+                    .map(t -> new Quad(getExtIRI(identifier, "audit"), rdf.asJenaTriple(t))).forEach(sink::addQuad));
+            extensions.forEach((ext, graph) ->
+                    dataset.getGraph(graph).ifPresent(g -> g.stream()
+                        .map(t -> new Quad(getExtIRI(identifier, ext), rdf.asJenaTriple(t))).forEach(sink::addQuad)));
         }
         req.add(new UpdateDataInsert(sink));
 
@@ -368,15 +376,15 @@ public class TriplestoreResourceService implements ResourceService {
             sink.addQuad(new Quad(rdf.asJenaNode(PreferServerManaged), triple(rdf.asJenaNode(root),
                             rdf.asJenaNode(DC.modified), rdf.asJenaNode(time))));
 
-            sink.addQuad(new Quad(getAclIRI(root), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
+            sink.addQuad(new Quad(getExtIRI(root, ACL_EXT), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
                             rdf.asJenaNode(ACL.Read))));
-            sink.addQuad(new Quad(getAclIRI(root), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
+            sink.addQuad(new Quad(getExtIRI(root, ACL_EXT), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
                             rdf.asJenaNode(ACL.Write))));
-            sink.addQuad(new Quad(getAclIRI(root), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
+            sink.addQuad(new Quad(getExtIRI(root, ACL_EXT), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.mode),
                             rdf.asJenaNode(ACL.Control))));
-            sink.addQuad(new Quad(getAclIRI(root), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.agentClass),
+            sink.addQuad(new Quad(getExtIRI(root, ACL_EXT), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.agentClass),
                             rdf.asJenaNode(FOAF.Agent))));
-            sink.addQuad(new Quad(getAclIRI(root), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.accessTo),
+            sink.addQuad(new Quad(getExtIRI(root, ACL_EXT), triple(rdf.asJenaNode(auth), rdf.asJenaNode(ACL.accessTo),
                             rdf.asJenaNode(root))));
 
             update.add(new UpdateDataInsert(sink));
@@ -387,7 +395,7 @@ public class TriplestoreResourceService implements ResourceService {
 
     @Override
     public CompletionStage<Resource> get(final IRI identifier) {
-        return TriplestoreResource.findResource(rdfConnection, identifier, includeLdpType);
+        return TriplestoreResource.findResource(rdfConnection, identifier, extensions, includeLdpType);
     }
 
     @Override
@@ -459,7 +467,28 @@ public class TriplestoreResourceService implements ResourceService {
      * @param obj the object
      * @return a {@link org.apache.jena.graph.Triple}
      */
-    private static org.apache.jena.graph.Triple triple(final Node subj, final Node pred, final Node obj) {
+    static org.apache.jena.graph.Triple triple(final Node subj, final Node pred, final Node obj) {
         return org.apache.jena.graph.Triple.create(subj, pred, obj);
+    }
+
+    /*
+     * Build a map suitable for extension graphs from a config string.
+     * @param extensions the config value
+     * @return the formatted map
+     */
+    static Map<String, IRI> buildExtensionMap(final String extensions) {
+        return stream(extensions.split(",")).map(item -> item.split("=")).filter(kv -> kv.length == 2)
+            .filter(kv -> !kv[0].trim().isEmpty() && !kv[1].trim().isEmpty())
+            .collect(toMap(kv -> kv[0].trim(), kv -> rdf.createIRI(kv[1].trim())));
+    }
+
+    /**
+     * Build an extension map from configuration.
+     * @return the formatted map
+     */
+    static Map<String, IRI> buildExtensionMap() {
+        return getConfig().getOptionalValue(CONFIG_HTTP_EXTENSION_GRAPHS, String.class)
+            .map(TriplestoreResourceService::buildExtensionMap).orElseGet(() ->
+                    singletonMap(ACL_EXT, PreferAccessControl));
     }
 }
