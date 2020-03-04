@@ -256,7 +256,7 @@ public class TrellisHttpResource {
             @Context final HttpHeaders headers) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, extensions);
-        return supplyAsync(() -> optionsHandler.ldpOptions()).thenApply(ResponseBuilder::build)
+        return supplyAsync(optionsHandler::ldpOptions).thenApply(ResponseBuilder::build)
             .exceptionally(this::handleException);
     }
 
