@@ -395,7 +395,7 @@ public class TriplestoreResourceService implements ResourceService {
 
     @Override
     public CompletionStage<Resource> get(final IRI identifier) {
-        return TriplestoreResource.findResource(rdfConnection, identifier, includeLdpType);
+        return TriplestoreResource.findResource(rdfConnection, identifier, extensions, includeLdpType);
     }
 
     @Override
@@ -484,7 +484,6 @@ public class TriplestoreResourceService implements ResourceService {
 
     /**
      * Build an extension map from configuration.
-     * @param config the configuration
      * @return the formatted map
      */
     static Map<String, IRI> buildExtensionMap() {
