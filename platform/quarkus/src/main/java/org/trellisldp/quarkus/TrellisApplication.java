@@ -29,6 +29,6 @@ public class TrellisApplication extends Application {
 
     @PostConstruct
     void init() {
-        printBanner("Trellis Application", "banner.txt");
+        printBanner("Trellis Application", "org/trellisldp/app/banner.txt");
     }
 }

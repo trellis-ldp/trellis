@@ -21,12 +21,13 @@ class AppUtilsTest {
 
     @Test
     void testPrintBanner() {
-        assertDoesNotThrow(() -> AppUtils.printBanner("Trellis Application", "banner.txt"));
+        assertDoesNotThrow(() -> AppUtils.printBanner("Trellis Application", "org/trellisldp/app/banner.txt"));
     }
 
     @Test
     void testPrintBannerRelative() {
-        assertDoesNotThrow(() -> AppUtils.printBanner("Trellis Application Relative", "./banner.txt"));
+        assertDoesNotThrow(() -> AppUtils.printBanner("Trellis Application Relative",
+                    "./org/trellisldp/app/banner.txt"));
     }
 
     @Test
