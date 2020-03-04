@@ -49,7 +49,7 @@ public class WebApplication extends Application {
 
     @PostConstruct
     void init() {
-        printBanner("Trellis Triplestore Application", "banner.txt");
+        printBanner("Trellis Triplestore Application", "org/trellisldp/app/banner.txt");
     }
 
     @Override
