@@ -14,6 +14,7 @@
 package org.trellisldp.http;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.*;
@@ -67,7 +68,6 @@ import org.trellisldp.http.core.PATCH;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisExtensions;
 import org.trellisldp.http.core.TrellisRequest;
-import org.trellisldp.http.core.Version;
 import org.trellisldp.http.impl.DeleteHandler;
 import org.trellisldp.http.impl.GetConfiguration;
 import org.trellisldp.http.impl.GetHandler;
@@ -255,13 +255,8 @@ public class TrellisHttpResource {
     public CompletionStage<Response> options(@Context final Request request, @Context final UriInfo uriInfo,
             @Context final HttpHeaders headers) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
-        final String urlBase = getBaseUrl(req);
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
-        final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, extensions, req.getVersion() != null,
-                urlBase);
-
-        return fetchTrellisResource(identifier, req.getVersion()).thenApply(optionsHandler::initialize)
-            .thenApply(optionsHandler::ldpOptions).thenApply(ResponseBuilder::build)
+        final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, extensions);
+        return supplyAsync(optionsHandler::ldpOptions).thenApply(ResponseBuilder::build)
             .exceptionally(this::handleException);
     }
 
@@ -442,12 +437,6 @@ public class TrellisHttpResource {
             return slug;
         }
         return trellis.getResourceService().generateIdentifier();
-    }
-    private CompletionStage<? extends Resource> fetchTrellisResource(final IRI identifier, final Version version) {
-        if (version != null) {
-            return trellis.getMementoService().get(identifier, version.getInstant());
-        }
-        return trellis.getResourceService().get(identifier);
     }
 
     private Response handleException(final Throwable err) {

@@ -35,7 +35,6 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.Test;
-import org.trellisldp.vocabulary.LDP;
 
 /**
  * @author acoburn
@@ -46,27 +45,11 @@ class OptionsHandlerTest extends BaseTestHandler {
     private static final String CHECK_ALLOW = "Check Allow headers";
 
     @Test
-    void testOptionsLdprs() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-
-        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions,
-                false, null);
-        try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
-            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
-            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
-            assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
-            assertAll(CHECK_ALLOW, checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
-        }
-    }
-
-    @Test
-    void testOptionsLdpc() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
+    void testOptionsLdpr() {
         when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD, NTRIPLES));
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions,
-                false, baseUrl);
-        try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions);
+        try (final Response res = optionsHandler.ldpOptions().build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
 
@@ -80,41 +63,14 @@ class OptionsHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    void testOptionsLdpnr() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
-
-        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions,
-                false, null);
-        try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
-            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
-            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
-            assertAll(CHECK_ALLOW, checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
-        }
-    }
-
-    @Test
     void testOptionsAcl() {
         when(mockTrellisRequest.getExt()).thenReturn("acl");
 
-        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions,
-                false, baseUrl);
-        try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
+        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions);
+        try (final Response res = optionsHandler.ldpOptions().build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
-            assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header!");
-            assertAll(CHECK_ALLOW, checkAllowHeader(res, asList(GET, HEAD, OPTIONS, PUT, DELETE, PATCH)));
-        }
-    }
-
-    @Test
-    void testOptionsMemento() {
-        final OptionsHandler optionsHandler = new OptionsHandler(mockTrellisRequest, mockBundler, extensions,
-                true, null);
-        try (final Response res = optionsHandler.ldpOptions(optionsHandler.initialize(mockResource)).build()) {
-            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
-            assertNull(res.getHeaderString(ACCEPT_POST), "Unexpected Accept-Post header on Memento!");
-            assertNull(res.getHeaderString(ACCEPT_PATCH), "Unexpected Accept-Patch header on Memento!");
-            assertAll(CHECK_ALLOW, checkAllowHeader(res, asList(GET, HEAD, OPTIONS)));
+            assertAll(CHECK_ALLOW, checkAllowHeader(res, asList(GET, HEAD, OPTIONS, POST, PUT, DELETE, PATCH)));
         }
     }
 }

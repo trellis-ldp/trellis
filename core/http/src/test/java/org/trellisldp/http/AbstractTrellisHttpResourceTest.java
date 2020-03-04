@@ -870,9 +870,9 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target(RESOURCE_PATH).request().options()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
-            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
-            assertAll(CHECK_ALLOWED_METHODS, checkAllowedMethods(res,
-                        asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
+            assertAll(CHECK_ALLOWED_METHODS,
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
             assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
         }
     }
@@ -882,23 +882,21 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target(BINARY_PATH).request().options()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
             assertAll(CHECK_ALLOWED_METHODS,
-                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.NonRDFSource));
-            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
         }
     }
 
     @Test
     void testOptionsLDPC() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         try (final Response res = target(RESOURCE_PATH).request().options()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
             assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
             assertAll(CHECK_ALLOWED_METHODS,
                     checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
-            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.Container));
             assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
 
             final List<String> acceptPost = asList(res.getHeaderString(ACCEPT_POST).split(","));
@@ -915,9 +913,10 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target(RESOURCE_PATH).queryParam(EXT, ACL_PARAM).request().options()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
             assertAll(CHECK_ALLOWED_METHODS,
-                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, POST, OPTIONS)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
         }
     }
 
@@ -927,29 +926,45 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
             assertAll(CHECK_ALLOWED_METHODS,
-                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, POST, OPTIONS)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
         }
     }
 
     @Test
     void testOptionsNonexistent() {
         try (final Response res = target(NON_EXISTENT_PATH).request().options()) {
-            assertEquals(SC_NOT_FOUND, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertAll(CHECK_ALLOWED_METHODS,
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, POST, OPTIONS)));
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
         }
     }
 
     @Test
     void testOptionsVersionNotFound() {
         try (final Response res = target(NON_EXISTENT_PATH).queryParam(VAL_VERSION, "1496260729").request().options()) {
-            assertEquals(SC_NOT_FOUND, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertAll(CHECK_ALLOWED_METHODS,
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, POST, OPTIONS)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
         }
     }
 
     @Test
     void testOptionsGone() {
         try (final Response res = target(DELETED_PATH).request().options()) {
-            assertEquals(SC_GONE, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
+            assertAll(CHECK_ALLOWED_METHODS,
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, POST, OPTIONS)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
         }
     }
 
@@ -957,33 +972,35 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testOptionsSlash() {
         try (final Response res = target(RESOURCE_PATH + "/").request().options()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
-            assertAll(CHECK_ALLOWED_METHODS, checkAllowedMethods(res,
-                        asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
-            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, asList(ACCEPT_POST, MEMENTO_DATETIME)));
+            assertAll(CHECK_ALLOWED_METHODS,
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, POST, OPTIONS)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
         }
     }
 
     @Test
     void testOptionsTimemap() {
-        when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
-                ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
-
         try (final Response res = target(RESOURCE_PATH).queryParam(EXT, TIMEMAP).request().options()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            assertAll(CHECK_ALLOWED_METHODS, checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, MEMENTO_DATETIME)));
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertAll(CHECK_ALLOWED_METHODS,
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, POST, OPTIONS)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
         }
     }
 
     @Test
     void testOptionsTimemapBinary() {
-        when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
-                ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
         try (final Response res = target(BINARY_PATH).queryParam(EXT, TIMEMAP).request().options()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            assertAll(CHECK_ALLOWED_METHODS, checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, asList(ACCEPT_POST, ACCEPT_PATCH, MEMENTO_DATETIME)));
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
+            assertAll(CHECK_ALLOWED_METHODS,
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, POST, OPTIONS)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
         }
     }
 
@@ -991,8 +1008,11 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testOptionsVersion() {
         try (final Response res = target(RESOURCE_PATH).queryParam(VAL_VERSION, timestamp).request().options()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            assertAll(CHECK_ALLOWED_METHODS, checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, asList(ACCEPT_PATCH, ACCEPT_POST)));
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertAll(CHECK_ALLOWED_METHODS,
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, POST, OPTIONS)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
         }
     }
 
@@ -1000,18 +1020,11 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testOptionsVersionBinary() {
         try (final Response res = target(BINARY_PATH).queryParam(VAL_VERSION, timestamp).request().options()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            assertAll(CHECK_ALLOWED_METHODS, checkAllowedMethods(res, asList(GET, HEAD, OPTIONS)));
-            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, asList(ACCEPT_PATCH, ACCEPT_POST)));
-        }
-    }
-
-    @Test
-    void testOptionsException() {
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException(EXPECTED_EXCEPTION);
-        }));
-        try (final Response res = target(RESOURCE_PATH).request().options()) {
-            assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertAll(CHECK_ALLOWED_METHODS,
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, POST, OPTIONS)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
         }
     }
 
