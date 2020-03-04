@@ -16,6 +16,7 @@ package org.trellisldp.triplestore;
 import static java.time.Instant.now;
 import static java.time.Instant.parse;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonMap;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
@@ -29,6 +30,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.triplestore.TriplestoreUtils.getInstance;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;
@@ -74,6 +77,7 @@ class TriplestoreResourceTest {
     private static final AuditService auditService = new DefaultAuditService() {};
 
     private final Instant created = now();
+    private final Map<String, IRI> extensions = singletonMap("acl", Trellis.PreferAccessControl);
 
     @Mock
     private Session mockSession;
@@ -88,7 +92,7 @@ class TriplestoreResourceTest {
 
     @Test
     void testEmptyResource() {
-        final TriplestoreResource res = new TriplestoreResource(connect(create()), identifier, false);
+        final TriplestoreResource res = new TriplestoreResource(connect(create()), identifier, extensions, false);
         res.fetchData();
         assertFalse(res.exists(), "Unexpected resource!");
     }
@@ -98,7 +102,7 @@ class TriplestoreResourceTest {
         final JenaDataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferServerManaged, identifier, DC.modified, rdf.createLiteral(time, XSD.dateTime));
         final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
-                identifier, false);
+                identifier, extensions, false);
         res.fetchData();
         assertFalse(res.exists(), "Unexpected resource!");
     }
@@ -107,7 +111,7 @@ class TriplestoreResourceTest {
     void testMinimalResource() {
         final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
         final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
-                identifier, false);
+                identifier, extensions, false);
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
@@ -122,7 +126,7 @@ class TriplestoreResourceTest {
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
         final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
-                identifier, false);
+                identifier, extensions, false);
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
@@ -137,7 +141,7 @@ class TriplestoreResourceTest {
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
         final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
-                identifier, true);
+                identifier, extensions, true);
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
@@ -155,13 +159,50 @@ class TriplestoreResourceTest {
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
         final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
-                identifier, false);
+                identifier, extensions, false);
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, true, false));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
         assertAll("Check RDF stream", checkRdfStream(res, 2L, 0L, 3L, 5L, 0L, 0L));
+    }
+
+    @Test
+    void testResourceWithExtensionQuads() {
+        final IRI foo = rdf.createIRI("https://example.com/Foo");
+        final IRI fooId = rdf.createIRI(identifier.getIRIString() + "?ext=foo");
+        final Map<String, IRI> ext = new HashMap<>();
+        ext.put("acl", Trellis.PreferAccessControl);
+        ext.put("foo", foo);
+
+        final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
+        dataset.add(fooId, identifier, DC.references, rdf.createIRI("https://example.com/Resource"));
+        dataset.add(aclId, aclSubject, ACL.mode, ACL.Read);
+        dataset.add(aclId, aclSubject, ACL.agentClass, FOAF.Agent);
+        dataset.add(aclId, aclSubject, ACL.accessTo, identifier);
+        auditService.creation(identifier, mockSession).forEach(q ->
+                dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
+        final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
+                identifier, ext, false);
+
+        res.fetchData();
+        assertTrue(res.exists(), "Missing resource!");
+        res.stream().forEach(quad -> System.out.println(quad));
+        assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, true, false));
+        assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
+        assertAll("Check RDF stream",
+                () -> assertEquals(0L, res.stream(singleton(Trellis.PreferServerManaged)).count(),
+                                   "Incorrect server managed triple count!"),
+                () -> assertEquals(2L, res.stream(singleton(Trellis.PreferUserManaged)).count(),
+                                   "Incorrect user managed triple count!"),
+                () -> assertEquals(3L, res.stream(singleton(Trellis.PreferAccessControl)).count(),
+                                   "Incorrect acl triple count!"),
+                () -> assertEquals(5L, res.stream(singleton(Trellis.PreferAudit)).count(),
+                                   "Incorrect audit triple count!"),
+                () -> assertEquals(1L, res.stream(singleton(foo)).count(),
+                                   "Incorrect extension triple count!"),
+                () -> assertEquals(11L, res.stream().count(), "Incorrect total triple count!"));
     }
 
     @Test
@@ -175,7 +216,7 @@ class TriplestoreResourceTest {
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
 
         final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
-                identifier, true);
+                identifier, extensions, true);
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
@@ -198,7 +239,7 @@ class TriplestoreResourceTest {
         });
 
         final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
-                identifier, false);
+                identifier, extensions, false);
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
@@ -214,7 +255,7 @@ class TriplestoreResourceTest {
         getChildIRIs().forEach(c -> dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier));
 
         final TriplestoreResource res = new TriplestoreResource(connect(wrap(dataset.asJenaDatasetGraph())),
-                identifier, true);
+                identifier, extensions, true);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, false, true));
@@ -238,14 +279,14 @@ class TriplestoreResourceTest {
         });
 
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier, true);
+        final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier, extensions, true);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.DirectContainer, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res, member, DC.subject, null, LDP.MemberSubject));
         assertAll("Check RDF stream", checkRdfStream(res, 2L, 1L, 0L, 0L, 0L, 4L));
 
-        final TriplestoreResource memberRes = new TriplestoreResource(rdfConnection, member, false);
+        final TriplestoreResource memberRes = new TriplestoreResource(rdfConnection, member, extensions, false);
         memberRes.fetchData();
         assertTrue(memberRes.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(memberRes, member, LDP.RDFSource, false, false, true));
@@ -275,14 +316,14 @@ class TriplestoreResourceTest {
         });
 
         final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
-        final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier, false);
+        final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier, extensions, false);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
         assertAll("Check resource", checkResource(res, identifier, LDP.IndirectContainer, false, false, true));
         assertAll("Check LDP properties", checkLdpProperties(res, member, DC.relation, null, DC.subject));
         assertAll("Check RDF stream", checkRdfStream(res, 3L, 0L, 0L, 0L, 0L, 4L));
 
-        final TriplestoreResource res2 = new TriplestoreResource(rdfConnection, member, false);
+        final TriplestoreResource res2 = new TriplestoreResource(rdfConnection, member, extensions, false);
         res2.fetchData();
         assertTrue(res2.exists(), "Missing resource (2)!");
         assertAll("Check resource", checkResource(res2, member, LDP.RDFSource, false, false, true));
