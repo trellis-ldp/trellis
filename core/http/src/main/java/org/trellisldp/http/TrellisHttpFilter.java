@@ -30,6 +30,7 @@ import static org.trellisldp.http.core.HttpConstants.*;
 import static org.trellisldp.http.core.TrellisExtensions.buildExtensionMapFromConfig;
 import static org.trellisldp.vocabulary.LDP.PreferContainment;
 import static org.trellisldp.vocabulary.LDP.PreferMembership;
+import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.util.List;
@@ -88,8 +89,8 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
         if (ext != null && extensions.containsKey(ext) && GET.equals(ctx.getMethod())) {
             ctx.getHeaders().putSingle(PREFER, new Prefer(Prefer.PREFER_REPRESENTATION,
                         singletonList(extensions.get(ext).getIRIString()),
-                        asList(PreferUserManaged.getIRIString(), PreferContainment.getIRIString(),
-                            PreferMembership.getIRIString()), null, null).toString());
+                        asList(PreferServerManaged.getIRIString(), PreferUserManaged.getIRIString(),
+                            PreferContainment.getIRIString(), PreferMembership.getIRIString()), null, null).toString());
         }
     }
 
