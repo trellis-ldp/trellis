@@ -403,7 +403,13 @@ class WebAcFilterTest {
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
-        assertTrue(headers.isEmpty());
+
+        final Link link = (Link) headers.getFirst("Link");
+        assertNotNull(link);
+        assertTrue(link.getRels().contains("acl"));
+        assertTrue(link.getRels().contains("self"));
+        assertEquals("http://localhost/?ext=acl", link.getUri().toString());
+
     }
 
     @Test

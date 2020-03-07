@@ -195,11 +195,12 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
 
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) {
-        if (SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && !DELETE.equals(req.getMethod())
-                && !req.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
-                    .contains(HttpConstants.ACL)) {
+        if (SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && !DELETE.equals(req.getMethod())) {
+            final boolean isAcl = req.getUriInfo().getQueryParameters()
+                .getOrDefault(HttpConstants.EXT, emptyList()).contains(HttpConstants.ACL);
+            final String rel = isAcl ? HttpConstants.ACL + " self" : HttpConstants.ACL;
             res.getHeaders().add(LINK, fromUri(getRequestUri(req).queryParam(HttpConstants.EXT, HttpConstants.ACL)
-                        .build()).rel(HttpConstants.ACL).build());
+                        .build()).rel(rel).build());
         }
     }
 
