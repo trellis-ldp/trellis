@@ -13,6 +13,8 @@
  */
 package org.trellisldp.app.triplestore;
 
+import static org.trellisldp.app.AppUtils.printBanner;
+
 import io.dropwizard.setup.Environment;
 
 import org.trellisldp.dropwizard.AbstractTrellisApplication;
@@ -44,5 +46,6 @@ public class TrellisApplication extends AbstractTrellisApplication<AppConfigurat
     protected void initialize(final AppConfiguration config, final Environment environment) {
         super.initialize(config, environment);
         this.serviceBundler = new TrellisServiceBundler(config, environment);
+        printBanner("Trellis Triplestore Application", "org/trellisldp/app/banner.txt");
     }
 }
