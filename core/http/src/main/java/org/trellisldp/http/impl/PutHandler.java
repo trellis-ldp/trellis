@@ -177,7 +177,8 @@ public class PutHandler extends MutatingLdpHandler {
 
     @Override
     protected String getIdentifier() {
-        return super.getIdentifier() + (HttpUtils.isContainer(getLdpType()) ? "/" : "")
+        final String iri = super.getIdentifier();
+        return iri + (HttpUtils.isContainer(getLdpType()) && !iri.endsWith("/") ? "/" : "")
             + (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : "");
     }
 
