@@ -84,7 +84,7 @@ ext {
     smallryeHealthVersion = "2.2.0"
     smallryeJwtVersion = "2.0.13"
     smallryeReactiveVersion = "1.0.8"
-    smallryeReactiveOperatorsVersion = "1.0.11"
+    smallryeReactiveOperatorsVersion = "1.0.12"
     weldVersion = "2.0.1.Final"
     yassonVersion = "1.0.6"
 
