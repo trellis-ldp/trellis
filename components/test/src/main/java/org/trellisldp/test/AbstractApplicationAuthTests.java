@@ -13,6 +13,7 @@
  */
 package org.trellisldp.test;
 
+import static java.net.URI.create;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
@@ -304,7 +305,9 @@ public abstract class AbstractApplicationAuthTests {
                 setPublicContainerChild(res.getLocation().toString());
                 final String publicContainerAcl = getLinks(res).stream().filter(link -> link.getRel().equals(acl))
                     .map(link -> link.getUri().toString()).findFirst().orElse("");
-                assertEquals(getPublicContainer() + EXT_ACL, publicContainerAcl, "Check ACL location for 'public'");
+                assertEquals(getPublicContainer() + EXT_ACL,
+                        create(getPublicContainer()).resolve(publicContainerAcl).toString(),
+                        "Check ACL location for 'public'");
             }
 
             final String publicAcl = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
@@ -336,7 +339,9 @@ public abstract class AbstractApplicationAuthTests {
                 setProtectedContainerChild(res.getLocation().toString());
                 final String protectedContainerAcl = getLinks(res).stream().filter(link -> link.getRel().equals(acl))
                     .map(link -> link.getUri().toString()).findFirst().orElse("");
-                assertEquals(getProtectedContainer() + EXT_ACL, protectedContainerAcl, "Check 'protected' ACL URL");
+                assertEquals(getProtectedContainer() + EXT_ACL,
+                        create(protectedContainer).resolve(protectedContainerAcl).toString(),
+                        "Check 'protected' ACL URL");
             }
 
             final String protectedAcl = prefixAcl
@@ -370,7 +375,8 @@ public abstract class AbstractApplicationAuthTests {
                 setPrivateContainerChild(res.getLocation().toString());
                 final String privateContainerAcl = getLinks(res).stream().filter(link -> link.getRel().equals(acl))
                     .map(link -> link.getUri().toString()).findFirst().orElse("");
-                assertEquals(getPrivateContainer() + EXT_ACL, privateContainerAcl, "Check 'private' ACL URL");
+                assertEquals(getPrivateContainer() + EXT_ACL,
+                        create(privateContainer).resolve(privateContainerAcl).toString(), "Check 'private' ACL URL");
             }
 
             final String privateAcl = prefixAcl
@@ -418,7 +424,8 @@ public abstract class AbstractApplicationAuthTests {
                 setGroupContainerChild(res.getLocation().toString());
                 final String groupContainerAcl = getLinks(res).stream().filter(link -> link.getRel().equals(acl))
                     .map(link -> link.getUri().toString()).findFirst().orElse("");
-                assertEquals(getGroupContainer() + EXT_ACL, groupContainerAcl, "Check 'group' ACL URL");
+                assertEquals(getGroupContainer() + EXT_ACL,
+                        create(groupContainer).resolve(groupContainerAcl).toString(), "Check 'group' ACL URL");
             }
 
             final String groupAcl = prefixAcl
@@ -451,7 +458,8 @@ public abstract class AbstractApplicationAuthTests {
                 defaultContainerChild = res.getLocation().toString();
                 final String defaultContainerAcl = getLinks(res).stream().filter(link -> link.getRel().equals(acl))
                     .map(link -> link.getUri().toString()).findFirst().orElse("");
-                assertEquals(getDefaultContainer() + EXT_ACL, defaultContainerAcl, "Check 'default' ACL URL");
+                assertEquals(getDefaultContainer() + EXT_ACL,
+                        create(defaultContainer).resolve(defaultContainerAcl).toString(), "Check 'default' ACL URL");
             }
 
             final String defaultAcl = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"

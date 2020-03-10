@@ -36,7 +36,6 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.rdf.api.IRI;
@@ -340,7 +339,6 @@ class WebAcFilterTest {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
-        when(mockUriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri("http://localhost/"));
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "", null);
 
@@ -351,7 +349,7 @@ class WebAcFilterTest {
         final Link link = (Link) headers.getFirst("Link");
         assertNotNull(link);
         assertEquals("acl", link.getRel());
-        assertEquals("http://localhost/?ext=acl", link.getUri().toString());
+        assertEquals("/?ext=acl", link.getUri().toString());
     }
 
     @Test
@@ -360,7 +358,6 @@ class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn(DELETE);
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
-        when(mockUriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri("http://localhost/"));
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "", null);
 
@@ -374,6 +371,7 @@ class WebAcFilterTest {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
+        when(mockUriInfo.getPath()).thenReturn("/path");
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "",
                 "http://example.com/");
@@ -385,7 +383,7 @@ class WebAcFilterTest {
         final Link link = (Link) headers.getFirst("Link");
         assertNotNull(link);
         assertEquals("acl", link.getRel());
-        assertEquals("http://example.com/?ext=acl", link.getUri().toString());
+        assertEquals("/path?ext=acl", link.getUri().toString());
     }
 
     @Test
@@ -397,7 +395,7 @@ class WebAcFilterTest {
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockUriInfo.getQueryParameters()).thenReturn(params);
-        when(mockUriInfo.getAbsolutePathBuilder()).thenReturn(UriBuilder.fromUri("http://localhost/"));
+        when(mockUriInfo.getPath()).thenReturn("path/");
 
         final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "", null);
 
@@ -408,8 +406,7 @@ class WebAcFilterTest {
         assertNotNull(link);
         assertTrue(link.getRels().contains("acl"));
         assertTrue(link.getRels().contains("self"));
-        assertEquals("http://localhost/?ext=acl", link.getUri().toString());
-
+        assertEquals("/path/?ext=acl", link.getUri().toString());
     }
 
     @Test

@@ -24,6 +24,7 @@ import static javax.ws.rs.Priorities.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static javax.ws.rs.core.UriBuilder.fromPath;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
@@ -45,7 +46,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
@@ -199,8 +199,9 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             final boolean isAcl = req.getUriInfo().getQueryParameters()
                 .getOrDefault(HttpConstants.EXT, emptyList()).contains(HttpConstants.ACL);
             final String rel = isAcl ? HttpConstants.ACL + " self" : HttpConstants.ACL;
-            res.getHeaders().add(LINK, fromUri(getRequestUri(req).queryParam(HttpConstants.EXT, HttpConstants.ACL)
-                        .build()).rel(rel).build());
+            final String path = req.getUriInfo().getPath();
+            res.getHeaders().add(LINK, fromUri(fromPath(path.startsWith("/") ? path : "/" + path)
+                        .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(rel).build());
         }
     }
 
@@ -210,13 +211,6 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             return prefer.getInclude().contains(Trellis.PreferAudit.getIRIString());
         }
         return false;
-    }
-
-    private UriBuilder getRequestUri(final ContainerRequestContext req) {
-        if (baseUrl != null) {
-            return UriBuilder.fromUri(baseUrl).path(req.getUriInfo().getPath());
-        }
-        return req.getUriInfo().getAbsolutePathBuilder();
     }
 
     protected void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {
