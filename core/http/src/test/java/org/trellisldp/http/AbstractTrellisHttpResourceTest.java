@@ -173,7 +173,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
      * ******************************* */
     @Test
     void testGetJson() throws IOException {
-        try (final Response res = target("/" + RESOURCE_PATH).request().accept("application/ld+json").get()) {
+        try (final Response res = target("/" + RESOURCE_PATH).request().accept("application/trig, application/ld+json")
+                .get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
             assertNull(res.getHeaderString(ACCEPT_POST), ERR_ACCEPT_POST);
             assertAll(CHECK_JSONLD_RESPONSE, checkJsonLdResponse(res));
@@ -385,7 +386,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetBinaryDescription() {
-        try (final Response res = target(BINARY_PATH).request().accept("text/turtle").get()) {
+        try (final Response res = target(BINARY_PATH).request().accept("application/trig, text/turtle").get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
             assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(HUB), HUB_PARAM)), ERR_HUB);
             assertTrue(getLinks(res).stream().anyMatch(hasLink(rdf.createIRI(getBaseUrl() + BINARY_PATH), SELF)),
@@ -810,7 +811,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(PreferAccessControl, binaryIdentifier, ACL.mode, ACL.Read)));
         try (final Response res = target(RESOURCE_PATH).queryParam(EXT, ACL_PARAM).request()
-                .accept(COMPACT_JSONLD).get()) {
+                .accept("application/trig, " + COMPACT_JSONLD).get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
             assertEquals(from(time), res.getLastModified(), ERR_LAST_MODIFIED);

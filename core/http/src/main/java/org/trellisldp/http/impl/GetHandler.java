@@ -169,13 +169,12 @@ public class GetHandler extends BaseLdpHandler {
         // Standard HTTP Headers
         builder.lastModified(from(getResource().getModified()));
 
+        if (syntax != null) {
+            builder.type(syntax.mediaType());
+        }
+
         final IRI model;
-
         if (getRequest().getExt() == null || DESCRIPTION.equals(getRequest().getExt())) {
-            if (syntax != null) {
-                builder.type(syntax.mediaType());
-            }
-
             model = getResource().getBinaryMetadata().isPresent() && syntax != null
                 ? LDP.RDFSource : getResource().getInteractionModel();
             // Link headers from User data
