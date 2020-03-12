@@ -56,7 +56,7 @@ ext {
     jenaVersion = "3.14.0"
     jjwtVersion = "0.11.0"
     jsonldVersion = "0.13.0"
-    kafkaVersion = "2.4.0"
+    kafkaVersion = "2.4.1"
     mustacheVersion = "0.9.6"
     quarkusVersion = "1.2.1.Final"
     rabbitMqVersion = "5.8.0"
