@@ -54,7 +54,7 @@ ext {
     guavaVersion = "28.2-jre"
     jacksonVersion = "2.10.3"
     jenaVersion = "3.14.0"
-    jjwtVersion = "0.11.0"
+    jjwtVersion = "0.11.1"
     jsonldVersion = "0.13.0"
     kafkaVersion = "2.4.1"
     mustacheVersion = "0.9.6"
