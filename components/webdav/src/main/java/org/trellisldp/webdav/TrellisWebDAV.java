@@ -31,6 +31,8 @@ import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
+import static javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD;
+import static javax.xml.XMLConstants.ACCESS_EXTERNAL_SCHEMA;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.jena.util.SplitIRI.localnameXML;
@@ -447,6 +449,8 @@ public class TrellisWebDAV {
         factory.setIgnoringElementContentWhitespace(true);
         factory.setExpandEntityReferences(false);
         factory.setFeature(FEATURE_SECURE_PROCESSING, Boolean.TRUE);
+        factory.setAttribute(ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(ACCESS_EXTERNAL_SCHEMA, "");
         return factory.newDocumentBuilder().newDocument();
     }
 
