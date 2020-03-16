@@ -1,6 +1,14 @@
 name: GitHub CI
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - master
+      - trellis-[0-9]+.[0-9]+.x
+  pull_request:
+    branches:
+      - master
+
 
 jobs:
   validation:
@@ -35,6 +43,26 @@ jobs:
 
     - name: Build with Gradle
       run: ./gradlew check assemble javadoc -x pmdMain -x spotbugsMain
+
+  security:
+    needs: [validation]
+    runs-on: ubuntu-latest
+    name: Security analysis
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run Snyk to check for vulnerabilities
+      # Only run security scans for push events
+      if: github.event_name == 'push'
+      env:
+        PROJECT_PATH: /project/trellis
+        SNYK_ORG: ${{ secrets.SNYK_ORG }}
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      # Only run security scans if integration is set up
+      run: |
+          if [ "$SNYK_ORG" != "" ]; then
+            # don't fail the build if snyk doesn't complete successfully
+            docker run --name snyk -e SNYK_TOKEN -e PROJECT_PATH -v "/home/runner/work/trellis":"/project" snyk/snyk-cli:gradle-5.4 "monitor --all-sub-projects --org=$SNYK_ORG" || true
+          fi
 
   windows:
     needs: [validation]
