@@ -7,7 +7,15 @@ on:
       - trellis-[0-9]+.[0-9]+.x
 
 jobs:
+  validation:
+    name: "Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: gradle/wrapper-validation-action@v1
+
   build:
+    needs: [validation]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -33,6 +41,7 @@ jobs:
       run: ./gradlew check assemble javadoc -x pmdMain -x spotbugsMain
 
   security:
+    needs: [validation]
     runs-on: ubuntu-latest
     name: Security analysis
     steps:
@@ -50,6 +59,7 @@ jobs:
           fi
 
   windows:
+    needs: [validation]
     runs-on: windows-latest
     name: Java 8 Windows environment
     steps:
@@ -71,6 +81,7 @@ jobs:
       run: ./gradlew.bat --scan -x pmdMain -x spotbugsMain check
 
   osgi:
+    needs: [validation]
     runs-on: ubuntu-latest
     name: Java 8 OSGi environment
     steps:
@@ -92,6 +103,7 @@ jobs:
       run: ./gradlew -p platform/osgi -x pmdMain -x spotbugsMain check -Posgi
 
   jpms:
+    needs: [validation]
     runs-on: ubuntu-latest
     name: Java 11 JPMS environment
     steps:
