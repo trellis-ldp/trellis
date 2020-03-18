@@ -42,7 +42,7 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Build with Gradle
-      run: ./gradlew check assemble javadoc -x pmdMain -x spotbugsMain
+      run: ./gradlew check assemble javadoc -x pmdMain
 
   security:
     needs: [validation]
@@ -84,7 +84,7 @@ jobs:
 
     - name: Build with Gradle
       shell: bash
-      run: ./gradlew.bat -x pmdMain -x spotbugsMain check
+      run: ./gradlew.bat -x pmdMain check
 
   osgi:
     needs: [validation]
@@ -105,7 +105,7 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Build with Gradle
-      run: ./gradlew -p platform/osgi -x pmdMain -x spotbugsMain check -Posgi
+      run: ./gradlew -p platform/osgi -x pmdMain check -Posgi
 
   jpms:
     needs: [validation]
@@ -126,5 +126,5 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Build with Gradle
-      run: ./gradlew check install -x pmdMain -x spotbugsMain -Pjpms
+      run: ./gradlew check install -x pmdMain -Pjpms
 
