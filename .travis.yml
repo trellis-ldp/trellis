@@ -48,7 +48,7 @@ jobs:
     - name: "Java 8"
       stage: test
       jdk: openjdk8
-      script: travis_retry ./gradlew check install jacocoRootReport -x pmdMain -x spotbugsMain --scan
+      script: travis_retry ./gradlew check install jacocoRootReport -x pmdMain --scan
       after_success: ./gradlew coveralls sonarqube
 
     # deploy JDK 8 builds to Sonatype

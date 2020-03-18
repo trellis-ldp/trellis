@@ -21,7 +21,7 @@ jobs:
         java-version: ${{ matrix.java }}
 
     - name: Build with Gradle
-      run: ./gradlew check assemble javadoc -x pmdMain -x spotbugsMain || ./gradlew check assemble javadoc -x pmdMain -x spotbugsMain
+      run: ./gradlew check assemble javadoc -x pmdMain
 
   docker:
     needs: [build]
