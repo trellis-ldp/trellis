@@ -12,7 +12,6 @@ plugins {
     id 'com.github.ben-manes.versions' version "0.28.0"
     id 'com.github.hierynomus.license' version "0.15.0"
     id 'com.github.kt3k.coveralls' version "2.10.1"
-    id 'com.github.spotbugs' version "3.0.0"
     id 'net.researchgate.release' version "2.8.1"
     id 'org.gradle.test-retry' version "1.1.3"
     id 'org.owasp.dependencycheck' version "5.3.1"
@@ -93,7 +92,6 @@ ext {
     checkstyleToolVersion = "8.29"
     pitestToolVersion = "1.4.11"
     pmdToolVersion = "6.21.0"
-    spotbugsToolVersion = "3.1.12"
 
     // OSGi
     commonsCompressVersion = "1.20"
@@ -133,7 +131,6 @@ allprojects { subproj ->
 
     apply plugin: 'checkstyle'
     apply plugin: 'com.github.hierynomus.license'
-    apply plugin: 'com.github.spotbugs'
     apply plugin: 'jacoco'
     apply plugin: 'java'
     apply plugin: 'maven-publish'
@@ -345,25 +342,6 @@ subprojects { subproj ->
     artifacts {
         archives javadocJar
         archives sourceJar
-    }
-
-    spotbugs {
-        ignoreFailures = true
-        excludeFilter = rootProject.file('buildtools/src/main/resources/spotbugs/exclusions.xml')
-        toolVersion = spotbugsToolVersion
-        // Java modules doesn't work with google's findbugs dependency
-        if (JavaVersion.current().isJava11Compatible() && project.hasProperty("jpms")) {
-            sourceSets = []
-        } else {
-            sourceSets = [sourceSets.main]
-        }
-    }
-
-    tasks.withType(com.github.spotbugs.SpotBugsTask) {
-        reports {
-            xml.enabled = false
-            html.enabled = true
-        }
     }
 
     license {
