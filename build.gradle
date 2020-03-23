@@ -73,7 +73,7 @@ ext {
     glassfishJaxbVersion = "2.3.2"
     jerseyVersion = "2.30.1"
     junitVersion = "5.6.1"
-    junitLauncherVersion = "1.6.0"
+    junitLauncherVersion = "1.6.1"
     hamcrestVersion = "2.2"
     logbackVersion = "1.2.3"
     mockitoVersion = "3.3.3"
