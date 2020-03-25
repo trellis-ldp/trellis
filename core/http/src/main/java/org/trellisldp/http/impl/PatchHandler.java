@@ -236,7 +236,7 @@ public class PatchHandler extends MutatingLdpHandler {
         // Check any constraints on the resulting dataset
         final List<ConstraintViolation> violations = new ArrayList<>();
         getServices().getConstraintServices()
-            .forEach(svc -> handleConstraintViolation(svc, mutable, graphName, getLdpType())
+            .forEach(svc -> handleConstraintViolation(svc, getInternalId(), mutable, graphName, getLdpType())
                     .forEach(violations::add));
 
         // Short-ciruit if there is a constraint violation
@@ -296,10 +296,10 @@ public class PatchHandler extends MutatingLdpHandler {
     }
 
     private static Stream<ConstraintViolation> handleConstraintViolation(final ConstraintService service,
-            final Dataset dataset, final IRI graphName, final IRI interactionModel) {
+            final IRI identifier, final Dataset dataset, final IRI graphName, final IRI interactionModel) {
         final IRI model = PreferUserManaged.equals(graphName) ? interactionModel : LDP.RDFSource;
         return dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
-                .flatMap(g -> service.constrainedBy(model, g));
+                .flatMap(g -> service.constrainedBy(identifier, model, g));
     }
 
     private static Stream<String> getLinkTypes(final IRI ldpType) {

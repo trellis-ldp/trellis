@@ -123,11 +123,13 @@ class ConstraintServiceTest {
     @Test
     void testConstrainedBy() {
         final ConstraintService svc = mock(ConstraintService.class);
+        final IRI identifier = rdf.createIRI(TrellisUtils.TRELLIS_DATA_PREFIX + "resource");
 
-        doCallRealMethod().when(svc).constrainedBy(eq(LDP.RDFSource), any(Graph.class));
-        when(svc.constrainedBy(any(IRI.class), any(Graph.class), eq(TrellisUtils.TRELLIS_DATA_PREFIX)))
+        doCallRealMethod().when(svc).constrainedBy(any(IRI.class), eq(LDP.RDFSource), any(Graph.class));
+        when(svc.constrainedBy(any(IRI.class), any(IRI.class), any(Graph.class), eq(TrellisUtils.TRELLIS_DATA_PREFIX)))
             .thenAnswer(inv -> Stream.empty());
 
-        assertEquals(0L, svc.constrainedBy(LDP.RDFSource, rdf.createGraph()).count(), "Unexpected constraint found");
+        assertEquals(0L, svc.constrainedBy(identifier, LDP.RDFSource, rdf.createGraph()).count(),
+                "Unexpected constraint found");
     }
 }
