@@ -13,17 +13,18 @@
  */
 package org.trellisldp.auth.oauth;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import org.slf4j.Logger;
 
 import java.math.BigInteger;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Map;
 
-import static org.slf4j.LoggerFactory.getLogger;
+import org.slf4j.Logger;
 
 /**
  * A jwks-based authenticator.
