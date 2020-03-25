@@ -73,6 +73,8 @@ class TriplestoreResourceTest {
     private static final IRI aclSubject = rdf.createIRI("trellis:data/resource#auth");
     private static final IRI member = rdf.createIRI("trellis:data/member");
     private static final String time = "2018-01-12T14:02:00Z";
+    private static final IRI fooGraph = rdf.createIRI("https://example.com/Foo");
+    private static final IRI barGraph = rdf.createIRI("https://example.com/Bar");
 
     private static final AuditService auditService = new DefaultAuditService() {};
 
@@ -170,11 +172,11 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithExtensionQuads() {
-        final IRI foo = rdf.createIRI("https://example.com/Foo");
         final IRI fooId = rdf.createIRI(identifier.getIRIString() + "?ext=foo");
         final Map<String, IRI> ext = new HashMap<>();
         ext.put("acl", Trellis.PreferAccessControl);
-        ext.put("foo", foo);
+        ext.put("foo", fooGraph);
+        ext.put("bar", barGraph);
 
         final JenaDataset dataset = buildLdpDataset(LDP.RDFSource);
         dataset.add(fooId, identifier, DC.references, rdf.createIRI("https://example.com/Resource"));
@@ -200,7 +202,7 @@ class TriplestoreResourceTest {
                                    "Incorrect acl triple count!"),
                 () -> assertEquals(5L, res.stream(singleton(Trellis.PreferAudit)).count(),
                                    "Incorrect audit triple count!"),
-                () -> assertEquals(1L, res.stream(singleton(foo)).count(),
+                () -> assertEquals(1L, res.stream(singleton(fooGraph)).count(),
                                    "Incorrect extension triple count!"),
                 () -> assertEquals(11L, res.stream().count(), "Incorrect total triple count!"));
     }
@@ -360,7 +362,17 @@ class TriplestoreResourceTest {
                 () -> assertNotNull(res.getRevision(), "Revision is null!"),
                 () -> assertEquals(hasBinary, res.getBinaryMetadata().isPresent(), "Unexpected binary presence!"),
                 () -> assertEquals(hasParent, res.getContainer().isPresent(), "Unexpected parent resource!"),
-                () -> assertEquals(hasAcl, res.hasAcl(), "Unexpected ACL presence!"));
+                () -> assertEquals(res.stream(barGraph).findAny().isPresent(), res.hasMetadata(barGraph),
+                                   "Unexpected metadata"),
+                () -> assertEquals(res.stream(fooGraph).findAny().isPresent(), res.hasMetadata(fooGraph),
+                                   "Unexpected metadata"),
+                () -> assertEquals(res.getMetadataGraphNames().contains(Trellis.PreferAudit),
+                                   res.hasMetadata(Trellis.PreferAudit), "Unexpected Audit quads"),
+                () -> assertEquals(res.stream(Trellis.PreferAudit).findAny().isPresent(),
+                                   res.hasMetadata(Trellis.PreferAudit), "Missing audit quads"),
+                () -> assertEquals(res.getMetadataGraphNames().contains(Trellis.PreferAccessControl),
+                                   res.hasMetadata(Trellis.PreferAccessControl), "Unexpected ACL presence!"),
+                () -> assertEquals(hasAcl, res.hasMetadata(Trellis.PreferAccessControl), "Unexpected ACL presence!"));
     }
 
     private static Stream<Executable> checkLdpProperties(final Resource res, final IRI membershipResource,

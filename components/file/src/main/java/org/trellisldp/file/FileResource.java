@@ -14,26 +14,28 @@
 package org.trellisldp.file;
 
 import static java.nio.file.Files.lines;
+import static java.util.Collections.unmodifiableMap;
+import static java.util.Collections.unmodifiableSet;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
-import static java.util.function.Predicate.isEqual;
-import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.empty;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.vocabulary.RDF.type;
-import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFTerm;
-import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
@@ -48,10 +50,12 @@ import org.trellisldp.vocabulary.Trellis;
 public class FileResource implements Resource {
 
     private static final Logger LOGGER = getLogger(FileResource.class);
+    private static final Set<IRI> IGNORE = ignoreMetadataGraphs();
 
     private final File file;
     private final IRI identifier;
     private final Map<IRI, RDFTerm> data;
+    private final Set<IRI> metadataGraphs;
 
     /**
      * Create a resource backed by an NQuads file.
@@ -59,9 +63,24 @@ public class FileResource implements Resource {
      * @param file the file
      */
     public FileResource(final IRI identifier, final File file) {
-        this.identifier = identifier;
+        this.identifier = requireNonNull(identifier, "identifier may not be null!");
         this.file = file;
-        this.data = init(identifier, file);
+        try (final Stream<Quad> quads = fetchContent(identifier, file)) {
+            final Map<IRI, RDFTerm> serverManaged = new HashMap<>();
+            final Set<IRI> graphs = new HashSet<>();
+            quads.forEach(quad -> quad.getGraphName().filter(IRI.class::isInstance).map(IRI.class::cast)
+                    .ifPresent(graphName -> {
+                if (Trellis.PreferServerManaged.equals(graphName)) {
+                    final boolean binaryModified = !identifier.equals(quad.getSubject()) &&
+                        DC.modified.equals(quad.getPredicate());
+                    serverManaged.put(binaryModified ? Time.hasTime : quad.getPredicate(), quad.getObject());
+                } else if (!IGNORE.contains(graphName)) {
+                    graphs.add(graphName);
+                }
+            }));
+            data = unmodifiableMap(serverManaged);
+            metadataGraphs = unmodifiableSet(graphs);
+        }
     }
 
     @Override
@@ -111,10 +130,8 @@ public class FileResource implements Resource {
     }
 
     @Override
-    public boolean hasAcl() {
-        try (final Stream<Quad> quads = stream(Trellis.PreferAccessControl)) {
-            return quads.findFirst().isPresent();
-        }
+    public Set<IRI> getMetadataGraphNames() {
+        return metadataGraphs;
     }
 
     @Override
@@ -131,15 +148,16 @@ public class FileResource implements Resource {
             .map(Literal::getLexicalForm);
     }
 
-    private static Map<IRI, RDFTerm> init(final IRI identifier, final File file) {
-        try (final Stream<Triple> triples = fetchContent(identifier, file).filter(q ->
-                    q.getGraphName().filter(isEqual(PreferServerManaged)).isPresent()).map(Quad::asTriple)) {
-            return triples.collect(toMap(t -> !t.getSubject().equals(identifier) && DC.modified.equals(t.getPredicate())
-                        ? Time.hasTime : t.getPredicate(), Triple::getObject));
-        }
+    static Set<IRI> ignoreMetadataGraphs() {
+        final Set<IRI> ignore = new HashSet<>();
+        ignore.add(Trellis.PreferUserManaged);
+        ignore.add(Trellis.PreferServerManaged);
+        ignore.add(LDP.PreferContainment);
+        ignore.add(LDP.PreferMembership);
+        return unmodifiableSet(ignore);
     }
 
-    private static Stream<Quad> fetchContent(final IRI identifier, final File file) {
+    static Stream<Quad> fetchContent(final IRI identifier, final File file) {
         LOGGER.trace("Streaming quads for {}", identifier);
         try {
             return lines(file.toPath()).flatMap(FileUtils::parseQuad);

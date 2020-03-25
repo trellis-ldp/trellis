@@ -15,6 +15,7 @@ package org.trellisldp.dropwizard;
 
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,6 +45,7 @@ import org.trellisldp.auth.oauth.JwksAuthenticator;
 import org.trellisldp.auth.oauth.JwtAuthenticator;
 import org.trellisldp.auth.oauth.NullAuthenticator;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -89,7 +91,7 @@ class TrellisUtilsTest {
             .build(new File(getClass().getResource("/config1.yml").toURI()));
 
         when(mockResourceService.get(any())).thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResource.hasAcl()).thenReturn(true);
+        when(mockResource.getMetadataGraphNames()).thenReturn(singleton(Trellis.PreferAccessControl));
 
         assertNotNull(TrellisUtils.getWebacService(config, mockResourceService), "WebAC configuration not present!");
 

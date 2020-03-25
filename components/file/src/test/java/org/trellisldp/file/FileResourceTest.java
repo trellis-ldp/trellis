@@ -51,7 +51,7 @@ class FileResourceTest {
         assertFalse(res.getMemberOfRelation().isPresent(), "Unexpected ldp:isMemberOfRelation value!");
         assertFalse(res.getInsertedContentRelation().isPresent(), "Unexpected ldp:insertedContentRelation value!");
         assertFalse(res.getBinaryMetadata().isPresent(), "Unexpected binary present!");
-        assertFalse(res.hasAcl(), "Unexpected ACL present!");
+        assertFalse(res.hasMetadata(Trellis.PreferAccessControl), "Unexpected ACL present!");
         assertFalse(res.getContainer().isPresent(), "Unexpected parent resource!");
         assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment count!");
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
@@ -79,7 +79,7 @@ class FileResourceTest {
             assertEquals(rdf.createIRI("file:///path/to/binary"), binary.getIdentifier(), "Incorrect binary id!");
         });
         assertFalse(res.getContainer().isPresent(), "Unexpected parent resource!");
-        assertFalse(res.hasAcl(), "Unexpected ACL present!");
+        assertFalse(res.hasMetadata(Trellis.PreferAccessControl), "Unexpected ACL present!");
         assertEquals(0L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
         assertEquals(2L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
         assertEquals(1L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server managed count!");
@@ -118,7 +118,7 @@ class FileResourceTest {
                 assertEquals(DC.relation, rel, "Incorrect ldp:insertedContentRelation!"));
         assertFalse(res.getMemberOfRelation().isPresent(), "Unexpected ldp:isMemberOfRelation!");
         assertFalse(res.getBinaryMetadata().isPresent(), "Unexpected binary metadata!");
-        assertFalse(res.hasAcl(), "Unexpected ACL!");
+        assertFalse(res.hasMetadata(Trellis.PreferAccessControl), "Unexpected ACL!");
         assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
         assertEquals(6L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
         assertEquals(1L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server triple count!");
@@ -143,7 +143,7 @@ class FileResourceTest {
         assertTrue(res.getMemberOfRelation().isPresent(), "Missing ldp:isMemberOfRelation!");
         res.getMemberOfRelation().ifPresent(rel -> assertEquals(DC.isPartOf, rel, "Incorrect ldp:isMemberOfRelation!"));
         assertFalse(res.getBinaryMetadata().isPresent(), "Unexpected binary metadata!");
-        assertFalse(res.hasAcl(), "Unexpected ACL!");
+        assertFalse(res.hasMetadata(Trellis.PreferAccessControl), "Unexpected ACL!");
         assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment triple count!");
         assertEquals(5L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
         assertEquals(1L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server triple count!");

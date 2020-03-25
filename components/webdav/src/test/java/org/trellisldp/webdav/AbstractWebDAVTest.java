@@ -17,6 +17,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -892,8 +893,9 @@ abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockRootResource.getBinaryMetadata()).thenReturn(empty());
         when(mockRootResource.getIdentifier()).thenReturn(root);
         when(mockRootResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
-        when(mockRootResource.hasAcl()).thenReturn(true);
+        when(mockRootResource.getMetadataGraphNames()).thenReturn(singleton(PreferAccessControl));
         doCallRealMethod().when(mockRootResource).getRevision();
+        doCallRealMethod().when(mockRootResource).hasMetadata(any());
 
         when(mockBinaryResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryResource.getModified()).thenReturn(time);
@@ -908,7 +910,8 @@ abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockOtherResource.getContainer()).thenReturn(of(identifier));
         when(mockOtherResource.getIdentifier()).thenReturn(otherIdentifier);
         when(mockOtherResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
-        when(mockOtherResource.hasAcl()).thenReturn(false);
+        doCallRealMethod().when(mockOtherResource).hasMetadata(any());
+        doCallRealMethod().when(mockOtherResource).getMetadataGraphNames();
         doCallRealMethod().when(mockOtherResource).getRevision();
     }
 }

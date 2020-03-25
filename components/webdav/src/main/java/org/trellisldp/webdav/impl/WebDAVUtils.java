@@ -185,7 +185,7 @@ public final class WebDAVUtils {
         resource.getMemberOfRelation().ifPresent(builder::memberOfRelation);
         resource.getMemberRelation().ifPresent(builder::memberRelation);
         resource.getMembershipResource().ifPresent(builder::membershipResource);
-        builder.hasAcl(resource.hasAcl());
+        builder.metadataGraphNames(resource.getMetadataGraphNames());
 
         try (final Stream<Quad> stream = resource.stream(Trellis.PreferUserManaged)) {
             LOGGER.debug("Copying {} to {}", resource.getIdentifier(), destination);

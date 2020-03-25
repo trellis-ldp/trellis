@@ -13,10 +13,12 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.rdf.api.IRI;
 
@@ -33,7 +35,7 @@ public final class Metadata {
     private final IRI memberOfRelation;
     private final IRI insertedContentRelation;
     private final BinaryMetadata binary;
-    private final boolean hasAcl;
+    private final Set<IRI> graphNames;
     private final String revision;
 
     /**
@@ -51,10 +53,11 @@ public final class Metadata {
      *          {@link ResourceService} implementation for additional concurrency control.
      *          This value would typically be used in tandem with the {@link Resource#getRevision}
      *          method.
+     * @param graphNames a collection of metadata graphNames
      */
     private Metadata(final IRI identifier, final IRI ixnModel, final IRI container, final IRI membershipResource,
             final IRI memberRelation, final IRI memberOfRelation, final IRI insertedContentRelation,
-            final BinaryMetadata binary, final String revision, final boolean hasAcl) {
+            final BinaryMetadata binary, final String revision, final Set<IRI> graphNames) {
         this.identifier = requireNonNull(identifier, "Identifier cannot be null!");
         this.ixnModel = requireNonNull(ixnModel, "Interaction model cannot be null!");
         this.container = container;
@@ -64,7 +67,7 @@ public final class Metadata {
         this.insertedContentRelation = insertedContentRelation;
         this.binary = binary;
         this.revision = revision;
-        this.hasAcl = hasAcl;
+        this.graphNames = graphNames;
     }
 
     /**
@@ -85,7 +88,7 @@ public final class Metadata {
      */
     public static Builder builder(final Resource r) {
         return builder(r.getIdentifier()).interactionModel(r.getInteractionModel())
-                        .revision(r.getRevision()).hasAcl(r.hasAcl())
+                        .revision(r.getRevision()).metadataGraphNames(r.getMetadataGraphNames())
                         .container(r.getContainer().orElse(null))
                         .binary(r.getBinaryMetadata().orElse(null))
                         .memberRelation(r.getMemberRelation().orElse(null))
@@ -174,11 +177,11 @@ public final class Metadata {
     }
 
     /**
-     * Retrieve whether this has an ACL associated.
-     * @return whether this has an ACL associated
+     * Retrieve the associated metadata graph names.
+     * @return any associated metadata graph names
      */
-    public boolean getHasAcl() {
-        return hasAcl;
+    public Set<IRI> getMetadataGraphNames() {
+        return graphNames;
     }
 
     /**
@@ -202,7 +205,7 @@ public final class Metadata {
         private IRI insertedContentRelation;
         private BinaryMetadata binary;
         private String revision;
-        private boolean hasAcl;
+        private Set<IRI> graphNames = emptySet();
 
         /**
          * Create a Metadata builder with the provided identifier.
@@ -283,12 +286,12 @@ public final class Metadata {
         }
 
         /**
-         * Set whether this has an ACL.
-         * @param hasAcl whether this has an ACL
+         * Set any metadata graph names.
+         * @param graphNames the metadata graph names
          * @return this builder
          */
-        public Builder hasAcl(final boolean hasAcl) {
-            this.hasAcl = hasAcl;
+        public Builder metadataGraphNames(final Set<IRI> graphNames) {
+            this.graphNames = requireNonNull(graphNames, "Metadata graph names may not be null!");
             return this;
         }
 
@@ -308,7 +311,7 @@ public final class Metadata {
          */
         public Metadata build() {
             return new Metadata(identifier, ixnModel, container, membershipResource, memberRelation, memberOfRelation,
-                            insertedContentRelation, binary, revision, hasAcl);
+                            insertedContentRelation, binary, revision, graphNames);
         }
     }
 }

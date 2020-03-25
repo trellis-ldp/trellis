@@ -18,6 +18,7 @@ import static java.time.Instant.MAX;
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySortedSet;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -261,6 +262,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockVersionedResource.getIdentifier()).thenReturn(identifier);
         when(mockVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         doCallRealMethod().when(mockVersionedResource).getRevision();
+        doCallRealMethod().when(mockVersionedResource).hasMetadata(any());
 
         when(mockBinaryVersionedResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryVersionedResource.getModified()).thenReturn(time);
@@ -268,6 +270,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBinaryVersionedResource.getIdentifier()).thenReturn(binaryIdentifier);
         when(mockBinaryVersionedResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         doCallRealMethod().when(mockBinaryVersionedResource).getRevision();
+        doCallRealMethod().when(mockBinaryVersionedResource).hasMetadata(any());
 
         when(mockBinaryResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockBinaryResource.getModified()).thenReturn(time);
@@ -275,6 +278,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBinaryResource.getIdentifier()).thenReturn(binaryIdentifier);
         when(mockBinaryResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         doCallRealMethod().when(mockBinaryResource).getRevision();
+        doCallRealMethod().when(mockBinaryResource).hasMetadata(any());
 
         when(mockResource.getContainer()).thenReturn(of(root));
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
@@ -283,13 +287,15 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         doCallRealMethod().when(mockResource).getRevision();
+        doCallRealMethod().when(mockResource).hasMetadata(any());
 
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockRootResource.getModified()).thenReturn(time);
         when(mockRootResource.getBinaryMetadata()).thenReturn(empty());
         when(mockRootResource.getIdentifier()).thenReturn(root);
         when(mockRootResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
-        when(mockRootResource.hasAcl()).thenReturn(true);
+        when(mockRootResource.getMetadataGraphNames()).thenReturn(singleton(PreferAccessControl));
+        doCallRealMethod().when(mockRootResource).hasMetadata(any());
         doCallRealMethod().when(mockRootResource).getRevision();
     }
 }

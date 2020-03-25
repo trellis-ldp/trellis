@@ -529,7 +529,7 @@ public interface ResourceServiceTests {
                 () -> assertEquals(identifier, res.getIdentifier(), "Check the identifier"),
                 () -> assertFalse(res.getModified().isBefore(time), "Check the modification time (1)"),
                 () -> assertFalse(res.getModified().isAfter(now()), "Check the modification time (2)"),
-                () -> assertFalse(res.hasAcl(), "Check for an ACL"),
+                () -> assertFalse(res.hasMetadata(Trellis.PreferAccessControl), "Check for an ACL"),
                 () -> assertEquals(LDP.NonRDFSource.equals(ldpType), res.getBinaryMetadata().isPresent(),
                                    "Check Binary"),
                 () -> assertEquals(asList(LDP.DirectContainer, LDP.IndirectContainer).contains(ldpType),

@@ -18,6 +18,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
@@ -133,12 +134,12 @@ class WebAcServiceTest {
         setUpRootResource();
         setUpMemberResource();
 
-        when(mockResource.hasAcl()).thenReturn(false);
+        when(mockResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
         when(mockResource.getIdentifier()).thenReturn(resourceIRI);
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getMembershipResource()).thenReturn(empty());
 
-        when(mockParentResource.hasAcl()).thenReturn(false);
+        when(mockParentResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
         when(mockParentResource.getIdentifier()).thenReturn(parentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockParentResource.getMembershipResource()).thenReturn(empty());
@@ -154,7 +155,7 @@ class WebAcServiceTest {
 
     @Test
     void testInitialize() {
-        when(mockRootResource.hasAcl()).thenReturn(false);
+        when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
 
         assertDoesNotThrow(() -> testService.initialize());
         verify(mockRootResource).stream(PreferUserManaged);
@@ -162,7 +163,7 @@ class WebAcServiceTest {
 
     @Test
     void testDontInitialize() {
-        when(mockRootResource.hasAcl()).thenReturn(true);
+        when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
 
         assertDoesNotThrow(() -> testService.initialize());
         verify(mockRootResource, never()).stream(PreferUserManaged);
@@ -170,7 +171,7 @@ class WebAcServiceTest {
 
     @Test
     void testUseDefaultAcl() {
-        when(mockRootResource.hasAcl()).thenReturn(false);
+        when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
 
         assertAll("Check readability for " + acoburnIRI,
@@ -579,7 +580,7 @@ class WebAcServiceTest {
 
     @Test
     void testNotInherited() {
-        when(mockParentResource.hasAcl()).thenReturn(true);
+        when(mockParentResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
         when(mockParentResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(PreferAccessControl, authIRI5, type, ACL.Authorization),
                     rdf.createQuad(PreferAccessControl, authIRI5, ACL.accessTo, parentIRI),
@@ -793,8 +794,8 @@ class WebAcServiceTest {
     @Test
     void testDisconnectedHierarchy() throws Exception {
         when(mockResourceService.get(eq(parentIRI))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockChildResource.hasAcl()).thenReturn(false);
-        when(mockResource.hasAcl()).thenReturn(false);
+        when(mockChildResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
+        when(mockResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
         when(mockSession.getAgent()).thenReturn(agentIRI);
 
         assertAll("Test default ACL readability",
@@ -828,7 +829,7 @@ class WebAcServiceTest {
     }
 
     private void setUpChildResource() {
-        when(mockChildResource.hasAcl()).thenReturn(true);
+        when(mockChildResource.hasMetadata(PreferAccessControl)).thenReturn(true);
         when(mockChildResource.getIdentifier()).thenReturn(childIRI);
         when(mockChildResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockChildResource.getMembershipResource()).thenReturn(empty());
@@ -869,7 +870,7 @@ class WebAcServiceTest {
     }
 
     private void setUpRootResource() {
-        when(mockRootResource.hasAcl()).thenReturn(true);
+        when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
         when(mockRootResource.getIdentifier()).thenReturn(rootIRI);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(empty());
@@ -892,7 +893,7 @@ class WebAcServiceTest {
     }
 
     private void setUpMemberResource() {
-        when(mockMemberResource.hasAcl()).thenReturn(true);
+        when(mockMemberResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
         when(mockMemberResource.getIdentifier()).thenReturn(memberIRI);
         when(mockMemberResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockMemberResource.getMembershipResource()).thenReturn(empty());

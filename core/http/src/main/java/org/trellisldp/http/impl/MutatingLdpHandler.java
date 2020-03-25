@@ -18,20 +18,19 @@ import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_VERSIONING;
-import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
-import static org.trellisldp.http.impl.HttpUtils.matchIdentifier;
-import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
-import static org.trellisldp.http.impl.HttpUtils.skolemizeTriples;
+import static org.trellisldp.http.impl.HttpUtils.*;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
@@ -72,6 +71,7 @@ import org.trellisldp.vocabulary.Trellis;
 class MutatingLdpHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(MutatingLdpHandler.class);
+    private static final Set<IRI> IGNORE = buildIgnoredGraphNames();
 
     private final Session session;
     private final InputStream entity;
@@ -261,9 +261,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
             graph.stream(null, LDP.insertedContentRelation, null)
                 .filter(triple -> matchIdentifier(triple.getSubject(), identifier)).findFirst().map(Triple::getObject)
                 .filter(IRI.class::isInstance).map(IRI.class::cast).ifPresent(builder::insertedContentRelation);
-            mutable.getGraph(Trellis.PreferAccessControl)
-                .map(Graph::size).map(s -> s > 0).ifPresent(builder::hasAcl);
         });
+        builder.metadataGraphNames(mutable.getGraphNames().filter(IRI.class::isInstance).map(IRI.class::cast)
+                .filter(name -> !IGNORE.contains(name)).collect(toSet()));
         return builder;
     }
 
