@@ -42,8 +42,8 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.auth.oauth.FederatedJwtAuthenticator;
 import org.trellisldp.auth.oauth.JwksAuthenticator;
+import org.trellisldp.auth.oauth.JwsIdTokenAuthenticator;
 import org.trellisldp.auth.oauth.JwtAuthenticator;
-import org.trellisldp.auth.oauth.NullAuthenticator;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -203,7 +203,7 @@ class TrellisUtilsTest {
         config.getAuth().getJwt().setKeyStore(null);
         config.getAuth().getJwt().setKey("");
         config.getAuth().getJwt().setJwks(null);
-        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof NullAuthenticator,
-                "JWT auth not disabled!");
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwsIdTokenAuthenticator,
+                "No JWT auth with JwsIdTokenAuthenticator!");
     }
 }

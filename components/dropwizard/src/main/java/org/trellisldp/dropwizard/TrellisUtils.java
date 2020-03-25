@@ -31,7 +31,7 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.auth.basic.BasicAuthFilter;
 import org.trellisldp.auth.oauth.Authenticator;
-import org.trellisldp.auth.oauth.NullAuthenticator;
+import org.trellisldp.auth.oauth.JwsIdTokenAuthenticator;
 import org.trellisldp.auth.oauth.OAuthFilter;
 import org.trellisldp.auth.oauth.OAuthUtils;
 import org.trellisldp.cache.TrellisCache;
@@ -64,7 +64,7 @@ final class TrellisUtils {
             return sharedKeyAuthenticator;
         }
 
-        return new NullAuthenticator();
+        return new JwsIdTokenAuthenticator();
     }
 
     public static WebAcService getWebacService(final TrellisConfiguration config,
