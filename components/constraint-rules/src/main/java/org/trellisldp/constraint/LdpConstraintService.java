@@ -184,7 +184,8 @@ public class LdpConstraintService implements ConstraintService {
     }
 
     @Override
-    public Stream<ConstraintViolation> constrainedBy(final IRI model, final Graph graph, final String domain) {
+    public Stream<ConstraintViolation> constrainedBy(final IRI identifier, final IRI model, final Graph graph,
+            final String domain) {
         final Stream<ConstraintViolation> violations = graph.stream()
                         .flatMap(t -> violatesModelConstraints(t, model, domain).stream());
         if (violatesCardinality(graph, model)) {

@@ -231,7 +231,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
      */
     protected void checkConstraint(final Graph graph, final IRI type, final RDFSyntax syntax) {
         final List<ConstraintViolation> violations = new ArrayList<>();
-        getServices().getConstraintServices().forEach(svc -> svc.constrainedBy(type, graph).forEach(violations::add));
+        getServices().getConstraintServices().forEach(svc -> svc.constrainedBy(getInternalId(), type, graph)
+                .forEach(violations::add));
         if (!violations.isEmpty()) {
             final ResponseBuilder err = status(CONFLICT);
             violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));

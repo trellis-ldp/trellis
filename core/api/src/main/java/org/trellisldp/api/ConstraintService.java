@@ -29,21 +29,23 @@ public interface ConstraintService {
     /**
      * Check a graph against an LDP interaction model.
      *
+     * @param identifier the resource identifier
      * @param interactionModel the interaction model
      * @param graph the graph
      * @param domain the domain of the resource
      * @return any constraint violations on the graph
      */
-    Stream<ConstraintViolation> constrainedBy(IRI interactionModel, Graph graph, String domain);
+    Stream<ConstraintViolation> constrainedBy(IRI identifier, IRI interactionModel, Graph graph, String domain);
 
     /**
      * Check a graph against an LDP interaction model.
      *
+     * @param identifier the resource identifier
      * @param interactionModel the interaction model
      * @param graph the graph
      * @return any constraint violations on the graph
      */
-    default Stream<ConstraintViolation> constrainedBy(IRI interactionModel, Graph graph) {
-        return constrainedBy(interactionModel, graph, TrellisUtils.TRELLIS_DATA_PREFIX);
+    default Stream<ConstraintViolation> constrainedBy(IRI identifier, IRI interactionModel, Graph graph) {
+        return constrainedBy(identifier, interactionModel, graph, TrellisUtils.TRELLIS_DATA_PREFIX);
     }
 }
