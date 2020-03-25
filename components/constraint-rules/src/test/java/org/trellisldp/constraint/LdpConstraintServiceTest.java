@@ -43,6 +43,7 @@ class LdpConstraintServiceTest {
     private static final JenaRDF rdf = new JenaRDF();
 
     private final String domain = "trellis:data/";
+    private final IRI identifier = rdf.createIRI(domain + "resource");
     private final ConstraintService svc = new LdpConstraintService();
     private final List<IRI> models = asList(LDP.RDFSource, LDP.NonRDFSource, LDP.Container, LDP.Resource,
             LDP.DirectContainer, LDP.IndirectContainer);
@@ -50,13 +51,14 @@ class LdpConstraintServiceTest {
     @Test
     void testInvalidAccessControlProperty() {
         assertTrue(models.stream()
-                .map(type -> svc.constrainedBy(type, asGraph("/hasAccessControlTriples.ttl", domain + "foo"), domain)
-                    .anyMatch(v -> v.getConstraint().equals(Trellis.InvalidProperty)))
+                .map(type ->
+                    svc.constrainedBy(identifier, type, asGraph("/hasAccessControlTriples.ttl", domain + "foo"), domain)
+                       .anyMatch(v -> v.getConstraint().equals(Trellis.InvalidProperty)))
                 .reduce(true, (acc, x) -> acc && x), "InvalidProperty constraint not found!");
 
         models.forEach(type -> {
             final String subject = domain + "foo";
-            final Optional<ConstraintViolation> res = svc.constrainedBy(type,
+            final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, type,
                     asGraph("/hasAccessControlTriples.ttl", subject), domain)
                 .filter(v -> v.getConstraint().equals(Trellis.InvalidProperty)).findFirst();
             assertTrue(res.isPresent(), "Constraint violation not found!");
@@ -72,13 +74,13 @@ class LdpConstraintServiceTest {
     @Test
     void testInvalidContainsProperty() {
         assertTrue(models.stream()
-                .map(type -> svc.constrainedBy(type, asGraph("/hasLdpContainsTriples.ttl", domain + "foo"), domain)
-                    .anyMatch(v -> v.getConstraint().equals(Trellis.InvalidProperty)))
+                .map(type -> svc.constrainedBy(identifier, type, asGraph("/hasLdpContainsTriples.ttl", domain + "foo"),
+                        domain).anyMatch(v -> v.getConstraint().equals(Trellis.InvalidProperty)))
                 .reduce(true, (acc, x) -> acc && x), "InvalidProperty constring not found!");
 
         models.forEach(type -> {
             final String subject = domain + "foo";
-            final Optional<ConstraintViolation> res = svc.constrainedBy(type,
+            final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, type,
                     asGraph("/hasLdpContainsTriples.ttl", subject), domain)
                 .filter(v -> v.getConstraint().equals(Trellis.InvalidProperty)).findFirst();
             assertTrue(res.isPresent(), "Constraint violation not found!");
@@ -94,8 +96,8 @@ class LdpConstraintServiceTest {
     @Test
     void testInvalidInsertedContentRelation() {
         final List<IRI> found = models.stream()
-            .filter(type -> svc.constrainedBy(type, asGraph("/hasInsertedContent.ttl", domain + "foo"), domain)
-                    .findFirst().isPresent())
+            .filter(type -> svc.constrainedBy(identifier, type, asGraph("/hasInsertedContent.ttl", domain + "foo"),
+                        domain).findFirst().isPresent())
             .collect(toList());
 
         assertTrue(found.contains(LDP.Container), "ldp:Container not present!");
@@ -104,8 +106,8 @@ class LdpConstraintServiceTest {
 
         models.forEach(type -> {
             final String subject = domain + "foo";
-            final Optional<ConstraintViolation> res = svc.constrainedBy(type, asGraph("/hasInsertedContent.ttl",
-                        subject), domain).findFirst();
+            final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, type,
+                    asGraph("/hasInsertedContent.ttl", subject), domain).findFirst();
             if (type.equals(LDP.IndirectContainer) || type.equals(LDP.DirectContainer)) {
                 assertFalse(res.isPresent(), "constraint violation not expected for " + type);
             } else {
@@ -123,7 +125,7 @@ class LdpConstraintServiceTest {
     @Test
     void testInvalidLdpProps() {
         final List<IRI> found = models.stream()
-            .filter(type -> svc.constrainedBy(type, asGraph("/basicContainer.ttl", domain + "foo"), domain)
+            .filter(type -> svc.constrainedBy(identifier, type, asGraph("/basicContainer.ttl", domain + "foo"), domain)
                     .findFirst().isPresent())
             .collect(toList());
 
@@ -133,7 +135,7 @@ class LdpConstraintServiceTest {
 
         models.forEach(type -> {
             final String subject = domain + "foo";
-            final Optional<ConstraintViolation> res = svc.constrainedBy(type, asGraph("/basicContainer.ttl",
+            final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, type, asGraph("/basicContainer.ttl",
                         subject), domain).findFirst();
             if (type.equals(LDP.DirectContainer) || type.equals(LDP.IndirectContainer)) {
                 assertFalse(res.isPresent(), "constraint violation not expected for " + type);
@@ -152,7 +154,7 @@ class LdpConstraintServiceTest {
     @Test
     void testLdpType() {
         assertFalse(models.stream().map(ldpType ->
-            svc.constrainedBy(ldpType, asGraph("/withLdpType.ttl", domain + "foo"), domain).anyMatch(v ->
+            svc.constrainedBy(identifier, ldpType, asGraph("/withLdpType.ttl", domain + "foo"), domain).anyMatch(v ->
                         Trellis.InvalidType.equals(v.getConstraint())))
                 .reduce(false, (acc, x) -> acc || x), "Unexpected constraint violation!");
     }
@@ -160,13 +162,13 @@ class LdpConstraintServiceTest {
     @Test
     void testInvalidDomain() {
         assertEquals(0L, models.stream()
-                .filter(type -> !svc.constrainedBy(type, asGraph("/invalidDomain.ttl", domain + "foo"), domain)
-                    .findAny().isPresent())
+                .filter(type -> !svc.constrainedBy(identifier, type, asGraph("/invalidDomain.ttl", domain + "foo"),
+                        domain).findAny().isPresent())
                 .count(), "Unexpected InvalidDomain violation!");
 
         models.forEach(type -> {
             final String subject = domain + "foo";
-            final List<ConstraintViolation> res = svc.constrainedBy(type, asGraph("/invalidDomain.ttl",
+            final List<ConstraintViolation> res = svc.constrainedBy(identifier, type, asGraph("/invalidDomain.ttl",
                         subject), domain).collect(toList());
             if (type.equals(LDP.DirectContainer) || type.equals(LDP.IndirectContainer)) {
                 final Optional<ConstraintViolation> violation = res.stream()
@@ -188,7 +190,7 @@ class LdpConstraintServiceTest {
 
     @Test
     void testInvalidInbox() {
-        final Optional<ConstraintViolation> res = svc.constrainedBy(LDP.RDFSource,
+        final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, LDP.RDFSource,
                 asGraph("/invalidInbox.ttl", domain + "foo"), domain).findFirst();
         assertTrue(res.isPresent(), "no constraint violation found!");
         res.ifPresent(violation -> {
@@ -201,7 +203,7 @@ class LdpConstraintServiceTest {
 
     @Test
     void testBasicConstraints1() {
-        final Optional<ConstraintViolation> res = svc.constrainedBy(LDP.Container,
+        final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, LDP.Container,
                 asGraph("/invalidContainer1.ttl", domain + "foo"), domain).findFirst();
         assertTrue(res.isPresent(), "no constraint violation found!");
         res.ifPresent(violation -> {
@@ -214,7 +216,7 @@ class LdpConstraintServiceTest {
 
     @Test
     void testBasicConstraints2() {
-        final Optional<ConstraintViolation> res = svc.constrainedBy(LDP.Container,
+        final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, LDP.Container,
                 asGraph("/invalidContainer2.ttl", domain + "foo"), domain).findFirst();
         assertTrue(res.isPresent(), "no constraint violation found!");
         res.ifPresent(violation -> {
@@ -227,7 +229,7 @@ class LdpConstraintServiceTest {
 
     @Test
     void testBasicConstraints3() {
-        final Optional<ConstraintViolation> res = svc.constrainedBy(LDP.Container,
+        final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, LDP.Container,
                 asGraph("/invalidContainer3.ttl", domain + "foo"), domain).findFirst();
         assertTrue(res.isPresent(), "no constraint violation found!");
         res.ifPresent(violation -> {
@@ -240,7 +242,7 @@ class LdpConstraintServiceTest {
 
     @Test
     void testMembershipTriples1() {
-        final Optional<ConstraintViolation> res = svc.constrainedBy(LDP.IndirectContainer,
+        final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, LDP.IndirectContainer,
                 asGraph("/invalidMembershipTriple.ttl", domain + "foo"), domain)
             .filter(v -> v.getConstraint().equals(Trellis.InvalidRange)).findFirst();
         assertTrue(res.isPresent(), "no constraint violation found!");
@@ -253,7 +255,7 @@ class LdpConstraintServiceTest {
 
     @Test
     void testMembershipTriples2() {
-        final Optional<ConstraintViolation> res = svc.constrainedBy(LDP.DirectContainer,
+        final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, LDP.DirectContainer,
                 asGraph("/invalidMembershipTriple2.ttl", domain + "foo"), domain).findFirst();
         assertTrue(res.isPresent(), "no constraint violation found!");
         res.ifPresent(violation -> {
@@ -266,14 +268,14 @@ class LdpConstraintServiceTest {
     @Test
     void testCardinality() {
         assertEquals(0L, models.stream()
-                .filter(type -> !svc.constrainedBy(type, asGraph("/invalidCardinality.ttl", domain + "foo"), domain)
-                    .findFirst().isPresent())
+                .filter(type -> !svc.constrainedBy(identifier, type, asGraph("/invalidCardinality.ttl", domain + "foo"),
+                        domain).findFirst().isPresent())
                 .count(), "unexpected constraint violation found!");
 
         models.forEach(type -> {
             final String subject = domain + "foo";
-            final Optional<ConstraintViolation> res = svc.constrainedBy(type, asGraph("/invalidCardinality.ttl",
-                        subject), domain).findFirst();
+            final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, type,
+                    asGraph("/invalidCardinality.ttl", subject), domain).findFirst();
             assertTrue(res.isPresent(), "no constraint violation found for " + type);
             res.ifPresent(violation ->
                 assertEquals(Trellis.InvalidCardinality, violation.getConstraint(), "no InvalidCardinality violation"));
@@ -282,7 +284,7 @@ class LdpConstraintServiceTest {
 
     @Test
     void testInvalidType2() {
-        final Optional<ConstraintViolation> res = svc.constrainedBy(LDP.RDFSource,
+        final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, LDP.RDFSource,
                 asGraph("/invalidType.ttl", domain + "foo"), domain)
             .filter(v -> v.getConstraint().equals(Trellis.InvalidRange)).findFirst();
         assertTrue(res.isPresent(), "no constraint violation found!");
@@ -293,7 +295,7 @@ class LdpConstraintServiceTest {
 
     @Test
     void testTooManyMembershipTriples() {
-        final Optional<ConstraintViolation> res = svc.constrainedBy(LDP.IndirectContainer,
+        final Optional<ConstraintViolation> res = svc.constrainedBy(identifier, LDP.IndirectContainer,
                 asGraph("/tooManyMembershipTriples.ttl", domain + "foo"), domain).findFirst();
         assertTrue(res.isPresent(), "no constraint violation found!");
         res.ifPresent(violation ->
