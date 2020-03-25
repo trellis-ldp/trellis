@@ -218,12 +218,14 @@ public class WebAcService {
     }
 
     private CompletionStage<Void> initialize(final Resource res, final Dataset dataset) {
-        if (!res.hasAcl()) {
+        if (!res.hasMetadata(Trellis.PreferAccessControl)) {
             LOGGER.info("Initializing root ACL: {}", res.getIdentifier());
             try (final Stream<Quad> quads = res.stream(Trellis.PreferUserManaged)) {
                 quads.forEach(dataset::add);
             }
-            return this.resourceService.replace(Metadata.builder(res).hasAcl(true).build(), dataset);
+            final Set<IRI> metadata = new HashSet<>(res.getMetadataGraphNames());
+            metadata.add(Trellis.PreferAccessControl);
+            return this.resourceService.replace(Metadata.builder(res).metadataGraphNames(metadata).build(), dataset);
         } else {
             LOGGER.info("Root ACL is present, not initializing: {}", res.getIdentifier());
             return DONE;
@@ -314,7 +316,7 @@ public class WebAcService {
 
     private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final boolean inherited) {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
-        if (resource.hasAcl()) {
+        if (resource.hasMetadata(Trellis.PreferAccessControl)) {
             try (final Graph graph = resource.stream(Trellis.PreferAccessControl).map(Quad::asTriple)
                         .collect(toGraph())) {
                 // Get the relevant Authorizations in the ACL resource

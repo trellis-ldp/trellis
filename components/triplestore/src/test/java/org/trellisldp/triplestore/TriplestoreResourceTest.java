@@ -360,7 +360,7 @@ class TriplestoreResourceTest {
                 () -> assertNotNull(res.getRevision(), "Revision is null!"),
                 () -> assertEquals(hasBinary, res.getBinaryMetadata().isPresent(), "Unexpected binary presence!"),
                 () -> assertEquals(hasParent, res.getContainer().isPresent(), "Unexpected parent resource!"),
-                () -> assertEquals(hasAcl, res.hasAcl(), "Unexpected ACL presence!"));
+                () -> assertEquals(hasAcl, res.hasMetadata(Trellis.PreferAccessControl), "Unexpected ACL presence!"));
     }
 
     private static Stream<Executable> checkLdpProperties(final Resource res, final IRI membershipResource,

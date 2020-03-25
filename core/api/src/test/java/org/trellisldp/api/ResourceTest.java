@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.vocabulary.DC;
+import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
@@ -54,7 +55,8 @@ class ResourceTest {
         doCallRealMethod().when(mockResource).stream(any(IRI.class));
         doCallRealMethod().when(mockResource).stream(anyCollection());
         doCallRealMethod().when(mockResource).getBinaryMetadata();
-        doCallRealMethod().when(mockResource).hasAcl();
+        doCallRealMethod().when(mockResource).hasMetadata(any(IRI.class));
+        doCallRealMethod().when(mockResource).getMetadataGraphNames();
         doCallRealMethod().when(mockResource).getExtraLinkRelations();
         doCallRealMethod().when(mockResource).dataset();
 
@@ -72,7 +74,7 @@ class ResourceTest {
         assertFalse(mockResource.getInsertedContentRelation().isPresent(), "Inserted content relation is present!");
         assertFalse(mockResource.getBinaryMetadata().isPresent(), "Binary is unexpectedly present!");
         assertFalse(mockResource.getExtraLinkRelations().findFirst().isPresent(), "Extra links unexpectedly present!");
-        assertFalse(mockResource.hasAcl(), "ACL unexpectedly present!");
+        assertFalse(mockResource.hasMetadata(Trellis.PreferAccessControl), "ACL unexpectedly present!");
     }
 
     @Test

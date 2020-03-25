@@ -13,6 +13,8 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -24,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
+import org.trellisldp.vocabulary.Trellis;
 
 class MetadataTest {
 
@@ -47,7 +50,7 @@ class MetadataTest {
         assertEquals(of(LDP.member), metadata.getMemberRelation());
         assertEquals(of(FOAF.primaryTopic), metadata.getInsertedContentRelation());
         assertFalse(metadata.getMemberOfRelation().isPresent());
-        assertFalse(metadata.getHasAcl());
+        assertTrue(metadata.getMetadataGraphNames().isEmpty());
         assertFalse(metadata.getBinary().isPresent());
         assertEquals(of("blahblahblah"), metadata.getRevision());
     }
@@ -57,7 +60,7 @@ class MetadataTest {
         final Metadata metadata = Metadata.builder(identifier)
                 .interactionModel(LDP.DirectContainer)
                 .container(root).memberOfRelation(DC.isPartOf)
-                .membershipResource(member).hasAcl(true).build();
+                .membershipResource(member).metadataGraphNames(singleton(Trellis.PreferAccessControl)).build();
         assertEquals(identifier, metadata.getIdentifier());
         assertEquals(LDP.DirectContainer, metadata.getInteractionModel());
         assertEquals(of(root), metadata.getContainer());
@@ -66,7 +69,7 @@ class MetadataTest {
         assertFalse(metadata.getInsertedContentRelation().isPresent());
         assertFalse(metadata.getMemberRelation().isPresent());
         assertFalse(metadata.getBinary().isPresent());
-        assertTrue(metadata.getHasAcl());
+        assertTrue(metadata.getMetadataGraphNames().contains(Trellis.PreferAccessControl));
     }
 
     @Test
@@ -74,7 +77,7 @@ class MetadataTest {
         final BinaryMetadata binary = BinaryMetadata.builder(rdf.createIRI("http://example.com/binary")).build();
         final Metadata metadata = Metadata.builder(identifier)
                 .interactionModel(LDP.NonRDFSource)
-                .container(root).binary(binary).hasAcl(false).build();
+                .container(root).binary(binary).metadataGraphNames(emptySet()).build();
         assertEquals(identifier, metadata.getIdentifier());
         assertEquals(LDP.NonRDFSource, metadata.getInteractionModel());
         assertEquals(of(root), metadata.getContainer());
@@ -83,7 +86,7 @@ class MetadataTest {
         assertFalse(metadata.getMemberOfRelation().isPresent());
         assertFalse(metadata.getInsertedContentRelation().isPresent());
         assertFalse(metadata.getMemberRelation().isPresent());
-        assertFalse(metadata.getHasAcl());
+        assertTrue(metadata.getMetadataGraphNames().isEmpty());
     }
 
     @Test
@@ -103,7 +106,7 @@ class MetadataTest {
         assertFalse(metadata.getInsertedContentRelation().isPresent());
         assertFalse(metadata.getMemberRelation().isPresent());
         assertFalse(metadata.getRevision().isPresent());
-        assertFalse(metadata.getHasAcl());
+        assertTrue(metadata.getMetadataGraphNames().isEmpty());
     }
 
     @Test
@@ -119,7 +122,7 @@ class MetadataTest {
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getBinaryMetadata()).thenReturn(of(binary));
         when(mockResource.getRevision()).thenReturn(revision);
-        when(mockResource.hasAcl()).thenReturn(true);
+        when(mockResource.getMetadataGraphNames()).thenReturn(singleton(Trellis.PreferAccessControl));
 
         final Metadata metadata = Metadata.builder(mockResource).build();
         assertEquals(identifier, metadata.getIdentifier());
@@ -132,6 +135,6 @@ class MetadataTest {
         assertFalse(metadata.getInsertedContentRelation().isPresent());
         assertFalse(metadata.getMemberRelation().isPresent());
         assertEquals(of(revision), metadata.getRevision());
-        assertTrue(metadata.getHasAcl());
+        assertTrue(metadata.getMetadataGraphNames().contains(Trellis.PreferAccessControl));
     }
 }

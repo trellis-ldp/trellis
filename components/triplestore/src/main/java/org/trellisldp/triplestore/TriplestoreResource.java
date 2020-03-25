@@ -17,6 +17,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.function.Predicate.isEqual;
+import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
@@ -262,8 +263,25 @@ public class TriplestoreResource implements Resource {
     }
 
     @Override
-    public boolean hasAcl() {
-        return fetchAclQuads().findAny().isPresent();
+    public boolean hasMetadata(final IRI graph) {
+        if (Trellis.PreferAccessControl.equals(graph)) {
+            return fetchAclQuads().findAny().isPresent();
+        } else if (Trellis.PreferAudit.equals(graph)) {
+            return fetchAuditQuads().findAny().isPresent();
+        }
+        return extensions.containsKey(graph) && fetchExtensionQuads(graph).findAny().isPresent();
+    }
+
+    @Override
+    public Set<IRI> getMetadataGraphNames() {
+        final Set<IRI> graphs = new HashSet<>(extensions.keySet().stream().filter(this::hasMetadata).collect(toSet()));
+        if (hasMetadata(Trellis.PreferAccessControl)) {
+            graphs.add(Trellis.PreferAccessControl);
+        }
+        if (hasMetadata(Trellis.PreferAudit)) {
+            graphs.add(Trellis.PreferAudit);
+        }
+        return unmodifiableSet(graphs);
     }
 
     /**

@@ -388,6 +388,19 @@ public final class HttpUtils {
     }
 
     /**
+     * Build a set of non-metadata graph names.
+     * @return a set of graph names
+     */
+    public static Set<IRI> buildIgnoredGraphNames() {
+        final Set<IRI> graphs = new HashSet<>();
+        graphs.add(LDP.PreferContainment);
+        graphs.add(LDP.PreferMembership);
+        graphs.add(Trellis.PreferServerManaged);
+        graphs.add(Trellis.PreferUserManaged);
+        return unmodifiableSet(graphs);
+    }
+
+    /**
      * Build a canonical url for a resource.
      * @param req the trellis request
      * @param baseUrl the base url

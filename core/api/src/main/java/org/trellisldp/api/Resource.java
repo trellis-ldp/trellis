@@ -13,6 +13,7 @@
  */
 package org.trellisldp.api;
 
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 
@@ -20,6 +21,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -259,12 +261,22 @@ public interface Resource {
     }
 
     /**
-     * Test whether this resource has an ACL resource.
+     * Test whether this resource has an attached metadata resource.
      *
-     * @return true if this resource has and ACL resource; false otherwise
+     * @param graphName the name of the metadata graph
+     * @return true if this resource has an attached metadata resource; false otherwise
      */
-    default boolean hasAcl() {
-        return false;
+    default boolean hasMetadata(IRI graphName) {
+        return getMetadataGraphNames().contains(graphName);
+    }
+
+    /**
+     * Retrieve a collection of attached metadata graph names.
+     *
+     * @return a set of metadata resource graph names
+     */
+    default Set<IRI> getMetadataGraphNames() {
+        return emptySet();
     }
 
     /**
