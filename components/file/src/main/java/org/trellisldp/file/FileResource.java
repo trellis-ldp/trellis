@@ -21,7 +21,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Stream.empty;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.vocabulary.RDF.type;
-import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +70,7 @@ public class FileResource implements Resource {
             final Set<IRI> graphs = new HashSet<>();
             quads.forEach(quad -> quad.getGraphName().filter(IRI.class::isInstance).map(IRI.class::cast)
                     .ifPresent(graphName -> {
-                if (PreferServerManaged.equals(graphName)) {
+                if (Trellis.PreferServerManaged.equals(graphName)) {
                     final boolean binaryModified = !identifier.equals(quad.getSubject()) &&
                         DC.modified.equals(quad.getPredicate());
                     serverManaged.put(binaryModified ? Time.hasTime : quad.getPredicate(), quad.getObject());
