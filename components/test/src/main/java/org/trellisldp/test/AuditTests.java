@@ -116,9 +116,7 @@ public interface AuditTests extends CommonTests {
 
     default Stream<Executable> runTests() throws Exception {
         setUp();
-        return Stream.of(this::testNoAuditTriples,
-                this::testOmitAuditTriples,
-                this::testAuditTriples);
+        return of(this::testNoAuditTriples, this::testOmitAuditTriples, this::testAuditTriples);
     }
 
     /**

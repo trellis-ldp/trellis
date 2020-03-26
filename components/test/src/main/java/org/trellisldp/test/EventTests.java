@@ -163,14 +163,9 @@ public interface EventTests extends CommonTests {
      */
     default Stream<Executable> runTests() {
         setUp();
-        return Stream.of(this::testReceiveCreateMessage,
-                this::testReceiveChildMessage,
-                this::testReceiveDeleteMessage,
-                this::testReceiveCreateMessageDC,
-                this::testReceiveDeleteMessageDC,
-                this::testReceiveCreateMessageIC,
-                this::testReceiveReplaceMessageIC,
-                this::testReceiveDeleteMessageIC);
+        return of(this::testReceiveCreateMessage, this::testReceiveChildMessage, this::testReceiveDeleteMessage,
+                this::testReceiveCreateMessageDC, this::testReceiveDeleteMessageDC, this::testReceiveCreateMessageIC,
+                this::testReceiveReplaceMessageIC, this::testReceiveDeleteMessageIC);
     }
 
     /**
