@@ -24,7 +24,6 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.test.TestUtils.buildJwt;
@@ -38,10 +37,6 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
@@ -52,7 +47,6 @@ import org.trellisldp.vocabulary.Trellis;
  *
  * @author acoburn
  */
-@TestInstance(PER_CLASS)
 public interface EventTests extends CommonTests {
 
     /**
@@ -118,8 +112,7 @@ public interface EventTests extends CommonTests {
     /**
      * Initialize a test container.
      */
-    @BeforeAll
-    default void beforeAllTests() {
+    default void setUp() {
 
         final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString(), getJwtSecret());
 
@@ -165,10 +158,24 @@ public interface EventTests extends CommonTests {
     }
 
     /**
+     * Run the tests.
+     * @return the tests
+     */
+    default Stream<Executable> runTests() {
+        setUp();
+        return Stream.of(this::testReceiveCreateMessage,
+                this::testReceiveChildMessage,
+                this::testReceiveDeleteMessage,
+                this::testReceiveCreateMessageDC,
+                this::testReceiveDeleteMessageDC,
+                this::testReceiveCreateMessageIC,
+                this::testReceiveReplaceMessageIC,
+                this::testReceiveDeleteMessageIC);
+    }
+
+    /**
      * Test receiving a creation event message.
      */
-    @Test
-    @DisplayName("Test receiving a JMS creation message")
     default void testReceiveCreateMessage() {
         await().atMost(15, SECONDS).until(() -> getMessages().stream().anyMatch(checkEventGraph(getContainerLocation(),
                         Trellis.AdministratorAgent, AS.Create, LDP.BasicContainer)));
@@ -177,8 +184,6 @@ public interface EventTests extends CommonTests {
     /**
      * Test receiving an update message.
      */
-    @Test
-    @DisplayName("Test receiving an update message")
     default void testReceiveChildMessage() {
         final String agent = "https://people.apache.org/~acoburn/#i";
 
@@ -194,8 +199,6 @@ public interface EventTests extends CommonTests {
     /**
      * Test receiving a delete message.
      */
-    @Test
-    @DisplayName("Test receiving a delete message")
     default void testReceiveDeleteMessage() {
         final String resource;
         final String agent1 = "https://madison.example.com/profile#me";
@@ -222,8 +225,6 @@ public interface EventTests extends CommonTests {
     /**
      * Test receiving a creation event message in a direct container.
      */
-    @Test
-    @DisplayName("Test receiving a JMS creation message from a LDP-DC")
     default void testReceiveCreateMessageDC() {
         final String agent = "http://example.com/pat#i";
 
@@ -239,8 +240,6 @@ public interface EventTests extends CommonTests {
     /**
      * Test receiving a delete message.
      */
-    @Test
-    @DisplayName("Test receiving a delete message in a LDP-DC")
     default void testReceiveDeleteMessageDC() {
         final String resource;
         final String agent = "http://example.com/george#i";
@@ -268,8 +267,6 @@ public interface EventTests extends CommonTests {
     /**
      * Test receiving a creation event message in an indirect container.
      */
-    @Test
-    @DisplayName("Test receiving a JMS creation message from a LDP-IC")
     default void testReceiveCreateMessageIC() {
         final String agent = "http://example.com/sam#i";
 
@@ -286,8 +283,6 @@ public interface EventTests extends CommonTests {
     /**
      * Test receiving a replace message.
      */
-    @Test
-    @DisplayName("Test receiving a replace message in a LDP-IC")
     default void testReceiveReplaceMessageIC() {
         final String resource;
         final String agent = "http://example.com/parker#i";
@@ -320,8 +315,6 @@ public interface EventTests extends CommonTests {
     /**
      * Test receiving a delete message.
      */
-    @Test
-    @DisplayName("Test receiving a delete message in a LDP-IC")
     default void testReceiveDeleteMessageIC() {
         final String resource;
         final String agent = "http://example.com/addison#i";

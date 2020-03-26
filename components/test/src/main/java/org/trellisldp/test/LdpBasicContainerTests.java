@@ -24,7 +24,6 @@ import static org.awaitility.Awaitility.await;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PATCH_CREATE;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
@@ -36,16 +35,16 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 
+import java.util.stream.Stream;
+
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
@@ -53,8 +52,6 @@ import org.trellisldp.vocabulary.SKOS;
 /**
  * Run LDP-related tests on a Trellis application.
  */
-@TestInstance(PER_CLASS)
-@DisplayName("Basic Container Tests")
 public interface LdpBasicContainerTests extends CommonTests {
 
     String BASIC_CONTAINER = "/basicContainer.ttl";
@@ -74,9 +71,7 @@ public interface LdpBasicContainerTests extends CommonTests {
     /**
      * Initialize Basic Containment tests.
      */
-    @BeforeAll
-    @DisplayName("Initialize Basic Containment tests")
-    default void beforeAllTests() {
+    default void setUp() {
         // POST an LDP-BC
         try (final Response res = target().request()
                 .header(SLUG, generateRandomValue(getClass().getSimpleName()))
@@ -84,14 +79,28 @@ public interface LdpBasicContainerTests extends CommonTests {
                 .post(entity(getResourceAsString(BASIC_CONTAINER), TEXT_TURTLE))) {
             setContainerLocation(checkCreateResponseAssumptions(res, LDP.BasicContainer));
         }
+        try (final Response res = target(getContainerLocation()).request().post(entity("", TEXT_TURTLE))) {
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()), "Check the response type");
+        }
+    }
+
+    default Stream<Executable> runTests() throws Exception {
+        setUp();
+        return Stream.of(this::testGetEmptyContainer,
+                this::testGetInverseEmptyContainer,
+                this::testGetEmptyContainerMembership,
+                this::testGetContainer,
+                this::testPatchNewRDF,
+                this::testCreateContainerViaPost,
+                this::testCreateContainerViaPut,
+                this::testCreateContainerWithSlug,
+                this::testDeleteContainer);
     }
 
     /**
      * Test with ldp:PreferMinimalContainer Prefer header.
      * @throws Exception when the RDF resource does not close cleanly
      */
-    @Test
-    @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
     default void testGetEmptyContainer() throws Exception {
         final RDF rdf = getInstance();
         try (final Response res = target(getContainerLocation()).request().header(PREFER,
@@ -108,8 +117,6 @@ public interface LdpBasicContainerTests extends CommonTests {
      * Test with ldp:PreferMinimalContainer Prefer header.
      * @throws Exception when the RDF resource does not close cleanly
      */
-    @Test
-    @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
     default void testGetInverseEmptyContainer() throws Exception {
         final RDF rdf = getInstance();
         try (final Response res = target(getContainerLocation()).request().header(PREFER,
@@ -127,8 +134,6 @@ public interface LdpBasicContainerTests extends CommonTests {
      * Test that no membership triples are present.
      * @throws Exception when the RDF resource does not close cleanly
      */
-    @Test
-    @DisplayName("Test with ldp:PreferMembership Prefer header")
     default void testGetEmptyContainerMembership() throws Exception {
         final long size;
         try (final Response res = target(getContainerLocation()).request().header(PREFER,
@@ -153,8 +158,6 @@ public interface LdpBasicContainerTests extends CommonTests {
      * Test fetching a basic container.
      * @throws Exception when the RDF resource does not close cleanly
      */
-    @Test
-    @DisplayName("Test fetching a basic container")
     default void testGetContainer() throws Exception {
         final RDF rdf = getInstance();
         try (final Response res = target(getContainerLocation()).request().get();
@@ -170,8 +173,6 @@ public interface LdpBasicContainerTests extends CommonTests {
      * Test PATCHing a new resource.
      * @throws Exception when the RDF resource does not close cleanly
      */
-    @Test
-    @DisplayName("Test PATCHing a new RDF resource")
     default void testPatchNewRDF() throws Exception {
         final RDF rdf = getInstance();
         // PATCH an LDP-RS
@@ -197,8 +198,6 @@ public interface LdpBasicContainerTests extends CommonTests {
      * Test creating a basic container via POST.
      * @throws Exception when the RDF resource does not close cleanly
      */
-    @Test
-    @DisplayName("Test creating a basic container via POST")
     default void testCreateContainerViaPost() throws Exception {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
@@ -237,8 +236,6 @@ public interface LdpBasicContainerTests extends CommonTests {
      * Test creating a child resource via PUT.
      * @throws Exception when the RDF resource does not close cleanly
      */
-    @Test
-    @DisplayName("Test creating a child resource via PUT")
     default void testCreateContainerViaPut() throws Exception {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
@@ -279,8 +276,7 @@ public interface LdpBasicContainerTests extends CommonTests {
      * Test creating a child resource with a Slug header.
      * @throws Exception when the RDF resource does not close cleanly
      */
-    @Test
-    @DisplayName("Test creating a child resource with a Slug header")
+    @DisplayName("Test create container with slug")
     default void testCreateContainerWithSlug() throws Exception {
         final RDF rdf = getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
@@ -316,8 +312,6 @@ public interface LdpBasicContainerTests extends CommonTests {
      * Test deleting a basic container.
      * @throws Exception when the RDF resource does not close cleanly
      */
-    @Test
-    @DisplayName("Test deleting a basic container")
     default void testDeleteContainer() throws Exception {
         final RDF rdf = getInstance();
         final String childResource;

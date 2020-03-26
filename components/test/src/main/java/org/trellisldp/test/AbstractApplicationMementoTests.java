@@ -13,10 +13,12 @@
  */
 package org.trellisldp.test;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 import javax.ws.rs.client.Client;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 /**
  * A class that runs all of the Memento-related tests.
@@ -35,23 +37,15 @@ public abstract class AbstractApplicationMementoTests {
      */
     public abstract String getBaseURL();
 
-    @Nested
-    @DisplayName("Memento Binary resource tests")
     public class BinaryResourceTests extends BaseMementoTests implements MementoBinaryTests {
     }
 
-    @Nested
-    @DisplayName("Memento TimeGate tests")
     public class TimeGateTests extends BaseMementoTests implements MementoTimeGateTests {
     }
 
-    @Nested
-    @DisplayName("Memento Resource tests")
     public class ResourceTests extends BaseMementoTests implements MementoResourceTests {
     }
 
-    @Nested
-    @DisplayName("Memento TimeMap tests")
     public class TimeMapTests extends BaseMementoTests implements MementoTimeMapTests {
     }
 
@@ -91,4 +85,31 @@ public abstract class AbstractApplicationMementoTests {
         }
     }
 
+    @Test
+    @DisplayName("Memento Binary resource tests")
+    public void testMementoBinaryFeatures() {
+        final MementoBinaryTests tests = new BinaryResourceTests();
+        assertAll("Test binary memento features", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("Memento TimeGate tests")
+    public void testMementoTimeGateFeatures() {
+        final MementoTimeGateTests tests = new TimeGateTests();
+        assertAll("Test memento timegate features", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("Memento Resource tests")
+    public void testMementoResourceFeatures() {
+        final MementoResourceTests tests = new ResourceTests();
+        assertAll("Test resource memento features", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("Memento TimeMap tests")
+    public void testMementoTimeMapFeatures() {
+        final MementoTimeMapTests tests = new TimeMapTests();
+        assertAll("Test memento timemap features", tests.runTests());
+    }
 }

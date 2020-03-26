@@ -15,7 +15,6 @@ package org.trellisldp.test;
 
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.readEntityAsString;
 
@@ -23,19 +22,30 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.LDP;
 
 /**
  * Run Memento-related binary resource tests on a Trellis application.
  */
-@TestInstance(PER_CLASS)
 public interface MementoBinaryTests extends MementoResourceTests {
+
+    @Override
+    default Stream<Executable> runTests() {
+        setUp();
+        return Stream.of(this::testMementosWereFound,
+                this::testMementoDateTimeHeader,
+                this::testMementoAcceptDateTimeHeader,
+                this::testMementoAllowedMethods,
+                this::testMementoLdpResource,
+                this::testMementoContent,
+                this::testCanonicalHeader,
+                this::testCanonicalHeaderDescriptions);
+    }
 
     @Override
     default Map<String, String> getMementos() {
@@ -51,8 +61,6 @@ public interface MementoBinaryTests extends MementoResourceTests {
     /**
      * Check the link headers on a binary Memento.
      */
-    @Test
-    @DisplayName("Test the link canonical header")
     default void testCanonicalHeader() {
         getMementos().forEach((memento, date) -> {
             try (final Response res = target(memento).request().head()) {
@@ -70,8 +78,6 @@ public interface MementoBinaryTests extends MementoResourceTests {
     /**
      * Check the link headers on a binary description Memento.
      */
-    @Test
-    @DisplayName("Test the link canonical header")
     default void testCanonicalHeaderDescriptions() {
         getMementos().forEach((memento, date) -> {
             final String description = getDescription(memento);
@@ -90,7 +96,6 @@ public interface MementoBinaryTests extends MementoResourceTests {
         });
     }
 
-    @Test
     @Override
     default void testMementoContent() {
         final Map<String, String> mementos = getMementos();
@@ -109,7 +114,6 @@ public interface MementoBinaryTests extends MementoResourceTests {
         assertEquals(2L, values.size(), "Check the number of distinct Memento responses");
     }
 
-    @Test
     @Override
     default void testMementoLdpResource() {
         getMementos().forEach((memento, date) -> {
@@ -122,8 +126,6 @@ public interface MementoBinaryTests extends MementoResourceTests {
     /**
      * Test that memento binary descriptions are also LDP resources.
      */
-    @Test
-    @DisplayName("Test that memento binary descriptions are also LDP resources")
     default void testMementoBinaryDescriptionLdpResource() {
         getMementos().forEach((memento, date) -> {
             final String description = getDescription(memento);

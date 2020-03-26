@@ -23,7 +23,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
@@ -36,16 +35,15 @@ import static org.trellisldp.test.TestUtils.hasConstrainedBy;
 import static org.trellisldp.test.TestUtils.hasType;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 
+import java.util.stream.Stream;
+
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
@@ -54,8 +52,6 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * Test the RDF responses to LDP resources.
  */
-@TestInstance(PER_CLASS)
-@DisplayName("Indirect Container Tests")
 public interface LdpIndirectContainerTests extends CommonTests {
 
     String BASIC_CONTAINER = "/basicContainer.ttl";
@@ -104,10 +100,9 @@ public interface LdpIndirectContainerTests extends CommonTests {
 
     /**
      * Initialize Indirect Container tests.
+     * @throws Exception in the case of an error
      */
-    @BeforeAll
-    @DisplayName("Initialize Indirect Container tests")
-    default void beforeAllTests() {
+    default void setUp() throws Exception {
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
 
         // POST an LDP-BC
@@ -147,14 +142,34 @@ public interface LdpIndirectContainerTests extends CommonTests {
             assumeTrue(getLinks(res).stream().anyMatch(hasType(LDP.RDFSource)),
                     "Expected LDP:RDFSource type not present in response");
         }
+
+        // POST an LDP-RS
+        try (final Response res = target(getIndirectContainerLocation()).request()
+                .post(entity(getResourceAsString(SIMPLE_RESOURCE) + "<> foaf:primaryTopic <#it>.", TEXT_TURTLE))) {
+            assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()),
+                    "Creation of RDFSource appears to be unsupported");
+        }
+    }
+
+    /**
+     * Run the tests.
+     * @return the tests
+     * @throws Exception in the case of an error
+     */
+    default Stream<Executable> runTests() throws Exception {
+        setUp();
+        return Stream.of(this::testAddResourceWithMemberSubject,
+                this::testCreateIndirectContainerViaPut,
+                this::testUpdateIndirectContainerTooManyMemberProps,
+                this::testUpdateIndirectContainerMultipleMemberResources,
+                this::testUpdateIndirectContainerMissingMemberResource,
+                this::testGetInverseEmptyMember);
     }
 
     /**
      * Test adding resource to the indirect container.
      * @throws Exception if the RDF resource did not close cleanly
      */
-    @Test
-    @DisplayName("Test adding resource to the indirect container")
     default void testAddResourceWithMemberSubject() throws Exception {
         final RDF rdf = getInstance();
         final String content = getResourceAsString(INDIRECT_CONTAINER_MEMBER_SUBJECT)
@@ -192,8 +207,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
      * Test adding resources to the indirect container.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test adding resources to the indirect container")
     default void testAddingMemberResources() throws Exception {
         final RDF rdf = getInstance();
         final String child1;
@@ -338,8 +351,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
     /**
      * Test creating an indirect container via PUT.
      */
-    @Test
-    @DisplayName("Test creating an indirect container via PUT")
     default void testCreateIndirectContainerViaPut() {
         final String content = getResourceAsString(INDIRECT_CONTAINER)
             + membershipResource(getContainerLocation() + MEMBER_RESOURCE2);
@@ -355,8 +366,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
     /**
      * Test updating an indirect container via PUT.
      */
-    @Test
-    @DisplayName("Test updating an indirect container via PUT")
     default void testUpdateIndirectContainerViaPut() {
         final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString("/indirectContainerInverse.ttl")
@@ -373,8 +382,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
     /**
      * Test updating an indirect container with too many member-related properties.
      */
-    @Test
-    @DisplayName("Test updating an indirect container with too many member-related properties")
     default void testUpdateIndirectContainerTooManyMemberProps() {
         final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString(INDIRECT_CONTAINER)
@@ -394,8 +401,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
     /**
      * Test updating an indirect container with no ldp:insertedContentRelation property.
      */
-    @Test
-    @DisplayName("Test updating an indirect container with no ldp:insertedContentRelation property")
     default void testUpdateIndirectContainerNoICRProp() {
         final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString(DIRECT_CONTAINER)
@@ -414,8 +419,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
     /**
      * Test updating an indirect container with too many membership resources.
      */
-    @Test
-    @DisplayName("Test updating an indirect container with too many membership resources")
     default void testUpdateIndirectContainerMultipleMemberResources() {
         final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString(INDIRECT_CONTAINER)
@@ -435,8 +438,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
     /**
      * Test updating an indirect container with no member relation property.
      */
-    @Test
-    @DisplayName("Test updating an indirect container with no member relation property")
     default void testUpdateIndirectContainerMissingMemberRelation() {
         final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
@@ -461,8 +462,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
     /**
      * Test updating an indirect container with no member resource.
      */
-    @Test
-    @DisplayName("Test updating an indirect container with no member resource")
     default void testUpdateIndirectContainerMissingMemberResource() {
         final String location = createSimpleIndirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString(INDIRECT_CONTAINER);
@@ -481,8 +480,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
      * Test with ldp:PreferMinimalContainer Prefer header.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
     default void testGetEmptyMember() throws Exception {
         final RDF rdf = getInstance();
         try (final Response res = target(getMemberLocation()).request().header(PREFER,
@@ -500,8 +497,6 @@ public interface LdpIndirectContainerTests extends CommonTests {
      * Test with ldp:PreferMinimalContainer Prefer header.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
     default void testGetInverseEmptyMember() throws Exception {
         final RDF rdf = getInstance();
         try (final Response res = target(getMemberLocation()).request().header(PREFER,

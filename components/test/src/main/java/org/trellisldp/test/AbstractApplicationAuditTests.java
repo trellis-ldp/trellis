@@ -13,6 +13,11 @@
  */
 package org.trellisldp.test;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 /**
  * A convenience class for running the Audit tests.
  */
@@ -28,5 +33,11 @@ public abstract class AbstractApplicationAuditTests implements AuditTests {
     @Override
     public void setResourceLocation(final String location) {
         resource = location;
+    }
+
+    @Test
+    @DisplayName("Audit tests")
+    public void testAuditFeatures() throws Exception {
+        assertAll("Test audit features", runTests());
     }
 }

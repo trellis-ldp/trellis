@@ -21,8 +21,8 @@ import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.codec.binary.Base64.encodeBase64String;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
@@ -33,10 +33,8 @@ import static org.trellisldp.test.TestUtils.getResourceAsString;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.Test;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -80,9 +78,6 @@ public abstract class AbstractApplicationAuthTests {
      */
     public abstract String getAdminWebId();
 
-    @Nested
-    @DisplayName("Administrator JWT Auth tests")
-    @TestInstance(PER_CLASS)
     public class AdministratorTests extends BasicTests implements AuthAdministratorTests {
 
         @Override
@@ -91,9 +86,6 @@ public abstract class AbstractApplicationAuthTests {
         }
     }
 
-    @Nested
-    @DisplayName("User JWT Auth tests")
-    @TestInstance(PER_CLASS)
     public class UserTests extends BasicTests implements AuthUserTests {
 
         @Override
@@ -103,9 +95,6 @@ public abstract class AbstractApplicationAuthTests {
         }
     }
 
-    @Nested
-    @DisplayName("User Basic Auth tests")
-    @TestInstance(PER_CLASS)
     public class UserBasicAuthTests extends BasicTests implements AuthUserTests {
         @Override
         public String getAuthorizationHeader() {
@@ -113,11 +102,7 @@ public abstract class AbstractApplicationAuthTests {
         }
     }
 
-    @Nested
-    @DisplayName("Other user JWT Auth tests")
-    @TestInstance(PER_CLASS)
     public class OtherUserTests extends BasicTests implements AuthOtherUserTests {
-
         @Override
         public String getAuthorizationHeader() {
             return buildJwt("https://madison.example.com/profile/#me",
@@ -125,9 +110,6 @@ public abstract class AbstractApplicationAuthTests {
         }
     }
 
-    @Nested
-    @DisplayName("Other user Basic Auth tests")
-    @TestInstance(PER_CLASS)
     public class OtherUserBasicAuthTests extends BasicTests implements AuthOtherUserTests {
         @Override
         public String getAuthorizationHeader() {
@@ -135,14 +117,59 @@ public abstract class AbstractApplicationAuthTests {
         }
     }
 
-    @Nested
-    @DisplayName("Anonymous Auth tests")
-    @TestInstance(PER_CLASS)
     public class AnonymousTests extends BasicTests implements AuthAnonymousTests {
         @Override
         public String getAuthorizationHeader() {
             return null;
         }
+    }
+
+    @Test
+    @DisplayName("Administrator JWT Auth tests")
+    public void testAdminJwtAuth() {
+        final AdministratorTests tests = new AdministratorTests();
+        tests.setUp();
+        assertAll("Test administrator authentication features with JWT", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("User JWT Auth tests")
+    public void testUserJwtAuth() {
+        final UserTests tests = new UserTests();
+        tests.setUp();
+        assertAll("Test user authentication features with JWT", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("User Basic Auth tests")
+    public void testUserBasicAuth() {
+        final UserBasicAuthTests tests = new UserBasicAuthTests();
+        tests.setUp();
+        assertAll("Test user basic authentication features", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("Other user JWT Auth tests")
+    public void testOtherUserJwtAuth() {
+        final OtherUserTests tests = new OtherUserTests();
+        tests.setUp();
+        assertAll("Test other user authentication features", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("Other user Basic Auth tests")
+    public void testOtherUserBasicAuth() {
+        final OtherUserBasicAuthTests tests = new OtherUserBasicAuthTests();
+        tests.setUp();
+        assertAll("Test other user basic authentication features", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("Anonymous Auth tests")
+    public void testAnonymousAuth() {
+        final AnonymousTests tests = new AnonymousTests();
+        tests.setUp();
+        assertAll("Test anonymous user authentication features", tests.runTests());
     }
 
     private abstract class BasicTests implements AuthCommonTests {
@@ -258,9 +285,7 @@ public abstract class AbstractApplicationAuthTests {
             this.groupContainerChild = location;
         }
 
-        @BeforeAll
-        @DisplayName("Initialize Auth tests")
-        protected void setUp() {
+        public void setUp() {
             final String acl = "acl";
             final String prefixAcl = "PREFIX acl: <http://www.w3.org/ns/auth/acl#>\n\n";
             final String jwt = buildJwt(getAdminWebId(), AbstractApplicationAuthTests.this.getJwtSecret());

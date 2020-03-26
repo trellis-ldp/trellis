@@ -51,3 +51,6 @@ jar {
     }
 }
 
+pmd {
+    consoleOutput = false
+}

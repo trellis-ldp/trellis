@@ -21,7 +21,6 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
@@ -33,6 +32,7 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response;
 
@@ -40,9 +40,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
@@ -50,8 +48,21 @@ import org.trellisldp.vocabulary.SKOS;
 /**
  * Run Memento-related tests on a Trellis application.
  */
-@TestInstance(PER_CLASS)
 public interface MementoResourceTests extends MementoCommonTests {
+
+    /**
+     * Run the tests.
+     * @return the tests
+     */
+    default Stream<Executable> runTests() {
+        setUp();
+        return Stream.of(this::testMementosWereFound,
+                this::testMementoDateTimeHeader,
+                this::testMementoAcceptDateTimeHeader,
+                this::testMementoAllowedMethods,
+                this::testMementoLdpResource,
+                this::testMementoContent);
+    }
 
     /**
      * Build a list of all Mementos.
@@ -70,8 +81,6 @@ public interface MementoResourceTests extends MementoCommonTests {
     /**
      * Test the presence of two memento links.
      */
-    @Test
-    @DisplayName("Test the presence of two memento links")
     default void testMementosWereFound() {
         final Map<String, String> mementos = getMementos();
         assertFalse(mementos.isEmpty(), "Check that mementos were found");
@@ -81,8 +90,6 @@ public interface MementoResourceTests extends MementoCommonTests {
     /**
      * Test the presence of a datetime header for each memento.
      */
-    @Test
-    @DisplayName("Test the presence of a datetime header for each memento")
     default void testMementoDateTimeHeader() {
         getMementos().forEach((memento, date) -> {
             try (final Response res = target(memento).request().get()) {
@@ -97,8 +104,6 @@ public interface MementoResourceTests extends MementoCommonTests {
     /**
      * Test the presence of a datetime header for each memento.
      */
-    @Test
-    @DisplayName("Test the presence of a datetime header for each memento")
     default void testMementoAcceptDateTimeHeader() {
         getMementos().forEach((memento, date) -> {
             final String location;
@@ -128,8 +133,6 @@ public interface MementoResourceTests extends MementoCommonTests {
     /**
      * Test allowed methods on memento resources.
      */
-    @Test
-    @DisplayName("Test allowed methods on memento resources")
     default void testMementoAllowedMethods() {
         getMementos().forEach((memento, date) -> {
             try (final Response res = target(memento).request().get()) {
@@ -141,8 +144,6 @@ public interface MementoResourceTests extends MementoCommonTests {
     /**
      * Test that memento resources are also LDP resources.
      */
-    @Test
-    @DisplayName("Test that memento resources are also LDP resources")
     default void testMementoLdpResource() {
         getMementos().forEach((memento, date) -> {
             try (final Response res = target(memento).request().get()) {
@@ -155,8 +156,6 @@ public interface MementoResourceTests extends MementoCommonTests {
      * Test the content of memento resources.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test the content of memento resources")
     default void testMementoContent() throws Exception {
         final RDF rdf = getInstance();
         try (final Dataset dataset = rdf.createDataset()) {

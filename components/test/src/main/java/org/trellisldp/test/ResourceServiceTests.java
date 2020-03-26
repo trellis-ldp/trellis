@@ -21,7 +21,6 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.generate;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
@@ -39,9 +38,6 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
@@ -59,7 +55,6 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * Resource Service tests.
  */
-@TestInstance(PER_CLASS)
 public interface ResourceServiceTests {
 
     String SUBJECT0 = "http://example.com/subject/0";
@@ -79,11 +74,28 @@ public interface ResourceServiceTests {
     ResourceService getResourceService();
 
     /**
+     * Run the tests.
+     * @return the tests
+     * @throws Exception in the case of an error
+     */
+    default Stream<Executable> runTests() throws Exception {
+        return Stream.of(this::testCreateResource,
+                this::testReplaceResource,
+                this::testDeleteResource,
+                this::testAddImmutableData,
+                this::testLdpRs,
+                this::testLdpNr,
+                this::testLdpC,
+                this::testLdpBC,
+                this::testLdpDC,
+                this::testLdpIC,
+                this::testIdentifierGeneration);
+    }
+
+    /**
      * Test creating a resource.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test creating resource")
     default void testCreateResource() throws Exception {
         final RDF rdf = getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
@@ -104,8 +116,6 @@ public interface ResourceServiceTests {
      * Test replacing a resource.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test replacing resource")
     default void testReplaceResource() throws Exception {
         final RDF rdf = getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
@@ -137,8 +147,6 @@ public interface ResourceServiceTests {
      * Test deleting a resource.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test deleting resource")
     default void testDeleteResource() throws Exception {
         final RDF rdf = getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
@@ -165,8 +173,6 @@ public interface ResourceServiceTests {
      * Test adding immutable data.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test adding immutable data")
     default void testAddImmutableData() throws Exception {
         final RDF rdf = getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
@@ -215,8 +221,6 @@ public interface ResourceServiceTests {
      * Test an LDP:RDFSource.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test LDP-RS")
     default void testLdpRs() throws Exception {
         final Instant time = now();
         final RDF rdf = getInstance();
@@ -238,8 +242,6 @@ public interface ResourceServiceTests {
      * Test an LDP:NonRDFSource.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test LDP-NR")
     default void testLdpNr() throws Exception {
         final Instant time = now();
         final RDF rdf = getInstance();
@@ -268,8 +270,6 @@ public interface ResourceServiceTests {
      * Test an LDP:Container.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test LDP-C")
     default void testLdpC() throws Exception {
         final Instant time = now();
         final RDF rdf = getInstance();
@@ -320,8 +320,6 @@ public interface ResourceServiceTests {
      * Test an LDP:BasicContainer.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test LDP-BC")
     default void testLdpBC() throws Exception {
         final Instant time = now();
         final RDF rdf = getInstance();
@@ -374,8 +372,6 @@ public interface ResourceServiceTests {
      * Test an LDP:DirectContainer.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test LDP-DC")
     default void testLdpDC() throws Exception {
         // Only test DC if the backend supports it
         assumeTrue(getResourceService().supportedInteractionModels().contains(LDP.DirectContainer));
@@ -440,8 +436,6 @@ public interface ResourceServiceTests {
      * Test an LDP:IndirectContainer.
      * @throws Exception if the RDF resources did not exit cleanly
      */
-    @Test
-    @DisplayName("Test LDP-IC")
     default void testLdpIC() throws Exception {
         // Only execute this test if the backend supports it
         assumeTrue(getResourceService().supportedInteractionModels().contains(LDP.IndirectContainer));
@@ -505,8 +499,6 @@ public interface ResourceServiceTests {
     /**
      * Test identifier generation.
      */
-    @Test
-    @DisplayName("Test identifier generation")
     default void testIdentifierGeneration() {
         final int size = 1000;
         final Set<String> identifiers = generate(getResourceService()::generateIdentifier).limit(size).collect(toSet());

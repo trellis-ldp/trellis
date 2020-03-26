@@ -13,6 +13,10 @@
  */
 package org.trellisldp.test;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.trellisldp.api.ResourceService;
 
 /**
@@ -26,4 +30,10 @@ public abstract class AbstractResourceServiceTests implements ResourceServiceTes
      */
     @Override
     public abstract ResourceService getResourceService();
+
+    @Test
+    @DisplayName("Resource service tests")
+    public void testResourceServiceFeatures() throws Exception {
+        assertAll("Test resource service features", runTests());
+    }
 }

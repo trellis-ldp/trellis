@@ -13,6 +13,11 @@
  */
 package org.trellisldp.test;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 /**
  * A class that runs all of the LDP tests.
  */
@@ -61,5 +66,11 @@ public abstract class AbstractApplicationEventTests implements EventTests {
     @Override
     public void setMemberLocation(final String location) {
         member = location;
+    }
+
+    @Test
+    @DisplayName("Event tests")
+    public void testEventFeatures() {
+        assertAll("Test event features", runTests());
     }
 }
