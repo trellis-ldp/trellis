@@ -22,31 +22,40 @@ import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.test.TestUtils.getLinks;
 
 import java.time.Instant;
+import java.util.stream.Stream;
 
 import javax.ws.rs.core.Response;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 
 /**
  * Test Memento TimeGate resources.
  */
-@TestInstance(PER_CLASS)
-@DisplayName("Memento timegate tests")
 public interface MementoTimeGateTests extends MementoCommonTests {
+
+    /**
+     * Run the tests.
+     * @return the tests
+     */
+    default Stream<Executable> runTests() {
+        setUp();
+        return Stream.of(this::testAcceptDateTimeHeader,
+                this::testTimeGateLinkHeader,
+                this::testOriginalLinkHeader,
+                this::testTimeGateRedirect,
+                this::testTimeGateRedirected,
+                this::testBadTimeGateRequest,
+                this::testTimeGateRequestPrecedingMemento);
+    }
 
     /**
      * Test the presence of a Vary: Accept-DateTime header.
      */
-    @Test
-    @DisplayName("Test the presence of a Vary: Accept-DateTime header")
     default void testAcceptDateTimeHeader() {
         try (final Response res = target(getResourceLocation()).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response");
@@ -57,8 +66,6 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     /**
      * Test the presence of a rel=timegate Link header.
      */
-    @Test
-    @DisplayName("Test the presence of a rel=timegate Link header")
     default void testTimeGateLinkHeader() {
         try (final Response res = target(getResourceLocation()).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response");
@@ -71,8 +78,6 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     /**
      * Test the presence of a rel=original Link header.
      */
-    @Test
-    @DisplayName("Test the presence of a rel=original Link header")
     default void testOriginalLinkHeader() {
         try (final Response res = target(getResourceLocation()).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response");
@@ -85,8 +90,6 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     /**
      * Test redirection of a timegate request.
      */
-    @Test
-    @DisplayName("Test redirection of a timegate request")
     default void testTimeGateRedirect() {
         final Instant time = now();
         try (final Response res = target(getResourceLocation()).request()
@@ -100,8 +103,6 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     /**
      * Test normal redirection of a timegate request.
      */
-    @Test
-    @DisplayName("Test normal redirection of a timegate request")
     default void testTimeGateRedirected() {
         final String date = RFC_1123_DATE_TIME.withZone(UTC).format(now());
         final String location;
@@ -122,8 +123,6 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     /**
      * Test bad timegate request.
      */
-    @Test
-    @DisplayName("Test bad timegate request")
     default void testBadTimeGateRequest() {
         try (final Response res = target(getResourceLocation()).request()
                 .header(ACCEPT_DATETIME, "unparseable date string").get()) {
@@ -134,8 +133,6 @@ public interface MementoTimeGateTests extends MementoCommonTests {
     /**
      * Test timegate request that predates creation.
      */
-    @Test
-    @DisplayName("Test timegate request that predates creation")
     default void testTimeGateRequestPrecedingMemento() {
         final Instant time = now().minusSeconds(1000000);
         final String acceptDatetime = RFC_1123_DATE_TIME.withZone(UTC).format(time);

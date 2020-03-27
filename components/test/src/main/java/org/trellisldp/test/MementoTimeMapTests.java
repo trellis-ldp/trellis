@@ -18,7 +18,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON_TYPE;
@@ -27,28 +26,41 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 
+import java.util.stream.Stream;
+
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.RDF;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.LDP;
 
 /**
  * Run Memento TimeMap tests on a Trellis application.
  */
-@TestInstance(PER_CLASS)
 public interface MementoTimeMapTests extends MementoCommonTests {
 
     String TIMEMAP_QUERY_ARG = "?ext=timemap";
 
     /**
+     * Run the tests.
+     * @return the tests
+     */
+    default Stream<Executable> runTests() {
+        setUp();
+        return Stream.of(this::testTimeMapLinkHeader,
+                this::testTimeMapResponseHasTimeMapLink,
+                this::testTimeMapIsLDPResource,
+                this::testTimeMapMediaType,
+                this::testTimeMapConnegTurtle,
+                this::testTimeMapConnegJsonLd,
+                this::testTimeMapConnegNTriples,
+                this::testTimeMapAllowedMethods);
+    }
+
+    /**
      * Test the presence of a rel=timemap Link header.
      */
-    @Test
-    @DisplayName("Test the presence of a rel=timemap Link header")
     default void testTimeMapLinkHeader() {
         try (final Response res = target(getResourceLocation()).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful timemap response");
@@ -61,8 +73,6 @@ public interface MementoTimeMapTests extends MementoCommonTests {
     /**
      * Test the timemap response for a rel=timemap.
      */
-    @Test
-    @DisplayName("Test the timemap response for a rel=timemap")
     default void testTimeMapResponseHasTimeMapLink() {
         try (final Response res = target(getResourceLocation() + TIMEMAP_QUERY_ARG).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful response");
@@ -75,8 +85,6 @@ public interface MementoTimeMapTests extends MementoCommonTests {
     /**
      * Test that the timemap resource is an LDP resource.
      */
-    @Test
-    @DisplayName("Test that the timemap resource is an LDP resource")
     default void testTimeMapIsLDPResource() {
         try (final Response res = target(getResourceLocation() + TIMEMAP_QUERY_ARG).request().get()) {
             assertAll("Check for LDP headers", checkMementoLdpHeaders(res, LDP.RDFSource));
@@ -86,8 +94,6 @@ public interface MementoTimeMapTests extends MementoCommonTests {
     /**
      * Test that the timemap response is application/link-format.
      */
-    @Test
-    @DisplayName("Test that the timemap response is application/link-format")
     default void testTimeMapMediaType() {
         try (final Response res = target(getResourceLocation() + TIMEMAP_QUERY_ARG).request().get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid link-format timemap");
@@ -101,8 +107,6 @@ public interface MementoTimeMapTests extends MementoCommonTests {
     /**
      * Test content negotiation on timemap resource: turtle.
      */
-    @Test
-    @DisplayName("Test content negotiation on timemap resource: turtle")
     default void testTimeMapConnegTurtle() {
         final RDF rdf = getInstance();
         try (final Response res = target(getResourceLocation() + TIMEMAP_QUERY_ARG).request().accept("text/turtle")
@@ -120,8 +124,6 @@ public interface MementoTimeMapTests extends MementoCommonTests {
     /**
      * Test content negotiation on timemap resource: json-ld.
      */
-    @Test
-    @DisplayName("Test content negotiation on timemap resource: json-ld")
     default void testTimeMapConnegJsonLd() {
         final RDF rdf = getInstance();
         try (final Response res = target(getResourceLocation() + TIMEMAP_QUERY_ARG).request()
@@ -139,8 +141,6 @@ public interface MementoTimeMapTests extends MementoCommonTests {
     /**
      * Test content negotiation on timemap resource: n-triples.
      */
-    @Test
-    @DisplayName("Test content negotiation on timemap resource: n-triples")
     default void testTimeMapConnegNTriples() {
         final RDF rdf = getInstance();
         try (final Response res = target(getResourceLocation() + TIMEMAP_QUERY_ARG).request()
@@ -158,8 +158,6 @@ public interface MementoTimeMapTests extends MementoCommonTests {
     /**
      * Test allowed methods on timemap resource.
      */
-    @Test
-    @DisplayName("Test allowed methods on timemap resource")
     default void testTimeMapAllowedMethods() {
         try (final Response res = target(getResourceLocation() + TIMEMAP_QUERY_ARG).request().get()) {
             assertAll("Check allowed methods", checkMementoAllowedMethods(res));

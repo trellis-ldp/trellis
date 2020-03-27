@@ -22,7 +22,6 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
@@ -32,16 +31,15 @@ import static org.trellisldp.test.TestUtils.getResourceAsString;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.vocabulary.RDF.type;
 
+import java.util.stream.Stream;
+
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
@@ -52,7 +50,6 @@ import org.trellisldp.vocabulary.Trellis;
  *
  * @author acoburn
  */
-@TestInstance(PER_CLASS)
 public interface AuditTests extends CommonTests {
 
     /**
@@ -76,8 +73,7 @@ public interface AuditTests extends CommonTests {
     /**
      * Set up the test infrastructure.
      */
-    @BeforeAll
-    default void beforeAllTests() {
+    default void setUp() {
         final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString(), getJwtSecret());
 
         final String user1 = buildJwt("https://people.apache.org/~acoburn/#i", getJwtSecret());
@@ -118,12 +114,15 @@ public interface AuditTests extends CommonTests {
         }
     }
 
+    default Stream<Executable> runTests() throws Exception {
+        setUp();
+        return of(this::testNoAuditTriples, this::testOmitAuditTriples, this::testAuditTriples);
+    }
+
     /**
      * Check the absense of audit triples.
      * @throws Exception if the RDF resource didn't close cleanly
      */
-    @Test
-    @DisplayName("Check the absense of audit triples.")
     default void testNoAuditTriples() throws Exception {
         try (final Response res = target(getResourceLocation()).request().get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
@@ -136,8 +135,6 @@ public interface AuditTests extends CommonTests {
      * Check the explicit absense of audit triples.
      * @throws Exception if the RDF resource didn't close cleanly
      */
-    @Test
-    @DisplayName("Check the explicit absense of audit triples.")
     default void testOmitAuditTriples() throws Exception {
         try (final Response res = target(getResourceLocation()).request().header("Prefer",
                     "return=representation; omit=\"" + Trellis.PreferAudit.getIRIString() + "\"").get();
@@ -151,8 +148,6 @@ public interface AuditTests extends CommonTests {
      * Check the presence of audit triples.
      * @throws Exception if the RDF resource didn't close cleanly
      */
-    @Test
-    @DisplayName("Check the presence of audit triples.")
     default void testAuditTriples() throws Exception {
         final RDF rdf = getInstance();
         try (final Response res = target(getResourceLocation()).request().header("Prefer",

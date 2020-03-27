@@ -23,7 +23,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
@@ -36,16 +35,15 @@ import static org.trellisldp.test.TestUtils.hasConstrainedBy;
 import static org.trellisldp.test.TestUtils.hasType;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 
+import java.util.stream.Stream;
+
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
@@ -54,8 +52,6 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * Run LDP-related tests on a Trellis application.
  */
-@TestInstance(PER_CLASS)
-@DisplayName("Direct Container Tests")
 public interface LdpDirectContainerTests extends CommonTests {
 
     String MEMBER_RESOURCE1 = "members1";
@@ -106,9 +102,7 @@ public interface LdpDirectContainerTests extends CommonTests {
     /**
      * Initialize Direct Container tests.
      */
-    @BeforeAll
-    @DisplayName("Initialize Direct Container tests")
-    default void beforeAllTests() {
+    default void setUp() {
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String dcUnsupported = "Creation of DirectContainer appears to be unsupported";
         final String notDcType = "New resource was not of expected DirectContainer type";
@@ -152,11 +146,29 @@ public interface LdpDirectContainerTests extends CommonTests {
     }
 
     /**
+     * Run all the tests.
+     * @return the tests
+     * @throws Exception in the case of an error
+     */
+    default Stream<Executable> runTests() throws Exception {
+        setUp();
+        return Stream.of(this::testSimpleDirectContainer,
+                this::testAddingMemberResources,
+                this::testCreateDirectContainerViaPut,
+                this::testUpdateDirectContainerViaPut,
+                this::testUpdateDirectContainerTooManyMemberProps,
+                this::testUpdateDirectContainerMultipleMemberResources,
+                this::testUpdateDirectContainerMissingMemberRelation,
+                this::testUpdateDirectContainerMissingMemberResource,
+                this::testDirectContainerWithInverseMembership,
+                this::testGetEmptyMember,
+                this::testGetInverseEmptyMember);
+    }
+
+    /**
      * Test fetch a self-contained direct container.
      * @throws Exception if the RDF resource did not close cleanly
      */
-    @Test
-    @DisplayName("Test fetch a self-contained direct container")
     default void testSimpleDirectContainer() throws Exception {
         final RDF rdf = getInstance();
         final String memberContent = getResourceAsString(SIMPLE_RESOURCE);
@@ -188,8 +200,6 @@ public interface LdpDirectContainerTests extends CommonTests {
      * Test adding resources to the direct container.
      * @throws Exception if an RDF resource did not close cleanly
      */
-    @Test
-    @DisplayName("Test adding resources to the direct container")
     default void testAddingMemberResources() throws Exception {
         final RDF rdf = getInstance();
         final String dcLocation;
@@ -346,8 +356,6 @@ public interface LdpDirectContainerTests extends CommonTests {
     /**
      * Test creating a direct container via PUT.
      */
-    @Test
-    @DisplayName("Test creating a direct container via PUT")
     default void testCreateDirectContainerViaPut() {
         final String other2 = getContainerLocation() + "/other2";
         final String content = getResourceAsString(DIRECT_CONTAINER)
@@ -364,8 +372,6 @@ public interface LdpDirectContainerTests extends CommonTests {
     /**
      * Test updating a direct container via PUT.
      */
-    @Test
-    @DisplayName("Test updating a direct container via PUT")
     default void testUpdateDirectContainerViaPut() {
         final String dcLocation = createSimpleDirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString("/directContainerIsPartOf.ttl")
@@ -382,8 +388,6 @@ public interface LdpDirectContainerTests extends CommonTests {
     /**
      * Test updating a direct container with too many member-related properties.
      */
-    @Test
-    @DisplayName("Test updating a direct container with too many member-related properties")
     default void testUpdateDirectContainerTooManyMemberProps() {
         final String dcLocation = createSimpleDirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString(DIRECT_CONTAINER)
@@ -403,8 +407,6 @@ public interface LdpDirectContainerTests extends CommonTests {
     /**
      * Test updating a direct container with too many membership resources.
      */
-    @Test
-    @DisplayName("Test updating a direct container with too many membership resources")
     default void testUpdateDirectContainerMultipleMemberResources() {
         final String dcLocation = createSimpleDirectContainer(MEMBER_RESOURCE2);
 
@@ -425,8 +427,6 @@ public interface LdpDirectContainerTests extends CommonTests {
     /**
      * Test updating a direct container with no member relation property.
      */
-    @Test
-    @DisplayName("Test updating a direct container with no member relation property")
     default void testUpdateDirectContainerMissingMemberRelation() {
         final String dcLocation = createSimpleDirectContainer(MEMBER_RESOURCE2);
         final String content = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
@@ -449,8 +449,6 @@ public interface LdpDirectContainerTests extends CommonTests {
     /**
      * Test updating a direct container with no member resource.
      */
-    @Test
-    @DisplayName("Test updating a direct container with no member resource")
     default void testUpdateDirectContainerMissingMemberResource() {
         final String dcLocation = createSimpleDirectContainer(MEMBER_RESOURCE2);
         final String content = getResourceAsString("/directContainer.ttl");
@@ -469,8 +467,6 @@ public interface LdpDirectContainerTests extends CommonTests {
      * Test fetching inverse member properties on a direct container.
      * @throws Exception when the RDF resource did not close cleanly
      */
-    @Test
-    @DisplayName("Test with inverse direct containment")
     default void testDirectContainerWithInverseMembership() throws Exception {
         final RDF rdf = getInstance();
         final String dcLocation;
@@ -506,8 +502,6 @@ public interface LdpDirectContainerTests extends CommonTests {
      * Test with ldp:PreferMinimalContainer Prefer header.
      * @throws Exception when the RDF resource did not close cleanly
      */
-    @Test
-    @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
     default void testGetEmptyMember() throws Exception {
         final RDF rdf = getInstance();
         try (final Response res = target(getMemberLocation()).request().header(PREFER,
@@ -525,8 +519,6 @@ public interface LdpDirectContainerTests extends CommonTests {
      * Test with ldp:PreferMinimalContainer Prefer header.
      * @throws Exception when the RDF resource did not close cleanly
      */
-    @Test
-    @DisplayName("Test with ldp:PreferMinimalContainer Prefer header")
     default void testGetInverseEmptyMember() throws Exception {
         final RDF rdf = getInstance();
         try (final Response res = target(getMemberLocation()).request().header(PREFER,

@@ -38,7 +38,6 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Memento;
@@ -76,8 +75,7 @@ public interface MementoCommonTests extends CommonTests {
     /**
      * Set up the memento resources.
      */
-    @BeforeAll
-    default void beforeAllTests() {
+    default void setUp() {
         final String binary = "This is a text file.";
 
         final String content

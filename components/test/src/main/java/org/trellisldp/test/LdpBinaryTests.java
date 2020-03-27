@@ -20,7 +20,6 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
@@ -28,23 +27,20 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.test.TestUtils.readEntityAsString;
 
+import java.util.stream.Stream;
+
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.RDF;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 
 /**
  * Run LDP Binary-related tests on a Trellis application.
  */
-@TestInstance(PER_CLASS)
-@DisplayName("Binary resource tests")
 public interface LdpBinaryTests extends CommonTests {
 
     String CONTENT = "This is a file.";
@@ -65,9 +61,7 @@ public interface LdpBinaryTests extends CommonTests {
     /**
      * Initialize Binary tests.
      */
-    @BeforeAll
-    @DisplayName("Initialize Binary tests")
-    default void beforeAllTests() {
+    default void setUp() {
 
         // POST an LDP-NR
         try (final Response res = target().request().header(SLUG, generateRandomValue(getClass().getSimpleName()))
@@ -77,10 +71,22 @@ public interface LdpBinaryTests extends CommonTests {
     }
 
     /**
+     * Run the LDP Binary tests.
+     * @return an executable for each of the tests
+     * @throws Exception in the case of an error
+     */
+    default Stream<Executable> runTests() throws Exception {
+        setUp();
+        return Stream.of(this::testGetBinary,
+                this::testGetBinaryDescription,
+                this::testPostBinary,
+                this::testPatchBinaryDescription,
+                this::testBinaryIsInContainer);
+    }
+
+    /**
      * Test fetching a binary resource.
      */
-    @Test
-    @DisplayName("Test fetching a binary resource")
     default void testGetBinary() {
         // Fetch the resource
         try (final Response res = target(getResourceLocation()).request().get()) {
@@ -94,8 +100,6 @@ public interface LdpBinaryTests extends CommonTests {
      * Test fetching a binary description.
      * @throws Exception if the RDF resource didn't close cleanly
      */
-    @Test
-    @DisplayName("Test fetching a binary description")
     default void testGetBinaryDescription() throws Exception {
         final EntityTag etag = getETag(getResourceLocation());
 
@@ -112,8 +116,6 @@ public interface LdpBinaryTests extends CommonTests {
     /**
      * Test creating a new binary via POST.
      */
-    @Test
-    @DisplayName("Test creating a new binary via POST")
     default void testPostBinary() {
         // POST an LDP-NR
         try (final Response res = target().request().header(SLUG, generateRandomValue(getClass().getSimpleName()))
@@ -129,8 +131,6 @@ public interface LdpBinaryTests extends CommonTests {
      * Test modifying a binary's description via PATCH.
      * @throws Exception if the RDF resource did not close cleanly
      */
-    @Test
-    @DisplayName("Test modifying a binary's description via PATCH")
     default void testPatchBinaryDescription() throws Exception {
         final RDF rdf = getInstance();
         final EntityTag descriptionETag;
@@ -182,8 +182,6 @@ public interface LdpBinaryTests extends CommonTests {
      * Test that the binary appears in the parent container.
      * @throws Exception if the RDF resource did not close cleanly
      */
-    @Test
-    @DisplayName("Test that the binary appears in the parent container")
     default void testBinaryIsInContainer() throws Exception {
         final RDF rdf = getInstance();
         // Test the root container, verifying that the containment triple exists

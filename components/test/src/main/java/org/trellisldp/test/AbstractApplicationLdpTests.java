@@ -14,13 +14,14 @@
 package org.trellisldp.test;
 
 import static java.util.Collections.emptySet;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import java.util.Set;
 
 import javax.ws.rs.client.Client;
 
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 /**
  * A class that runs all of the LDP tests.
@@ -51,8 +52,6 @@ public abstract class AbstractApplicationLdpTests {
         return emptySet();
     }
 
-    @Nested
-    @DisplayName("RDF Serialization tests")
     public class RDFSerializationTests extends LdpCommonTests implements LdpRdfTests {
         private String resource;
 
@@ -72,8 +71,6 @@ public abstract class AbstractApplicationLdpTests {
         }
     }
 
-    @Nested
-    @DisplayName("LDP Binary tests")
     public class BinaryTests extends LdpCommonTests implements LdpBinaryTests {
         private String resource;
 
@@ -88,8 +85,6 @@ public abstract class AbstractApplicationLdpTests {
         }
     }
 
-    @Nested
-    @DisplayName("LDP Basic Containment tests")
     public class BasicContainmentTests extends LdpCommonTests implements LdpBasicContainerTests {
         private String container;
 
@@ -104,8 +99,6 @@ public abstract class AbstractApplicationLdpTests {
         }
     }
 
-    @Nested
-    @DisplayName("LDP Direct Containment tests")
     public class DirectContainmentTests extends LdpCommonTests implements LdpDirectContainerTests {
         private String container;
         private String member;
@@ -142,8 +135,6 @@ public abstract class AbstractApplicationLdpTests {
         }
     }
 
-    @Nested
-    @DisplayName("LDP Indirect Containment tests")
     public class IndirectContainmentTests extends LdpCommonTests implements LdpIndirectContainerTests {
 
         private String container;
@@ -192,4 +183,40 @@ public abstract class AbstractApplicationLdpTests {
             return AbstractApplicationLdpTests.this.getBaseURL();
         }
     }
+
+    @Test
+    @DisplayName("RDF Serialization tests")
+    public void testRdfSerialization() throws Exception {
+        final LdpRdfTests tests = new RDFSerializationTests();
+        assertAll("Check RDF support", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("LDP Binary tests")
+    public void testLdpBinaries() throws Exception {
+        final LdpBinaryTests tests = new BinaryTests();
+        assertAll("Check binary support", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("LDP Basic Containment tests")
+    public void testBasicContainment() throws Exception {
+        final LdpBasicContainerTests tests = new BasicContainmentTests();
+        assertAll("Check basic containment support", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("LDP Direct Containment tests")
+    public void testDirectContainment() throws Exception {
+        final LdpDirectContainerTests tests = new DirectContainmentTests();
+        assertAll("Check direct containment support", tests.runTests());
+    }
+
+    @Test
+    @DisplayName("LDP Indirect Containment tests")
+    public void testIndirectContainment() throws Exception {
+        final LdpIndirectContainerTests tests = new IndirectContainmentTests();
+        assertAll("Check indirect containment support", tests.runTests());
+    }
+
 }

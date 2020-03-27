@@ -21,10 +21,11 @@ import static javax.ws.rs.core.Response.Status.fromStatusCode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 
+import java.util.stream.Stream;
+
 import javax.ws.rs.core.Response;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 /**
  * Admin Authorization tests.
@@ -33,11 +34,47 @@ import org.junit.jupiter.api.Test;
  */
 public interface AuthAdministratorTests extends AuthCommonTests {
 
+
+    /**
+     * Run the tests.
+     * @return the tests
+     */
+    default Stream<Executable> runTests() {
+        return Stream.of(this::testAdminCanReadPublicResource,
+                this::testAdminCanReadPublicResourceChild,
+                this::testAdminCanWritePublicResource,
+                this::testAdminCanWritePublicResourceChild,
+                this::testAdminCanControlPublicResource,
+                this::testAdminCanControlPublicResourceChild,
+                this::testAdminCanReadProtectedResource,
+                this::testAdminCanReadProtectedResourceChild,
+                this::testAdminCanWriteProtectedResource,
+                this::testAdminCanWriteProtectedResourceChild,
+                this::testAdminCanControlProtectedResource,
+                this::testAdminCanControlProtectedResourceChild,
+                this::testAdminCanReadPrivateResource,
+                this::testAdminCanReadPrivateResourceChild,
+                this::testAdminCanWritePrivateResource,
+                this::testAdminCanWritePrivateResourceChild,
+                this::testAdminCanControlPrivateResource,
+                this::testAdminCanControlPrivateResourceChild,
+                this::testAdminCanReadGroupResource,
+                this::testAdminCanReadGroupResourceChild,
+                this::testAdminCanWriteGroupResource,
+                this::testAdminCanWriteGroupResourceChild,
+                this::testAdminCanControlGroupResource,
+                this::testAdminCanControlGroupResourceChild,
+                this::testCanReadDefaultAclResource,
+                this::testCanReadDefaultAclResourceChild,
+                this::testCanWriteDefaultAclResource,
+                this::testCanWriteDefaultAclResourceChild,
+                this::testCanControlDefaultAclResource,
+                this::testCanControlDefaultAclResourceChild);
+    }
+
     /**
      * Verify that an administrator can read a public resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can read a public resource")
     default void testAdminCanReadPublicResource() {
         try (final Response res = target(getPublicContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -48,8 +85,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can read the child of a public resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can read the child of a public resource")
     default void testAdminCanReadPublicResourceChild() {
         try (final Response res = target(getPublicContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -60,8 +95,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can write to a public resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can write to a public resource")
     default void testAdminCanWritePublicResource() {
         try (final Response res = target(getPublicContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -73,8 +106,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can write to the child of a public resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can write to the child of a public resource")
     default void testAdminCanWritePublicResourceChild() {
         try (final Response res = target(getPublicContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -86,8 +117,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can control a public resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can control a public resource")
     default void testAdminCanControlPublicResource() {
         try (final Response res = target(getPublicContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -98,8 +127,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can control the child of a public resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can control the child of a public resource")
     default void testAdminCanControlPublicResourceChild() {
         try (final Response res = target(getPublicContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -110,8 +137,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can read a protected resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can read a protected resource")
     default void testAdminCanReadProtectedResource() {
         try (final Response res = target(getProtectedContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -122,8 +147,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can read the child of a protected resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can read the child of a protected resource")
     default void testAdminCanReadProtectedResourceChild() {
         try (final Response res = target(getProtectedContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -134,8 +157,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can write to a protected resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can write to a protected resource")
     default void testAdminCanWriteProtectedResource() {
         try (final Response res = target(getProtectedContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -147,8 +168,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can write to the child of a protected resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can write to the child of a protected resource")
     default void testAdminCanWriteProtectedResourceChild() {
         try (final Response res = target(getProtectedContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -160,8 +179,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can control a protected resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can control a protected resource")
     default void testAdminCanControlProtectedResource() {
         try (final Response res = target(getProtectedContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -172,8 +189,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can control the child of a protected resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can control the child of a protected resource")
     default void testAdminCanControlProtectedResourceChild() {
         try (final Response res = target(getProtectedContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -184,8 +199,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can read a private resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can read a private resource")
     default void testAdminCanReadPrivateResource() {
         try (final Response res = target(getPrivateContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -196,8 +209,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can read the child of a private resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can read the child of a private resource")
     default void testAdminCanReadPrivateResourceChild() {
         try (final Response res = target(getPrivateContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -208,8 +219,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can write to a private resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can write to a private resource")
     default void testAdminCanWritePrivateResource() {
         try (final Response res = target(getPrivateContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -221,8 +230,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can write to the child of a private resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can write to the child of a private resource")
     default void testAdminCanWritePrivateResourceChild() {
         try (final Response res = target(getPrivateContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -234,8 +241,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can control a private resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can control a private resource")
     default void testAdminCanControlPrivateResource() {
         try (final Response res = target(getPrivateContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -246,8 +251,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can control the child of a private resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can control the child of a private resource")
     default void testAdminCanControlPrivateResourceChild() {
         try (final Response res = target(getPrivateContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -258,8 +261,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can read a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can read a group-controlled resource")
     default void testAdminCanReadGroupResource() {
         try (final Response res = target(getGroupContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -270,8 +271,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can read the child of a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can read the child of a group-controlled resource")
     default void testAdminCanReadGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -282,8 +281,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can write to a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can write to a group-controlled resource")
     default void testAdminCanWriteGroupResource() {
         try (final Response res = target(getGroupContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -295,8 +292,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can write to the child of a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can write to the child of a group-controlled resource")
     default void testAdminCanWriteGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -308,8 +303,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can control a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can control a group-controlled resource")
     default void testAdminCanControlGroupResource() {
         try (final Response res = target(getGroupContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -320,8 +313,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can't find the ACL of a child resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can't find the ACL of a child resource")
     default void testAdminCanControlGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -332,8 +323,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can read a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can read a default ACL resource")
     default void testCanReadDefaultAclResource() {
         try (final Response res = target(getDefaultContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -344,8 +333,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can read the child of a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can read the child of a default ACL resource")
     default void testCanReadDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -356,8 +343,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can write to a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can write to a default ACL resource")
     default void testCanWriteDefaultAclResource() {
         try (final Response res = target(getDefaultContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -369,8 +354,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can write to the child of a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can write to the child of a default ACL resource")
     default void testCanWriteDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -382,8 +365,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can control a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can control a default ACL resource")
     default void testCanControlDefaultAclResource() {
         try (final Response res = target(getDefaultContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -394,8 +375,6 @@ public interface AuthAdministratorTests extends AuthCommonTests {
     /**
      * Verify that an administrator can't find the ACL resource.
      */
-    @Test
-    @DisplayName("Verify that an administrator can't find the ACL resource")
     default void testCanControlDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {

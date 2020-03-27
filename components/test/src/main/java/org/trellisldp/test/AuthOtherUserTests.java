@@ -22,10 +22,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 
+import java.util.stream.Stream;
+
 import javax.ws.rs.core.Response;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 /**
  * Other (non-privileged) user authorization tests.
@@ -33,10 +34,50 @@ import org.junit.jupiter.api.Test;
 public interface AuthOtherUserTests extends AuthCommonTests {
 
     /**
+     * Run the tests.
+     * @return the tests
+     */
+    default Stream<Executable> runTests() {
+        return Stream.of(this::testOtherUserCanReadPublicResource,
+                this::testOtherUserCanReadPublicResourceChild,
+                this::testOtherUserCanAppendPublicResource,
+                this::testOtherUserCanWritePublicResource,
+                this::testOtherUserCanWritePublicResourceChild,
+                this::testOtherUserCanControlPublicResource,
+                this::testOtherUserCanControlPublicResourceChild,
+                this::testOtherUserCanReadProtectedResource,
+                this::testOtherUserCanReadProtectedResourceChild,
+                this::testOtherUserCanAppendProtectedResource,
+                this::testOtherUserCanWriteProtectedResource,
+                this::testOtherUserCanWriteProtectedResourceChild,
+                this::testOtherUserCanControlProtectedResource,
+                this::testOtherUserCanControlProtectedResourceChild,
+                this::testOtherUserCanReadPrivateResource,
+                this::testOtherUserCanReadPrivateResourceChild,
+                this::testOtherUserCanAppendPrivateResource,
+                this::testOtherUserCanWritePrivateResource,
+                this::testOtherUserCanWritePrivateResourceChild,
+                this::testOtherUserCanControlPrivateResource,
+                this::testOtherUserCanControlPrivateResourceChild,
+                this::testOtherUserCanReadGroupResource,
+                this::testOtherUserCanReadGroupResourceChild,
+                this::testOtherUserCanAppendGroupResource,
+                this::testOtherUserCanWriteGroupResource,
+                this::testOtherUserCanWriteGroupResourceChild,
+                this::testOtherUserCanControlGroupResource,
+                this::testOtherUserCanControlGroupResourceChild,
+                this::testOtherUserCanReadDefaultAclResource,
+                this::testOtherUserCanReadDefaultAclResourceChild,
+                this::testOtherUserCanAppendDefaultAclResource,
+                this::testOtherUserCanWriteDefaultAclResource,
+                this::testOtherUserCanWriteDefaultAclResourceChild,
+                this::testOtherUserCanControlDefaultAclResource,
+                this::testOtherUserCanControlDefaultAclResourceChild);
+    }
+
+    /**
      * Verify that another user can read a public resource.
      */
-    @Test
-    @DisplayName("Verify that another user can read a public resource")
     default void testOtherUserCanReadPublicResource() {
         try (final Response res = target(getPublicContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -47,9 +88,7 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user can read the child of a public resource.
      */
-    @Test
-    @DisplayName("Verify that another user can read the child of a public resource")
-    default void testOtherUserCanReadPublicResourceChile() {
+    default void testOtherUserCanReadPublicResourceChild() {
         try (final Response res = target(getPublicContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), OK_RESPONSE);
@@ -59,8 +98,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user can append to a public resource.
      */
-    @Test
-    @DisplayName("Verify that another user can append to a public resource")
     default void testOtherUserCanAppendPublicResource() {
         try (final Response res = target(getPublicContainer()).request().header(AUTHORIZATION, getAuthorizationHeader())
                 .post(entity("", TEXT_TURTLE))) {
@@ -71,8 +108,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user can write to a public resource.
      */
-    @Test
-    @DisplayName("Verify that another user can write to a public resource")
     default void testOtherUserCanWritePublicResource() {
         try (final Response res = target(getPublicContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -84,8 +119,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user can write to the child of a public resource.
      */
-    @Test
-    @DisplayName("Verify that another user can write to the child of a public resource")
     default void testOtherUserCanWritePublicResourceChild() {
         try (final Response res = target(getPublicContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -97,8 +130,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot control a public resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot control a public resource")
     default void testOtherUserCanControlPublicResource() {
         try (final Response res = target(getPublicContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -109,8 +140,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot control the child of a public resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot control the child of a public resource")
     default void testOtherUserCanControlPublicResourceChild() {
         try (final Response res = target(getPublicContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -121,8 +150,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user can read a protected resource.
      */
-    @Test
-    @DisplayName("Verify that another user can read a protected resource")
     default void testOtherUserCanReadProtectedResource() {
         try (final Response res = target(getProtectedContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -133,8 +160,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user can read the child of a protected resource.
      */
-    @Test
-    @DisplayName("Verify that another user can read the child of a protected resource")
     default void testOtherUserCanReadProtectedResourceChild() {
         try (final Response res = target(getProtectedContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -145,8 +170,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user can append to a public resource.
      */
-    @Test
-    @DisplayName("Verify that another user can append to a public resource")
     default void testOtherUserCanAppendProtectedResource() {
         try (final Response res = target(getProtectedContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).post(entity("", TEXT_TURTLE))) {
@@ -157,8 +180,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot write to a protected resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot write to a protected resource")
     default void testOtherUserCanWriteProtectedResource() {
         try (final Response res = target(getProtectedContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -170,8 +191,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot write to the child of a protected resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot write to the child of a protected resource")
     default void testOtherUserCanWriteProtectedResourceChild() {
         try (final Response res = target(getProtectedContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -183,8 +202,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot control a protected resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot control a protected resource")
     default void testOtherUserCanControlProtectedResource() {
         try (final Response res = target(getProtectedContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -195,8 +212,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot control the child of a protected resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot control the child of a protected resource")
     default void testOtherUserCanControlProtectedResourceChild() {
         try (final Response res = target(getProtectedContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -207,8 +222,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot read a private resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot read a private resource")
     default void testOtherUserCanReadPrivateResource() {
         try (final Response res = target(getPrivateContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -219,8 +232,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot read the child of a private resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot read the child of a private resource")
     default void testOtherUserCanReadPrivateResourceChild() {
         try (final Response res = target(getPrivateContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -231,8 +242,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot append to a private resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot append to a private resource")
     default void testOtherUserCanAppendPrivateResource() {
         try (final Response res = target(getPrivateContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).post(entity("", TEXT_TURTLE))) {
@@ -243,8 +252,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot write to a private resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot write to a private resource")
     default void testOtherUserCanWritePrivateResource() {
         try (final Response res = target(getPrivateContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -256,8 +263,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot write to the child of a private resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot write to the child of a private resource")
     default void testOtherUserCanWritePrivateResourceChild() {
         try (final Response res = target(getPrivateContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -269,8 +274,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot control a private resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot control a private resource")
     default void testOtherUserCanControlPrivateResource() {
         try (final Response res = target(getPrivateContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -281,8 +284,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot control the child of a private resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot control the child of a private resource")
     default void testOtherUserCanControlPrivateResourceChild() {
         try (final Response res = target(getPrivateContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -293,8 +294,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user can read a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that another user can read a group-controlled resource")
     default void testOtherUserCanReadGroupResource() {
         try (final Response res = target(getGroupContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -305,8 +304,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user can read the child of a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that another user can read the child of a group-controlled resource")
     default void testOtherUserCanReadGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -317,8 +314,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot append to a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot append to a group-controlled resource")
     default void testOtherUserCanAppendGroupResource() {
         try (final Response res = target(getGroupContainer()).request().header(AUTHORIZATION, getAuthorizationHeader())
                 .post(entity("", TEXT_TURTLE))) {
@@ -329,8 +324,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot write to a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot write to a group-controlled resource")
     default void testOtherUserCanWriteGroupResource() {
         try (final Response res = target(getGroupContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -342,8 +335,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot write to the child of a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot write to the child of a group-controlled resource")
     default void testOtherUserCanWriteGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -355,8 +346,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot control a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot control a group-controlled resource")
     default void testOtherUserCanControlGroupResource() {
         try (final Response res = target(getGroupContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -367,8 +356,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot control the child of a group-controlled resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot control the child of a group-controlled resource")
     default void testOtherUserCanControlGroupResourceChild() {
         try (final Response res = target(getGroupContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -379,8 +366,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user can read a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that another user can read a default ACL resource")
     default void testOtherUserCanReadDefaultAclResource() {
         try (final Response res = target(getDefaultContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -391,8 +376,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot read the child of a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot read the child of a default ACL resource")
     default void testOtherUserCanReadDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -403,8 +386,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot append to a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot append to a default ACL resource")
     default void testOtherUserCanAppendDefaultAclResource() {
         try (final Response res = target(getDefaultContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).post(entity("", TEXT_TURTLE))) {
@@ -415,8 +396,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot write to a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot write to a default ACL resource")
     default void testOtherUserCanWriteDefaultAclResource() {
         try (final Response res = target(getDefaultContainer()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -428,8 +407,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot write to the child of a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot write to the child of a default ACL resource")
     default void testOtherUserCanWriteDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild()).request()
                 .header(AUTHORIZATION, getAuthorizationHeader())
@@ -441,8 +418,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot control a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot control a default ACL resource")
     default void testOtherUserCanControlDefaultAclResource() {
         try (final Response res = target(getDefaultContainer() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {
@@ -453,8 +428,6 @@ public interface AuthOtherUserTests extends AuthCommonTests {
     /**
      * Verify that another user cannot control the child of a default ACL resource.
      */
-    @Test
-    @DisplayName("Verify that another user cannot control the child of a default ACL resource")
     default void testOtherUserCanControlDefaultAclResourceChild() {
         try (final Response res = target(getDefaultContainerChild() + EXT_ACL).request()
                 .header(AUTHORIZATION, getAuthorizationHeader()).get()) {

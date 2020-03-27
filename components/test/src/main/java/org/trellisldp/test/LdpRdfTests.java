@@ -21,7 +21,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON_TYPE;
@@ -41,6 +40,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.EntityTag;
@@ -50,10 +50,7 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
@@ -62,7 +59,6 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * Test the RDF responses to LDP resources.
  */
-@TestInstance(PER_CLASS)
 public interface LdpRdfTests extends CommonTests {
 
     String SIMPLE_RESOURCE = "/simpleResource.ttl";
@@ -90,9 +86,7 @@ public interface LdpRdfTests extends CommonTests {
     /**
      * Initialize the RDF tests.
      */
-    @BeforeAll
-    @DisplayName("Initialize RDF tests")
-    default void beforeAllTests() {
+    default void setUp() {
         final String content = getResourceAsString(SIMPLE_RESOURCE);
 
         // POST an LDP-RS
@@ -100,14 +94,26 @@ public interface LdpRdfTests extends CommonTests {
                 .post(entity(content, TEXT_TURTLE))) {
             setResourceLocation(checkCreateResponseAssumptions(res, LDP.RDFSource));
         }
+    }
 
+    /**
+     * Run all the tests.
+     * @return the tests
+     * @throws Exception in the case of an error
+     */
+    default Stream<Executable> runTests() throws Exception {
+        setUp();
+        return Stream.of(this::testGetJsonLdDefault,
+                this::testGetJsonLdCompacted,
+                this::testGetNTriples,
+                this::testGetRDF,
+                this::testRdfContainment,
+                this::testInvalidRDF);
     }
 
     /**
      * Fetch the default RDF serialization.
      */
-    @Test
-    @DisplayName("Fetch the default RDF serialization")
     default void testGetDefault() {
         try (final Response res = target(getResourceLocation()).request().get()) {
             assertAll("Check for an LDP-RS as Turtle", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
@@ -117,8 +123,6 @@ public interface LdpRdfTests extends CommonTests {
     /**
      * Fetch the default JSON-LD serialization.
      */
-    @Test
-    @DisplayName("Fetch the default JSON-LD serialization")
     default void testGetJsonLdDefault() {
         final String location = createAnnotationResource();
 
@@ -136,8 +140,6 @@ public interface LdpRdfTests extends CommonTests {
     /**
      * Fetch the expanded JSON-LD serialization.
      */
-    @Test
-    @DisplayName("Fetch the expanded JSON-LD serialization")
     default void testGetJsonLdExpanded() {
         final String location = createAnnotationResource();
 
@@ -157,8 +159,6 @@ public interface LdpRdfTests extends CommonTests {
     /**
      * Fetch the compacted JSON-LD serialization.
      */
-    @Test
-    @DisplayName("Fetch the compacted JSON-LD serialization")
     default void testGetJsonLdCompacted() {
         final String location = createAnnotationResource();
 
@@ -177,8 +177,6 @@ public interface LdpRdfTests extends CommonTests {
     /**
      * Fetch a JSON-LD serialization with a custom profile.
      */
-    @Test
-    @DisplayName("Fetch the JSON-LD serialization with a custom profile")
     default void testGetJsonLdAnnotationProfile() {
 
         assumeTrue(supportedJsonLdProfiles().contains("http://www.w3.org/ns/anno.jsonld"),
@@ -210,8 +208,6 @@ public interface LdpRdfTests extends CommonTests {
     /**
      * Fetch the N-Triples serialization.
      */
-    @Test
-    @DisplayName("Fetch the N-Triples serialization")
     default void testGetNTriples() {
         try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get()) {
             assertAll("Check for N-Triples", checkRdfResponse(res, LDP.RDFSource, APPLICATION_N_TRIPLES_TYPE));
@@ -221,8 +217,6 @@ public interface LdpRdfTests extends CommonTests {
     /**
      * Test POSTing an RDF resource.
      */
-    @Test
-    @DisplayName("Test POSTing an RDF resource")
     default void testPostRDF() {
         final String content = getResourceAsString(SIMPLE_RESOURCE);
 
@@ -240,8 +234,6 @@ public interface LdpRdfTests extends CommonTests {
      * Test fetching an RDF resource.
      * @throws Exception if the RDF resource didn't close cleanly
      */
-    @Test
-    @DisplayName("Test fetching an RDF resource")
     default void testGetRDF() throws Exception {
         final RDF rdf = getInstance();
         // Fetch the new resource
@@ -264,8 +256,6 @@ public interface LdpRdfTests extends CommonTests {
      * Test modifying an RDF document via PATCH.
      * @throws Exception if the RDF resource didn't close cleanly
      */
-    @Test
-    @DisplayName("Test modifying an RDF document via PATCH")
     default void testPatchRDF() throws Exception {
         final RDF rdf = getInstance();
         final EntityTag initialETag = getETag(getResourceLocation());
@@ -319,8 +309,6 @@ public interface LdpRdfTests extends CommonTests {
      * Verify that the correct containment triples exist.
      * @throws Exception if the RDF resource didn't close cleanly
      */
-    @Test
-    @DisplayName("Verify that the correct containment triples exist")
     default void testRdfContainment() throws Exception {
         final RDF rdf = getInstance();
         // Test the root container, verifying that the containment triple exists
@@ -335,8 +323,6 @@ public interface LdpRdfTests extends CommonTests {
     /**
      * Test creating resource with invalid RDF.
      */
-    @Test
-    @DisplayName("Test creating resource with invalid RDF")
     default void testWeirdRDF() {
         final String rdf = getResourceAsString(SIMPLE_RESOURCE)
             + "<> a \"skos concept\" .";
@@ -354,8 +340,6 @@ public interface LdpRdfTests extends CommonTests {
     /**
      * Test creating resource with syntactically invalid RDF.
      */
-    @Test
-    @DisplayName("Test creating resource with syntactically invalid RDF")
     default void testInvalidRDF() {
         final String rdf
             = "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> \n"
