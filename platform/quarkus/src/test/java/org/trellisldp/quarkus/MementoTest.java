@@ -25,7 +25,7 @@ import javax.ws.rs.client.Client;
 import org.trellisldp.test.AbstractApplicationMementoTests;
 
 @QuarkusTest
-class LdpTest extends AbstractApplicationMementoTests {
+class MementoTest extends AbstractApplicationMementoTests {
 
     private static final Client client = newBuilder().build();
 
