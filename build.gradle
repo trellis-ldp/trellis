@@ -106,7 +106,7 @@ ext {
     mustacheOsgiVersion = "0.9.6_1"
     osgiVersion = "6.0.0"
     osgiCompendiumVersion = "5.0.0"
-    paxExamVersion = "4.13.2"
+    paxExamVersion = "4.13.3"
     spiflyVersion = "1.2.3"
     // Note: ActiveMQ requires Spring4, but Karaf 4.2 includes Spring5, so this forces an earlier spring dependency
     springFeatureVersion = "4.1.0"
