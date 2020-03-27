@@ -75,8 +75,10 @@ dependencies {
     runtimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
     runtimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
 
+    testImplementation project(":trellis-test")
     testImplementation "io.quarkus:quarkus-junit5"
     testImplementation "io.rest-assured:rest-assured"
+    testImplementation "org.jboss.resteasy:resteasy-client"
 }
 
 test {
@@ -86,6 +88,7 @@ test {
     systemProperty 'trellis.triplestore.rdf-location', "$buildDir/data/rdf"
     systemProperty 'trellis.namespaces.mapping', 'dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = '
     systemProperty 'mp.jwt.verify.publickey.location', 'https://www.trellisldp.org/tests/jwks.json'
+    systemProperty 'trellis.http.weak-etag', 'true'
 }
 
 sonarqube {
