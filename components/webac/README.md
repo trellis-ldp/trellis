@@ -23,9 +23,9 @@ the `acl:Control` privilege on the resource. If so, an `acl:Authorization` state
     acl:agent <https://example.org/users/1>, <https://example.org/users/2> .
 ```
 
-This will give https://example.org/users/1 and https://example.org/users/2 read and write access to the resource
-at https://example.org/resource. Those users, however, will not be able to modify the ACL resource itself,
- since they lack the `acl:Control` mode.
+This will give `https://example.org/users/1` and `https://example.org/users/2` read and write access to the resource
+at `https://example.org/resource`. Those users, however, will not be able to modify the ACL resource itself,
+since they lack the `acl:Control` mode.
 
 The other possible acl mode is `acl:Append`, which is somewhat like `acl:Write` except that, in the case of Trellis,
 it only allows the addition of Containment or Membership triples to that resource. For instance, it would allow a
@@ -66,4 +66,3 @@ For example:
 Following the [Solid WebAC specification](https://github.com/solid/web-access-control-spec#not-supported-by-design) recommendation,
 Trellis does not support `acl:accessToClass`, Regular Expressions in statements such as `acl:agentClass` or a strict notion of
 resource ownership.
-

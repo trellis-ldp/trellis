@@ -17,5 +17,3 @@ Now, the desired Trellis features can be installed, as desired.
 ```
 feature:install trellis-api trellis-http trellis-audit trellis-constraint-rules
 ```
-
-

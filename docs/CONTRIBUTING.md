@@ -4,10 +4,10 @@ Trellis-LDP is always looking for people to contribute to the project. We welcom
 
 There are many different ways to help contribute to the Trellis-LDP project.
 
-  * Helping others by participating in the [Trellis-LDP Google Group](https://groups.google.com/forum/#!forum/trellis-ldp)
-  * Improving or enhancing our documentation
-  * Fixing open issues listed in the [issue tracker](https://github.com/orgs/trellis-ldp/projects/2)
-  * Adding new features to the Trellis codebase
+* Helping others by participating in the [Trellis-LDP Google Group](https://groups.google.com/forum/#!forum/trellis-ldp)
+* Improving or enhancing our documentation
+* Fixing open issues listed in the [issue tracker](https://github.com/orgs/trellis-ldp/projects/2)
+* Adding new features to the Trellis codebase
 
 # Guidelines
 
