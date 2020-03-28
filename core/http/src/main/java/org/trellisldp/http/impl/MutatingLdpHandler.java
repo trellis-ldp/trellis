@@ -205,7 +205,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
             } else if (AS.Create.equals(activityType) || AS.Delete.equals(activityType)) {
                 final IRI model = getParentModel();
                 final IRI id = getParentIdentifier();
-                if (HttpUtils.isContainer(model)) {
+                if (isContainer(model)) {
                     getServices().getEventService().emit(new SimpleEvent(getUrl(id, model),
                                     getSession().getAgent(), asList(PROV.Activity, AS.Update),
                                     ldpResourceTypes(model).collect(toList())));
@@ -329,7 +329,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      */
     private String getUrl(final IRI identifier, final IRI interactionModel) {
         final String url = getServices().getResourceService().toExternal(identifier, getBaseUrl()).getIRIString();
-        final String modifiedUrl = url + (!url.endsWith("/") && HttpUtils.isContainer(interactionModel) ? "/" : "");
+        final String modifiedUrl = url + (!url.endsWith("/") && isContainer(interactionModel) ? "/" : "");
         final String ext = getRequest().getExt();
         return ext != null ? modifiedUrl + "?ext=" + ext : modifiedUrl;
     }
