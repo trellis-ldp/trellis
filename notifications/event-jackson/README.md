@@ -19,4 +19,3 @@ For example, this implementation will serialize an update event into structures 
 ```
 
 These notifications conform to the [W3C Activity Streams](https://www.w3.org/TR/activitystreams-core/) specification.
-

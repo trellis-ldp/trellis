@@ -25,7 +25,6 @@ _:b0    rdf:type                prov:Activity ;
         prov:atTime      "2017-10-23T19:48:16.076Z"^^xsd:dateTime .
 ```
 
-
 ## Update events
 
 A sample `update` event will follow this structure:
@@ -40,7 +39,6 @@ _:b1    rdf:type                prov:Activity ;
         prov:atTime      "2017-10-23T19:48:16.076Z"^^xsd:dateTime .
 ```
 
-
 ## Delete events
 
 A sample `delete` event will follow this structure:
@@ -54,4 +52,3 @@ _:b2    rdf:type                prov:Activity ;
         prov:wasAssociatedWith  <https://example.com/user/1> ;
         prov:atTime      "2017-10-23T19:48:16.076Z"^^xsd:dateTime .
 ```
-
