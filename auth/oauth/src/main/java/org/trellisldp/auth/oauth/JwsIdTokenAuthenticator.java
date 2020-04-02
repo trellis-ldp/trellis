@@ -15,9 +15,15 @@ package org.trellisldp.auth.oauth;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.lang.Strings;
 
 import java.math.BigInteger;
 import java.security.Key;
@@ -41,23 +47,65 @@ public class JwsIdTokenAuthenticator implements Authenticator {
 
     @Override
     public Claims parse(final String token) {
-        final String[] jtwParts = token.split("\\.");
-        if (jtwParts.length < 3) {
-            final String msg = "JWT strings must contain exactly 2 period characters. Found: " + (jtwParts.length - 1);
-            LOGGER.warn("Malformed JWT, expecting a signed JWT token, but got: {}", token);
+        checkJWTStructure(token);
+        final String idToken = Jwts.parserBuilder().build()
+            .parseClaimsJwt(extractUnsignedJWT(token)).getBody().get("id_token", String.class);
+        if (idToken == null) {
+            final String msg = "Expecting the id_token claim";
+            if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
             throw new MalformedJwtException(msg);
         }
-        final String unsignedJwt = token.substring(0, token.lastIndexOf('.') + 1);
-        final String idToken =
-                Jwts.parser().parseClaimsJwt(unsignedJwt).getBody().get("id_token", String.class);
+        final String[] idTokenParts = checkJWTStructure(idToken);
+        checkRequiredAlgorithm(idTokenParts[1]);
         final Claims idTokenClaims =
-                Jwts.parser().parseClaimsJwt(idToken.substring(0, idToken.lastIndexOf('.') + 1)).getBody();
-        final Map<String, Object> jwk = ((Map<String, Map>) idTokenClaims.get("cnf", Map.class)).get("jwk");
-        final String n = (String) jwk.get("n");
-        final String e = (String) jwk.get("e");
+            Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody();
+        final Map<String, Map<String, String>> cnf = idTokenClaims.get("cnf", Map.class);
+        final Map<String, String> jwk = cnf.get("jwk");
+        final String n = jwk.get("n");
+        final String e = jwk.get("e");
+        if (n == null || e == null) {
+            final String msg = String
+                .format("Missing at least one of the algorithm parameter modulus or exponent, (n, e): (%s, %s)", n, e);
+            if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
+            throw new MalformedJwtException(msg);
+        }
         // Side effect needed to check the signature at the top level
-        Jwts.parser().setSigningKey(buildKeyEntry(n, e)).parseClaimsJws(token);
+        Jwts.parserBuilder().setSigningKey(buildKeyEntry(n, e)).build().parseClaimsJws(token);
         return idTokenClaims;
+    }
+
+    private static String extractUnsignedJWT(String token) {
+        return token.substring(0, token.lastIndexOf('.') + 1);
+    }
+
+    private static String[] checkJWTStructure(String token) {
+        final String[] tokenParts = token.split("\\.");
+        if (tokenParts.length < 3) {
+            final String msg =
+                "JWT strings must contain exactly 2 period characters. Found: " + (tokenParts.length - 1);
+            if (LOGGER.isWarnEnabled())
+                LOGGER.warn("Malformed JWT, expecting a signed JWT token, but got: {}", token);
+            throw new MalformedJwtException(msg);
+        }
+        return tokenParts;
+    }
+
+    private static void checkRequiredAlgorithm(final String body) {
+        final String jsonS = new String(Decoders.BASE64URL.decode(body), Strings.UTF_8);
+        final JsonNode jsonNode;
+        try {
+            jsonNode = (new ObjectMapper()).readTree(jsonS);
+        } catch (JsonProcessingException e) {
+            if (LOGGER.isWarnEnabled()) LOGGER.warn("Got invalid JWT JSON: \n" + jsonS);
+            throw new MalformedJwtException("Invalid JWT JSON", e);
+        }
+        final String path = "/cnf/jwk/alg";
+        final JsonNode algNode = jsonNode.at(path);
+        if (algNode.isMissingNode() || !algNode.asText().startsWith("RSA")) {
+            final String msg = "Expecting RSA algorithm under the JSON path: " + path + ", but got: " + algNode;
+            if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
+            throw new MalformedJwtException(msg);
+        }
     }
 
     private static Key buildKeyEntry(final String n, final String e) {
