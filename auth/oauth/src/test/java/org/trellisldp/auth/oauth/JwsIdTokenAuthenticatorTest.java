@@ -96,6 +96,34 @@ class JwsIdTokenAuthenticatorTest {
     }
 
     @Test
+    void testWrongTypeInJwk() throws Exception {
+        final Map<String, Object> headers = new HashMap<>();
+        headers.put("alg", "RS256");
+        final HashMap<String, Object> cnf = new HashMap<>();
+        final HashMap<String, Object> jwk = new HashMap<>();
+        cnf.put("jwk", jwk);
+        jwk.put("alg", "RS256");
+        jwk.put("n", 64);
+        jwk.put("e", base64PublicExponent);
+        final Key privateKey = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
+        final String internalJws = Jwts.builder()
+            .setHeader(headers)
+            .claim("sub", "https://bob.solid.community/profile/card#me")
+            .claim("cnf", cnf)
+            .signWith(privateKey)
+            .compact();
+        final String token = Jwts.builder()
+            .setHeader(headers)
+            .claim("id_token", internalJws)
+            .signWith(privateKey)
+            .compact();
+
+        final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
+        assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token),
+            "Expected exception wasn't thrown!");
+    }
+
+    @Test
     void testGreenPath() throws Exception {
         final Map<String, Object> headers = new HashMap<>();
         headers.put("alg", "RS256");

@@ -47,7 +47,7 @@ public class JwsIdTokenAuthenticator implements Authenticator {
 
     @Override
     public Claims parse(final String token) {
-        checkJWTStructure(token);
+        getTokenParts(token);
         final String idToken = Jwts.parserBuilder().build()
             .parseClaimsJwt(extractUnsignedJWT(token)).getBody().get("id_token", String.class);
         if (idToken == null) {
@@ -55,30 +55,39 @@ public class JwsIdTokenAuthenticator implements Authenticator {
             if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
             throw new MalformedJwtException(msg);
         }
-        final String[] idTokenParts = checkJWTStructure(idToken);
+        final String[] idTokenParts = getTokenParts(idToken);
         checkRequiredAlgorithm(idTokenParts[1]);
         final Claims idTokenClaims =
             Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody();
+        final Key key = getKey(idTokenClaims);
+        // Side effect needed to check the signature at the top level JWT
+        Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+        return idTokenClaims;
+    }
+
+    private static Key getKey(Claims idTokenClaims) {
         final Map<String, Map<String, String>> cnf = idTokenClaims.get("cnf", Map.class);
         final Map<String, String> jwk = cnf.get("jwk");
-        final String n = jwk.get("n");
-        final String e = jwk.get("e");
-        if (n == null || e == null) {
-            final String msg = String
-                .format("Missing at least one of the algorithm parameter modulus or exponent, (n, e): (%s, %s)", n, e);
-            if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
-            throw new MalformedJwtException(msg);
+        try {
+            final String n = jwk.get("n");
+            final String e = jwk.get("e");
+            if (n == null || e == null) {
+                final String msg = String
+                    .format("Missing at least one algorithm parameter, modulus or exponent. (n, e): (%s, %s)", n, e);
+                if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
+                throw new MalformedJwtException(msg);
+            }
+            return buildKeyEntry(n, e);
+        } catch (ClassCastException e) {
+            throw new MalformedJwtException("The cnf field is malformed: " + cnf, e);
         }
-        // Side effect needed to check the signature at the top level
-        Jwts.parserBuilder().setSigningKey(buildKeyEntry(n, e)).build().parseClaimsJws(token);
-        return idTokenClaims;
     }
 
     private static String extractUnsignedJWT(String token) {
         return token.substring(0, token.lastIndexOf('.') + 1);
     }
 
-    private static String[] checkJWTStructure(String token) {
+    private static String[] getTokenParts(String token) {
         final String[] tokenParts = token.split("\\.");
         if (tokenParts.length < 3) {
             final String msg =
@@ -101,7 +110,7 @@ public class JwsIdTokenAuthenticator implements Authenticator {
         }
         final String path = "/cnf/jwk/alg";
         final JsonNode algNode = jsonNode.at(path);
-        if (algNode.isMissingNode() || !algNode.asText().startsWith("RSA")) {
+        if (algNode.isMissingNode() || !algNode.asText().startsWith("RS")) {
             final String msg = "Expecting RSA algorithm under the JSON path: " + path + ", but got: " + algNode;
             if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
             throw new MalformedJwtException(msg);
