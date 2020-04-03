@@ -65,7 +65,7 @@ public class JwsIdTokenAuthenticator implements Authenticator {
         return idTokenClaims;
     }
 
-    private static Key getKey(Claims idTokenClaims) {
+    private static Key getKey(final Claims idTokenClaims) {
         final Map<String, Map<String, String>> cnf = idTokenClaims.get("cnf", Map.class);
         final Map<String, String> jwk = cnf.get("jwk");
         try {
@@ -83,11 +83,11 @@ public class JwsIdTokenAuthenticator implements Authenticator {
         }
     }
 
-    private static String extractUnsignedJWT(String token) {
+    private static String extractUnsignedJWT(final String token) {
         return token.substring(0, token.lastIndexOf('.') + 1);
     }
 
-    private static String[] getTokenParts(String token) {
+    private static String[] getTokenParts(final String token) {
         final String[] tokenParts = token.split("\\.");
         if (tokenParts.length < 3) {
             final String msg =
