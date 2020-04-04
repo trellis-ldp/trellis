@@ -23,7 +23,9 @@ import io.jsonwebtoken.MalformedJwtException;
 import java.math.BigInteger;
 import java.security.Key;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateKeySpec;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,11 +50,20 @@ class JwsIdTokenAuthenticatorTest {
         "aahEQ";
     private static final BigInteger modulus = new BigInteger(1, getUrlDecoder().decode(base64Modulus));
 
+    private static Key privateKey;
+
+    static {
+        try {
+            privateKey = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+            throw new IllegalArgumentException("Error creating RSA key!", e);
+        }
+    }
+
     @Test
-    void testAuthenticateNoIdToken() throws Exception {
+    void testAuthenticateNoIdToken() {
         final Map<String, Object> headers = new HashMap<>();
         headers.put("alg", "RS256");
-        final Key privateKey = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
         final String token = Jwts.builder()
             .setHeader(headers)
             .claim("iss", "example.com")
@@ -64,11 +75,10 @@ class JwsIdTokenAuthenticatorTest {
     }
 
     @Test
-    void testAuthenticateNoKeyCnf() throws Exception {
+    void testAuthenticateNoKeyCnf() {
         final Map<String, Object> headers = new HashMap<>();
         headers.put("alg", "RS256");
         final String internalJws = Jwts.builder().setHeader(headers).claim("foo", "bar").compact();
-        final Key privateKey = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
         final String token = Jwts.builder()
             .setHeader(headers)
             .claim("id_token", internalJws)
@@ -80,11 +90,10 @@ class JwsIdTokenAuthenticatorTest {
     }
 
     @Test
-    void testAuthenticateNoInternalBody() throws Exception {
+    void testAuthenticateNoInternalBody() {
         final Map<String, Object> headers = new HashMap<>();
         headers.put("alg", "RS256");
         final String idToken = "eyJhbGciOiJSUzI1NiJ9";
-        final Key privateKey = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
         final String token = Jwts.builder()
             .setHeader(headers)
             .claim("id_token", idToken)
@@ -96,7 +105,7 @@ class JwsIdTokenAuthenticatorTest {
     }
 
     @Test
-    void testWrongTypeInJwk() throws Exception {
+    void testWrongTypeInJwk() {
         final Map<String, Object> headers = new HashMap<>();
         headers.put("alg", "RS256");
         final HashMap<String, Object> cnf = new HashMap<>();
@@ -105,7 +114,6 @@ class JwsIdTokenAuthenticatorTest {
         jwk.put("alg", "RS256");
         jwk.put("n", 64);
         jwk.put("e", base64PublicExponent);
-        final Key privateKey = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
         final String internalJws = Jwts.builder()
             .setHeader(headers)
             .claim("sub", "https://bob.solid.community/profile/card#me")
@@ -124,7 +132,7 @@ class JwsIdTokenAuthenticatorTest {
     }
 
     @Test
-    void testGreenPath() throws Exception {
+    void testGreenPath() {
         final Map<String, Object> headers = new HashMap<>();
         headers.put("alg", "RS256");
         final HashMap<String, Object> cnf = new HashMap<>();
@@ -133,7 +141,6 @@ class JwsIdTokenAuthenticatorTest {
         jwk.put("alg", "RSA256");
         jwk.put("n", base64Modulus);
         jwk.put("e", base64PublicExponent);
-        final Key privateKey = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
         final String internalJws = Jwts.builder()
             .setHeader(headers)
             .claim("sub", "https://bob.solid.community/profile/card#me")
