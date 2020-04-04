@@ -51,7 +51,6 @@ class JwsIdTokenAuthenticatorTest {
     private static final BigInteger modulus = new BigInteger(1, getUrlDecoder().decode(base64Modulus));
 
     private static Key privateKey;
-
     static {
         try {
             privateKey = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
@@ -60,10 +59,13 @@ class JwsIdTokenAuthenticatorTest {
         }
     }
 
+    private static final Map<String, Object> headers = new HashMap<>();
+    static {
+        headers.put("alg", "RS256");
+    }
+
     @Test
     void testAuthenticateNoIdToken() {
-        final Map<String, Object> headers = new HashMap<>();
-        headers.put("alg", "RS256");
         final String token = Jwts.builder()
             .setHeader(headers)
             .claim("iss", "example.com")
@@ -76,8 +78,6 @@ class JwsIdTokenAuthenticatorTest {
 
     @Test
     void testAuthenticateNoKeyCnf() {
-        final Map<String, Object> headers = new HashMap<>();
-        headers.put("alg", "RS256");
         final String internalJws = Jwts.builder().setHeader(headers).claim("foo", "bar").compact();
         final String token = Jwts.builder()
             .setHeader(headers)
@@ -91,8 +91,6 @@ class JwsIdTokenAuthenticatorTest {
 
     @Test
     void testAuthenticateNoInternalBody() {
-        final Map<String, Object> headers = new HashMap<>();
-        headers.put("alg", "RS256");
         final String idToken = "eyJhbGciOiJSUzI1NiJ9";
         final String token = Jwts.builder()
             .setHeader(headers)
@@ -106,8 +104,6 @@ class JwsIdTokenAuthenticatorTest {
 
     @Test
     void testWrongTypeInJwk() {
-        final Map<String, Object> headers = new HashMap<>();
-        headers.put("alg", "RS256");
         final HashMap<String, Object> cnf = new HashMap<>();
         final HashMap<String, Object> jwk = new HashMap<>();
         cnf.put("jwk", jwk);
@@ -133,8 +129,6 @@ class JwsIdTokenAuthenticatorTest {
 
     @Test
     void testGreenPath() {
-        final Map<String, Object> headers = new HashMap<>();
-        headers.put("alg", "RS256");
         final HashMap<String, Object> cnf = new HashMap<>();
         final HashMap<String, Object> jwk = new HashMap<>();
         cnf.put("jwk", jwk);
