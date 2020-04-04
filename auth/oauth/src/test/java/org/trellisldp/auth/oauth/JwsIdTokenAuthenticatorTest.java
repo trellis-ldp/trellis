@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.impl.DefaultClaims;
 
 import java.math.BigInteger;
 import java.security.Key;
@@ -31,7 +32,6 @@ import java.security.spec.RSAPrivateKeySpec;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.jsonwebtoken.impl.DefaultClaims;
 import org.junit.jupiter.api.Test;
 
 class JwsIdTokenAuthenticatorTest {
@@ -125,7 +125,7 @@ class JwsIdTokenAuthenticatorTest {
         return cnf;
     }
 
-    private static String createComposeJWTToken(Map<String, Object> cnf) {
+    private static String createComposeJWTToken(final Map<String, Object> cnf) {
         final DefaultClaims internalClaims = new DefaultClaims();
         internalClaims.setSubject("https://bob.solid.community/profile/card#me");
         internalClaims.put("cnf", cnf);
@@ -136,7 +136,7 @@ class JwsIdTokenAuthenticatorTest {
         return createJWTToken(claims);
     }
 
-    private static String createJWTToken(Claims claims) {
+    private static String createJWTToken(final Claims claims) {
         return Jwts.builder()
             .setHeader(headers)
             .setClaims(claims)
