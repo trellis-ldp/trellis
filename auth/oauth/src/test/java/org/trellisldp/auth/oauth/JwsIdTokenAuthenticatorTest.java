@@ -17,6 +17,7 @@ import static java.util.Base64.getUrlDecoder;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 
@@ -30,6 +31,7 @@ import java.security.spec.RSAPrivateKeySpec;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.jsonwebtoken.impl.DefaultClaims;
 import org.junit.jupiter.api.Test;
 
 class JwsIdTokenAuthenticatorTest {
@@ -66,11 +68,9 @@ class JwsIdTokenAuthenticatorTest {
 
     @Test
     void testAuthenticateNoIdToken() {
-        final String token = Jwts.builder()
-            .setHeader(headers)
-            .claim("iss", "example.com")
-            .signWith(privateKey)
-            .compact();
+        final Claims claims = new DefaultClaims();
+        claims.put("iss", "example.com");
+        final String token = createJWTToken(claims);
 
         final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
         assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
@@ -79,11 +79,9 @@ class JwsIdTokenAuthenticatorTest {
     @Test
     void testAuthenticateNoKeyCnf() {
         final String internalJws = Jwts.builder().setHeader(headers).claim("foo", "bar").compact();
-        final String token = Jwts.builder()
-            .setHeader(headers)
-            .claim("id_token", internalJws)
-            .signWith(privateKey)
-            .compact();
+        final Claims claims = new DefaultClaims();
+        claims.put("id_token", internalJws);
+        final String token = createJWTToken(claims);
 
         final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
         assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
@@ -91,12 +89,9 @@ class JwsIdTokenAuthenticatorTest {
 
     @Test
     void testAuthenticateNoInternalBody() {
-        final String idToken = "eyJhbGciOiJSUzI1NiJ9";
-        final String token = Jwts.builder()
-            .setHeader(headers)
-            .claim("id_token", idToken)
-            .signWith(privateKey)
-            .compact();
+        final Claims claims = new DefaultClaims();
+        claims.put("id_token", "eyJhbGciOiJSUzI1NiJ9");
+        final String token = createJWTToken(claims);
 
         final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
         assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
@@ -104,23 +99,7 @@ class JwsIdTokenAuthenticatorTest {
 
     @Test
     void testWrongTypeInJwk() {
-        final HashMap<String, Object> cnf = new HashMap<>();
-        final HashMap<String, Object> jwk = new HashMap<>();
-        cnf.put("jwk", jwk);
-        jwk.put("alg", "RS256");
-        jwk.put("n", 64);
-        jwk.put("e", base64PublicExponent);
-        final String internalJws = Jwts.builder()
-            .setHeader(headers)
-            .claim("sub", "https://bob.solid.community/profile/card#me")
-            .claim("cnf", cnf)
-            .signWith(privateKey)
-            .compact();
-        final String token = Jwts.builder()
-            .setHeader(headers)
-            .claim("id_token", internalJws)
-            .signWith(privateKey)
-            .compact();
+        final String token = createComposeJWTToken(createCNF(64));
 
         final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
         assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token),
@@ -129,26 +108,39 @@ class JwsIdTokenAuthenticatorTest {
 
     @Test
     void testGreenPath() {
-        final HashMap<String, Object> cnf = new HashMap<>();
-        final HashMap<String, Object> jwk = new HashMap<>();
-        cnf.put("jwk", jwk);
-        jwk.put("alg", "RSA256");
-        jwk.put("n", base64Modulus);
-        jwk.put("e", base64PublicExponent);
-        final String internalJws = Jwts.builder()
-            .setHeader(headers)
-            .claim("sub", "https://bob.solid.community/profile/card#me")
-            .claim("cnf", cnf)
-            .signWith(privateKey)
-            .compact();
-        final String token = Jwts.builder()
-            .setHeader(headers)
-            .claim("id_token", internalJws)
-            .signWith(privateKey)
-            .compact();
+        final String token = createComposeJWTToken(createCNF(base64Modulus));
 
         final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
         final Principal principal = authenticator.authenticate(token);
         assertNotNull(principal, "Principal was null!!!");
+    }
+
+    private static Map<String, Object> createCNF(final Object n) {
+        final Map<String, Object> cnf = new HashMap<>();
+        final Map<String, Object> jwk = new HashMap<>();
+        cnf.put("jwk", jwk);
+        jwk.put("alg", "RS256");
+        jwk.put("n", n);
+        jwk.put("e", base64PublicExponent);
+        return cnf;
+    }
+
+    private static String createComposeJWTToken(Map<String, Object> cnf) {
+        final DefaultClaims internalClaims = new DefaultClaims();
+        internalClaims.setSubject("https://bob.solid.community/profile/card#me");
+        internalClaims.put("cnf", cnf);
+        final String internalJws = createJWTToken(internalClaims);
+
+        final Claims claims = new DefaultClaims();
+        claims.put("id_token", internalJws);
+        return createJWTToken(claims);
+    }
+
+    private static String createJWTToken(Claims claims) {
+        return Jwts.builder()
+            .setHeader(headers)
+            .setClaims(claims)
+            .signWith(privateKey)
+            .compact();
     }
 }
