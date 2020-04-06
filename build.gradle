@@ -67,7 +67,7 @@ ext {
     // Testing
     apiguardianVersion = "1.1.0"
     awaitilityVersion = "4.0.2"
-    bouncycastleVersion = "1.64"
+    bouncycastleVersion = "1.65"
     commonsTextVersion = "1.8"
     cxfVersion = "3.3.6"
     glassfishJaxbVersion = "2.3.2"
