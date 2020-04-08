@@ -51,7 +51,7 @@ public class JwsIdTokenAuthenticator implements Authenticator {
     }
 
     private static Key getKey(final Claims idTokenClaims) {
-        Map<String, Map<String, String>> cnf;
+        final Map<String, Map<String, String>> cnf;
         try {
             cnf = idTokenClaims.get("cnf", Map.class);
             final Map<String, String> jwk = cnf.get("jwk");
