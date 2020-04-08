@@ -85,7 +85,7 @@ ext {
     smallryeReactiveVersion = "1.0.8"
     smallryeReactiveOperatorsVersion = "1.0.12"
     weldVersion = "2.0.1.Final"
-    yassonVersion = "1.0.6"
+    yassonVersion = "1.0.7"
 
     // Tooling
     jacocoToolVersion = "0.8.5"
