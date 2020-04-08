@@ -47,15 +47,15 @@ public class JwsIdTokenAuthenticator implements Authenticator {
 
     @Override
     public Claims parse(final String token) {
-        getTokenParts(token);
+        checkTokenStructure(getTokenParts(token));
         final String idToken = Jwts.parserBuilder().build()
             .parseClaimsJwt(extractUnsignedJWT(token)).getBody().get("id_token", String.class);
         if (idToken == null) {
             final String msg = "Expecting the id_token claim";
-            if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
             throw new MalformedJwtException(msg);
         }
         final String[] idTokenParts = getTokenParts(idToken);
+        checkTokenStructure(idTokenParts);
         checkRequiredAlgorithm(idTokenParts[1]);
         final Claims idTokenClaims =
             Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody();
@@ -74,12 +74,11 @@ public class JwsIdTokenAuthenticator implements Authenticator {
             if (n == null || e == null) {
                 final String msg = String
                     .format("Missing at least one algorithm parameter, modulus or exponent. (n, e): (%s, %s)", n, e);
-                if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
                 throw new MalformedJwtException(msg);
             }
             return buildKeyEntry(n, e);
         } catch (ClassCastException e) {
-            throw new MalformedJwtException("The cnf field is malformed: " + cnf, e);
+            throw new MalformedJwtException(String.format("The cnf field is malformed: %s", cnf), e);
         }
     }
 
@@ -88,15 +87,15 @@ public class JwsIdTokenAuthenticator implements Authenticator {
     }
 
     private static String[] getTokenParts(final String token) {
-        final String[] tokenParts = token.split("\\.");
+        return token.split("\\.");
+    }
+
+    private static void checkTokenStructure(final String[] tokenParts) {
         if (tokenParts.length < 3) {
             final String msg =
-                "JWT strings must contain exactly 2 period characters. Found: " + (tokenParts.length - 1);
-            if (LOGGER.isWarnEnabled())
-                LOGGER.warn("Malformed JWT, expecting a signed JWT token, but got: {}", token);
+                String.format("JWT strings must contain exactly 2 period characters. Found: %d", tokenParts.length - 1);
             throw new MalformedJwtException(msg);
         }
-        return tokenParts;
     }
 
     private static void checkRequiredAlgorithm(final String body) {
@@ -105,14 +104,13 @@ public class JwsIdTokenAuthenticator implements Authenticator {
         try {
             jsonNode = (new ObjectMapper()).readTree(jsonS);
         } catch (JsonProcessingException e) {
-            if (LOGGER.isWarnEnabled()) LOGGER.warn("Got invalid JWT JSON: \n" + jsonS);
-            throw new MalformedJwtException("Invalid JWT JSON", e);
+            throw new MalformedJwtException(String.format("Got invalid JSON: \n%s", jsonS), e);
         }
         final String path = "/cnf/jwk/alg";
         final JsonNode algNode = jsonNode.at(path);
         if (algNode.isMissingNode() || !algNode.asText().startsWith("RS")) {
-            final String msg = "Expecting RSA algorithm under the JSON path: " + path + ", but got: " + algNode;
-            if (LOGGER.isWarnEnabled()) LOGGER.warn(msg);
+            final String msg =
+                String.format("Expecting RSA algorithm under the JSON path: %s, but got: %s", path , algNode);
             throw new MalformedJwtException(msg);
         }
     }
