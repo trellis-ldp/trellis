@@ -51,8 +51,7 @@ public class JwsIdTokenAuthenticator implements Authenticator {
         final String idToken = Jwts.parserBuilder().build()
             .parseClaimsJwt(extractUnsignedJWT(token)).getBody().get("id_token", String.class);
         if (idToken == null) {
-            final String msg = "Expecting the id_token claim";
-            throw new MalformedJwtException(msg);
+            throw new MalformedJwtException("Missing the id_token claim in JWT payload");
         }
         final String[] idTokenParts = getTokenParts(idToken);
         checkTokenStructure(idTokenParts);
@@ -73,7 +72,7 @@ public class JwsIdTokenAuthenticator implements Authenticator {
             final String e = jwk.get("e");
             if (n == null || e == null) {
                 final String msg = String
-                    .format("Missing at least one algorithm parameter, modulus or exponent. (n, e): (%s, %s)", n, e);
+                    .format("Missing at least one algorithm parameter under cnf.jwk. (n, e): (%s, %s)", n, e);
                 throw new MalformedJwtException(msg);
             }
             return buildKeyEntry(n, e);
