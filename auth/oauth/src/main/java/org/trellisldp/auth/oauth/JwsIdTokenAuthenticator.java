@@ -13,31 +13,20 @@
  */
 package org.trellisldp.auth.oauth;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.lang.Strings;
+import io.jsonwebtoken.RequiredTypeException;
 
 import java.math.BigInteger;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Map;
 
-import org.slf4j.Logger;
-
 /**
  * A jwks-based authenticator.
  */
 public class JwsIdTokenAuthenticator implements Authenticator {
-
-    private static final Logger LOGGER = getLogger(JwsIdTokenAuthenticator.class);
 
     /**
      * Build a jws authenticator.
@@ -53,11 +42,8 @@ public class JwsIdTokenAuthenticator implements Authenticator {
         if (idToken == null) {
             throw new MalformedJwtException("Missing the id_token claim in JWT payload");
         }
-        final String[] idTokenParts = getTokenParts(idToken);
-        checkTokenStructure(idTokenParts);
-        checkRequiredAlgorithm(idTokenParts[1]);
-        final Claims idTokenClaims =
-            Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody();
+        checkTokenStructure(getTokenParts(idToken));
+        final Claims idTokenClaims = Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody();
         final Key key = getKey(idTokenClaims);
         // Side effect needed to check the signature at the top level JWT
         Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
@@ -65,19 +51,26 @@ public class JwsIdTokenAuthenticator implements Authenticator {
     }
 
     private static Key getKey(final Claims idTokenClaims) {
-        final Map<String, Map<String, String>> cnf = idTokenClaims.get("cnf", Map.class);
-        final Map<String, String> jwk = cnf.get("jwk");
+        Map<String, Map<String, String>> cnf;
         try {
+            cnf = idTokenClaims.get("cnf", Map.class);
+            final Map<String, String> jwk = cnf.get("jwk");
+            final String alg = jwk.get("alg");
             final String n = jwk.get("n");
             final String e = jwk.get("e");
-            if (n == null || e == null) {
-                final String msg = String
-                    .format("Missing at least one algorithm parameter under cnf.jwk. (n, e): (%s, %s)", n, e);
+            if (alg == null || n == null || e == null) {
+                final String msg =
+                    String.format("Missing at least one algorithm parameter under cnf.jwk. (alg, n, e): (%s, %s, %s)",
+                        alg, n, e);
+                throw new MalformedJwtException(msg);
+            }
+            if (!alg.startsWith("RS")) {
+                final String msg = String.format("Expecting RSA algorithm under: %s, but got: %s", "cnf.jwk", alg);
                 throw new MalformedJwtException(msg);
             }
             return buildKeyEntry(n, e);
-        } catch (ClassCastException e) {
-            throw new MalformedJwtException(String.format("The cnf field is malformed: %s", cnf), e);
+        } catch (ClassCastException | RequiredTypeException e) {
+            throw new MalformedJwtException(String.format("Missing cnf or it's data in: %s", idTokenClaims), e);
         }
     }
 
@@ -93,23 +86,6 @@ public class JwsIdTokenAuthenticator implements Authenticator {
         if (tokenParts.length < 3) {
             final String msg =
                 String.format("JWT strings must contain exactly 2 period characters. Found: %d", tokenParts.length - 1);
-            throw new MalformedJwtException(msg);
-        }
-    }
-
-    private static void checkRequiredAlgorithm(final String body) {
-        final String jsonS = new String(Decoders.BASE64URL.decode(body), Strings.UTF_8);
-        final JsonNode jsonNode;
-        try {
-            jsonNode = (new ObjectMapper()).readTree(jsonS);
-        } catch (JsonProcessingException e) {
-            throw new MalformedJwtException(String.format("Got invalid JSON: \n%s", jsonS), e);
-        }
-        final String path = "/cnf/jwk/alg";
-        final JsonNode algNode = jsonNode.at(path);
-        if (algNode.isMissingNode() || !algNode.asText().startsWith("RS")) {
-            final String msg =
-                String.format("Expecting RSA algorithm under the JSON path: %s, but got: %s", path , algNode);
             throw new MalformedJwtException(msg);
         }
     }

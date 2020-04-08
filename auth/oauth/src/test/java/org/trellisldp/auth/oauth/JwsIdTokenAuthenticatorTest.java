@@ -102,8 +102,15 @@ class JwsIdTokenAuthenticatorTest {
         final String token = createComposeJWTToken(createCNF(64));
 
         final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
-        assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token),
-            "Expected exception wasn't thrown!");
+        assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
+    }
+
+    @Test
+    void testCnfOfWrongType() {
+        final String token = createComposeJWTToken("Wrong");
+
+        final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
+        assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -125,7 +132,7 @@ class JwsIdTokenAuthenticatorTest {
         return cnf;
     }
 
-    private static String createComposeJWTToken(final Map<String, Object> cnf) {
+    private static String createComposeJWTToken(final Object cnf) {
         final DefaultClaims internalClaims = new DefaultClaims();
         internalClaims.setSubject("https://bob.solid.community/profile/card#me");
         internalClaims.put("cnf", cnf);
