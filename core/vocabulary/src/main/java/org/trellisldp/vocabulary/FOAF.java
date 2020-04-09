@@ -45,6 +45,7 @@ public final class FOAF {
     public static final IRI maker = createIRI(getNamespace() + "maker");
     public static final IRI member = createIRI(getNamespace() + "member");
     public static final IRI mbox = createIRI(getNamespace() + "mbox");
+    public static final IRI name = createIRI(getNamespace() + "name");
     public static final IRI page = createIRI(getNamespace() + "page");
     public static final IRI primaryTopic = createIRI(getNamespace() + "primaryTopic");
     public static final IRI weblog = createIRI(getNamespace() + "weblog");
