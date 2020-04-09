@@ -34,7 +34,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-class JwsIdTokenAuthenticatorTest {
+class SolidOIDCAuthenticatorTest {
 
     private static final String base64PrivateExponent = "VRPRBm9dCoAJfBbEz5oAHEz7Tnm" +
         "0i0O6m5yj7NwqAZOj9i4ZwgZ8VZQo88oxZQWNaYd1yKeoQhUsJija_vxQEPXO1Q2q6OqMcwTBH0wyGhIFp--z2dAyRlDVLUTQbJUXyq" +
@@ -72,7 +72,7 @@ class JwsIdTokenAuthenticatorTest {
         claims.put("iss", "example.com");
         final String token = createJWTToken(claims);
 
-        final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
+        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
         assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
     }
 
@@ -83,7 +83,7 @@ class JwsIdTokenAuthenticatorTest {
         claims.put("id_token", internalJws);
         final String token = createJWTToken(claims);
 
-        final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
+        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
         assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
     }
 
@@ -93,7 +93,7 @@ class JwsIdTokenAuthenticatorTest {
         claims.put("id_token", "eyJhbGciOiJSUzI1NiJ9");
         final String token = createJWTToken(claims);
 
-        final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
+        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
         assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
     }
 
@@ -101,7 +101,7 @@ class JwsIdTokenAuthenticatorTest {
     void testWrongTypeInJwk() {
         final String token = createComposeJWTToken(createCNF(64));
 
-        final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
+        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
         assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
     }
 
@@ -109,7 +109,7 @@ class JwsIdTokenAuthenticatorTest {
     void testCnfOfWrongType() {
         final String token = createComposeJWTToken("Wrong");
 
-        final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
+        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
         assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
     }
 
@@ -117,7 +117,7 @@ class JwsIdTokenAuthenticatorTest {
     void testGreenPath() {
         final String token = createComposeJWTToken(createCNF(base64Modulus));
 
-        final JwsIdTokenAuthenticator authenticator = new JwsIdTokenAuthenticator();
+        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
         final Principal principal = authenticator.authenticate(token);
         assertNotNull(principal, "Principal was null!!!");
     }

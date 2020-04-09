@@ -26,12 +26,12 @@ import java.util.Map;
 /**
  * A jwks-based authenticator.
  */
-public class JwsIdTokenAuthenticator implements Authenticator {
+public class SolidOIDCAuthenticator implements Authenticator {
 
     /**
      * Build a jws authenticator.
      */
-    public JwsIdTokenAuthenticator() {
+    public SolidOIDCAuthenticator() {
     }
 
     @Override

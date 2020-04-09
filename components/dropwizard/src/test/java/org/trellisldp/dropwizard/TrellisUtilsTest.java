@@ -42,7 +42,7 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.auth.oauth.FederatedJwtAuthenticator;
 import org.trellisldp.auth.oauth.JwksAuthenticator;
-import org.trellisldp.auth.oauth.JwsIdTokenAuthenticator;
+import org.trellisldp.auth.oauth.SolidOIDCAuthenticator;
 import org.trellisldp.auth.oauth.JwtAuthenticator;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
 import org.trellisldp.vocabulary.Trellis;
@@ -196,14 +196,14 @@ class TrellisUtilsTest {
     }
 
     @Test
-    void testGetNoJwtAuthenticator() throws Exception {
+    void testGetNoConfigKeysJwtAuthenticator() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
             .build(new File(getClass().getResource("/config1.yml").toURI()));
         config.getAuth().getJwt().setKeyStore(null);
         config.getAuth().getJwt().setKey("");
         config.getAuth().getJwt().setJwks(null);
-        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof JwsIdTokenAuthenticator,
+        assertTrue(TrellisUtils.getJwtAuthenticator(config.getAuth().getJwt()) instanceof SolidOIDCAuthenticator,
                 "No JWT auth with JwsIdTokenAuthenticator!");
     }
 }
