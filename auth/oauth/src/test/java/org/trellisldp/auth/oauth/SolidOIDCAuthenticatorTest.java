@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.impl.DefaultClaims;
 
 import java.math.BigInteger;
@@ -73,7 +72,7 @@ class SolidOIDCAuthenticatorTest {
         final String token = createJWTToken(claims);
 
         final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -84,7 +83,7 @@ class SolidOIDCAuthenticatorTest {
         final String token = createJWTToken(claims);
 
         final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -94,7 +93,7 @@ class SolidOIDCAuthenticatorTest {
         final String token = createJWTToken(claims);
 
         final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -102,7 +101,7 @@ class SolidOIDCAuthenticatorTest {
         final String token = createComposeJWTToken(createCNF(64));
 
         final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -110,7 +109,7 @@ class SolidOIDCAuthenticatorTest {
         final String token = createComposeJWTToken("Wrong");
 
         final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(MalformedJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test

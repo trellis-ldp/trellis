@@ -24,12 +24,26 @@ import java.util.Base64;
 import java.util.Map;
 
 /**
- * A jwks-based authenticator.
+ * An authenticator for the Solid WebId-OIDC protocol. This implementation requires no WebId provider configuration,
+ * the validation is performed based on the in JWT payload supplied key data.
  */
 public class SolidOIDCAuthenticator implements Authenticator {
 
     /**
-     * Build a jws authenticator.
+     * Own exception to signal a malformed JWT according to the expectation of this authenticator.
+     */
+    static class SolidOIDCJwtException extends MalformedJwtException {
+        public SolidOIDCJwtException(String message) {
+            super(message);
+        }
+
+        public SolidOIDCJwtException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    /**
+     * Build the authenticator.
      */
     public SolidOIDCAuthenticator() {
     }
@@ -40,7 +54,7 @@ public class SolidOIDCAuthenticator implements Authenticator {
         final String idToken = Jwts.parserBuilder().build()
             .parseClaimsJwt(extractUnsignedJWT(token)).getBody().get("id_token", String.class);
         if (idToken == null) {
-            throw new MalformedJwtException("Missing the id_token claim in JWT payload");
+            throw new SolidOIDCJwtException("Missing the id_token claim in JWT payload");
         }
         checkTokenStructure(getTokenParts(idToken));
         final Claims idTokenClaims = Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody();
@@ -62,15 +76,15 @@ public class SolidOIDCAuthenticator implements Authenticator {
                 final String msg =
                     String.format("Missing at least one algorithm parameter under cnf.jwk. (alg, n, e): (%s, %s, %s)",
                         alg, n, e);
-                throw new MalformedJwtException(msg);
+                throw new SolidOIDCJwtException(msg);
             }
             if (!alg.startsWith("RS")) {
                 final String msg = String.format("Expecting RSA algorithm under: %s, but got: %s", "cnf.jwk", alg);
-                throw new MalformedJwtException(msg);
+                throw new SolidOIDCJwtException(msg);
             }
             return buildKeyEntry(n, e);
         } catch (ClassCastException | RequiredTypeException e) {
-            throw new MalformedJwtException(String.format("Missing cnf or it's data in: %s", idTokenClaims), e);
+            throw new SolidOIDCJwtException(String.format("Missing cnf or it's data in: %s", idTokenClaims), e);
         }
     }
 
@@ -86,7 +100,7 @@ public class SolidOIDCAuthenticator implements Authenticator {
         if (tokenParts.length < 3) {
             final String msg =
                 String.format("JWT strings must contain exactly 2 period characters. Found: %d", tokenParts.length - 1);
-            throw new MalformedJwtException(msg);
+            throw new SolidOIDCJwtException(msg);
         }
     }
 
