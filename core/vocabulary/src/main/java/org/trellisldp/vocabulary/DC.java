@@ -35,7 +35,7 @@ public final class DC {
     public static final IRI BibliographicResource = createIRI(getNamespace() + "BibliographicResource");
     public static final IRI FileFormat = createIRI(getNamespace() + "FileFormat");
     public static final IRI Frequency = createIRI(getNamespace() + "Frequency");
-    public static final IRI Jurisdiction = createIRI(getNamespace() + "JgetNamespace()sdiction");
+    public static final IRI Jurisdiction = createIRI(getNamespace() + "Jurisdiction");
     public static final IRI LicenseDocument = createIRI(getNamespace() + "LicenseDocument");
     public static final IRI LinguisticSystem = createIRI(getNamespace() + "LinguisticSystem");
     public static final IRI Location = createIRI(getNamespace() + "Location");
