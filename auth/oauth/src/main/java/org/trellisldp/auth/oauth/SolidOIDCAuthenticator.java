@@ -33,11 +33,11 @@ public class SolidOIDCAuthenticator implements Authenticator {
      * Own exception to signal a malformed JWT according to the expectation of this authenticator.
      */
     static class SolidOIDCJwtException extends MalformedJwtException {
-        public SolidOIDCJwtException(String message) {
+        public SolidOIDCJwtException(final String message) {
             super(message);
         }
 
-        public SolidOIDCJwtException(String message, Throwable cause) {
+        public SolidOIDCJwtException(final String message, final Throwable cause) {
             super(message, cause);
         }
     }
