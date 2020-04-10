@@ -207,7 +207,8 @@ class SolidOIDCAuthenticatorTest {
         return cnf;
     }
 
-    private static String createComposeJWTToken(final String issuer, final Map.Entry<String, String> webIdClaim, final Object cnf) {
+    private static String createComposeJWTToken(final String issuer, final Map.Entry<String, String> webIdClaim,
+        final Object cnf) {
         final DefaultClaims internalClaims = new DefaultClaims();
         internalClaims.setIssuer(issuer);
         internalClaims.put(webIdClaim.getKey(), webIdClaim.getValue());
