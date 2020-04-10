@@ -49,7 +49,7 @@ ext {
 
     // Component dependencies
     activeMqVersion = "5.15.12"
-    dropwizardVersion = "2.0.6"
+    dropwizardVersion = "2.0.7"
     guavaVersion = "28.2-jre"
     jacksonVersion = "2.10.3"
     jenaVersion = "3.14.0"
@@ -72,8 +72,8 @@ ext {
     cxfVersion = "3.3.6"
     glassfishJaxbVersion = "2.3.2"
     jerseyVersion = "2.30.1"
-    junitVersion = "5.6.1"
-    junitLauncherVersion = "1.6.1"
+    junitVersion = "5.6.2"
+    junitLauncherVersion = "1.6.2"
     hamcrestVersion = "2.2"
     logbackVersion = "1.2.3"
     mockitoVersion = "3.3.3"
@@ -89,9 +89,9 @@ ext {
 
     // Tooling
     jacocoToolVersion = "0.8.5"
-    checkstyleToolVersion = "8.29"
+    checkstyleToolVersion = "8.31"
     pitestToolVersion = "1.4.11"
-    pmdToolVersion = "6.21.0"
+    pmdToolVersion = "6.22.0"
 
     // OSGi
     commonsCompressVersion = "1.20"
@@ -551,7 +551,7 @@ configure(rootProject) {
     }
 
     // Ignore alpha, beta, milestone and release candidates
-    dependencyUpdates.resolutionStrategy = {
+    dependencyUpdates.resolutionStrategy {
         componentSelection { rules ->
             rules.all { ComponentSelection selection ->
                 boolean rejected = ['alpha', 'beta', 'b', 'cr', 'rc', 'm', 'mr'].any { qualifier ->
