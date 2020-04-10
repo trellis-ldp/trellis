@@ -42,8 +42,8 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.auth.oauth.FederatedJwtAuthenticator;
 import org.trellisldp.auth.oauth.JwksAuthenticator;
-import org.trellisldp.auth.oauth.SolidOIDCAuthenticator;
 import org.trellisldp.auth.oauth.JwtAuthenticator;
+import org.trellisldp.auth.oauth.SolidOIDCAuthenticator;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
 import org.trellisldp.vocabulary.Trellis;
 
