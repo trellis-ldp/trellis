@@ -36,9 +36,14 @@ public final class FOAF {
     public static final IRI Image = createIRI(getNamespace() + "Image");
     public static final IRI Organization = createIRI(getNamespace() + "Organization");
     public static final IRI Person = createIRI(getNamespace() + "Person");
+    public static final IRI Project = createIRI(getNamespace() + "Project");
 
     /* Properties */
+    public static final IRI age = createIRI(getNamespace() + "age");
+    public static final IRI familyName = createIRI(getNamespace() + "familyName");
+    public static final IRI givenName = createIRI(getNamespace() + "givenName");
     public static final IRI homepage = createIRI(getNamespace() + "homepage");
+    public static final IRI img = createIRI(getNamespace() + "img");
     public static final IRI isPrimaryTopicOf = createIRI(getNamespace() + "isPrimaryTopicOf");
     public static final IRI knows = createIRI(getNamespace() + "knows");
     public static final IRI made = createIRI(getNamespace() + "made");
@@ -48,6 +53,7 @@ public final class FOAF {
     public static final IRI name = createIRI(getNamespace() + "name");
     public static final IRI page = createIRI(getNamespace() + "page");
     public static final IRI primaryTopic = createIRI(getNamespace() + "primaryTopic");
+    public static final IRI title = createIRI(getNamespace() + "title");
     public static final IRI weblog = createIRI(getNamespace() + "weblog");
 
     /**
