@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <server description="Trellis Server">
     <featureManager>
-      <feature>microProfile-3.2</feature>
+      <feature>microProfile-3.3</feature>
     </featureManager>
     <logging consoleLogLevel="INFO"/>
     <httpEndpoint httpPort="${default.http.port}" httpsPort="${default.https.port}"
