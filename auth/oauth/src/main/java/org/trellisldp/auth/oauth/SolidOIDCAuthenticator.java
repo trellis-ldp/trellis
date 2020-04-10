@@ -19,6 +19,8 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.RequiredTypeException;
 
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Map;
@@ -58,10 +60,45 @@ public class SolidOIDCAuthenticator implements Authenticator {
         }
         checkTokenStructure(getTokenParts(idToken));
         final Claims idTokenClaims = Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody();
+        doWebIdProviderConfirmation(idTokenClaims);
         final Key key = getKey(idTokenClaims);
         // Side effect needed to check the signature at the top level JWT
         Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
         return idTokenClaims;
+    }
+
+    private static void doWebIdProviderConfirmation(final Claims idTokenClaims) {
+        final String issuer = idTokenClaims.getIssuer();
+        final String webId = idTokenClaims.get(OAuthUtils.WEBID, String.class);
+        final String subject = idTokenClaims.getSubject();
+        if (issuer == null || (webId == null && subject == null)) {
+            throw new SolidOIDCJwtException(
+                String.format("WebId confirmation failed, missing needed claims: (issuer & webId|sub)=(%s & %s|%s).",
+                    issuer, webId, subject));
+        }
+        if (webId != null) {
+            doSameOriginOrSubDomainConfirmation(issuer, webId);
+        } else {
+            doSameOriginOrSubDomainConfirmation(issuer, subject);
+        }
+    }
+
+    private static void doSameOriginOrSubDomainConfirmation(final String issuer, final String webIdClaim) {
+        try {
+            final URI webIdURI = new URI(webIdClaim);
+            final URI issuerURI = new URI(issuer);
+            final boolean isIssuerHttpURI = issuerURI.getScheme().startsWith("http");
+            final boolean isWebIdHttpURI = webIdURI.getScheme().startsWith("http");
+            final boolean isSubDomainOrSameOrigin = webIdURI.getHost().endsWith(issuerURI.getHost());
+            if (!isIssuerHttpURI || !isWebIdHttpURI || !isSubDomainOrSameOrigin) {
+                throw new SolidOIDCJwtException(
+                    String.format("WebId provider confirmation failed, (issuer, webId)=(%s, %s).", issuer, webIdClaim));
+            }
+        } catch (final URISyntaxException e) {
+            throw new SolidOIDCJwtException(
+                String.format("WebId provider confirmation failed, received invalid URI: (issuer, sub)=(%s, %s).",
+                    issuer, webIdClaim), e);
+        }
     }
 
     private static Key getKey(final Claims idTokenClaims) {

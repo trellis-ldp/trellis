@@ -51,6 +51,35 @@ class SolidOIDCAuthenticatorTest {
         "aahEQ";
     private static final BigInteger modulus = new BigInteger(1, getUrlDecoder().decode(base64Modulus));
 
+    public static final String DEFAULT_ISSUER = "https://solid.community";
+
+    private static class WebIdEntry implements Map.Entry<String, String> {
+        private final String key;
+        private final String value;
+
+        WebIdEntry() {
+            this(null, null);
+        }
+
+        WebIdEntry(final String key, final String value) {
+            this.key = key;
+            this.value = value;
+        }
+        @Override public String getKey() {
+            return key;
+        }
+
+        @Override public String getValue() {
+            return value;
+        }
+
+        @Override public String setValue(final String v) {
+            throw new UnsupportedOperationException();
+        }
+    }
+    public static final Map.Entry<String, String> DEFAULT_WEB_ID_ENTRY =
+        new WebIdEntry("sub", "https://bob.solid.community/profile/card#me");
+
     private static Key privateKey;
     static {
         try {
@@ -98,7 +127,7 @@ class SolidOIDCAuthenticatorTest {
 
     @Test
     void testWrongTypeInJwk() {
-        final String token = createComposeJWTToken(createCNF(64));
+        final String token = createComposeJWTToken(DEFAULT_ISSUER, DEFAULT_WEB_ID_ENTRY, createCNF(64));
 
         final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
         assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
@@ -106,19 +135,66 @@ class SolidOIDCAuthenticatorTest {
 
     @Test
     void testCnfOfWrongType() {
-        final String token = createComposeJWTToken("Wrong");
+        final String token = createComposeJWTToken(DEFAULT_ISSUER, DEFAULT_WEB_ID_ENTRY, "Wrong");
 
         final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
         assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
-    void testGreenPath() {
-        final String token = createComposeJWTToken(createCNF(base64Modulus));
+    void testWebIdProviderConfirmation() {
+        final String token =
+            createComposeJWTToken("https://dark.com", DEFAULT_WEB_ID_ENTRY, createCNF(base64Modulus));
+
+        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
+        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+    }
+
+    @Test
+    void testNoWebIdClaim() {
+        final String token =
+            createComposeJWTToken(DEFAULT_ISSUER, new WebIdEntry(), createCNF(base64Modulus));
+
+        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
+        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+    }
+
+    @Test
+    void testNoIssuerClaim() {
+        final String token =
+            createComposeJWTToken(null, DEFAULT_WEB_ID_ENTRY, createCNF(base64Modulus));
+
+        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
+        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+    }
+
+    @Test
+    void testGreenPathWithSameOrigin() {
+        final String token = createComposeJWTToken(
+            DEFAULT_ISSUER, new WebIdEntry("sub", DEFAULT_ISSUER + "/bob/profile#i"), createCNF(base64Modulus));
 
         final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
         final Principal principal = authenticator.authenticate(token);
-        assertNotNull(principal, "Principal was null!!!");
+        assertNotNull(principal);
+    }
+
+    @Test
+    void testGreenPathWithSubDomain() {
+        final String token = createComposeJWTToken(DEFAULT_ISSUER, DEFAULT_WEB_ID_ENTRY, createCNF(base64Modulus));
+
+        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
+        final Principal principal = authenticator.authenticate(token);
+        assertNotNull(principal);
+    }
+
+    @Test
+    void testGreenPathWithWebIdClaim() {
+        final String token = createComposeJWTToken(DEFAULT_ISSUER,
+            new WebIdEntry(OAuthUtils.WEBID, DEFAULT_ISSUER + "/bob/profile#i"), createCNF(base64Modulus));
+
+        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
+        final Principal principal = authenticator.authenticate(token);
+        assertNotNull(principal);
     }
 
     private static Map<String, Object> createCNF(final Object n) {
@@ -131,9 +207,10 @@ class SolidOIDCAuthenticatorTest {
         return cnf;
     }
 
-    private static String createComposeJWTToken(final Object cnf) {
+    private static String createComposeJWTToken(final String issuer, final Map.Entry<String, String> webIdClaim, final Object cnf) {
         final DefaultClaims internalClaims = new DefaultClaims();
-        internalClaims.setSubject("https://bob.solid.community/profile/card#me");
+        internalClaims.setIssuer(issuer);
+        internalClaims.put(webIdClaim.getKey(), webIdClaim.getValue());
         internalClaims.put("cnf", cnf);
         final String internalJws = createJWTToken(internalClaims);
 
