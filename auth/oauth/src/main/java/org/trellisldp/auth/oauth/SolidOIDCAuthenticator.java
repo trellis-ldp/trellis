@@ -25,6 +25,8 @@ import java.security.Key;
 import java.util.Base64;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * An authenticator for the Solid WebId-OIDC protocol. This implementation requires no WebId provider configuration,
  * the validation is performed based on the in JWT payload supplied key data.
@@ -52,13 +54,13 @@ public class SolidOIDCAuthenticator implements Authenticator {
 
     @Override
     public Claims parse(final String token) {
-        checkTokenStructure(getTokenParts(token));
+        checkTokenStructure(token);
         final String idToken = Jwts.parserBuilder().build()
             .parseClaimsJwt(extractUnsignedJWT(token)).getBody().get("id_token", String.class);
         if (idToken == null) {
             throw new SolidOIDCJwtException("Missing the id_token claim in JWT payload");
         }
-        checkTokenStructure(getTokenParts(idToken));
+        checkTokenStructure(idToken);
         final Claims idTokenClaims = Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody();
         doWebIdProviderConfirmation(idTokenClaims);
         final Key key = getKey(idTokenClaims);
@@ -69,18 +71,18 @@ public class SolidOIDCAuthenticator implements Authenticator {
 
     private static void doWebIdProviderConfirmation(final Claims idTokenClaims) {
         final String issuer = idTokenClaims.getIssuer();
+        if (issuer == null) {
+            throw new SolidOIDCJwtException("WebId provider confirmation failed. Missing needed issuer claim.");
+        }
         final String webId = idTokenClaims.get(OAuthUtils.WEBID, String.class);
         final String subject = idTokenClaims.getSubject();
-        if (issuer == null || (webId == null && subject == null)) {
-            throw new SolidOIDCJwtException(
-                String.format("WebId confirmation failed, missing needed claims: (issuer & webId|sub)=(%s & %s|%s).",
-                    issuer, webId, subject));
+        if (webId == null && subject == null) {
+            final String msg =
+                "WebId provider confirmation failed. At least the webid or the sub claim mus be present, found none.";
+            throw new SolidOIDCJwtException(msg);
         }
-        if (webId != null) {
-            doSameOriginOrSubDomainConfirmation(issuer, webId);
-        } else {
-            doSameOriginOrSubDomainConfirmation(issuer, subject);
-        }
+        final String webIdClaim = webId != null ? webId : subject;
+        doSameOriginOrSubDomainConfirmation(issuer, webIdClaim);
     }
 
     private static void doSameOriginOrSubDomainConfirmation(final String issuer, final String webIdClaim) {
@@ -92,11 +94,11 @@ public class SolidOIDCAuthenticator implements Authenticator {
             final boolean isSubDomainOrSameOrigin = webIdURI.getHost().endsWith(issuerURI.getHost());
             if (!isIssuerHttpURI || !isWebIdHttpURI || !isSubDomainOrSameOrigin) {
                 throw new SolidOIDCJwtException(
-                    String.format("WebId provider confirmation failed, (issuer, webId)=(%s, %s).", issuer, webIdClaim));
+                    String.format("WebId provider confirmation failed, (iss, webid)=(%s, %s).", issuer, webIdClaim));
             }
         } catch (final URISyntaxException e) {
             throw new SolidOIDCJwtException(
-                String.format("WebId provider confirmation failed, received invalid URI: (issuer, sub)=(%s, %s).",
+                String.format("WebId provider confirmation failed, received invalid URI: (iss, sub)=(%s, %s).",
                     issuer, webIdClaim), e);
         }
     }
@@ -129,14 +131,11 @@ public class SolidOIDCAuthenticator implements Authenticator {
         return token.substring(0, token.lastIndexOf('.') + 1);
     }
 
-    private static String[] getTokenParts(final String token) {
-        return token.split("\\.");
-    }
-
-    private static void checkTokenStructure(final String[] tokenParts) {
-        if (tokenParts.length < 3) {
+    private static void checkTokenStructure(final String token) {
+        final int dotCount = StringUtils.countMatches(token, '.');
+        if (dotCount != 2) {
             final String msg =
-                String.format("JWT strings must contain exactly 2 period characters. Found: %d", tokenParts.length - 1);
+                String.format("JWT strings must contain exactly 2 period characters. Found: %d", dotCount);
             throw new SolidOIDCJwtException(msg);
         }
     }
