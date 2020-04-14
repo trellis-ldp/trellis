@@ -50,7 +50,7 @@ ext {
     // Component dependencies
     activeMqVersion = "5.15.12"
     dropwizardVersion = "2.0.7"
-    guavaVersion = "28.2-jre"
+    guavaVersion = "29.0-jre"
     jacksonVersion = "2.10.3"
     jenaVersion = "3.14.0"
     jjwtVersion = "0.11.1"
