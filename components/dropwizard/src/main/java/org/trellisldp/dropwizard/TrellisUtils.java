@@ -31,9 +31,9 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.auth.basic.BasicAuthFilter;
 import org.trellisldp.auth.oauth.Authenticator;
+import org.trellisldp.auth.oauth.NullAuthenticator;
 import org.trellisldp.auth.oauth.OAuthFilter;
 import org.trellisldp.auth.oauth.OAuthUtils;
-import org.trellisldp.auth.oauth.SolidOIDCAuthenticator;
 import org.trellisldp.cache.TrellisCache;
 import org.trellisldp.dropwizard.config.AuthConfiguration;
 import org.trellisldp.dropwizard.config.CORSConfiguration;
@@ -64,7 +64,12 @@ final class TrellisUtils {
             return sharedKeyAuthenticator;
         }
 
-        return new SolidOIDCAuthenticator();
+        final Authenticator webIdOIDCAuthenticator = OAuthUtils.buildAuthenticatorWithWebIdOIDC(config.getWebIdOIDC());
+        if (webIdOIDCAuthenticator != null) {
+            return webIdOIDCAuthenticator;
+        }
+
+        return new NullAuthenticator();
     }
 
     public static WebAcService getWebacService(final TrellisConfiguration config,

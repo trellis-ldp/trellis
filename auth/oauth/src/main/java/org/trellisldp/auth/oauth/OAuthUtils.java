@@ -163,6 +163,10 @@ public final class OAuthUtils {
         return null;
     }
 
+    public static SolidOIDCAuthenticator buildAuthenticatorWithWebIdOIDC(final boolean webIdOIDC) {
+        return webIdOIDC ? new SolidOIDCAuthenticator() : null;
+    }
+
     private static List<String> filterKeyIds(final KeyStore ks, final List<String> keyids) throws KeyStoreException {
         final List<String> ids = new ArrayList<>();
         for (final String id : keyids) {
