@@ -33,7 +33,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-class SolidOIDCAuthenticatorTest {
+class WebIdOIDCAuthenticatorTest {
 
     private static final String base64PrivateExponent = "VRPRBm9dCoAJfBbEz5oAHEz7Tnm" +
         "0i0O6m5yj7NwqAZOj9i4ZwgZ8VZQo88oxZQWNaYd1yKeoQhUsJija_vxQEPXO1Q2q6OqMcwTBH0wyGhIFp--z2dAyRlDVLUTQbJUXyq" +
@@ -100,8 +100,8 @@ class SolidOIDCAuthenticatorTest {
         claims.put("iss", "example.com");
         final String token = createJWTToken(claims);
 
-        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
+        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -111,8 +111,8 @@ class SolidOIDCAuthenticatorTest {
         claims.put("id_token", internalJws);
         final String token = createJWTToken(claims);
 
-        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
+        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -121,24 +121,24 @@ class SolidOIDCAuthenticatorTest {
         claims.put("id_token", "eyJhbGciOiJSUzI1NiJ9");
         final String token = createJWTToken(claims);
 
-        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
+        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
     void testWrongTypeInJwk() {
         final String token = createComposeJWTToken(DEFAULT_ISSUER, DEFAULT_WEB_ID_ENTRY, createCNF(64));
 
-        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
+        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
     void testCnfOfWrongType() {
         final String token = createComposeJWTToken(DEFAULT_ISSUER, DEFAULT_WEB_ID_ENTRY, "Wrong");
 
-        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
+        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -146,8 +146,8 @@ class SolidOIDCAuthenticatorTest {
         final String token =
             createComposeJWTToken("https://dark.com", DEFAULT_WEB_ID_ENTRY, createCNF(base64Modulus));
 
-        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
+        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -155,8 +155,8 @@ class SolidOIDCAuthenticatorTest {
         final String token =
             createComposeJWTToken(DEFAULT_ISSUER, new WebIdEntry(), createCNF(base64Modulus));
 
-        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
+        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -164,8 +164,8 @@ class SolidOIDCAuthenticatorTest {
         final String token =
             createComposeJWTToken(null, DEFAULT_WEB_ID_ENTRY, createCNF(base64Modulus));
 
-        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
-        assertThrows(SolidOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
+        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -173,7 +173,7 @@ class SolidOIDCAuthenticatorTest {
         final String token = createComposeJWTToken(
             DEFAULT_ISSUER, new WebIdEntry("sub", DEFAULT_ISSUER + "/bob/profile#i"), createCNF(base64Modulus));
 
-        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
+        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
         final Principal principal = authenticator.authenticate(token);
         assertNotNull(principal);
     }
@@ -182,7 +182,7 @@ class SolidOIDCAuthenticatorTest {
     void testGreenPathWithSubDomain() {
         final String token = createComposeJWTToken(DEFAULT_ISSUER, DEFAULT_WEB_ID_ENTRY, createCNF(base64Modulus));
 
-        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
+        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
         final Principal principal = authenticator.authenticate(token);
         assertNotNull(principal);
     }
@@ -192,7 +192,7 @@ class SolidOIDCAuthenticatorTest {
         final String token = createComposeJWTToken(DEFAULT_ISSUER,
             new WebIdEntry(OAuthUtils.WEBID, DEFAULT_ISSUER + "/bob/profile#i"), createCNF(base64Modulus));
 
-        final SolidOIDCAuthenticator authenticator = new SolidOIDCAuthenticator();
+        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
         final Principal principal = authenticator.authenticate(token);
         assertNotNull(principal);
     }

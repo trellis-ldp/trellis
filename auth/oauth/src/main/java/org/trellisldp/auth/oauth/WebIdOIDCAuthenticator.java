@@ -31,7 +31,7 @@ import org.apache.commons.lang3.StringUtils;
  * An authenticator for the Solid WebId-OIDC protocol. This implementation requires no WebId provider configuration,
  * the validation is performed based on the in JWT payload supplied key data.
  */
-public class SolidOIDCAuthenticator implements Authenticator {
+public class WebIdOIDCAuthenticator implements Authenticator {
 
     /**
      * Own exception to signal a malformed JWT according to the expectation of this authenticator.
@@ -49,7 +49,7 @@ public class SolidOIDCAuthenticator implements Authenticator {
     /**
      * Build the authenticator.
      */
-    public SolidOIDCAuthenticator() {
+    public WebIdOIDCAuthenticator() {
     }
 
     @Override
