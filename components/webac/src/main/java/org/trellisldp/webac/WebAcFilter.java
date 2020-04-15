@@ -17,6 +17,7 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.HttpMethod.DELETE;
@@ -105,6 +106,9 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     /** The configuration key controlling the scope(s) used in a WWW-Authenticate header. */
     public static final String CONFIG_WEBAC_SCOPE = "trellis.webac.scope";
 
+    /** The session value for storing access modes. */
+    public static final String SESSION_WEBAC_MODES = "trellis.webac.session-modes";
+
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
     private static final Set<String> readable = new HashSet<>(asList("GET", "HEAD", "OPTIONS"));
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
@@ -181,6 +185,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         final String method = ctx.getMethod();
 
         final Set<IRI> modes = accessService.getAccessModes(buildTrellisIdentifier(path), s);
+        ctx.setProperty(SESSION_WEBAC_MODES, unmodifiableSet(modes));
         if (ctx.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
                 .contains(HttpConstants.ACL) || reqAudit(ctx)) {
             verifyCanControl(modes, s, path);

@@ -20,6 +20,7 @@ import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -44,6 +45,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.ACL;
@@ -85,6 +88,9 @@ class WebAcFilterTest {
 
     @Mock
     private Principal mockPrincipal;
+
+    @Captor
+    private ArgumentCaptor<Set<IRI>> modesArgument;
 
     @BeforeAll
     static void setUpProperties() {
@@ -133,6 +139,10 @@ class WebAcFilterTest {
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
+        verify(mockContext).setProperty(eq(WebAcFilter.SESSION_WEBAC_MODES), modesArgument.capture());
+        assertTrue(modesArgument.getValue().contains(ACL.Read));
+        assertEquals(modes.size(), modesArgument.getValue().size());
+
         modes.clear();
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No expception thrown when not authorized!");
@@ -140,6 +150,7 @@ class WebAcFilterTest {
         when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
                 "No exception thrown!");
+
     }
 
     @Test
