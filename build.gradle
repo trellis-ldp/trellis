@@ -49,16 +49,16 @@ ext {
 
     // Component dependencies
     activeMqVersion = "5.15.12"
-    dropwizardVersion = "2.0.7"
-    guavaVersion = "28.2-jre"
+    dropwizardVersion = "2.0.8"
+    guavaVersion = "29.0-jre"
     jacksonVersion = "2.10.3"
     jenaVersion = "3.14.0"
     jjwtVersion = "0.11.1"
     jsonldVersion = "0.13.0"
-    kafkaVersion = "2.4.1"
+    kafkaVersion = "2.5.0"
     mustacheVersion = "0.9.6"
     quarkusVersion = "1.3.2.Final"
-    rabbitMqVersion = "5.8.0"
+    rabbitMqVersion = "5.9.0"
     rxjavaVersion = "2.2.19"
 
     // Transitive dependencies
