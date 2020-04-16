@@ -21,7 +21,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON_TYPE;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
@@ -51,6 +50,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
@@ -235,7 +235,7 @@ public interface LdpRdfTests extends CommonTests {
      * @throws Exception if the RDF resource didn't close cleanly
      */
     default void testGetRDF() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         // Fetch the new resource
         try (final Response res = target(getResourceLocation()).request().get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
@@ -257,7 +257,7 @@ public interface LdpRdfTests extends CommonTests {
      * @throws Exception if the RDF resource didn't close cleanly
      */
     default void testPatchRDF() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final EntityTag initialETag = getETag(getResourceLocation());
 
         // Patch the resource
@@ -310,7 +310,7 @@ public interface LdpRdfTests extends CommonTests {
      * @throws Exception if the RDF resource didn't close cleanly
      */
     default void testRdfContainment() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         // Test the root container, verifying that the containment triple exists
         try (final Response res = target().request().get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {

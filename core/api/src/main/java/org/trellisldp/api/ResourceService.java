@@ -15,7 +15,6 @@ package org.trellisldp.api;
 
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -90,7 +89,7 @@ public interface ResourceService extends RetrievalService<Resource> {
      */
     default RDFTerm skolemize(final RDFTerm term) {
         if (term instanceof BlankNode) {
-            return getInstance().createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) term).uniqueReference());
+            return RDFFactory.getInstance().createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) term).uniqueReference());
         }
         return term;
     }
@@ -105,7 +104,7 @@ public interface ResourceService extends RetrievalService<Resource> {
         if (term instanceof IRI) {
             final String iri = ((IRI) term).getIRIString();
             if (iri.startsWith(TRELLIS_BNODE_PREFIX)) {
-                return getInstance().createBlankNode(iri.substring(TRELLIS_BNODE_PREFIX.length()));
+                return RDFFactory.getInstance().createBlankNode(iri.substring(TRELLIS_BNODE_PREFIX.length()));
             }
         }
         return term;
@@ -124,7 +123,8 @@ public interface ResourceService extends RetrievalService<Resource> {
             final String iri = ((IRI) term).getIRIString();
             if (iri.startsWith(baseUrl)) {
                 @SuppressWarnings("unchecked")
-                final T t = (T) getInstance().createIRI(TRELLIS_DATA_PREFIX + iri.substring(baseUrl.length()));
+                final T t = (T) RDFFactory.getInstance()
+                                    .createIRI(TRELLIS_DATA_PREFIX + iri.substring(baseUrl.length()));
                 return t;
             }
         }
@@ -144,7 +144,8 @@ public interface ResourceService extends RetrievalService<Resource> {
             final String iri = ((IRI) term).getIRIString();
             if (iri.startsWith(TRELLIS_DATA_PREFIX)) {
                 @SuppressWarnings("unchecked")
-                final T t = (T) getInstance().createIRI(baseUrl + iri.substring(TRELLIS_DATA_PREFIX.length()));
+                final T t = (T) RDFFactory.getInstance()
+                                    .createIRI(baseUrl + iri.substring(TRELLIS_DATA_PREFIX.length()));
                 return t;
             }
         }

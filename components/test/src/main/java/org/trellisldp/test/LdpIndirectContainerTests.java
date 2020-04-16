@@ -23,7 +23,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
@@ -44,6 +43,7 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
@@ -171,7 +171,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
      * @throws Exception if the RDF resource did not close cleanly
      */
     default void testAddResourceWithMemberSubject() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final String content = getResourceAsString(INDIRECT_CONTAINER_MEMBER_SUBJECT)
             + membershipResource(MEMBER_RESOURCE_HASH);
         final String memberContent = getResourceAsString(SIMPLE_RESOURCE) + "<> foaf:primaryTopic <#it> .";
@@ -208,7 +208,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
      * @throws Exception if the RDF resources did not exit cleanly
      */
     default void testAddingMemberResources() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final String child1;
         final String child2;
         final String hash = "#it";
@@ -481,7 +481,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
      * @throws Exception if the RDF resources did not exit cleanly
      */
     default void testGetEmptyMember() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         try (final Response res = target(getMemberLocation()).request().header(PREFER,
                     "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
@@ -498,7 +498,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
      * @throws Exception if the RDF resources did not exit cleanly
      */
     default void testGetInverseEmptyMember() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         try (final Response res = target(getMemberLocation()).request().header(PREFER,
                     "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {

@@ -16,7 +16,6 @@ package org.trellisldp.http.core;
 import static java.util.Arrays.stream;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toMap;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_EXTENSION_GRAPHS;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 
@@ -25,10 +24,11 @@ import java.util.Map;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.eclipse.microprofile.config.Config;
+import org.trellisldp.api.RDFFactory;
 
 public final class TrellisExtensions {
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     /**
      * Build a map suitable for extension graphs from a config string.

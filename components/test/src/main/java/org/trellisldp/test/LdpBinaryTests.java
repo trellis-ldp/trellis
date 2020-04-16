@@ -20,7 +20,6 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
@@ -35,6 +34,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 
@@ -132,7 +132,7 @@ public interface LdpBinaryTests extends CommonTests {
      * @throws Exception if the RDF resource did not close cleanly
      */
     default void testPatchBinaryDescription() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final EntityTag descriptionETag;
         final long size;
 
@@ -183,7 +183,7 @@ public interface LdpBinaryTests extends CommonTests {
      * @throws Exception if the RDF resource did not close cleanly
      */
     default void testBinaryIsInContainer() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         // Test the root container, verifying that the containment triple exists
         try (final Response res = target().request().get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {

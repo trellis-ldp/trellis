@@ -27,11 +27,11 @@ import org.junit.jupiter.api.Test;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.TrellisUtils;
+import org.trellisldp.api.RDFFactory;
 
 class InMemoryBinaryServiceTest {
 
-    private static final RDF rdfFactory = TrellisUtils.getInstance();
+    private static final RDF rdfFactory = RDFFactory.getInstance();
 
     private final BinaryService testService = new InMemoryBinaryService();
 

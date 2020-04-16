@@ -20,7 +20,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.*;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.*;
 
 import java.io.InputStream;
@@ -63,6 +62,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.http.core.PATCH;
 import org.trellisldp.http.core.ServiceBundler;
@@ -89,7 +89,7 @@ public class TrellisHttpResource {
 
     private static final Logger LOGGER = getLogger(TrellisHttpResource.class);
 
-    protected static final RDF rdf = getInstance();
+    protected static final RDF rdf = RDFFactory.getInstance();
 
     protected final ServiceBundler trellis;
     protected final Map<String, IRI> extensions;

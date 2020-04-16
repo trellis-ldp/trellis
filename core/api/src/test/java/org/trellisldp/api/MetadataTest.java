@@ -30,7 +30,7 @@ import org.trellisldp.vocabulary.Trellis;
 
 class MetadataTest {
 
-    private static final RDF rdf = TrellisUtils.getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final IRI identifier = rdf.createIRI("trellis:data/resource");
     private static final IRI member = rdf.createIRI("trellis:data/member");
     private static final IRI root = rdf.createIRI("trellis:data/");

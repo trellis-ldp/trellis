@@ -16,7 +16,6 @@ package org.trellisldp.test;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.hasType;
 
@@ -34,6 +33,7 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
@@ -175,7 +175,7 @@ public interface CommonTests {
     default Stream<Executable> checkRdfGraph(final Graph graph, final IRI identifier) {
         return Stream.of(
                 () -> assertTrue(graph.contains(identifier, SKOS.prefLabel,
-                                                getInstance().createLiteral(BASIC_CONTAINER_LABEL, ENG)),
+                                                RDFFactory.getInstance().createLiteral(BASIC_CONTAINER_LABEL, ENG)),
                                  "Check for the presence of a skos:prefLabel triple"),
                 () -> assertTrue(graph.contains(identifier, DC.description, null),
                                  "Check for the presence fo a dc:description triple"));

@@ -16,12 +16,10 @@ package org.trellisldp.api;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.ServiceLoader.load;
 import static java.util.stream.Collector.Characteristics.IDENTITY_FINISH;
 import static java.util.stream.Collector.Characteristics.UNORDERED;
 
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -45,8 +43,8 @@ import org.apache.commons.rdf.api.Triple;
  */
 public final class TrellisUtils {
 
-    private static final RDF rdf = findFirst(RDF.class)
-                    .orElseThrow(() -> new RuntimeTrellisException("No RDF Commons implementation available!"));
+    private static final RDF rdf = RDFFactory.getInstance();
+
     private static final String SLASH = "/";
 
     /**
@@ -77,8 +75,10 @@ public final class TrellisUtils {
     /**
      * Get the Commons RDF instance in use.
      *
+     * @deprecated
      * @return the RDF instance
      */
+    @Deprecated
     public static RDF getInstance() {
         return rdf;
     }
@@ -180,19 +180,6 @@ public final class TrellisUtils {
         public Set<Characteristics> characteristics() {
             return unmodifiableSet(EnumSet.of(UNORDERED, IDENTITY_FINISH));
         }
-    }
-
-    /**
-     * Get a service.
-     *
-     * @param service the interface or abstract class representing the service
-     * @param <T> the class of the service type
-     * @return the first service provider or empty Optional if no service providers are located
-     */
-    /* package-private because of JPMS */
-    static <T> Optional<T> findFirst(final Class<T> service) {
-        final Iterator<T> services = load(service).iterator();
-        return services.hasNext() ? of(services.next()) : empty();
     }
 
     private TrellisUtils() {

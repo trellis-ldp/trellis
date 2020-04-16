@@ -43,7 +43,6 @@ import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.TrellisExtensions.buildExtensionMapFromConfig;
 import static org.trellisldp.webdav.Depth.DEPTH.INFINITY;
@@ -100,6 +99,7 @@ import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.core.HttpSession;
@@ -131,7 +131,7 @@ public class TrellisWebDAV {
 
     private static final String SUCCESS = "HTTP/1.1 200 OK";
     private static final int MULTI_STATUS = 207;
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final Logger LOGGER = getLogger(TrellisWebDAV.class);
 
     private final ServiceBundler services;

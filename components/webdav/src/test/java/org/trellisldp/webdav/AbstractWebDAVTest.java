@@ -47,7 +47,6 @@ import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.vocabulary.RDF.type;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
@@ -88,6 +87,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.NoopMementoService;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -111,7 +111,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
 
     private static final Instant time = ofEpochSecond(timestamp);
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     private static final String RANDOM_VALUE = "randomValue";
 

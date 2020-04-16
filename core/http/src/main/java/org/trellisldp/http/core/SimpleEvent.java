@@ -18,7 +18,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.UUID.randomUUID;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -28,13 +27,14 @@ import java.util.Optional;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.trellisldp.api.Event;
+import org.trellisldp.api.RDFFactory;
 
 /**
  * A simple Event implementation.
  */
 public class SimpleEvent implements Event {
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     private final IRI identifier;
     private final IRI object;

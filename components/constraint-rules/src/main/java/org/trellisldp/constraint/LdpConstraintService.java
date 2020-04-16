@@ -19,7 +19,6 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.util.ArrayList;
@@ -40,6 +39,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.ConstraintViolation;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.OA;
@@ -68,7 +68,7 @@ import org.trellisldp.vocabulary.Trellis;
 public class LdpConstraintService implements ConstraintService {
 
     private static final String EN = "en";
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final Set<IRI> propertiesWithInDomainRange = singleton(LDP.membershipResource);
 
     // Properties that need to be used with objects that are IRIs

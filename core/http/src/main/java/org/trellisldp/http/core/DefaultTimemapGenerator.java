@@ -15,7 +15,6 @@ package org.trellisldp.http.core;
 
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.DATETIME;
 import static org.trellisldp.http.core.HttpConstants.FROM;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO;
@@ -32,6 +31,7 @@ import javax.ws.rs.core.Link;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.Memento;
 import org.trellisldp.vocabulary.Time;
 import org.trellisldp.vocabulary.XSD;
@@ -45,7 +45,7 @@ import org.trellisldp.vocabulary.XSD;
 public class DefaultTimemapGenerator implements TimemapGenerator {
 
     private static final String TIME_IRI_PREFIX = "http://reference.data.gov.uk/id/gregorian-instant/";
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     @Override
     public Stream<Triple> asRdf(final String identifier, final List<Link> mementos) {

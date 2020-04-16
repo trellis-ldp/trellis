@@ -24,7 +24,6 @@ import static org.awaitility.Awaitility.await;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PATCH_CREATE;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
@@ -45,6 +44,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
@@ -102,7 +102,7 @@ public interface LdpBasicContainerTests extends CommonTests {
      * @throws Exception when the RDF resource does not close cleanly
      */
     default void testGetEmptyContainer() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         try (final Response res = target(getContainerLocation()).request().header(PREFER,
                     "return=representation; include=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
@@ -118,7 +118,7 @@ public interface LdpBasicContainerTests extends CommonTests {
      * @throws Exception when the RDF resource does not close cleanly
      */
     default void testGetInverseEmptyContainer() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         try (final Response res = target(getContainerLocation()).request().header(PREFER,
                     "return=representation; omit=\"" + LDP.PreferMinimalContainer.getIRIString() + "\"").get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
@@ -159,7 +159,7 @@ public interface LdpBasicContainerTests extends CommonTests {
      * @throws Exception when the RDF resource does not close cleanly
      */
     default void testGetContainer() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         try (final Response res = target(getContainerLocation()).request().get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
             assertAll("Check an LDP-BC response", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
@@ -174,7 +174,7 @@ public interface LdpBasicContainerTests extends CommonTests {
      * @throws Exception when the RDF resource does not close cleanly
      */
     default void testPatchNewRDF() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         // PATCH an LDP-RS
         final String location = getContainerLocation() + generateRandomValue("PATCH");
         assumeTrue(getConfig().getOptionalValue(CONFIG_HTTP_PATCH_CREATE, Boolean.class)
@@ -199,7 +199,7 @@ public interface LdpBasicContainerTests extends CommonTests {
      * @throws Exception when the RDF resource does not close cleanly
      */
     default void testCreateContainerViaPost() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final String child3;
 
@@ -237,7 +237,7 @@ public interface LdpBasicContainerTests extends CommonTests {
      * @throws Exception when the RDF resource does not close cleanly
      */
     default void testCreateContainerViaPut() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
         final boolean createUncontained = getConfig().getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class)
             .orElse(Boolean.FALSE);
@@ -278,7 +278,7 @@ public interface LdpBasicContainerTests extends CommonTests {
      */
     @DisplayName("Test create container with slug")
     default void testCreateContainerWithSlug() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final String containerContent = getResourceAsString(BASIC_CONTAINER);
 
         // First fetch the container headers to get the initial ETag
@@ -313,7 +313,7 @@ public interface LdpBasicContainerTests extends CommonTests {
      * @throws Exception when the RDF resource does not close cleanly
      */
     default void testDeleteContainer() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final String childResource;
 
         final EntityTag initialETag = getETag(getContainerLocation());

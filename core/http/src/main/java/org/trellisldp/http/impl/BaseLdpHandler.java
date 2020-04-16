@@ -20,7 +20,6 @@ import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
 import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
@@ -31,6 +30,7 @@ import javax.ws.rs.core.EntityTag;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
@@ -40,7 +40,7 @@ import org.trellisldp.http.core.TrellisRequest;
  */
 class BaseLdpHandler {
 
-    protected static final RDF rdf = getInstance();
+    protected static final RDF rdf = RDFFactory.getInstance();
 
     private final String requestBaseUrl;
     private final TrellisRequest request;

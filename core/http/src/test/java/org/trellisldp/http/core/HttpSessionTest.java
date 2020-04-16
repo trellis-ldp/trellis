@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_SESSION_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.security.Principal;
 import java.time.Instant;
@@ -28,6 +27,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -36,7 +36,7 @@ import org.trellisldp.vocabulary.Trellis;
  */
 class HttpSessionTest {
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     @Test
     void testHttpSession() {

@@ -19,7 +19,6 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.io.IOException;
 
@@ -31,6 +30,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.RuntimeTrellisException;
 
 /**
@@ -38,7 +38,7 @@ import org.trellisldp.api.RuntimeTrellisException;
  */
 class WebDAVUtilsTest {
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     @Test
     void testPathLastSegments() {

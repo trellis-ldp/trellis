@@ -18,7 +18,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON_TYPE;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
@@ -33,6 +32,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -108,7 +108,7 @@ public interface MementoTimeMapTests extends MementoCommonTests {
      * Test content negotiation on timemap resource: turtle.
      */
     default void testTimeMapConnegTurtle() {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         try (final Response res = target(getResourceLocation() + TIMEMAP_QUERY_ARG).request().accept("text/turtle")
                 .get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid turtle response");
@@ -125,7 +125,7 @@ public interface MementoTimeMapTests extends MementoCommonTests {
      * Test content negotiation on timemap resource: json-ld.
      */
     default void testTimeMapConnegJsonLd() {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         try (final Response res = target(getResourceLocation() + TIMEMAP_QUERY_ARG).request()
                 .accept("application/ld+json").get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid jsonld response");
@@ -142,7 +142,7 @@ public interface MementoTimeMapTests extends MementoCommonTests {
      * Test content negotiation on timemap resource: n-triples.
      */
     default void testTimeMapConnegNTriples() {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         try (final Response res = target(getResourceLocation() + TIMEMAP_QUERY_ARG).request()
                 .accept("application/n-triples").get()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid ntriples response");

@@ -44,7 +44,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.ACL;
 import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
@@ -88,6 +87,7 @@ import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.NoopMementoService;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -111,7 +111,7 @@ class BaseTestHandler {
     static final String RESOURCE_NAME = "resource";
 
     static final String baseUrl = "http://example.org/";
-    static final RDF rdf = getInstance();
+    static final RDF rdf = RDFFactory.getInstance();
     static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_NAME);
     static final Instant time = ofEpochSecond(1496262729);

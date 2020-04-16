@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.TrellisUtils;
@@ -53,7 +54,7 @@ public class InMemoryResourceService implements ResourceService {
 
     private static final Logger LOG = LoggerFactory.getLogger(InMemoryResourceService.class);
 
-    private static final RDF rdfFactory = TrellisUtils.getInstance();
+    private static final RDF rdfFactory = RDFFactory.getInstance();
 
     private static final CompletableFuture<Void> DONE = completedFuture(null);
 

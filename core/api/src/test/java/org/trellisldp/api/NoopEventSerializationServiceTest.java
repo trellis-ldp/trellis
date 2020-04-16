@@ -20,7 +20,6 @@ import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,7 @@ import org.trellisldp.vocabulary.PROV;
 
 class NoopEventSerializationServiceTest {
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final String identifier = "urn:uuid:e5297053-52fd-4bed-a840-7ef2ba94f7de";
 
     @Test
