@@ -19,6 +19,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
+import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.Priorities.AUTHORIZATION;
@@ -33,6 +34,7 @@ import static org.trellisldp.api.TrellisUtils.buildTrellisIdentifier;
 import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
+import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.core.TrellisRequest.buildBaseUrl;
 
 import java.util.HashSet;
@@ -186,15 +188,24 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
 
         final Set<IRI> modes = accessService.getAccessModes(buildTrellisIdentifier(path), s);
         ctx.setProperty(SESSION_WEBAC_MODES, unmodifiableSet(modes));
+
+        final Prefer prefer = Prefer.valueOf(ctx.getHeaderString(PREFER));
+
+        // Control-level access
         if (ctx.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
-                .contains(HttpConstants.ACL) || reqAudit(ctx)) {
+                .contains(HttpConstants.ACL) || reqAudit(prefer)) {
             verifyCanControl(modes, s, path);
-        } else if (readable.contains(method)) {
-            verifyCanRead(modes, s, path);
-        } else if (writable.contains(method)) {
-            verifyCanWrite(modes, s, path);
-        } else if (appendable.contains(method)) {
-            verifyCanAppend(modes, s, path);
+        // Everything else
+        } else {
+            if (readable.contains(method) || reqRepresentation(prefer)) {
+                verifyCanRead(modes, s, path);
+            }
+            if (writable.contains(method)) {
+                verifyCanWrite(modes, s, path);
+            }
+            if (appendable.contains(method)) {
+                verifyCanAppend(modes, s, path);
+            }
         }
     }
 
@@ -208,14 +219,6 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             res.getHeaders().add(LINK, fromUri(fromPath(path.startsWith("/") ? path : "/" + path)
                         .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(rel).build());
         }
-    }
-
-    private boolean reqAudit(final ContainerRequestContext ctx) {
-        final Prefer prefer = Prefer.valueOf(ctx.getHeaderString(PREFER));
-        if (prefer != null) {
-            return prefer.getInclude().contains(Trellis.PreferAudit.getIRIString());
-        }
-        return false;
     }
 
     protected void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {
@@ -264,6 +267,14 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
             throw new ForbiddenException();
         }
         LOGGER.debug("User: {} can read {}", session.getAgent(), path);
+    }
+
+    static boolean reqAudit(final Prefer prefer) {
+        return prefer != null && prefer.getInclude().contains(Trellis.PreferAudit.getIRIString());
+    }
+
+    static boolean reqRepresentation(final Prefer prefer) {
+        return prefer != null && prefer.getPreference().filter(isEqual(PREFER_REPRESENTATION)).isPresent();
     }
 
     static String getBaseUrl(final ContainerRequestContext ctx, final String baseUrl) {
