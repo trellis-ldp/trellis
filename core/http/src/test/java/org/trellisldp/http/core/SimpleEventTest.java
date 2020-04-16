@@ -18,7 +18,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -27,6 +26,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.Event;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
@@ -37,7 +37,7 @@ import org.trellisldp.vocabulary.SKOS;
  */
 class SimpleEventTest {
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     private final String identifier = "trellis:data/resource";
     private final IRI agent = rdf.createIRI("http://example.org/agent");

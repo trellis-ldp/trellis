@@ -17,7 +17,6 @@ package org.trellisldp.api;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -28,7 +27,7 @@ import org.trellisldp.vocabulary.LDP;
 class NoopResourceServiceTest {
 
     private static final ResourceService testService = new NoopResourceService();
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
 
     @Test

@@ -14,7 +14,6 @@
 package org.trellisldp.audit;
 
 import static java.util.Arrays.asList;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.RDF.type;
 import static org.trellisldp.vocabulary.Trellis.PreferAudit;
 
@@ -28,6 +27,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.trellisldp.api.AuditService;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.PROV;
@@ -46,7 +46,7 @@ import org.trellisldp.vocabulary.XSD;
 @ApplicationScoped
 public class DefaultAuditService implements AuditService {
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     @Override
     public List<Quad> creation(final IRI subject, final Session session) {

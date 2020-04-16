@@ -17,7 +17,6 @@ import static java.time.Instant.now;
 import static java.util.Optional.ofNullable;
 import static java.util.UUID.randomUUID;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_SESSION_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.Trellis.AnonymousAgent;
 
 import java.time.Instant;
@@ -27,6 +26,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -38,7 +38,7 @@ public class HttpSession implements Session {
     /** The admin role. */
     public static final String ADMIN_ROLE = "admin";
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     private final IRI identifier = rdf.createIRI(TRELLIS_SESSION_PREFIX + randomUUID());
     private final IRI agent;

@@ -29,7 +29,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.*;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.*;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
@@ -57,6 +56,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
 import org.apache.commons.rdf.api.Triple;
 import org.slf4j.Logger;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -73,7 +73,7 @@ import org.trellisldp.vocabulary.Trellis;
 public final class HttpUtils {
 
     private static final Logger LOGGER = getLogger(HttpUtils.class);
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final Set<IRI> ignoredPreferences;
 
     static {

@@ -21,7 +21,6 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.test.TestUtils.getLinks;
@@ -41,6 +40,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.SKOS;
@@ -157,7 +157,7 @@ public interface MementoResourceTests extends MementoCommonTests {
      * @throws Exception if the RDF resources did not exit cleanly
      */
     default void testMementoContent() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         try (final Dataset dataset = rdf.createDataset()) {
             final Map<String, String> mementos = getMementos();
             mementos.forEach((memento, date) -> {

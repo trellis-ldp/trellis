@@ -14,20 +14,20 @@
 package org.trellisldp.http.core;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.util.Map;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.Trellis;
 
 class TrellisExtensionsTest {
 
     @Test
     void testExtMapBuilder() {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         assertTrue(TrellisExtensions.buildExtensionMap("").isEmpty());
         assertTrue(TrellisExtensions.buildExtensionMap("    ").isEmpty());
         assertTrue(TrellisExtensions.buildExtensionMap(", , = ,foo=  ,, =bar,baz").isEmpty());

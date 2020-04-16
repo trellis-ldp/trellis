@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
@@ -39,7 +38,7 @@ import org.trellisldp.vocabulary.Trellis;
 class NoopMementoServiceTest {
 
     private static final MementoService testService = new NoopMementoService();
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final IRI identifier = rdf.createIRI("trellis:data/resource");
     private static final Instant time = now();
     private static final Quad quad = rdf.createQuad(Trellis.PreferUserManaged, identifier, type, SKOS.Concept);

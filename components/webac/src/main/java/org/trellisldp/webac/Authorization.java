@@ -21,7 +21,6 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toSet;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,6 +32,7 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.ACL;
 
 /**
@@ -53,7 +53,7 @@ import org.trellisldp.vocabulary.ACL;
  */
 public class Authorization {
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final Set<IRI> predicates = new HashSet<>(asList(ACL.agent, ACL.agentClass, ACL.agentGroup,
                 ACL.mode, ACL.accessTo, ACL.default_));
 

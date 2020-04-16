@@ -34,7 +34,7 @@ import org.trellisldp.vocabulary.RDFS;
  */
 class ConstraintServiceTest {
 
-    private static final RDF rdf = TrellisUtils.getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final String INCORRECT_LDP_TYPES = "Incorrect number of LDP types found";
     private static final String INCORRECT_UNIQUE_LDP_TYPES = "Incorrect number of unique LDP types found";
     private static final String NO_LDP_RESOURCE = "ldp:Resource not among LDP types";

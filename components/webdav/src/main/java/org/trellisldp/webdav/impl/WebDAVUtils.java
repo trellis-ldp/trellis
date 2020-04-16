@@ -20,7 +20,6 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.replaceOnce;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toDataset;
 
 import java.util.List;
@@ -38,6 +37,7 @@ import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
@@ -55,7 +55,7 @@ import org.trellisldp.vocabulary.Trellis;
 public final class WebDAVUtils {
 
     private static final Logger LOGGER = getLogger(WebDAVUtils.class);
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     /**
      * Recursively delete resources under the given identifier.

@@ -16,9 +16,7 @@ package org.trellisldp.api;
 import static java.util.Optional.of;
 import static java.util.stream.Stream.generate;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.toDataset;
 import static org.trellisldp.api.TrellisUtils.toGraph;
 
@@ -28,21 +26,21 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledOnJre;
 
 /**
  * @author acoburn
  */
 class TrellisUtilsTest {
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final long size = 10000L;
     private static final RandomStringGenerator generator = new RandomStringGenerator.Builder()
         .withinRange('a', 'z').build();
 
     @Test
+    @SuppressWarnings("deprecation")
     void testGetInstance() {
-        assertNotNull(rdf, "RDF instance is null!");
+        assertNotNull(TrellisUtils.getInstance(), "RDF instance is null!");
     }
 
     @Test
@@ -109,10 +107,4 @@ class TrellisUtilsTest {
         assertFalse(TrellisUtils.getContainer(root).isPresent(), "Root resource has a parent!");
     }
 
-    @Test
-    @EnabledOnJre(JAVA_8)
-    void testGetService() {
-        assertTrue(TrellisUtils.findFirst(RDF.class).isPresent());
-        assertFalse(TrellisUtils.findFirst(String.class).isPresent());
-    }
 }

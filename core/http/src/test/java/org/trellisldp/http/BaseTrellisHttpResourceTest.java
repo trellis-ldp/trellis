@@ -30,7 +30,6 @@ import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.vocabulary.RDF.type;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferAudit;
@@ -68,6 +67,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.NoopAuditService;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.constraint.LdpConstraintService;
@@ -82,7 +82,7 @@ import org.trellisldp.vocabulary.XSD;
 abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     static final int timestamp = 1496262729;
-    static final RDF rdf = getInstance();
+    static final RDF rdf = RDFFactory.getInstance();
     static final Instant time = ofEpochSecond(timestamp);
     static final ObjectMapper MAPPER = new ObjectMapper();
     static final String RANDOM_VALUE = "randomValue";

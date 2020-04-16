@@ -13,8 +13,6 @@
  */
 package org.trellisldp.api;
 
-import static org.trellisldp.api.TrellisUtils.getInstance;
-
 import java.util.Locale;
 
 import org.apache.commons.rdf.api.IRI;
@@ -26,7 +24,7 @@ import org.apache.commons.rdf.api.RDFSyntax;
  */
 public final class Syntax {
 
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     public static final RDFSyntax SPARQL_UPDATE = new TrellisSyntax("SPARQL-Update", "SPARQL 1.1 Update",
             "application/sparql-update", ".ru", "http://www.w3.org/TR/sparql11-update/", false);

@@ -22,7 +22,6 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
@@ -40,6 +39,7 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.junit.jupiter.api.function.Executable;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
@@ -149,7 +149,7 @@ public interface AuditTests extends CommonTests {
      * @throws Exception if the RDF resource didn't close cleanly
      */
     default void testAuditTriples() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         try (final Response res = target(getResourceLocation()).request().header("Prefer",
                     "return=representation; include=\"" + Trellis.PreferAudit.getIRIString() + "\"").get();
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {

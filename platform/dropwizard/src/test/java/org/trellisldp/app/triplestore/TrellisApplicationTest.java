@@ -25,7 +25,6 @@ import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 
 import io.dropwizard.Application;
@@ -60,6 +59,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.test.AbstractApplicationAuditTests;
 import org.trellisldp.test.AbstractApplicationAuthTests;
 import org.trellisldp.test.AbstractApplicationEventTests;
@@ -73,7 +73,7 @@ import org.trellisldp.test.AbstractApplicationMementoTests;
 class TrellisApplicationTest implements MessageListener {
 
     private static final Logger LOGGER = getLogger(TrellisApplicationTest.class);
-    private static final RDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final BrokerService BROKER = new BrokerService();
 
     private static final DropwizardTestSupport<AppConfiguration> APP = buildApplication();

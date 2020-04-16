@@ -25,7 +25,6 @@ import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.getInstance;
 import static org.trellisldp.api.TrellisUtils.normalizeIdentifier;
 import static org.trellisldp.vocabulary.RDF.type;
 
@@ -41,6 +40,7 @@ import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.vocabulary.AS;
@@ -63,7 +63,7 @@ public interface ResourceServiceTests {
 
     String SUBJECT2 = "http://example.com/subject/2";
 
-    IRI ROOT_CONTAINER = getInstance().createIRI(TRELLIS_DATA_PREFIX);
+    IRI ROOT_CONTAINER = RDFFactory.getInstance().createIRI(TRELLIS_DATA_PREFIX);
 
     String SLASH = "/";
 
@@ -97,7 +97,7 @@ public interface ResourceServiceTests {
      * @throws Exception if the RDF resources did not exit cleanly
      */
     default void testCreateResource() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         try (final Dataset dataset = buildDataset(identifier, "Creation Test", SUBJECT1)) {
             assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).toCompletableFuture().join(),
@@ -117,7 +117,7 @@ public interface ResourceServiceTests {
      * @throws Exception if the RDF resources did not exit cleanly
      */
     default void testReplaceResource() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         try (final Dataset dataset = buildDataset(identifier, "Replacement Test", SUBJECT2)) {
             assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).toCompletableFuture().join(),
@@ -148,7 +148,7 @@ public interface ResourceServiceTests {
      * @throws Exception if the RDF resources did not exit cleanly
      */
     default void testDeleteResource() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         try (final Dataset dataset = buildDataset(identifier, "Deletion Test", SUBJECT1)) {
             assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).toCompletableFuture().join(),
@@ -174,7 +174,7 @@ public interface ResourceServiceTests {
      * @throws Exception if the RDF resources did not exit cleanly
      */
     default void testAddImmutableData() throws Exception {
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         try (final Dataset dataset0 = buildDataset(identifier, "Immutable Resource Test", SUBJECT2);
              final Dataset dataset1 = rdf.createDataset(); final Dataset dataset2 = rdf.createDataset();
@@ -223,7 +223,7 @@ public interface ResourceServiceTests {
      */
     default void testLdpRs() throws Exception {
         final Instant time = now();
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         try (final Dataset dataset = buildDataset(identifier, "Create LDP-RS Test", SUBJECT1)) {
             assertEquals(MISSING_RESOURCE, getResourceService().get(identifier).toCompletableFuture().join(),
@@ -244,7 +244,7 @@ public interface ResourceServiceTests {
      */
     default void testLdpNr() throws Exception {
         final Instant time = now();
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier());
         try (final Dataset dataset = buildDataset(identifier, "Create LDP-NR Test", SUBJECT2)) {
             final IRI binaryLocation = rdf.createIRI("binary:location/" + getResourceService().generateIdentifier());
@@ -272,7 +272,7 @@ public interface ResourceServiceTests {
      */
     default void testLdpC() throws Exception {
         final Instant time = now();
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier() + SLASH;
         final IRI identifier = rdf.createIRI(base);
         final IRI child1 = rdf.createIRI(base + "child01");
@@ -322,7 +322,7 @@ public interface ResourceServiceTests {
      */
     default void testLdpBC() throws Exception {
         final Instant time = now();
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier() + SLASH;
         final IRI identifier = rdf.createIRI(base);
         final IRI child1 = rdf.createIRI(base + "child11");
@@ -377,7 +377,7 @@ public interface ResourceServiceTests {
         assumeTrue(getResourceService().supportedInteractionModels().contains(LDP.DirectContainer));
 
         final Instant time = now();
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier() + SLASH;
         final IRI identifier = rdf.createIRI(base);
         final IRI member = rdf.createIRI(base + "member");
@@ -441,7 +441,7 @@ public interface ResourceServiceTests {
         assumeTrue(getResourceService().supportedInteractionModels().contains(LDP.IndirectContainer));
 
         final Instant time = now();
-        final RDF rdf = getInstance();
+        final RDF rdf = RDFFactory.getInstance();
         final String base = TRELLIS_DATA_PREFIX + getResourceService().generateIdentifier() + SLASH;
         final IRI identifier = rdf.createIRI(base);
         final IRI normalized = normalizeIdentifier(identifier);
@@ -543,9 +543,10 @@ public interface ResourceServiceTests {
      * @return a new dataset
      */
     default Dataset buildDataset(final IRI resource, final String title, final String subject) {
-        final Dataset dataset = getInstance().createDataset();
-        dataset.add(Trellis.PreferUserManaged, resource, DC.title, getInstance().createLiteral(title));
-        dataset.add(Trellis.PreferUserManaged, resource, DC.subject, getInstance().createIRI(subject));
+        final RDF rdf = RDFFactory.getInstance();
+        final Dataset dataset = rdf.createDataset();
+        dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral(title));
+        dataset.add(Trellis.PreferUserManaged, resource, DC.subject, rdf.createIRI(subject));
         dataset.add(Trellis.PreferUserManaged, resource, DC.type, SKOS.Concept);
         return dataset;
     }
