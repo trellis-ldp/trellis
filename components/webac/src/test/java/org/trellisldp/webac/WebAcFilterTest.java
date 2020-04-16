@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.trellisldp.http.core.HttpConstants.PREFER;
 
 import java.security.Principal;
 import java.util.HashSet;
@@ -192,7 +193,6 @@ class WebAcFilterTest {
                 "No exception thrown!");
     }
 
-
     @Test
     void testFilterWrite() {
         final Set<IRI> modes = new HashSet<>();
@@ -210,6 +210,38 @@ class WebAcFilterTest {
         when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
                 "No exception thrown!");
+    }
+
+    @Test
+    void testFilterWriteWithPreferRead() {
+        final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getMethod()).thenReturn("PUT");
+        when(mockContext.getHeaderString(eq(PREFER))).thenReturn("return=representation");
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
+
+        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        modes.add(ACL.Write);
+
+        assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
+                "No expception thrown when not authorized!");
+
+        modes.add(ACL.Read);
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Write ability!");
+    }
+
+    @Test
+    void testFilterWriteWithPreferMinimal() {
+        final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getMethod()).thenReturn("PUT");
+        when(mockContext.getHeaderString(eq(PREFER))).thenReturn("return=minimal");
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
+
+        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        modes.add(ACL.Write);
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Write ability!");
+
+        modes.add(ACL.Read);
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Write ability!");
     }
 
     @Test
@@ -317,6 +349,32 @@ class WebAcFilterTest {
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
         when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(singletonList("acl"));
+
+        assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
+                "No expception thrown when not authorized!");
+
+        modes.add(ACL.Control);
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Control ability!");
+
+        modes.clear();
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
+        assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
+                "No exception thrown!");
+    }
+
+    @Test
+    void testFilterControlWithPrefer() {
+        final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getMethod()).thenReturn("GET");
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
+
+        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        modes.add(ACL.Read);
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
+
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockContext.getHeaderString(eq(PREFER)))
+            .thenReturn("return=representation; include=\"" + Trellis.PreferAudit.getIRIString() + "\"");
 
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No expception thrown when not authorized!");
