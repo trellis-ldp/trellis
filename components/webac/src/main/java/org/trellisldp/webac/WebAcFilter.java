@@ -53,6 +53,7 @@ import javax.ws.rs.ext.Provider;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Session;
@@ -180,6 +181,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
                 stream(a.split(",")).map(String::trim).map(String::toUpperCase).forEach(appendable::add));
     }
 
+    @Timed
     @Override
     public void filter(final ContainerRequestContext ctx) {
         final String path = ctx.getUriInfo().getPath();

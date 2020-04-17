@@ -16,6 +16,7 @@ dependencies {
     api "jakarta.enterprise:jakarta.enterprise.cdi-api:${cdiApiVersion}"
     api "jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion"
     api "org.apache.commons:commons-rdf-api:$commonsRdfVersion"
+    api "org.eclipse.microprofile.metrics:microprofile-metrics-api:$microprofileMetricsVersion"
     api project(':trellis-api')
     api project(':trellis-http')
 
