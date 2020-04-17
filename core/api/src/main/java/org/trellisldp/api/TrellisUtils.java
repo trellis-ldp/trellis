@@ -75,7 +75,7 @@ public final class TrellisUtils {
     /**
      * Get the Commons RDF instance in use.
      *
-     * @deprecated
+     * @deprecated Please use {@link RDFFactory#getInstance}
      * @return the RDF instance
      */
     @Deprecated
