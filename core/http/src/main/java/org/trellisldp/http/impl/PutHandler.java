@@ -274,8 +274,9 @@ public class PutHandler extends MutatingLdpHandler {
 
     private void checkConstraints(final Dataset dataset, final IRI ldpType, final RDFSyntax syntax) {
         // Check for any constraints
-        if (getExtensionGraphName() != null) {
-            dataset.getGraph(getExtensionGraphName()).ifPresent(graph -> checkConstraint(graph, LDP.RDFSource, syntax));
+        final IRI extGraph = getExtensionGraphName();
+        if (extGraph != null) {
+            dataset.getGraph(extGraph).ifPresent(graph -> checkConstraint(graph, extGraph, syntax));
         } else {
             dataset.getGraph(PreferUserManaged).ifPresent(graph -> checkConstraint(graph, ldpType, syntax));
         }
