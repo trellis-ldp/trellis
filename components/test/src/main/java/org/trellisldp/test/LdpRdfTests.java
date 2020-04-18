@@ -64,6 +64,7 @@ public interface LdpRdfTests extends CommonTests {
     String SIMPLE_RESOURCE = "/simpleResource.ttl";
     String BASIC_CONTAINER = "/basicContainer.ttl";
     String ANNOTATION_RESOURCE = "/annotation.ttl";
+    String SHEX_JSONLD = "/shex.jsonld";
 
     /**
      * Set the location of the test resource.
@@ -108,6 +109,7 @@ public interface LdpRdfTests extends CommonTests {
                 this::testGetNTriples,
                 this::testGetRDF,
                 this::testRdfContainment,
+                this::testPostJsonLd,
                 this::testInvalidRDF);
     }
 
@@ -317,6 +319,19 @@ public interface LdpRdfTests extends CommonTests {
             assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Check that the container is RDF");
             assertTrue(g.contains(rdf.createIRI(getBaseURL()), LDP.contains,
                     rdf.createIRI(getResourceLocation())), "Check for an ldp:contains property");
+        }
+    }
+
+    /**
+     * Verify that POSTing JSON-LD is supported.
+     */
+    default void testPostJsonLd() {
+        final String rdf = getResourceAsString(SHEX_JSONLD);
+
+        // POST an LDP-RS
+        try (final Response res = target().request().header(SLUG, generateRandomValue(getClass().getSimpleName()))
+                .post(entity(rdf, APPLICATION_LD_JSON_TYPE))) {
+            assertAll("Check POSTing an RDF resource", checkRdfResponse(res, LDP.RDFSource, null));
         }
     }
 
