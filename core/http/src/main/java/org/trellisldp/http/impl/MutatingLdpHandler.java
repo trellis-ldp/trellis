@@ -181,10 +181,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
                         rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(), triple.getObject()))
                 .forEachOrdered(dataset::add);
         } catch (final IOException ex) {
-            LOGGER.debug("Error reading input", ex);
             throw new BadRequestException("Error handling input stream: " + ex.getMessage(), ex);
         } catch (final RuntimeTrellisException ex) {
-            LOGGER.debug("Could not parse incoming RDF", ex);
             throw new BadRequestException("Invalid RDF content: " + ex.getMessage(), ex);
         }
     }
