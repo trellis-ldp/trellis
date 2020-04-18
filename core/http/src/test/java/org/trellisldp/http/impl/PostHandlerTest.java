@@ -233,6 +233,24 @@ class PostHandlerTest extends BaseTestHandler {
     }
 
     @Test
+    void testRdfIOError() throws IOException {
+        final Triple triple = rdf.createTriple(rdf.createIRI(baseUrl + NEW_RESOURCE), DC.title,
+                        rdf.createLiteral("A title"));
+
+        when(mockIoService.supportedWriteSyntaxes()).thenReturn(asList(TURTLE, JSONLD, NTRIPLES));
+        when(mockIoService.read(any(), eq(TURTLE), any())).thenAnswer(x -> Stream.of(triple));
+        when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
+
+        final InputStream ioStream = getClass().getResource(RESOURCE_TURTLE).openStream();
+        ioStream.close();
+        final PostHandler handler = new PostHandler(mockTrellisRequest, root, NEW_RESOURCE, ioStream, mockBundler,
+                extensions, null);
+        assertThrows(BadRequestException.class, () ->
+                unwrapAsyncError(handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))));
+    }
+
+
+    @Test
     void testError() throws IOException {
         when(mockResourceService.create(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");

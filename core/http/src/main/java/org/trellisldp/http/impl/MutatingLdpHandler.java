@@ -26,6 +26,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_VERSIONING;
 import static org.trellisldp.http.impl.HttpUtils.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,7 @@ import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
@@ -169,16 +172,17 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param dataset the dataset
      */
     protected void readEntityIntoDataset(final IRI graphName, final RDFSyntax syntax, final Dataset dataset) {
-        try {
-            getServices().getIOService().read(entity, syntax, getIdentifier())
+        try (final InputStream in = new ByteArrayInputStream(IOUtils.toByteArray(entity))) {
+            getServices().getIOService().read(in, syntax, getIdentifier())
                 .map(skolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                 .filter(triple -> !RDF.type.equals(triple.getPredicate())
                         || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace()))
                 .filter(triple -> !LDP.contains.equals(triple.getPredicate())).map(triple ->
                         rdf.createQuad(graphName, triple.getSubject(), triple.getPredicate(), triple.getObject()))
                 .forEachOrdered(dataset::add);
+        } catch (final IOException ex) {
+            throw new BadRequestException("Error handling input stream: " + ex.getMessage(), ex);
         } catch (final RuntimeTrellisException ex) {
-            LOGGER.debug("Could not parse incoming RDF", ex);
             throw new BadRequestException("Invalid RDF content: " + ex.getMessage(), ex);
         }
     }
