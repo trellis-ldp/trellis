@@ -243,7 +243,9 @@ public class PatchHandler extends MutatingLdpHandler {
         if (!violations.isEmpty()) {
             final ResponseBuilder err = status(CONFLICT);
             violations.forEach(v -> err.link(v.getConstraint().getIRIString(), LDP.constrainedBy.getIRIString()));
-            throw new ClientErrorException(err.build());
+            throw new ClientErrorException(err.entity((StreamingOutput) out ->
+                    getServices().getIOService().write(violations.stream().flatMap(v2 -> v2.getTriples().stream()),
+                            out, RDFSyntax.TURTLE, getIdentifier())).type(RDFSyntax.TURTLE.mediaType()).build());
         }
 
         // When updating one particular graph, be sure to add the other category to the dataset
