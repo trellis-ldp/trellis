@@ -37,7 +37,7 @@ def installForQuarkus = [
 ]
 
 dependencies {
-    implementation enforcedPlatform("io.quarkus:quarkus-bom:$quarkusVersion")
+    implementation platform("io.quarkus:quarkus-bom:$quarkusVersion")
 
     implementation "org.trellisldp:trellis-api:${project.version}"
     implementation "org.trellisldp:trellis-app:${project.version}"
@@ -69,6 +69,7 @@ dependencies {
     implementation "com.github.jsonld-java:jsonld-java:$jsonldVersion"
     implementation "com.github.spullara.mustache.java:compiler:$mustacheVersion"
     implementation "com.google.guava:guava:$guavaVersion"
+    implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "org.apache.jena:jena-arq:$jenaVersion"
     implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
     implementation "org.apache.jena:jena-tdb2:$jenaVersion"
