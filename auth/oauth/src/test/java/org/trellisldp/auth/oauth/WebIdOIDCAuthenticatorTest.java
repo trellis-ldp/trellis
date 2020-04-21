@@ -82,7 +82,7 @@ class WebIdOIDCAuthenticatorTest {
     private static final Map.Entry<String, String> DEFAULT_SUBJECT_ENTRY =
         new WebIdEntry("sub", "https://bob.solid.community/profile/card#me");
 
-    private final static Key privateKey;
+    private static final Key privateKey;
     static {
         try {
             privateKey = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));

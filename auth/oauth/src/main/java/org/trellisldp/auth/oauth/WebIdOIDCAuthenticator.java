@@ -28,7 +28,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * An authenticator for the Solid WebId-OIDC protocol, <a href="https://github.com/solid/webid-oidc-spec">WebId-OIDC</a>.
+ * An authenticator for Solid's WebId-OIDC protocol, <a href="https://github.com/solid/webid-oidc-spec">WebId-OIDC</a>.
  * This implementation requires no WebId provider configuration, the validation is performed based on the in JWT payload
  * supplied key data.
  */
@@ -50,6 +50,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
 
     /**
      * Build the authenticator.
+     * @param baseUrl the server's base URL.
      */
     public WebIdOIDCAuthenticator(final String baseUrl) {
         if (baseUrl == null) {
