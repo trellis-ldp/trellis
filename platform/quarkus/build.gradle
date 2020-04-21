@@ -38,6 +38,7 @@ def installForQuarkus = [
 
 dependencies {
     implementation platform("io.quarkus:quarkus-bom:$quarkusVersion")
+    implementation platform("io.netty:netty-bom:$nettyVersion")
 
     implementation "org.trellisldp:trellis-api:${project.version}"
     implementation "org.trellisldp:trellis-app:${project.version}"
