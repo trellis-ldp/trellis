@@ -46,25 +46,27 @@ import org.trellisldp.webac.WebAcService;
  */
 final class TrellisUtils {
 
-    public static Authenticator getJwtAuthenticator(final JwtAuthConfiguration config) {
+    public static Authenticator getJwtAuthenticator(final TrellisConfiguration config) {
+        final JwtAuthConfiguration jwtConfig = config.getAuth().getJwt();
         final Authenticator jwksAuthenticator = OAuthUtils.buildAuthenticatorWithJwk(
-                config.getJwks());
+                jwtConfig.getJwks());
         if (jwksAuthenticator != null) {
             return jwksAuthenticator;
         }
 
         final Authenticator keystoreAuthenticator = OAuthUtils.buildAuthenticatorWithTruststore(
-                config.getKeyStore(), config.getKeyStorePassword().toCharArray(), config.getKeyIds());
+                jwtConfig.getKeyStore(), jwtConfig.getKeyStorePassword().toCharArray(), jwtConfig.getKeyIds());
         if (keystoreAuthenticator != null) {
             return keystoreAuthenticator;
         }
 
-        final Authenticator sharedKeyAuthenticator = OAuthUtils.buildAuthenticatorWithSharedSecret(config.getKey());
+        final Authenticator sharedKeyAuthenticator = OAuthUtils.buildAuthenticatorWithSharedSecret(jwtConfig.getKey());
         if (sharedKeyAuthenticator != null) {
             return sharedKeyAuthenticator;
         }
 
-        final Authenticator webIdOIDCAuthenticator = OAuthUtils.buildAuthenticatorWithWebIdOIDC(config.getWebIdOIDC());
+        final Authenticator webIdOIDCAuthenticator =
+                OAuthUtils.buildAuthenticatorWithWebIdOIDC(jwtConfig.getWebIdOIDC(), config.getBaseUrl());
         if (webIdOIDCAuthenticator != null) {
             return webIdOIDCAuthenticator;
         }
@@ -97,7 +99,7 @@ final class TrellisUtils {
         final Set<String> admins = new HashSet<>(config.getAuth().getAdminUsers());
 
         if (auth.getJwt().getEnabled()) {
-            filters.add(new OAuthFilter(getJwtAuthenticator(auth.getJwt()), realm, admins));
+            filters.add(new OAuthFilter(getJwtAuthenticator(config), realm, admins));
         }
 
         if (auth.getBasic().getEnabled() && auth.getBasic().getUsersFile() != null) {

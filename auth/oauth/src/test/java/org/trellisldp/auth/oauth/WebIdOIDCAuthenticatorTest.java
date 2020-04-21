@@ -51,7 +51,8 @@ class WebIdOIDCAuthenticatorTest {
         "aahEQ";
     private static final BigInteger modulus = new BigInteger(1, getUrlDecoder().decode(base64Modulus));
 
-    public static final String DEFAULT_ISSUER = "https://solid.community";
+    private static final String BASE_URL = "https://trellis.org";
+    private static final String DEFAULT_ISSUER = "https://solid.community";
 
     private static class WebIdEntry implements Map.Entry<String, String> {
         private final String key;
@@ -77,10 +78,11 @@ class WebIdOIDCAuthenticatorTest {
             throw new UnsupportedOperationException();
         }
     }
-    public static final Map.Entry<String, String> DEFAULT_WEB_ID_ENTRY =
+
+    private static final Map.Entry<String, String> DEFAULT_SUBJECT_ENTRY =
         new WebIdEntry("sub", "https://bob.solid.community/profile/card#me");
 
-    private static Key privateKey;
+    private final static Key privateKey;
     static {
         try {
             privateKey = KeyFactory.getInstance("RSA").generatePrivate(new RSAPrivateKeySpec(modulus, exponent));
@@ -94,14 +96,15 @@ class WebIdOIDCAuthenticatorTest {
         headers.put("alg", "RS256");
     }
 
+    private final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator(BASE_URL);
+
     @Test
     void testAuthenticateNoIdToken() {
         final Claims claims = new DefaultClaims();
         claims.put("iss", "example.com");
         final String token = createJWTToken(claims);
 
-        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
-        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -111,8 +114,7 @@ class WebIdOIDCAuthenticatorTest {
         claims.put("id_token", internalJws);
         final String token = createJWTToken(claims);
 
-        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
-        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -121,78 +123,88 @@ class WebIdOIDCAuthenticatorTest {
         claims.put("id_token", "eyJhbGciOiJSUzI1NiJ9");
         final String token = createJWTToken(claims);
 
-        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
-        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
     void testWrongTypeInJwk() {
-        final String token = createComposeJWTToken(DEFAULT_ISSUER, DEFAULT_WEB_ID_ENTRY, createCNF(64));
+        final String token = createComposeJWTToken(DEFAULT_ISSUER, BASE_URL, DEFAULT_SUBJECT_ENTRY,
+                createCNF(64));
 
-        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
-        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
     void testCnfOfWrongType() {
-        final String token = createComposeJWTToken(DEFAULT_ISSUER, DEFAULT_WEB_ID_ENTRY, "Wrong");
+        final String token = createComposeJWTToken(DEFAULT_ISSUER, BASE_URL, DEFAULT_SUBJECT_ENTRY, "Wrong");
 
-        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
-        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
     void testWebIdProviderConfirmation() {
         final String token =
-            createComposeJWTToken("https://dark.com", DEFAULT_WEB_ID_ENTRY, createCNF(base64Modulus));
+            createComposeJWTToken("https://dark.com", BASE_URL, DEFAULT_SUBJECT_ENTRY,
+                    createCNF(base64Modulus));
 
-        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
-        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
     void testNoWebIdClaim() {
         final String token =
-            createComposeJWTToken(DEFAULT_ISSUER, new WebIdEntry(), createCNF(base64Modulus));
+            createComposeJWTToken(DEFAULT_ISSUER, BASE_URL, new WebIdEntry(), createCNF(base64Modulus));
 
-        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
-        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
     void testNoIssuerClaim() {
         final String token =
-            createComposeJWTToken(null, DEFAULT_WEB_ID_ENTRY, createCNF(base64Modulus));
+            createComposeJWTToken(null, BASE_URL, DEFAULT_SUBJECT_ENTRY, createCNF(base64Modulus));
 
-        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
-        assertThrows(WebIdOIDCAuthenticator.SolidOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+    }
+
+    @Test
+    void testNoAudienceClaim() {
+        final String token = createComposeJWTToken(DEFAULT_ISSUER, null, DEFAULT_SUBJECT_ENTRY,
+                createCNF(base64Modulus));
+
+        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+    }
+
+    @Test
+    void testWrongAudienceClaim() {
+        final String token = createComposeJWTToken(DEFAULT_ISSUER, "https://attacker.com", DEFAULT_SUBJECT_ENTRY,
+                createCNF(base64Modulus));
+
+        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
     void testGreenPathWithSameOrigin() {
-        final String token = createComposeJWTToken(
-            DEFAULT_ISSUER, new WebIdEntry("sub", DEFAULT_ISSUER + "/bob/profile#i"), createCNF(base64Modulus));
+        final String token = createComposeJWTToken(DEFAULT_ISSUER, BASE_URL,
+                new WebIdEntry("sub", DEFAULT_ISSUER + "/bob/profile#i"), createCNF(base64Modulus));
 
-        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
         final Principal principal = authenticator.authenticate(token);
         assertNotNull(principal);
     }
 
     @Test
     void testGreenPathWithSubDomain() {
-        final String token = createComposeJWTToken(DEFAULT_ISSUER, DEFAULT_WEB_ID_ENTRY, createCNF(base64Modulus));
+        final String token = createComposeJWTToken(DEFAULT_ISSUER, BASE_URL, DEFAULT_SUBJECT_ENTRY,
+                createCNF(base64Modulus));
 
-        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
         final Principal principal = authenticator.authenticate(token);
         assertNotNull(principal);
     }
 
     @Test
     void testGreenPathWithWebIdClaim() {
-        final String token = createComposeJWTToken(DEFAULT_ISSUER,
+        final String token = createComposeJWTToken(DEFAULT_ISSUER, BASE_URL,
             new WebIdEntry(OAuthUtils.WEBID, DEFAULT_ISSUER + "/bob/profile#i"), createCNF(base64Modulus));
 
-        final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator();
         final Principal principal = authenticator.authenticate(token);
         assertNotNull(principal);
     }
@@ -207,8 +219,8 @@ class WebIdOIDCAuthenticatorTest {
         return cnf;
     }
 
-    private static String createComposeJWTToken(final String issuer, final Map.Entry<String, String> webIdClaim,
-        final Object cnf) {
+    private static String createComposeJWTToken(final String issuer, final String audience,
+                                                final Map.Entry<String, String> webIdClaim, final Object cnf) {
         final DefaultClaims internalClaims = new DefaultClaims();
         internalClaims.setIssuer(issuer);
         internalClaims.put(webIdClaim.getKey(), webIdClaim.getValue());
@@ -216,6 +228,7 @@ class WebIdOIDCAuthenticatorTest {
         final String internalJws = createJWTToken(internalClaims);
 
         final Claims claims = new DefaultClaims();
+        claims.setAudience(audience);
         claims.put("id_token", internalJws);
         return createJWTToken(claims);
     }
