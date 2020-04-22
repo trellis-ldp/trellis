@@ -406,7 +406,7 @@ public class WebAcService {
             rdf.asGraph(model).stream().map(triple -> rdf.createQuad(Trellis.PreferAccessControl,
                         triple.getSubject(), triple.getPredicate(), triple.getObject())).forEach(dataset::add);
         } catch (final IOException | RiotException ex) {
-            LOGGER.warn("Could initialize root ACL with {}, falling back to default: {}", resource, ex.getMessage());
+            LOGGER.warn("Couldn't initialize root ACL with {}, falling back to default: {}", resource, ex.getMessage());
         } finally {
             model.close();
         }
