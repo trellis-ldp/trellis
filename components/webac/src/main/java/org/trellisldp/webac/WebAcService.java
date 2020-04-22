@@ -397,14 +397,16 @@ public class WebAcService {
         final Model model = createDefaultModel();
         try (final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource)) {
             if (is != null) {
+                LOGGER.debug("Using classpath resource for default root ACL: {}", resource);
                 RDFParser.source(is).lang(TURTLE).base(TRELLIS_DATA_PREFIX).parse(model);
-                rdf.asGraph(model).stream().map(triple -> rdf.createQuad(Trellis.PreferAccessControl,
-                            triple.getSubject(), triple.getPredicate(), triple.getObject())).forEach(dataset::add);
             } else {
-                LOGGER.warn("Could not locate ACL location at {}, falling back to system default", resource);
+                LOGGER.debug("Using external resource for default root ACL: {}", resource);
+                RDFParser.source(resource).lang(TURTLE).base(TRELLIS_DATA_PREFIX).parse(model);
             }
+            rdf.asGraph(model).stream().map(triple -> rdf.createQuad(Trellis.PreferAccessControl,
+                        triple.getSubject(), triple.getPredicate(), triple.getObject())).forEach(dataset::add);
         } catch (final IOException | RiotException ex) {
-            LOGGER.warn("Could initialize root ACL with {}, falling back to default: {}", resource, ex.getMessage());
+            LOGGER.warn("Couldn't initialize root ACL with {}, falling back to default: {}", resource, ex.getMessage());
         } finally {
             model.close();
         }

@@ -776,6 +776,22 @@ class WebAcServiceTest {
     }
 
     @Test
+    void testGenerateDefaultRootAclCustomExternalResource() throws Exception {
+        final String resource = WebAcServiceTest.class.getResource("/customAcl.ttl").getFile();
+        final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
+        try (final Dataset dataset = WebAcService.generateDefaultRootAuthorizationsDataset(resource)) {
+            assertEquals(4L, dataset.size());
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Read));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.default_, rootIRI));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.accessTo, rootIRI));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.agentClass, FOAF.Agent));
+            assertFalse(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Write));
+            assertFalse(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Append));
+            assertFalse(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Control));
+        }
+    }
+
+    @Test
     void testGenerateDefaultRootAclCustomResource() throws Exception {
         final String resource = "customAcl.ttl";
         final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
