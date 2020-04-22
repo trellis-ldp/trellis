@@ -28,7 +28,7 @@ dependencies {
     implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
 
-    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"
     testImplementation "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
     testImplementation "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion"

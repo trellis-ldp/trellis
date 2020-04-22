@@ -21,7 +21,7 @@ dependencies {
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
 
-    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "io.smallrye:smallrye-jwt:$smallryeJwtVersion"
     testImplementation "jakarta.json.bind:jakarta.json.bind-api:$jsonbApiVersion"
     testImplementation "org.eclipse:yasson:$yassonVersion"
