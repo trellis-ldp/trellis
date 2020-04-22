@@ -53,6 +53,9 @@ public final class HttpConstants {
     /** The default Memento TimeMap output format. */
     public static final String APPLICATION_LINK_FORMAT = "application/link-format";
 
+    /** Configuration key defining whether LDP interaction model modifications are supported. */
+    public static final String CONFIG_HTTP_LDP_MODEL_MODIFICATIONS = "trellis.http.ldp-model-modifications";
+
     /** Configuration key defining the server's base URL. */
     public static final String CONFIG_HTTP_BASE_URL = "trellis.http.base-url";
 
