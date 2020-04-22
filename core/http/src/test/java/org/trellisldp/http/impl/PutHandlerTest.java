@@ -82,6 +82,27 @@ class PutHandlerTest extends BaseTestHandler {
     }
 
     @Test
+    void testPutNoConflict() {
+        try {
+            System.setProperty(HttpConstants.CONFIG_HTTP_LDP_MODEL_MODIFICATIONS, "false");
+            when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
+            when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.DirectContainer.getIRIString()).rel(TYPE)
+                    .build());
+            when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
+
+            final PutHandler handler = buildPutHandler(RESOURCE_TURTLE, "http://example.com/");
+
+            // Update an existing resource
+            try (final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
+                    .toCompletableFuture().join().build()) {
+                assertEquals(NO_CONTENT, res.getStatusInfo());
+            }
+        } finally {
+            System.clearProperty(HttpConstants.CONFIG_HTTP_LDP_MODEL_MODIFICATIONS);
+        }
+    }
+
+    @Test
     void testBadAudit() {
         when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService() {});
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
@@ -105,6 +126,7 @@ class PutHandlerTest extends BaseTestHandler {
 
         try {
             System.setProperty(HttpConstants.CONFIG_HTTP_VERSIONING, "false");
+            System.setProperty(HttpConstants.CONFIG_HTTP_LDP_MODEL_MODIFICATIONS, "false");
             final PutHandler handler = buildPutHandler(RESOURCE_TURTLE, null, false);
             try (final Response res = handler.setResource(handler.initialize(mockParent, MISSING_RESOURCE))
                     .thenCompose(handler::updateMemento).toCompletableFuture().join().build()) {
@@ -115,6 +137,7 @@ class PutHandlerTest extends BaseTestHandler {
 
         } finally {
             System.clearProperty(HttpConstants.CONFIG_HTTP_VERSIONING);
+            System.clearProperty(HttpConstants.CONFIG_HTTP_LDP_MODEL_MODIFICATIONS);
         }
     }
 
