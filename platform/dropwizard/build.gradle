@@ -25,7 +25,7 @@ dependencies {
         exclude group: 'org.apache.httpcomponents', module: 'httpcore-osgi'
     }
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
-    implementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    implementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     implementation "jakarta.activation:jakarta.activation-api:$activationApiVersion"
     implementation "jakarta.jms:jakarta.jms-api:$jmsApiVersion"
     implementation "jakarta.validation:jakarta.validation-api:$validationApiVersion"

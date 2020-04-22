@@ -28,7 +28,7 @@ dependencies {
     testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
-    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "org.hamcrest:hamcrest:$hamcrestVersion"
     testImplementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
         exclude group: 'org.apache.jena', module: 'jena-osgi'
