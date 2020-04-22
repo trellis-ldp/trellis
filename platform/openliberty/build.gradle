@@ -55,7 +55,7 @@ dependencies {
 
     testImplementation project(':trellis-test')
 
-    testImplementation("io.smallrye:smallrye-config:$smallryeConfigVersion")
+    testImplementation("io.smallrye.config:smallrye-config:$smallryeConfigVersion")
     testImplementation("org.apache.cxf:cxf-rt-rs-client:$cxfVersion")
     testImplementation("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: "org.hamcrest", module: 'hamcrest-core'

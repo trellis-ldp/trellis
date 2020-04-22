@@ -23,7 +23,7 @@ dependencies {
     testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
-    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
 }

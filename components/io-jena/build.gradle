@@ -27,7 +27,7 @@ dependencies {
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
-    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
 }
 
 pitest {

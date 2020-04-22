@@ -28,7 +28,7 @@ dependencies {
     implementation project(':trellis-vocabulary')
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
-    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation("io.smallrye:smallrye-health:$smallryeHealthVersion") {
         exclude group: 'io.smallrye', module: 'smallrye-health-extension-api'
     }
