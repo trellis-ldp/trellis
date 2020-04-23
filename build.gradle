@@ -42,7 +42,7 @@ ext {
     // MicroProfile
     microprofileConfigVersion = "1.4"
     microprofileHealthVersion = "2.2"
-    microprofileMetricsVersion = "2.3"
+    microprofileMetricsVersion = "2.3.1"
     microprofileJwtVersion = "1.1.1"
     microprofileOpenapiVersion = "1.1.2"
     microprofileReactiveMessagingVersion = "1.0"
