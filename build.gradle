@@ -142,9 +142,9 @@ allprojects { subproj ->
 
     ext {
         vendor = 'Trellis LDP'
-        homepage = 'https://www.trellisldp.org'
+        homepage = 'https://www.trellisldp.org/'
         docURL = 'https://www.trellisldp.org/docs/trellis/current/apidocs/'
-        license = 'Apache 2'
+        license = 'Apache-2.0'
 
     }
 
@@ -390,7 +390,7 @@ subprojects { subproj ->
 
                     licenses {
                         license {
-                            name = 'Apache License, Version 2.0'
+                            name = 'Apache-2.0'
                             url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
                             comments = 'Copyright (c) 2017-2020 Trellis LDP'
                             distribution = 'repo'
