@@ -101,7 +101,6 @@ ext {
     interceptorVersion = "1.2.5"
     jenaOsgiVersion = "3.13.1"
     jenaVersionRange = "[3.13,4)"
-    jsonApiVersion = "1.1.6"
     kafkaOsgiVersion = "2.3.1_1"
     karafVersion = "4.2.8"
     mustacheOsgiVersion = "0.9.6_1"
