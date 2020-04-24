@@ -26,6 +26,8 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
 import io.smallrye.config.inject.ConfigProducer;
 import io.smallrye.reactive.messaging.MediatorFactory;
+import io.smallrye.reactive.messaging.connectors.ExecutionHolder;
+import io.smallrye.reactive.messaging.connectors.WorkerPoolRegistry;
 import io.smallrye.reactive.messaging.extension.MediatorManager;
 import io.smallrye.reactive.messaging.extension.ReactiveMessagingExtension;
 import io.smallrye.reactive.messaging.impl.ConfiguredChannelFactory;
@@ -66,6 +68,8 @@ class ReactiveEventServiceTest {
                                            TestCollector.class,
                                            ReactiveEventService.class,
                                            DefaultEventSerializationService.class,
+                                           ExecutionHolder.class,
+                                           WorkerPoolRegistry.class,
                                            ConfigProducer.class)
                                        .extensions(new ReactiveMessagingExtension()));
 
