@@ -13,16 +13,14 @@
  */
 package org.trellisldp.auth.oauth;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.RequiredTypeException;
+import io.jsonwebtoken.*;
 
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.Key;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class WebIdOIDCAuthenticator implements Authenticator {
     private final String baseUrl;
+    private volatile Map<String, Key> keys = Collections.emptyMap();
 
     /**
      * Own exception to signal a malformed JWT according to the expectations of this authenticator.
@@ -59,6 +58,16 @@ public class WebIdOIDCAuthenticator implements Authenticator {
         this.baseUrl = baseUrl;
     }
 
+    /**
+     * Constructor for test purposes.
+     * @param baseUrl the server's base URL.
+     * @param keys a key cache for this instance.
+     */
+    WebIdOIDCAuthenticator(final String baseUrl, final Map<String, Key> keys) {
+        this.baseUrl = baseUrl;
+        this.keys = Collections.unmodifiableMap(keys);
+    }
+
     @Override
     public Claims parse(final String token) {
         checkTokenStructure(token);
@@ -68,7 +77,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
             throw new WebIdOIDCJwtException("Missing the id_token claim in JWT payload");
         }
         checkTokenStructure(idToken);
-        final Claims idTokenClaims = Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody();
+        final Claims idTokenClaims = getValidatedIdTokenClaims(idToken);
         doWebIdProviderConfirmation(idTokenClaims);
         final Key key = getKey(idTokenClaims);
         final String audience = Jwts.parserBuilder().setSigningKey(key).build()
@@ -78,6 +87,18 @@ public class WebIdOIDCAuthenticator implements Authenticator {
                     String.format("Proof of Possession failed, wrong audience claim: aud=%s", audience));
         }
         return idTokenClaims;
+    }
+
+    private Claims getValidatedIdTokenClaims(String idToken) {
+        final Header<?> idTokenHeader = Jwts.parserBuilder().build()
+                .parseClaimsJwt(extractUnsignedJWT(idToken)).getHeader();
+        if (idTokenHeader == null || idTokenHeader.get("kid") == null) {
+            throw new WebIdOIDCJwtException(
+                    String.format("Missing the key id in Id token header: idTokenHeader=%s", idTokenHeader));
+        }
+        final String kid = (String) idTokenHeader.get("kid");
+        final Key oidcProviderKey = keys.get(kid);
+        return Jwts.parserBuilder().setSigningKey(oidcProviderKey).build().parseClaimsJws(idToken).getBody();
     }
 
     private static void doWebIdProviderConfirmation(final Claims idTokenClaims) {
