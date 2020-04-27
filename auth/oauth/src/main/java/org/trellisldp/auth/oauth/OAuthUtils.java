@@ -15,14 +15,21 @@ package org.trellisldp.auth.oauth;
 
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toMap;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.io.Deserializer;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.URL;
 import java.nio.file.Files;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -33,9 +40,9 @@ import java.security.Principal;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 public final class OAuthUtils {
@@ -185,6 +192,44 @@ public final class OAuthUtils {
      */
     private static boolean isUrl(final String url) {
         return url.startsWith("http://") || url.startsWith("https://");
+    }
+
+    /**
+     * Fetches the key configurations from the given location and returns it in a keyId -> Key Map.
+     * @param location string of the URL
+     * @return Map containing the key configurations
+     */
+    static Map<String, Key> buildKeys(final String location) {
+        // TODO eventually, this will become part of the JJWT library
+        final Deserializer<Map<String, List<Map<String, String>>>> deserializer = new JacksonDeserializer<>();
+        try (final InputStream input = new URL(location).openConnection().getInputStream()) {
+            return deserializer.deserialize(IOUtils.toByteArray(input)).getOrDefault("keys", emptyList()).stream()
+                    .map(OAuthUtils::buildKeyEntry).filter(Objects::nonNull).collect(collectingAndThen(
+                            toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
+        } catch (final IOException ex) {
+            LOGGER.error("Error fetching/parsing jwk document", ex);
+        }
+        return emptyMap();
+    }
+
+    private static Map.Entry<String, Key> buildKeyEntry(final Map<String, String> jwk) {
+        final Key key = buildKey(jwk.get("n"), jwk.get("e"));
+        if (key != null && jwk.containsKey("kid")) {
+            return new AbstractMap.SimpleEntry<>(jwk.get("kid"), key);
+        }
+        return null;
+    }
+
+    /**
+     * Builds a public key from its parameters as encoded as base64.
+     * @param n modulus
+     * @param e exponent
+     * @return the key
+     */
+    static Key buildKey(final String n, final String e) {
+        final BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(n));
+        final BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(e));
+        return OAuthUtils.buildRSAPublicKey("RSA", modulus, exponent);
     }
 
     private OAuthUtils() {

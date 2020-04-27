@@ -13,17 +13,21 @@
  */
 package org.trellisldp.auth.oauth;
 
+import static java.util.concurrent.TimeUnit.DAYS;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import io.jsonwebtoken.*;
 
-import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.Key;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.trellisldp.cache.TrellisCache;
 
 /**
  * An authenticator for Solid's WebId-OIDC protocol, <a href="https://github.com/solid/webid-oidc-spec">WebId-OIDC</a>.
@@ -32,7 +36,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class WebIdOIDCAuthenticator implements Authenticator {
     private final String baseUrl;
-    private volatile Map<String, Key> keys = Collections.emptyMap();
+    private final TrellisCache<String, Key> keys;
 
     /**
      * Own exception to signal a malformed JWT according to the expectations of this authenticator.
@@ -52,10 +56,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
      * @param baseUrl the server's base URL.
      */
     public WebIdOIDCAuthenticator(final String baseUrl) {
-        if (baseUrl == null) {
-            throw new IllegalArgumentException("Received null as baseUrl, it is required for the WebId-OIDC support.");
-        }
-        this.baseUrl = baseUrl;
+        this(baseUrl, Collections.emptyMap());
     }
 
     /**
@@ -64,8 +65,16 @@ public class WebIdOIDCAuthenticator implements Authenticator {
      * @param keys a key cache for this instance.
      */
     WebIdOIDCAuthenticator(final String baseUrl, final Map<String, Key> keys) {
+        if (baseUrl == null) {
+            throw new IllegalArgumentException("Received null as baseUrl, it is required for the WebId-OIDC support.");
+        }
         this.baseUrl = baseUrl;
-        this.keys = Collections.unmodifiableMap(keys);
+        final Cache<String, Key> cache =
+                CacheBuilder.newBuilder().maximumSize(50).expireAfterAccess(30, DAYS).build();
+        this.keys = new TrellisCache<>(cache);
+        for (final String id : keys.keySet()) {
+            this.keys.get(id, keys::get);
+        }
     }
 
     @Override
@@ -89,7 +98,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
         return idTokenClaims;
     }
 
-    private Claims getValidatedIdTokenClaims(String idToken) {
+    private Claims getValidatedIdTokenClaims(final String idToken) {
         final Header<?> idTokenHeader = Jwts.parserBuilder().build()
                 .parseClaimsJwt(extractUnsignedJWT(idToken)).getHeader();
         if (idTokenHeader == null || idTokenHeader.get("kid") == null) {
@@ -97,7 +106,15 @@ public class WebIdOIDCAuthenticator implements Authenticator {
                     String.format("Missing the key id in Id token header: idTokenHeader=%s", idTokenHeader));
         }
         final String kid = (String) idTokenHeader.get("kid");
-        final Key oidcProviderKey = keys.get(kid);
+        final Key oidcProviderKey = keys.get(kid, id -> {
+            final String issuer =
+                    Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody().getIssuer();
+            final Map<String, Key> keys = OAuthUtils.buildKeys(issuer + "/jwks");
+            if (!keys.containsKey(id)) {
+                throw new WebIdOIDCJwtException(String.format("Couldn't find key id %s= by provider %s", id, issuer));
+            }
+            return keys.get(id);
+        });
         return Jwts.parserBuilder().setSigningKey(oidcProviderKey).build().parseClaimsJws(idToken).getBody();
     }
 
@@ -153,7 +170,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
                 final String msg = String.format("Expecting RSA algorithm under: %s, but got: %s", "cnf.jwk", alg);
                 throw new WebIdOIDCJwtException(msg);
             }
-            return buildKeyEntry(n, e);
+            return OAuthUtils.buildKey(n, e);
         } catch (ClassCastException | RequiredTypeException e) {
             throw new WebIdOIDCJwtException(String.format("Missing cnf or it's data in: %s", idTokenClaims), e);
         }
@@ -170,11 +187,5 @@ public class WebIdOIDCAuthenticator implements Authenticator {
                 String.format("JWT strings must contain exactly 2 period characters. Found: %d", dotCount);
             throw new WebIdOIDCJwtException(msg);
         }
-    }
-
-    private static Key buildKeyEntry(final String n, final String e) {
-        final BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(n));
-        final BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(e));
-        return OAuthUtils.buildRSAPublicKey("RSA", modulus, exponent);
     }
 }

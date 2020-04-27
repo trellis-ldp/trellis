@@ -13,10 +13,6 @@
  */
 package org.trellisldp.auth.oauth;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toMap;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import io.jsonwebtoken.Claims;
@@ -24,23 +20,11 @@ import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SigningKeyResolverAdapter;
-import io.jsonwebtoken.io.Deserializer;
-import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 import io.jsonwebtoken.security.SecurityException;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.net.URL;
 import java.security.Key;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 /**
@@ -57,7 +41,7 @@ public class JwksAuthenticator implements Authenticator {
      * @param url the location of the public jwks keys
      */
     public JwksAuthenticator(final String url) {
-        this.keys = buildKeys(url);
+        this.keys = OAuthUtils.buildKeys(url);
     }
 
     @Override
@@ -75,28 +59,5 @@ public class JwksAuthenticator implements Authenticator {
                 throw new SecurityException("Could not locate key: " + keyid);
             }
         }).build().parseClaimsJws(token).getBody();
-    }
-
-    private static Map<String, Key> buildKeys(final String location) {
-        // TODO eventually, this will become part of the JJWT library
-        final Deserializer<Map<String, List<Map<String, String>>>> deserializer = new JacksonDeserializer<>();
-        try (final InputStream input = new URL(location).openConnection().getInputStream()) {
-            return deserializer.deserialize(IOUtils.toByteArray(input)).getOrDefault("keys", emptyList()).stream()
-                .map(JwksAuthenticator::buildKeyEntry).filter(Objects::nonNull).collect(collectingAndThen(
-                            toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
-        } catch (final IOException ex) {
-            LOGGER.error("Error fetching/parsing jwk document", ex);
-        }
-        return emptyMap();
-    }
-
-    private static Map.Entry<String, Key> buildKeyEntry(final Map<String, String> jwk) {
-        final BigInteger modulus = new BigInteger(1, Base64.getUrlDecoder().decode(jwk.get("n")));
-        final BigInteger exponent = new BigInteger(1, Base64.getUrlDecoder().decode(jwk.get("e")));
-        final Key key = OAuthUtils.buildRSAPublicKey("RSA", modulus, exponent);
-        if (key != null && jwk.containsKey("kid")) {
-            return new SimpleEntry<>(jwk.get("kid"), key);
-        }
-        return null;
     }
 }

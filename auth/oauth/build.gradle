@@ -15,6 +15,7 @@ dependencies {
     api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
     api "jakarta.annotation:jakarta.annotation-api:$annotationApiVersion"
     api "jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion"
+    api "com.google.guava:guava:$guavaVersion"
 
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     implementation "org.apache.commons:commons-lang3:$commonsLangVersion"
@@ -33,6 +34,8 @@ dependencies {
     testImplementation "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
     testImplementation "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+
+    implementation project(':trellis-cache')
 }
 
 pitest {
