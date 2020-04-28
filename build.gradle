@@ -357,6 +357,11 @@ subprojects { subproj ->
         }
     }
 
+    downloadLicenses {
+        includeProjectDependencies = true
+        dependencyConfiguration = 'compileClasspath'
+    }
+
     publishing {
         publications {
             maven(MavenPublication) {
