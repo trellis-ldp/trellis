@@ -71,7 +71,7 @@ ext {
     bouncycastleVersion = "1.65"
     commonsTextVersion = "1.8"
     cxfVersion = "3.3.6"
-    glassfishJaxbVersion = "2.3.2"
+    glassfishJaxbVersion = "2.3.3"
     jerseyVersion = "2.30.1"
     junitVersion = "5.6.2"
     junitLauncherVersion = "1.6.2"
