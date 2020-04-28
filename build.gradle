@@ -396,7 +396,7 @@ subprojects { subproj ->
                         license {
                             name = 'Apache-2.0'
                             url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
-                            comments = 'Copyright (c) 2017-2020 Trellis LDP'
+                            comments = 'Copyright (c) 2017 - 2020 Aaron Coburn and individual contributors'
                             distribution = 'repo'
                         }
                     }
