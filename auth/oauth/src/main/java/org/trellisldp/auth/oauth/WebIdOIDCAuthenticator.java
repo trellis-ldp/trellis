@@ -19,13 +19,18 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Deserializer;
+import io.jsonwebtoken.jackson.io.JacksonDeserializer;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.Key;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.trellisldp.cache.TrellisCache;
 
@@ -35,6 +40,8 @@ import org.trellisldp.cache.TrellisCache;
  * supplied key data.
  */
 public class WebIdOIDCAuthenticator implements Authenticator {
+    public static final String OPENID_CONFIGURATION_PATH = "/.well-known/openid-configuration";
+    public static final String JWKS_URI_CLAIM = "jwks_uri";
     private final String baseUrl;
     private final TrellisCache<String, Key> keys;
 
@@ -112,13 +119,27 @@ public class WebIdOIDCAuthenticator implements Authenticator {
             if (issuer == null) {
                 throw new WebIdOIDCJwtException("Found no issuer claim to resolve the provider keys");
             }
-            final Map<String, Key> keys = OAuthUtils.fetchKeys(issuer + "/jwks");
+            final Map<String, Key> keys = OAuthUtils.fetchKeys(fetchJwksUri(issuer));
             if (!keys.containsKey(id)) {
                 throw new WebIdOIDCJwtException(String.format("Couldn't find key id %s= by provider %s", id, issuer));
             }
             return keys.get(id);
         });
         return Jwts.parserBuilder().setSigningKey(oidcProviderKey).build().parseClaimsJws(idToken).getBody();
+    }
+
+    private static String fetchJwksUri(final String issuer) {
+        final Deserializer<Map<String, Object>> deserializer = new JacksonDeserializer<>();
+        final String oidcCnfUrl = issuer + OPENID_CONFIGURATION_PATH;
+        try (final InputStream input = new URL(oidcCnfUrl).openConnection().getInputStream()) {
+            final String jwksUri = (String) deserializer.deserialize(IOUtils.toByteArray(input)).get(JWKS_URI_CLAIM);
+            if (jwksUri == null) {
+                throw new WebIdOIDCJwtException("No JWKS URI claim found in WebId-OIDC provider configuration");
+            }
+            return jwksUri;
+        } catch (final Exception ex) {
+            throw new WebIdOIDCJwtException("Error fetching/parsing WebId-OIDC provider configuration", ex);
+        }
     }
 
     private static void doWebIdProviderConfirmation(final Claims idTokenClaims) {
