@@ -149,15 +149,6 @@ class WebIdOIDCAuthenticatorTest {
     }
 
     @Test
-    void testAuthenticateNoInternalBody() {
-        final Claims claims = new DefaultClaims();
-        claims.put("id_token", "eyJhbGciOiJSUzI1NiJ9");
-        final String token = createJWTToken(headers, claims);
-
-        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
-    }
-
-    @Test
     void testWrongTypeInJwk() {
         final String token = createComposeJWTToken(DEFAULT_ISSUER, BASE_URL, DEFAULT_SUBJECT_ENTRY,
                 createCNF(64));

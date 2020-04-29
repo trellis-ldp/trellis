@@ -18,7 +18,6 @@ dependencies {
     api "com.google.guava:guava:$guavaVersion"
 
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
-    implementation "org.apache.commons:commons-lang3:$commonsLangVersion"
     implementation "commons-io:commons-io:$commonsIoVersion"
     implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"

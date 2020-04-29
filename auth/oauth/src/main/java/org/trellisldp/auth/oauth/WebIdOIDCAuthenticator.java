@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.trellisldp.cache.TrellisCache;
 
 /**
@@ -86,23 +85,29 @@ public class WebIdOIDCAuthenticator implements Authenticator {
 
     @Override
     public Claims parse(final String token) {
-        checkTokenStructure(token);
-        final String idToken = Jwts.parserBuilder().build()
-            .parseClaimsJwt(extractUnsignedJWT(token)).getBody().get("id_token", String.class);
-        if (idToken == null) {
-            throw new WebIdOIDCJwtException("Missing the id_token claim in JWT payload");
-        }
-        checkTokenStructure(idToken);
-        final Claims idTokenClaims = getValidatedIdTokenClaims(idToken);
-        doWebIdProviderConfirmation(idTokenClaims);
-        final Key key = getKey(idTokenClaims);
-        final String audience = Jwts.parserBuilder().setSigningKey(key).build()
-                .parseClaimsJws(token).getBody().getAudience();
+        final Claims[] idTokenClaims = new Claims[1];
+        final Claims claims = Jwts.parserBuilder()
+                .setSigningKeyResolver(new SigningKeyResolverAdapter() {
+                    @Override
+                    public Key resolveSigningKey(final JwsHeader header, final Claims claims) {
+                        final String idToken = claims.get("id_token", String.class);
+                        if (idToken == null) {
+                            throw new WebIdOIDCJwtException("Missing the id_token claim in JWT payload");
+                        }
+                        idTokenClaims[0] = getValidatedIdTokenClaims(idToken);
+                        return getKey(idTokenClaims[0]);
+                    }
+                })
+                .build()
+                .parseClaimsJws(token).getBody();
+
+        doWebIdProviderConfirmation(idTokenClaims[0]);
+        final String audience = claims.getAudience();
         if (audience == null || !audience.endsWith(baseUrl)) {
             throw new WebIdOIDCJwtException(
                     String.format("Proof of Possession failed, wrong audience claim: aud=%s", audience));
         }
-        return idTokenClaims;
+        return idTokenClaims[0];
     }
 
     private Claims getValidatedIdTokenClaims(final String idToken) {
@@ -185,6 +190,9 @@ public class WebIdOIDCAuthenticator implements Authenticator {
         final Map<String, Map<String, String>> cnf;
         try {
             cnf = idTokenClaims.get("cnf", Map.class);
+            if (cnf == null) {
+                throw new WebIdOIDCJwtException(String.format("Missing cnf in: %s", idTokenClaims));
+            }
             final Map<String, String> jwk = cnf.get("jwk");
             final String alg = jwk.get("alg");
             final String n = jwk.get("n");
@@ -201,20 +209,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
             }
             return OAuthUtils.buildKey(n, e);
         } catch (ClassCastException | RequiredTypeException e) {
-            throw new WebIdOIDCJwtException(String.format("Missing cnf or it's data in: %s", idTokenClaims), e);
-        }
-    }
-
-    private static String extractUnsignedJWT(final String token) {
-        return token.substring(0, token.lastIndexOf('.') + 1);
-    }
-
-    private static void checkTokenStructure(final String token) {
-        final int dotCount = StringUtils.countMatches(token, '.');
-        if (dotCount != 2) {
-            final String msg =
-                String.format("JWT strings must contain exactly 2 period characters. Found: %d", dotCount);
-            throw new WebIdOIDCJwtException(msg);
+            throw new WebIdOIDCJwtException(String.format("Malformed cnf in: %s", idTokenClaims), e);
         }
     }
 }
