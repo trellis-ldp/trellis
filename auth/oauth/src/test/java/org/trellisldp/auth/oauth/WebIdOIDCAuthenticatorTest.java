@@ -16,6 +16,7 @@ package org.trellisldp.auth.oauth;
 import static java.util.Base64.getUrlDecoder;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.trellisldp.auth.oauth.WebIdOIDCAuthenticator.*;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -108,7 +109,7 @@ class WebIdOIDCAuthenticatorTest {
     private static final Map<String, Object> headers = new HashMap<>();
     static {
         headers.put("alg", "RS256");
-        headers.put("kid", DEFAULT_KEY_ID);
+        headers.put(KEY_ID_HEADER, DEFAULT_KEY_ID);
     }
 
     private static final Map<String, Key> keyCache = new HashMap<>();
@@ -121,7 +122,7 @@ class WebIdOIDCAuthenticatorTest {
     @Test
     void testAuthenticateNoIdToken() {
         final Claims claims = new DefaultClaims();
-        claims.put("iss", "example.com");
+        claims.setIssuer("example.com");
         final String token = createJWTToken(headers, claims);
 
         assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
@@ -142,7 +143,7 @@ class WebIdOIDCAuthenticatorTest {
         final String internalJws = Jwts.builder().setHeader(headers).claim("foo", "bar")
                 .signWith(privateKey).compact();
         final Claims claims = new DefaultClaims();
-        claims.put("id_token", internalJws);
+        claims.put(ID_TOKEN_CLAIM, internalJws);
         final String token = createJWTToken(headers, claims);
 
         assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
@@ -252,12 +253,12 @@ class WebIdOIDCAuthenticatorTest {
         final DefaultClaims idTokenClaims = new DefaultClaims();
         idTokenClaims.setIssuer(issuer);
         idTokenClaims.put(webIdClaim.getKey(), webIdClaim.getValue());
-        idTokenClaims.put("cnf", cnf);
+        idTokenClaims.put(CNF_CLAIM, cnf);
         final String internalJws = createJWTToken(idTokenHeaders, idTokenClaims);
 
         final Claims claims = new DefaultClaims();
         claims.setAudience(audience);
-        claims.put("id_token", internalJws);
+        claims.put(ID_TOKEN_CLAIM, internalJws);
         return createJWTToken(headers, claims);
     }
 

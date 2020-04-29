@@ -39,10 +39,13 @@ import org.trellisldp.cache.TrellisCache;
  * supplied key data.
  */
 public class WebIdOIDCAuthenticator implements Authenticator {
-    public static final String OPENID_CONFIGURATION_PATH = "/.well-known/openid-configuration";
-    public static final String JWKS_URI_CLAIM = "jwks_uri";
+    private static final String OPENID_CONFIGURATION_PATH = "/.well-known/openid-configuration";
+    private static final String JWKS_URI_CLAIM = "jwks_uri";
     private final String baseUrl;
     private final TrellisCache<String, Key> keys;
+    static final String KEY_ID_HEADER = "kid";
+    static final String ID_TOKEN_CLAIM = "id_token";
+    static final String CNF_CLAIM = "cnf";
 
     /**
      * Own exception to signal a malformed JWT according to the expectations of this authenticator.
@@ -75,6 +78,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
             throw new IllegalArgumentException("Received null as baseUrl, it is required for the WebId-OIDC support.");
         }
         this.baseUrl = baseUrl;
+        //TODO: make cache size and expiration configurable.
         final Cache<String, Key> cache =
                 CacheBuilder.newBuilder().maximumSize(50).expireAfterAccess(30, DAYS).build();
         this.keys = new TrellisCache<>(cache);
@@ -90,7 +94,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
                 .setSigningKeyResolver(new SigningKeyResolverAdapter() {
                     @Override
                     public Key resolveSigningKey(final JwsHeader header, final Claims claims) {
-                        final String idToken = claims.get("id_token", String.class);
+                        final String idToken = claims.get(ID_TOKEN_CLAIM, String.class);
                         if (idToken == null) {
                             throw new WebIdOIDCJwtException("Missing the id_token claim in JWT payload");
                         }
@@ -115,7 +119,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
                 .setSigningKeyResolver(new SigningKeyResolverAdapter() {
                     @Override
                     public Key resolveSigningKey(final JwsHeader header, final Claims claims) {
-                        final String kid = (String) header.get("kid");
+                        final String kid = (String) header.get(KEY_ID_HEADER);
                         if (kid == null) {
                             throw new WebIdOIDCJwtException(
                                     String.format("Missing the key id in Id token header: idTokenHeader=%s", header));
@@ -189,7 +193,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
     private static Key getKey(final Claims idTokenClaims) {
         final Map<String, Map<String, String>> cnf;
         try {
-            cnf = idTokenClaims.get("cnf", Map.class);
+            cnf = idTokenClaims.get(CNF_CLAIM, Map.class);
             if (cnf == null) {
                 throw new WebIdOIDCJwtException(String.format("Missing cnf in: %s", idTokenClaims));
             }
