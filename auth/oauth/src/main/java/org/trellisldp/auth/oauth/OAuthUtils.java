@@ -199,7 +199,7 @@ public final class OAuthUtils {
      * @param location string of the URL
      * @return Map containing the key configurations
      */
-    static Map<String, Key> buildKeys(final String location) {
+    static Map<String, Key> fetchKeys(final String location) {
         // TODO eventually, this will become part of the JJWT library
         final Deserializer<Map<String, List<Map<String, String>>>> deserializer = new JacksonDeserializer<>();
         try (final InputStream input = new URL(location).openConnection().getInputStream()) {

@@ -41,7 +41,7 @@ public class JwksAuthenticator implements Authenticator {
      * @param url the location of the public jwks keys
      */
     public JwksAuthenticator(final String url) {
-        this.keys = OAuthUtils.buildKeys(url);
+        this.keys = OAuthUtils.fetchKeys(url);
     }
 
     @Override
