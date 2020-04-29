@@ -17,7 +17,7 @@ module org.trellisldp.kafka {
     exports org.trellisldp.kafka;
 
     requires kafka.clients;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires microprofile.config.api;
     requires org.apache.commons.rdf.api;
     requires org.slf4j;

@@ -26,7 +26,7 @@ module org.trellisldp.triplestore {
     requires org.slf4j;
 
     requires jakarta.enterprise.cdi.api;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires java.annotation;
     requires microprofile.config.api;
     requires microprofile.health.api;

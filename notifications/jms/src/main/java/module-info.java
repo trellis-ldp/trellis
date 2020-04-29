@@ -20,7 +20,7 @@ module org.trellisldp.jms {
     requires org.apache.commons.rdf.api;
     requires java.naming;
     requires jakarta.jms.api;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires microprofile.config.api;
     requires org.slf4j;
 }

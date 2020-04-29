@@ -20,7 +20,7 @@ module org.trellisldp.app {
     requires transitive org.trellisldp.http;
     requires transitive org.trellisldp.vocabulary;
 
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires jakarta.enterprise.cdi.api;
 
     opens org.trellisldp.app;

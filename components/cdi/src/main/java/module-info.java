@@ -19,7 +19,7 @@ module org.trellisldp.cdi {
     requires transitive org.trellisldp.api;
     requires transitive org.trellisldp.app;
 
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires jakarta.enterprise.cdi.api;
 
     opens org.trellisldp.cdi;

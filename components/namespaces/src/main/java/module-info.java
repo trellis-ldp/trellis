@@ -21,7 +21,7 @@ module org.trellisldp.namespaces {
 
     requires org.apache.commons.rdf.api;
     requires jakarta.enterprise.cdi.api;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires microprofile.config.api;
     requires org.slf4j;
 

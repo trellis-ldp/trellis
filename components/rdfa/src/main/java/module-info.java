@@ -21,7 +21,7 @@ module org.trellisldp.rdfa {
 
     requires com.github.mustachejava;
     requires jakarta.enterprise.cdi.api;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires microprofile.config.api;
     requires org.apache.commons.rdf.api;
     requires org.apache.jena.arq;

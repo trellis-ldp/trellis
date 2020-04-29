@@ -17,7 +17,7 @@ module org.trellisldp.amqp {
     exports org.trellisldp.amqp;
 
     requires com.rabbitmq.client;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires microprofile.config.api;
     requires org.apache.commons.rdf.api;
     requires org.slf4j;

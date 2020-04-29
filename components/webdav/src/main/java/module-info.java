@@ -29,7 +29,7 @@ module org.trellisldp.webdav {
 
     requires microprofile.config.api;
     requires jakarta.enterprise.cdi.api;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires java.annotation;
     requires java.ws.rs;
     requires java.xml.bind;
