@@ -109,6 +109,9 @@ public class WebIdOIDCAuthenticator implements Authenticator {
         final Key oidcProviderKey = keys.get(kid, id -> {
             final String issuer =
                     Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody().getIssuer();
+            if (issuer == null) {
+                throw new WebIdOIDCJwtException("Found no issuer claim to resolve the provider keys");
+            }
             final Map<String, Key> keys = OAuthUtils.fetchKeys(issuer + "/jwks");
             if (!keys.containsKey(id)) {
                 throw new WebIdOIDCJwtException(String.format("Couldn't find key id %s= by provider %s", id, issuer));
