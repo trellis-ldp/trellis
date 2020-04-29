@@ -34,5 +34,5 @@ module org.trellisldp.test {
     requires java.annotation;
     requires java.ws.rs;
     requires java.xml.bind;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
 }

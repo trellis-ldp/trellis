@@ -16,7 +16,7 @@
 module org.trellisldp.auth.jwt {
     exports org.trellisldp.auth.jwt;
 
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires java.ws.rs;
     requires java.annotation;
     requires microprofile.config.api;

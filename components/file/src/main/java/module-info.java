@@ -27,7 +27,7 @@ module org.trellisldp.file {
     requires org.apache.jena.arq;
     requires org.slf4j;
     requires jakarta.enterprise.cdi.api;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires microprofile.config.api;
     requires org.apache.commons.codec;
     requires org.apache.jena.core;

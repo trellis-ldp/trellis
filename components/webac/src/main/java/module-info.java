@@ -24,7 +24,7 @@ module org.trellisldp.webac {
     requires org.slf4j;
 
     requires jakarta.enterprise.cdi.api;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires java.annotation;
     requires java.xml.bind;
     requires java.ws.rs;

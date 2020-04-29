@@ -16,7 +16,7 @@
 module org.trellisldp.auth.oauth {
     exports org.trellisldp.auth.oauth;
 
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires java.ws.rs;
     requires java.annotation;
     requires jjwt.api;
