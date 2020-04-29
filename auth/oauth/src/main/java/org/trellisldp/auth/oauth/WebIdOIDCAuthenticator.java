@@ -106,26 +106,31 @@ public class WebIdOIDCAuthenticator implements Authenticator {
     }
 
     private Claims getValidatedIdTokenClaims(final String idToken) {
-        final Header<?> idTokenHeader = Jwts.parserBuilder().build()
-                .parseClaimsJwt(extractUnsignedJWT(idToken)).getHeader();
-        if (idTokenHeader == null || idTokenHeader.get("kid") == null) {
-            throw new WebIdOIDCJwtException(
-                    String.format("Missing the key id in Id token header: idTokenHeader=%s", idTokenHeader));
-        }
-        final String kid = (String) idTokenHeader.get("kid");
-        final Key oidcProviderKey = keys.get(kid, id -> {
-            final String issuer =
-                    Jwts.parserBuilder().build().parseClaimsJwt(extractUnsignedJWT(idToken)).getBody().getIssuer();
-            if (issuer == null) {
-                throw new WebIdOIDCJwtException("Found no issuer claim to resolve the provider keys");
-            }
-            final Map<String, Key> keys = OAuthUtils.fetchKeys(fetchJwksUri(issuer));
-            if (!keys.containsKey(id)) {
-                throw new WebIdOIDCJwtException(String.format("Couldn't find key id %s= by provider %s", id, issuer));
-            }
-            return keys.get(id);
-        });
-        return Jwts.parserBuilder().setSigningKey(oidcProviderKey).build().parseClaimsJws(idToken).getBody();
+        return Jwts.parserBuilder()
+                .setSigningKeyResolver(new SigningKeyResolverAdapter() {
+                    @Override
+                    public Key resolveSigningKey(final JwsHeader header, final Claims claims) {
+                        final String kid = (String) header.get("kid");
+                        if (kid == null) {
+                            throw new WebIdOIDCJwtException(
+                                    String.format("Missing the key id in Id token header: idTokenHeader=%s", header));
+                        }
+                        return keys.get(kid, id -> {
+                            final String issuer = claims.getIssuer();
+                            if (issuer == null) {
+                                throw new WebIdOIDCJwtException("Found no issuer claim to resolve the provider keys");
+                            }
+                            final Map<String, Key> fetchedKeys = OAuthUtils.fetchKeys(fetchJwksUri(issuer));
+                            if (!fetchedKeys.containsKey(id)) {
+                                throw new WebIdOIDCJwtException(
+                                        String.format("Couldn't find key id %s= by provider %s", id, issuer));
+                            }
+                            return fetchedKeys.get(id);
+                        });
+                    }
+                })
+                .build()
+                .parseClaimsJws(idToken).getBody();
     }
 
     private static String fetchJwksUri(final String issuer) {
