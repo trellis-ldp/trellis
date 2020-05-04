@@ -20,6 +20,7 @@ import static org.trellisldp.auth.oauth.WebIdOIDCAuthenticator.*;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.impl.DefaultClaims;
 
 import java.math.BigInteger;
@@ -129,11 +130,20 @@ class WebIdOIDCAuthenticatorTest {
     }
 
     @Test
+    void testAuthenticateNoTokenType() {
+        final String token = createComposeJWTToken(headers, DEFAULT_ISSUER, BASE_URL, DEFAULT_SUBJECT_ENTRY,
+                createCNF(base64Modulus), null);
+
+        assertThrows(MissingClaimException.class, () -> authenticator.authenticate(token));
+    }
+
+    @Test
     void testAuthenticateNoKeyId() {
         final Map<String, Object> headers = new HashMap<>();
         headers.put("alg", "RS256");
         final String token = createComposeJWTToken(headers, DEFAULT_ISSUER, BASE_URL,
-                new WebIdEntry(OAuthUtils.WEBID, DEFAULT_ISSUER + "/bob/profile#i"), createCNF(base64Modulus));
+                new WebIdEntry(OAuthUtils.WEBID, DEFAULT_ISSUER + "/bob/profile#i"),
+                createCNF(base64Modulus), POP_TOKEN);
 
         assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
@@ -244,12 +254,12 @@ class WebIdOIDCAuthenticatorTest {
 
     private static String createComposeJWTToken(final String issuer, final String audience,
                                                 final Map.Entry<String, String> webIdClaim, final Object cnf) {
-        return createComposeJWTToken(headers, issuer, audience, webIdClaim, cnf);
+        return createComposeJWTToken(headers, issuer, audience, webIdClaim, cnf, POP_TOKEN);
     }
 
     private static String createComposeJWTToken(final Map<String, Object> idTokenHeaders, final String issuer,
                                                 final String audience, final Map.Entry<String, String> webIdClaim,
-                                                final Object cnf) {
+                                                final Object cnf, final String tokenType) {
         final DefaultClaims idTokenClaims = new DefaultClaims();
         idTokenClaims.setIssuer(issuer);
         idTokenClaims.put(webIdClaim.getKey(), webIdClaim.getValue());
@@ -259,6 +269,9 @@ class WebIdOIDCAuthenticatorTest {
         final Claims claims = new DefaultClaims();
         claims.setAudience(audience);
         claims.put(ID_TOKEN_CLAIM, internalJws);
+        if (tokenType != null) {
+            claims.put(TOKEN_TYPE_CLAIM, tokenType);
+        }
         return createJWTToken(headers, claims);
     }
 

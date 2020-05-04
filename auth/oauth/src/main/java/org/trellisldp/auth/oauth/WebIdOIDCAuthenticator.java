@@ -46,6 +46,8 @@ public class WebIdOIDCAuthenticator implements Authenticator {
     static final String KEY_ID_HEADER = "kid";
     static final String ID_TOKEN_CLAIM = "id_token";
     static final String CNF_CLAIM = "cnf";
+    static final String TOKEN_TYPE_CLAIM = "token_type";
+    static final String POP_TOKEN = "pop";
 
     /**
      * Own exception to signal a malformed JWT according to the expectations of this authenticator.
@@ -91,6 +93,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
     public Claims parse(final String token) {
         final Claims[] idTokenClaims = new Claims[1];
         final Claims claims = Jwts.parserBuilder()
+                .require(TOKEN_TYPE_CLAIM, POP_TOKEN)
                 .setSigningKeyResolver(new SigningKeyResolverAdapter() {
                     @Override
                     public Key resolveSigningKey(final JwsHeader header, final Claims claims) {
