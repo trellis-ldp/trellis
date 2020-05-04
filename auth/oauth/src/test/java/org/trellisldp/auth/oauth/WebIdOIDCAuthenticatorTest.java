@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.trellisldp.auth.oauth.WebIdOIDCAuthenticator.*;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.IncorrectClaimException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.impl.DefaultClaims;
@@ -59,7 +60,8 @@ class WebIdOIDCAuthenticatorTest {
     private static final String DEFAULT_KEY_ID = "VRPRBm9dCo";
 
     private static final String BASE_URL = "https://trellis.org";
-    private static final String DEFAULT_ISSUER = "https://solid.community";
+    private static final String DEFAULT_ID_TOKEN_SSUER = "https://solid.community";
+    private static final String DEFAULT_ISSUER = "client as issuer";
 
     private static class WebIdEntry implements Map.Entry<String, String> {
         private final String key;
@@ -130,9 +132,25 @@ class WebIdOIDCAuthenticatorTest {
     }
 
     @Test
+    void testAuthenticateNoIssuer() {
+        final String token = createPOPToken(null, BASE_URL, POP_TOKEN, headers,
+                DEFAULT_ID_TOKEN_SSUER, DEFAULT_ISSUER, DEFAULT_SUBJECT_ENTRY, createCNF(base64Modulus));
+
+        assertThrows(WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+    }
+
+    @Test
+    void testAuthenticateNoIdTokenAudienceMatch() {
+        final String token = createPOPToken(DEFAULT_ISSUER, BASE_URL, POP_TOKEN, headers,
+                DEFAULT_ID_TOKEN_SSUER, "wrong aud", DEFAULT_SUBJECT_ENTRY, createCNF(base64Modulus));
+
+        assertThrows(IncorrectClaimException.class, () -> authenticator.authenticate(token));
+    }
+
+    @Test
     void testAuthenticateNoTokenType() {
-        final String token = createComposeJWTToken(headers, DEFAULT_ISSUER, BASE_URL, DEFAULT_SUBJECT_ENTRY,
-                createCNF(base64Modulus), null);
+        final String token = createPOPToken(DEFAULT_ISSUER, BASE_URL, null, headers,
+                DEFAULT_ID_TOKEN_SSUER, DEFAULT_ISSUER, DEFAULT_SUBJECT_ENTRY, createCNF(base64Modulus));
 
         assertThrows(MissingClaimException.class, () -> authenticator.authenticate(token));
     }
@@ -141,9 +159,9 @@ class WebIdOIDCAuthenticatorTest {
     void testAuthenticateNoKeyId() {
         final Map<String, Object> headers = new HashMap<>();
         headers.put("alg", "RS256");
-        final String token = createComposeJWTToken(headers, DEFAULT_ISSUER, BASE_URL,
-                new WebIdEntry(OAuthUtils.WEBID, DEFAULT_ISSUER + "/bob/profile#i"),
-                createCNF(base64Modulus), POP_TOKEN);
+        final String token = createPOPToken(DEFAULT_ISSUER, BASE_URL, POP_TOKEN, headers, DEFAULT_ID_TOKEN_SSUER,
+                DEFAULT_ISSUER, new WebIdEntry(OAuthUtils.WEBID, DEFAULT_ID_TOKEN_SSUER + "/bob/profile#i"),
+                createCNF(base64Modulus));
 
         assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
@@ -161,7 +179,7 @@ class WebIdOIDCAuthenticatorTest {
 
     @Test
     void testWrongTypeInJwk() {
-        final String token = createComposeJWTToken(DEFAULT_ISSUER, BASE_URL, DEFAULT_SUBJECT_ENTRY,
+        final String token = createPOPToken(BASE_URL, DEFAULT_ID_TOKEN_SSUER, DEFAULT_SUBJECT_ENTRY,
                 createCNF(64));
 
         assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
@@ -169,7 +187,7 @@ class WebIdOIDCAuthenticatorTest {
 
     @Test
     void testCnfOfWrongType() {
-        final String token = createComposeJWTToken(DEFAULT_ISSUER, BASE_URL, DEFAULT_SUBJECT_ENTRY, "Wrong");
+        final String token = createPOPToken(BASE_URL, DEFAULT_ID_TOKEN_SSUER, DEFAULT_SUBJECT_ENTRY, "Wrong");
 
         assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
@@ -177,7 +195,7 @@ class WebIdOIDCAuthenticatorTest {
     @Test
     void testWebIdProviderConfirmation() {
         final String token =
-            createComposeJWTToken("https://dark.com", BASE_URL, DEFAULT_SUBJECT_ENTRY,
+            createPOPToken(BASE_URL, "https://dark.com", DEFAULT_SUBJECT_ENTRY,
                     createCNF(base64Modulus));
 
         assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
@@ -186,22 +204,22 @@ class WebIdOIDCAuthenticatorTest {
     @Test
     void testNoWebIdClaim() {
         final String token =
-            createComposeJWTToken(DEFAULT_ISSUER, BASE_URL, new WebIdEntry(), createCNF(base64Modulus));
+            createPOPToken(BASE_URL, DEFAULT_ID_TOKEN_SSUER, new WebIdEntry(), createCNF(base64Modulus));
 
         assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
-    void testNoIssuerClaim() {
+    void testNoIdTokenIssuerClaim() {
         final String token =
-            createComposeJWTToken(null, BASE_URL, DEFAULT_SUBJECT_ENTRY, createCNF(base64Modulus));
+            createPOPToken(BASE_URL, null, DEFAULT_SUBJECT_ENTRY, createCNF(base64Modulus));
 
         assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
     void testNoAudienceClaim() {
-        final String token = createComposeJWTToken(DEFAULT_ISSUER, null, DEFAULT_SUBJECT_ENTRY,
+        final String token = createPOPToken(null, DEFAULT_ID_TOKEN_SSUER, DEFAULT_SUBJECT_ENTRY,
                 createCNF(base64Modulus));
 
         assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
@@ -209,7 +227,7 @@ class WebIdOIDCAuthenticatorTest {
 
     @Test
     void testWrongAudienceClaim() {
-        final String token = createComposeJWTToken(DEFAULT_ISSUER, "https://attacker.com",
+        final String token = createPOPToken("https://attacker.com", DEFAULT_ID_TOKEN_SSUER,
                 DEFAULT_SUBJECT_ENTRY, createCNF(base64Modulus));
 
         assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
@@ -217,8 +235,8 @@ class WebIdOIDCAuthenticatorTest {
 
     @Test
     void testGreenPathWithSameOrigin() {
-        final String token = createComposeJWTToken(DEFAULT_ISSUER, BASE_URL,
-                new WebIdEntry("sub", DEFAULT_ISSUER + "/bob/profile#i"), createCNF(base64Modulus));
+        final String token = createPOPToken(BASE_URL, DEFAULT_ID_TOKEN_SSUER,
+                new WebIdEntry("sub", DEFAULT_ID_TOKEN_SSUER + "/bob/profile#i"), createCNF(base64Modulus));
 
         final Principal principal = authenticator.authenticate(token);
         assertNotNull(principal);
@@ -226,7 +244,7 @@ class WebIdOIDCAuthenticatorTest {
 
     @Test
     void testGreenPathWithSubDomain() {
-        final String token = createComposeJWTToken(DEFAULT_ISSUER, BASE_URL, DEFAULT_SUBJECT_ENTRY,
+        final String token = createPOPToken(BASE_URL, DEFAULT_ID_TOKEN_SSUER, DEFAULT_SUBJECT_ENTRY,
                 createCNF(base64Modulus));
 
         final Principal principal = authenticator.authenticate(token);
@@ -235,8 +253,8 @@ class WebIdOIDCAuthenticatorTest {
 
     @Test
     void testGreenPathWithWebIdClaim() {
-        final String token = createComposeJWTToken(DEFAULT_ISSUER, BASE_URL,
-            new WebIdEntry(OAuthUtils.WEBID, DEFAULT_ISSUER + "/bob/profile#i"), createCNF(base64Modulus));
+        final String token = createPOPToken(BASE_URL, DEFAULT_ID_TOKEN_SSUER,
+                new WebIdEntry(OAuthUtils.WEBID, DEFAULT_ID_TOKEN_SSUER + "/bob/profile#i"), createCNF(base64Modulus));
 
         final Principal principal = authenticator.authenticate(token);
         assertNotNull(principal);
@@ -252,21 +270,29 @@ class WebIdOIDCAuthenticatorTest {
         return cnf;
     }
 
-    private static String createComposeJWTToken(final String issuer, final String audience,
-                                                final Map.Entry<String, String> webIdClaim, final Object cnf) {
-        return createComposeJWTToken(headers, issuer, audience, webIdClaim, cnf, POP_TOKEN);
+    private static String createPOPToken(final String audience, final String idTokenIssuer,
+                                         final Map.Entry<String, String> webIdClaim, final Object cnf) {
+        return createPOPToken(DEFAULT_ISSUER, audience, POP_TOKEN, headers, idTokenIssuer, DEFAULT_ISSUER,
+                webIdClaim, cnf);
     }
 
-    private static String createComposeJWTToken(final Map<String, Object> idTokenHeaders, final String issuer,
-                                                final String audience, final Map.Entry<String, String> webIdClaim,
-                                                final Object cnf, final String tokenType) {
+    private static String createPOPToken(final String issuer, final String audience, final String tokenType,
+                                         final Map<String, Object> idTokenHeaders, final String idTokenIssuer,
+                                         final String idTokenAudience, final Map.Entry<String, String> webIdClaim,
+                                         final Object cnf) {
         final DefaultClaims idTokenClaims = new DefaultClaims();
-        idTokenClaims.setIssuer(issuer);
+        idTokenClaims.setIssuer(idTokenIssuer);
+        if (idTokenAudience != null) {
+            idTokenClaims.setAudience(idTokenAudience);
+        }
         idTokenClaims.put(webIdClaim.getKey(), webIdClaim.getValue());
         idTokenClaims.put(CNF_CLAIM, cnf);
         final String internalJws = createJWTToken(idTokenHeaders, idTokenClaims);
 
         final Claims claims = new DefaultClaims();
+        if (issuer != null) {
+            claims.setIssuer(issuer);
+        }
         claims.setAudience(audience);
         claims.put(ID_TOKEN_CLAIM, internalJws);
         if (tokenType != null) {

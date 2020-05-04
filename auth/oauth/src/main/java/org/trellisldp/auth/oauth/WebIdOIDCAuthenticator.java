@@ -97,11 +97,15 @@ public class WebIdOIDCAuthenticator implements Authenticator {
                 .setSigningKeyResolver(new SigningKeyResolverAdapter() {
                     @Override
                     public Key resolveSigningKey(final JwsHeader header, final Claims claims) {
+                        final String issuer = claims.getIssuer();
+                        if (issuer == null) {
+                            throw new WebIdOIDCJwtException("Missing the issuer claim in outer JWT payload");
+                        }
                         final String idToken = claims.get(ID_TOKEN_CLAIM, String.class);
                         if (idToken == null) {
                             throw new WebIdOIDCJwtException("Missing the id_token claim in JWT payload");
                         }
-                        idTokenClaims[0] = getValidatedIdTokenClaims(idToken);
+                        idTokenClaims[0] = getValidatedIdTokenClaims(issuer, idToken);
                         return getKey(idTokenClaims[0]);
                     }
                 })
@@ -117,8 +121,9 @@ public class WebIdOIDCAuthenticator implements Authenticator {
         return idTokenClaims[0];
     }
 
-    private Claims getValidatedIdTokenClaims(final String idToken) {
+    private Claims getValidatedIdTokenClaims(final String issuer, final String idToken) {
         return Jwts.parserBuilder()
+                .requireAudience(issuer)
                 .setSigningKeyResolver(new SigningKeyResolverAdapter() {
                     @Override
                     public Key resolveSigningKey(final JwsHeader header, final Claims claims) {
