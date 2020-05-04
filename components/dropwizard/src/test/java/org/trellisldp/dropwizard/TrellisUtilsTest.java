@@ -46,6 +46,7 @@ import org.trellisldp.auth.oauth.JwtAuthenticator;
 import org.trellisldp.auth.oauth.NullAuthenticator;
 import org.trellisldp.auth.oauth.WebIdOIDCAuthenticator;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
+import org.trellisldp.dropwizard.config.WebIdOIDCConfiguration;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
@@ -204,7 +205,9 @@ class TrellisUtilsTest {
         config.getAuth().getJwt().setKeyStore(null);
         config.getAuth().getJwt().setKey("");
         config.getAuth().getJwt().setJwks(null);
-        config.getAuth().getJwt().setWebIdOIDC(true);
+        final WebIdOIDCConfiguration webIdOIDC = new WebIdOIDCConfiguration();
+        webIdOIDC.setEnabled(true);
+        config.getAuth().getJwt().setWebIdOIDC(webIdOIDC);
         assertTrue(TrellisUtils.getJwtAuthenticator(config) instanceof WebIdOIDCAuthenticator,
             "JWT WebId-OIDC Authenticator not enabled");
     }
