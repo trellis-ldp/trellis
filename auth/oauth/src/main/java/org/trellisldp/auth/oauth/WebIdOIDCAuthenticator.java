@@ -65,24 +65,28 @@ public class WebIdOIDCAuthenticator implements Authenticator {
     /**
      * Build the authenticator.
      * @param baseUrl the server's base URL.
+     * @param cacheSize the maximum cache size
+     * @param cacheExpireDays the number of days after which the cache expires
      */
-    public WebIdOIDCAuthenticator(final String baseUrl) {
-        this(baseUrl, Collections.emptyMap());
+    public WebIdOIDCAuthenticator(final String baseUrl, final int cacheSize, final int cacheExpireDays) {
+        this(baseUrl, cacheSize, cacheExpireDays, Collections.emptyMap());
     }
 
     /**
      * Constructor for test purposes.
      * @param baseUrl the server's base URL.
-     * @param keys a key cache for this instance.
+     * @param cacheSize the maximum cache size
+     * @param cacheExpireDays the number of days after which the cache expires
+     * @param keys an initial key cache for this instance.
      */
-    WebIdOIDCAuthenticator(final String baseUrl, final Map<String, Key> keys) {
+    WebIdOIDCAuthenticator(final String baseUrl, final int cacheSize, final int cacheExpireDays,
+                           final Map<String, Key> keys) {
         if (baseUrl == null) {
             throw new IllegalArgumentException("Received null as baseUrl, it is required for the WebId-OIDC support.");
         }
         this.baseUrl = baseUrl;
-        //TODO: make cache size and expiration configurable.
         final Cache<String, Key> cache =
-                CacheBuilder.newBuilder().maximumSize(50).expireAfterAccess(30, DAYS).build();
+                CacheBuilder.newBuilder().maximumSize(cacheSize).expireAfterAccess(cacheExpireDays, DAYS).build();
         this.keys = new TrellisCache<>(cache);
         for (final String id : keys.keySet()) {
             this.keys.get(id, keys::get);

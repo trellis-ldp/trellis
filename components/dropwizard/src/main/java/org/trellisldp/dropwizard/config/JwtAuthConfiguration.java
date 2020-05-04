@@ -40,7 +40,7 @@ public class JwtAuthConfiguration {
     @NotNull
     private List<String> keyIds = emptyList();
 
-    private boolean webIdOIDC = false;
+    private WebIdOIDCConfiguration webIdOIDC = new WebIdOIDCConfiguration();
 
     /**
      * Get whether basic authentication has been enabled.
@@ -151,18 +151,20 @@ public class JwtAuthConfiguration {
     }
 
     /**
-     * Get whether authentication with WebId-OIDC is enabled.
-     * @return the WebId-OIDC flag.
+     * Get the WebId OIDC configuration.
+     * @return the configuration object
      */
-    public boolean getWebIdOIDC() {
+    @JsonProperty
+    public WebIdOIDCConfiguration getWebIdOIDC() {
         return webIdOIDC;
     }
 
     /**
-     * Set the WebId-OIDC flag.
-     * @param webIdOIDC the value of the WebId-OIDC flag.
+     * Set the WebId OIDC configuration.
+     * @param webIdOIDC the configuration object
      */
-    public void setWebIdOIDC(final boolean webIdOIDC) {
+    @JsonProperty
+    public void setWebIdOIDC(final WebIdOIDCConfiguration webIdOIDC) {
         this.webIdOIDC = webIdOIDC;
     }
 }

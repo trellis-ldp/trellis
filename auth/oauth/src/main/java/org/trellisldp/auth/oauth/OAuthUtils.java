@@ -170,8 +170,9 @@ public final class OAuthUtils {
         return null;
     }
 
-    public static Authenticator buildAuthenticatorWithWebIdOIDC(final boolean webIdOIDC, final String baseUrl) {
-        return webIdOIDC ? new WebIdOIDCAuthenticator(baseUrl) : null;
+    public static Authenticator buildAuthenticatorWithWebIdOIDC(final boolean enabled, final String baseUrl,
+                                                                final int cacheSize, final int cacheExpireDays) {
+        return enabled ? new WebIdOIDCAuthenticator(baseUrl, cacheSize, cacheExpireDays) : null;
     }
 
     private static List<String> filterKeyIds(final KeyStore ks, final List<String> keyids) throws KeyStoreException {

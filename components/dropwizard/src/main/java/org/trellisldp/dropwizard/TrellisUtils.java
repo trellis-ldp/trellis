@@ -35,10 +35,7 @@ import org.trellisldp.auth.oauth.NullAuthenticator;
 import org.trellisldp.auth.oauth.OAuthFilter;
 import org.trellisldp.auth.oauth.OAuthUtils;
 import org.trellisldp.cache.TrellisCache;
-import org.trellisldp.dropwizard.config.AuthConfiguration;
-import org.trellisldp.dropwizard.config.CORSConfiguration;
-import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
-import org.trellisldp.dropwizard.config.TrellisConfiguration;
+import org.trellisldp.dropwizard.config.*;
 import org.trellisldp.webac.WebAcService;
 
 /**
@@ -65,8 +62,10 @@ final class TrellisUtils {
             return sharedKeyAuthenticator;
         }
 
+        final WebIdOIDCConfiguration webIdOIDC = jwtConfig.getWebIdOIDC();
         final Authenticator webIdOIDCAuthenticator =
-                OAuthUtils.buildAuthenticatorWithWebIdOIDC(jwtConfig.getWebIdOIDC(), config.getBaseUrl());
+                OAuthUtils.buildAuthenticatorWithWebIdOIDC(webIdOIDC.getEnabled(), config.getBaseUrl(),
+                        webIdOIDC.getCacheSize(), webIdOIDC.getCacheExpireDays());
         if (webIdOIDCAuthenticator != null) {
             return webIdOIDCAuthenticator;
         }

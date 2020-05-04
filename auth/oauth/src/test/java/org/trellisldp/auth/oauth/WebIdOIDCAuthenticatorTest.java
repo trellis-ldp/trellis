@@ -120,7 +120,7 @@ class WebIdOIDCAuthenticatorTest {
         keyCache.put(DEFAULT_KEY_ID, publicKey);
     }
 
-    private final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator(BASE_URL, keyCache);
+    private final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator(BASE_URL, 50, 30, keyCache);
 
     @Test
     void testAuthenticateNoIdToken() {
