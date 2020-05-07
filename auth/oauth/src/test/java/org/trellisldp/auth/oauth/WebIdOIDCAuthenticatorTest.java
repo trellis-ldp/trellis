@@ -130,7 +130,7 @@ class WebIdOIDCAuthenticatorTest {
         claims.setIssuer("example.com");
         final String token = createJWTToken(headers, claims);
 
-        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -165,7 +165,7 @@ class WebIdOIDCAuthenticatorTest {
                 DEFAULT_ISSUER, new WebIdEntry(OAuthUtils.WEBID, DEFAULT_ID_TOKEN_SSUER + "/bob/profile#i"),
                 createCNF(base64Modulus));
 
-        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -176,7 +176,7 @@ class WebIdOIDCAuthenticatorTest {
         claims.put(ID_TOKEN_CLAIM, internalJws);
         final String token = createJWTToken(headers, claims);
 
-        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -184,14 +184,14 @@ class WebIdOIDCAuthenticatorTest {
         final String token = createPOPToken(BASE_URL, DEFAULT_ID_TOKEN_SSUER, DEFAULT_SUBJECT_ENTRY,
                 createCNF(64));
 
-        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
     void testCnfOfWrongType() {
         final String token = createPOPToken(BASE_URL, DEFAULT_ID_TOKEN_SSUER, DEFAULT_SUBJECT_ENTRY, "Wrong");
 
-        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -200,7 +200,7 @@ class WebIdOIDCAuthenticatorTest {
             createPOPToken(BASE_URL, "https://dark.com", DEFAULT_SUBJECT_ENTRY,
                     createCNF(base64Modulus));
 
-        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -208,7 +208,7 @@ class WebIdOIDCAuthenticatorTest {
         final String token =
             createPOPToken(BASE_URL, DEFAULT_ID_TOKEN_SSUER, new WebIdEntry(), createCNF(base64Modulus));
 
-        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -216,7 +216,7 @@ class WebIdOIDCAuthenticatorTest {
         final String token =
             createPOPToken(BASE_URL, null, DEFAULT_SUBJECT_ENTRY, createCNF(base64Modulus));
 
-        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
@@ -224,7 +224,7 @@ class WebIdOIDCAuthenticatorTest {
         final String token = createPOPToken(null, DEFAULT_ID_TOKEN_SSUER, DEFAULT_SUBJECT_ENTRY,
                 createCNF(base64Modulus));
 
-        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
