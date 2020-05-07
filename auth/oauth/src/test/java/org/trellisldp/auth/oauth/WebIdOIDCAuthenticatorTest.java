@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2020 Aaron Coburn and individual contributors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -63,33 +65,8 @@ class WebIdOIDCAuthenticatorTest {
     private static final String DEFAULT_ID_TOKEN_SSUER = "https://solid.community";
     private static final String DEFAULT_ISSUER = "client as issuer";
 
-    private static class WebIdEntry implements Map.Entry<String, String> {
-        private final String key;
-        private final String value;
-
-        WebIdEntry() {
-            this(null, null);
-        }
-
-        WebIdEntry(final String key, final String value) {
-            this.key = key;
-            this.value = value;
-        }
-        @Override public String getKey() {
-            return key;
-        }
-
-        @Override public String getValue() {
-            return value;
-        }
-
-        @Override public String setValue(final String v) {
-            throw new UnsupportedOperationException();
-        }
-    }
-
     private static final Map.Entry<String, String> DEFAULT_SUBJECT_ENTRY =
-        new WebIdEntry("sub", "https://bob.solid.community/profile/card#me");
+            new WebIdEntry("sub", "https://bob.solid.community/profile/card#me");
 
     private static final Key privateKey;
     static {
@@ -121,6 +98,31 @@ class WebIdOIDCAuthenticatorTest {
     }
 
     private final WebIdOIDCAuthenticator authenticator = new WebIdOIDCAuthenticator(BASE_URL, 50, 30, keyCache);
+
+    private static class WebIdEntry implements Map.Entry<String, String> {
+        private final String key;
+        private final String value;
+
+        WebIdEntry() {
+            this(null, null);
+        }
+
+        WebIdEntry(final String key, final String value) {
+            this.key = key;
+            this.value = value;
+        }
+        @Override public String getKey() {
+            return key;
+        }
+
+        @Override public String getValue() {
+            return value;
+        }
+
+        @Override public String setValue(final String v) {
+            throw new UnsupportedOperationException();
+        }
+    }
 
     @Test
     void testAuthenticateNoIdToken() {
@@ -230,7 +232,7 @@ class WebIdOIDCAuthenticatorTest {
         final String token = createPOPToken("https://attacker.com", DEFAULT_ID_TOKEN_SSUER,
                 DEFAULT_SUBJECT_ENTRY, createCNF(base64Modulus));
 
-        assertThrows(WebIdOIDCAuthenticator.WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
+        assertThrows(WebIdOIDCJwtException.class, () -> authenticator.authenticate(token));
     }
 
     @Test
