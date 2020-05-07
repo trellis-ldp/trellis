@@ -208,7 +208,7 @@ public final class OAuthUtils {
                     .map(OAuthUtils::buildKeyEntry).filter(Objects::nonNull).collect(collectingAndThen(
                             toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
         } catch (final IOException ex) {
-            LOGGER.error("Error fetching/parsing jwk document at location {}", location, ex);
+            LOGGER.error(String.format("Error fetching/parsing jwk document at location %s", location), ex);
         }
         return emptyMap();
     }
