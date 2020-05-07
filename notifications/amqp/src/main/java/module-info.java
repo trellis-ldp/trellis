@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2020 Aaron Coburn and individual contributors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,7 +17,7 @@ module org.trellisldp.amqp {
     exports org.trellisldp.amqp;
 
     requires com.rabbitmq.client;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires microprofile.config.api;
     requires org.apache.commons.rdf.api;
     requires org.slf4j;

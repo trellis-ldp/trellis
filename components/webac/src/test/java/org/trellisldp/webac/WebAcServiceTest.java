@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2020 Aaron Coburn and individual contributors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -772,6 +774,22 @@ class WebAcServiceTest {
             assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.default_, rootIRI));
             assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.accessTo, rootIRI));
             assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.agentClass, FOAF.Agent));
+        }
+    }
+
+    @Test
+    void testGenerateDefaultRootAclCustomExternalResource() throws Exception {
+        final String resource = WebAcServiceTest.class.getResource("/customAcl.ttl").getFile();
+        final IRI rootAuth = rdf.createIRI(TRELLIS_DATA_PREFIX + "#auth");
+        try (final Dataset dataset = WebAcService.generateDefaultRootAuthorizationsDataset(resource)) {
+            assertEquals(4L, dataset.size());
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Read));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.default_, rootIRI));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.accessTo, rootIRI));
+            assertTrue(dataset.contains(of(PreferAccessControl), rootAuth, ACL.agentClass, FOAF.Agent));
+            assertFalse(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Write));
+            assertFalse(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Append));
+            assertFalse(dataset.contains(of(PreferAccessControl), rootAuth, ACL.mode, ACL.Control));
         }
     }
 

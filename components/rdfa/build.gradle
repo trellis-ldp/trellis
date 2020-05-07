@@ -26,7 +26,7 @@ dependencies {
     }
     testImplementation "org.apache.jena:jena-arq:$jenaVersion"
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
-    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
 }
 

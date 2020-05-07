@@ -19,7 +19,7 @@ dependencies {
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
-    testImplementation "io.smallrye:smallrye-config:$smallryeConfigVersion"
+    testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "io.smallrye.reactive:smallrye-reactive-streams-operators:$smallryeReactiveOperatorsVersion"
     testImplementation "io.smallrye.reactive:smallrye-reactive-messaging-provider:$smallryeReactiveVersion"
     testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"

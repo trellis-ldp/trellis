@@ -30,7 +30,7 @@ ext {
     activationApiVersion = "1.2.2"
     annotationApiVersion = "1.3.5"
     cdiApiVersion = "2.0.2"
-    injectApiVersion = "1.0"
+    injectApiVersion = "1.0.1"
     jaxbApiVersion = "2.3.3"
     jaxrsApiVersion = "2.1.6"
     jmsApiVersion = "2.0.3"
@@ -42,22 +42,23 @@ ext {
     // MicroProfile
     microprofileConfigVersion = "1.4"
     microprofileHealthVersion = "2.2"
-    microprofileMetricsVersion = "2.3"
+    microprofileMetricsVersion = "2.3.1"
     microprofileJwtVersion = "1.1.1"
     microprofileOpenapiVersion = "1.1.2"
     microprofileReactiveMessagingVersion = "1.0"
 
     // Component dependencies
     activeMqVersion = "5.15.12"
-    dropwizardVersion = "2.0.8"
+    dropwizardVersion = "2.0.9"
     guavaVersion = "29.0-jre"
-    jacksonVersion = "2.10.3"
+    jacksonVersion = "2.11.0"
     jenaVersion = "3.14.0"
     jjwtVersion = "0.11.1"
     jsonldVersion = "0.13.0"
     kafkaVersion = "2.5.0"
     mustacheVersion = "0.9.6"
-    quarkusVersion = "1.3.2.Final"
+    nettyVersion = "4.1.49.Final"
+    quarkusVersion = "1.4.2.Final"
     rabbitMqVersion = "5.9.0"
     rxjavaVersion = "2.2.19"
 
@@ -70,7 +71,7 @@ ext {
     bouncycastleVersion = "1.65"
     commonsTextVersion = "1.8"
     cxfVersion = "3.3.6"
-    glassfishJaxbVersion = "2.3.2"
+    glassfishJaxbVersion = "2.3.3"
     jerseyVersion = "2.30.1"
     junitVersion = "5.6.2"
     junitLauncherVersion = "1.6.2"
@@ -79,8 +80,8 @@ ext {
     mockitoVersion = "3.3.3"
     qpidVersion = "8.0.0"
     sleepycatVersion = "18.3.12"
-    smallryeConfigVersion = "1.5.0"
-    smallryeHealthVersion = "2.2.0"
+    smallryeConfigVersion = "1.7.0"
+    smallryeHealthVersion = "2.2.1"
     smallryeJwtVersion = "2.1.1"
     smallryeReactiveVersion = "1.0.8"
     smallryeReactiveOperatorsVersion = "1.0.12"
@@ -90,7 +91,7 @@ ext {
     // Tooling
     jacocoToolVersion = "0.8.5"
     checkstyleToolVersion = "8.31"
-    pitestToolVersion = "1.4.11"
+    pitestToolVersion = "1.5.1"
     pmdToolVersion = "6.22.0"
 
     // OSGi
@@ -100,7 +101,6 @@ ext {
     interceptorVersion = "1.2.5"
     jenaOsgiVersion = "3.13.1"
     jenaVersionRange = "[3.13,4)"
-    jsonApiVersion = "1.1.6"
     kafkaOsgiVersion = "2.3.1_1"
     karafVersion = "4.2.8"
     mustacheOsgiVersion = "0.9.6_1"
@@ -141,9 +141,9 @@ allprojects { subproj ->
 
     ext {
         vendor = 'Trellis LDP'
-        homepage = 'https://www.trellisldp.org'
+        homepage = 'https://www.trellisldp.org/'
         docURL = 'https://www.trellisldp.org/docs/trellis/current/apidocs/'
-        license = 'Apache 2'
+        license = 'Apache-2.0'
 
     }
 
@@ -357,6 +357,11 @@ subprojects { subproj ->
         }
     }
 
+    downloadLicenses {
+        includeProjectDependencies = true
+        dependencyConfiguration = 'compileClasspath'
+    }
+
     publishing {
         publications {
             maven(MavenPublication) {
@@ -389,9 +394,10 @@ subprojects { subproj ->
 
                     licenses {
                         license {
-                            name = 'Apache License, Version 2.0'
-                            url = 'http://www.apache.org/licenses/LICENSE-2.0'
-                            comments = 'Copyright (c) 2017-2020 Trellis LDP'
+                            name = 'Apache-2.0'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                            comments = 'Copyright (c) 2017 - 2020 Aaron Coburn and individual contributors'
+                            distribution = 'repo'
                         }
                     }
 

@@ -5,8 +5,8 @@ pluginManagement {
     }
     plugins {
         id 'biz.aQute.bnd.builder' version "4.1.0"
-        id 'info.solidsoft.pitest' version "1.4.8"
-        id 'io.quarkus' version "1.3.2.Final"
+        id 'info.solidsoft.pitest' version "1.4.9"
+        id 'io.quarkus' version "1.4.2.Final"
         id "net.wasdev.wlp.gradle.plugins.Liberty" version "2.7"
     }
 }

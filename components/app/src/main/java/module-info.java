@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2020 Aaron Coburn and individual contributors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,7 +20,7 @@ module org.trellisldp.app {
     requires transitive org.trellisldp.http;
     requires transitive org.trellisldp.vocabulary;
 
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires jakarta.enterprise.cdi.api;
 
     opens org.trellisldp.app;

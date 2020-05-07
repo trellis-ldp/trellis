@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2020 Aaron Coburn and individual contributors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,9 +26,11 @@ import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_LDP_MODEL_MODIFICATIONS;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.exists;
@@ -75,6 +79,7 @@ public class PutHandler extends MutatingLdpHandler {
     private final IRI heuristicType;
     private final boolean preconditionRequired;
     private final boolean createUncontained;
+    private final boolean supportsLdpTypeModifications;
 
     /**
      * Create a builder for an LDP PUT response.
@@ -96,6 +101,8 @@ public class PutHandler extends MutatingLdpHandler {
         this.heuristicType = req.getContentType() != null && rdfSyntax == null ? LDP.NonRDFSource : LDP.RDFSource;
         this.preconditionRequired = preconditionRequired;
         this.createUncontained = createUncontained;
+        this.supportsLdpTypeModifications = getConfig()
+            .getOptionalValue(CONFIG_HTTP_LDP_MODEL_MODIFICATIONS, Boolean.class).orElse(Boolean.TRUE);
     }
 
     /**
@@ -153,8 +160,7 @@ public class PutHandler extends MutatingLdpHandler {
         }
 
         // It is not possible to change the LDP type to a type that is not a subclass
-        if (getResource() != null && !isBinaryDescription()
-                && ldpResourceTypes(ldpType).noneMatch(getResource().getInteractionModel()::equals)) {
+        if (hasInteractionModelChangeRestriction(ldpType)) {
             LOGGER.error("Cannot change the LDP type to {} for {}", ldpType, getIdentifier());
             throw new ClientErrorException("Cannot change the LDP type to " + ldpType, status(CONFLICT).build());
         }
@@ -182,6 +188,11 @@ public class PutHandler extends MutatingLdpHandler {
             + (getExtensionGraphName() != null ? "?ext=" + getRequest().getExt() : "");
     }
 
+    private boolean hasInteractionModelChangeRestriction(final IRI ldpType) {
+        return getResource() != null && !isBinaryDescription()
+                && ldpResourceTypes(ldpType).noneMatch(getResource().getInteractionModel()::equals);
+    }
+
     private static RDFSyntax getRdfSyntax(final String contentType, final List<RDFSyntax> syntaxes) {
         if (contentType != null) {
             final MediaType mediaType = MediaType.valueOf(contentType);
@@ -197,6 +208,9 @@ public class PutHandler extends MutatingLdpHandler {
     private IRI getLdpType() {
         if (isBinaryDescription()) {
             return LDP.NonRDFSource;
+        }
+        if (!supportsLdpTypeModifications && getResource() != null) {
+            return getResource().getInteractionModel();
         }
         final Link link = getRequest().getLink();
         if (link != null && Link.TYPE.equals(link.getRel())) {

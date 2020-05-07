@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2020 Aaron Coburn and individual contributors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,6 +54,9 @@ public final class HttpConstants {
 
     /** The default Memento TimeMap output format. */
     public static final String APPLICATION_LINK_FORMAT = "application/link-format";
+
+    /** Configuration key defining whether LDP interaction model modifications are supported. */
+    public static final String CONFIG_HTTP_LDP_MODEL_MODIFICATIONS = "trellis.http.ldp-model-modifications";
 
     /** Configuration key defining the server's base URL. */
     public static final String CONFIG_HTTP_BASE_URL = "trellis.http.base-url";

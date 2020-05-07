@@ -2,60 +2,9 @@ plugins {
     id 'io.quarkus'
 }
 
-repositories {
-    mavenLocal() {
-        content {
-            includeGroup "org.trellisldp"
-        }
-    }
-    mavenCentral()
-    // This is required for snyk integration with the quarkus project
-    // Once quarkus has better support for multi-project builds, this can be removed
-    maven {
-        url "https://oss.sonatype.org/content/repositories/snapshots"
-    }
-}
-
-def installForQuarkus = [
-    "trellis-api",
-    "trellis-app",
-    "trellis-audit",
-    "trellis-auth-jwt",
-    "trellis-cache",
-    "trellis-cdi",
-    "trellis-constraint-rules",
-    "trellis-event-jsonb",
-    "trellis-file",
-    "trellis-http",
-    "trellis-io-jena",
-    "trellis-namespaces",
-    "trellis-rdfa",
-    "trellis-reactive",
-    "trellis-triplestore",
-    "trellis-vocabulary",
-    "trellis-webac"
-]
-
 dependencies {
-    implementation enforcedPlatform("io.quarkus:quarkus-bom:$quarkusVersion")
-
-    implementation "org.trellisldp:trellis-api:${project.version}"
-    implementation "org.trellisldp:trellis-app:${project.version}"
-    implementation "org.trellisldp:trellis-audit:${project.version}"
-    implementation "org.trellisldp:trellis-auth-jwt:${project.version}"
-    implementation "org.trellisldp:trellis-cache:${project.version}"
-    implementation "org.trellisldp:trellis-cdi:${project.version}"
-    implementation "org.trellisldp:trellis-constraint-rules:${project.version}"
-    implementation "org.trellisldp:trellis-event-jsonb:${project.version}"
-    implementation "org.trellisldp:trellis-file:${project.version}"
-    implementation "org.trellisldp:trellis-http:${project.version}"
-    implementation "org.trellisldp:trellis-io-jena:${project.version}"
-    implementation "org.trellisldp:trellis-namespaces:${project.version}"
-    implementation "org.trellisldp:trellis-rdfa:${project.version}"
-    implementation "org.trellisldp:trellis-reactive:${project.version}"
-    implementation "org.trellisldp:trellis-triplestore:${project.version}"
-    implementation "org.trellisldp:trellis-vocabulary:${project.version}"
-    implementation "org.trellisldp:trellis-webac:${project.version}"
+    implementation platform("io.quarkus:quarkus-bom:$quarkusVersion")
+    implementation platform("io.netty:netty-bom:$nettyVersion")
 
     implementation 'io.quarkus:quarkus-jsonb'
     implementation 'io.quarkus:quarkus-resteasy'
@@ -69,9 +18,28 @@ dependencies {
     implementation "com.github.jsonld-java:jsonld-java:$jsonldVersion"
     implementation "com.github.spullara.mustache.java:compiler:$mustacheVersion"
     implementation "com.google.guava:guava:$guavaVersion"
+    implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "org.apache.jena:jena-arq:$jenaVersion"
     implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
     implementation "org.apache.jena:jena-tdb2:$jenaVersion"
+
+    implementation project(":trellis-api")
+    implementation project(":trellis-app")
+    implementation project(":trellis-audit")
+    implementation project(":trellis-auth-jwt")
+    implementation project(":trellis-cache")
+    implementation project(":trellis-cdi")
+    implementation project(":trellis-constraint-rules")
+    implementation project(":trellis-event-jsonb")
+    implementation project(":trellis-file")
+    implementation project(":trellis-http")
+    implementation project(":trellis-io-jena")
+    implementation project(":trellis-namespaces")
+    implementation project(":trellis-rdfa")
+    implementation project(":trellis-reactive")
+    implementation project(":trellis-triplestore")
+    implementation project(":trellis-vocabulary")
+    implementation project(":trellis-webac")
 
     runtimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
     runtimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
@@ -96,12 +64,6 @@ sonarqube {
     skipProject = true
 }
 
-rootProject.childProjects.each { n, p ->
-    if (installForQuarkus.contains(p.name)) {
-        tasks.compileJava.dependsOn p.tasks.install
-    }
-}
-
 buildNative.enabled = false
 
 java {
@@ -109,11 +71,5 @@ java {
     if (project.hasProperty("jpms") && JavaVersion.current().isJava11Compatible()) {
         disableAutoTargetJvm()
     }
-}
-
-// This subproject is not part of the release and its dependencies should not
-// be considered during the release process.
-release {
-    ignoredSnapshotDependencies = installForQuarkus.collect { "org.trellisldp:" + it }
 }
 

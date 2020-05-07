@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2020 Aaron Coburn and individual contributors
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,7 +24,7 @@ module org.trellisldp.webac {
     requires org.slf4j;
 
     requires jakarta.enterprise.cdi.api;
-    requires jakarta.inject.api;
+    requires jakarta.inject;
     requires java.annotation;
     requires java.xml.bind;
     requires java.ws.rs;

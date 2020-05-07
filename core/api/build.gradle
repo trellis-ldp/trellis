@@ -13,6 +13,7 @@ ext {
 
 dependencies {
     api "org.apache.commons:commons-rdf-api:$commonsRdfVersion"
+    api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
     api "jakarta.enterprise:jakarta.enterprise.cdi-api:$cdiApiVersion"
 
     testImplementation "commons-io:commons-io:$commonsIoVersion"
