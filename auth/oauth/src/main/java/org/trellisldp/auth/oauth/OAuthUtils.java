@@ -203,12 +203,12 @@ public final class OAuthUtils {
     static Map<String, Key> fetchKeys(final String location) {
         // TODO eventually, this will become part of the JJWT library
         final Deserializer<Map<String, List<Map<String, String>>>> deserializer = new JacksonDeserializer<>();
-        try (final InputStream input = new URL(location).openConnection().getInputStream()) {
+        try (final InputStream input = new URL(location).openStream()) {
             return deserializer.deserialize(IOUtils.toByteArray(input)).getOrDefault("keys", emptyList()).stream()
                     .map(OAuthUtils::buildKeyEntry).filter(Objects::nonNull).collect(collectingAndThen(
                             toMap(Map.Entry::getKey, Map.Entry::getValue), Collections::unmodifiableMap));
         } catch (final IOException ex) {
-            LOGGER.error("Error fetching/parsing jwk document", ex);
+            LOGGER.error("Error fetching/parsing jwk document at location {}", location, ex);
         }
         return emptyMap();
     }

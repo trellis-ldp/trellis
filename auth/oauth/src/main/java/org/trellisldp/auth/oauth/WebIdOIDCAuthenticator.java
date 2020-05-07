@@ -41,13 +41,14 @@ import org.trellisldp.cache.TrellisCache;
 public class WebIdOIDCAuthenticator implements Authenticator {
     private static final String OPENID_CONFIGURATION_PATH = "/.well-known/openid-configuration";
     private static final String JWKS_URI_CLAIM = "jwks_uri";
-    private final String baseUrl;
-    private final TrellisCache<String, Key> keys;
     static final String KEY_ID_HEADER = "kid";
     static final String ID_TOKEN_CLAIM = "id_token";
     static final String CNF_CLAIM = "cnf";
     static final String TOKEN_TYPE_CLAIM = "token_type";
     static final String POP_TOKEN = "pop";
+
+    private final String baseUrl;
+    private final TrellisCache<String, Key> keys;
 
     /**
      * Own exception to signal a malformed JWT according to the expectations of this authenticator.
@@ -144,7 +145,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
                             final Map<String, Key> fetchedKeys = OAuthUtils.fetchKeys(fetchJwksUri(issuer));
                             if (!fetchedKeys.containsKey(id)) {
                                 throw new WebIdOIDCJwtException(
-                                        String.format("Couldn't find key id %s= by provider %s", id, issuer));
+                                        String.format("Couldn't find key id %s for token issuer %s", id, issuer));
                             }
                             return fetchedKeys.get(id);
                         });
@@ -164,7 +165,8 @@ public class WebIdOIDCAuthenticator implements Authenticator {
             }
             return jwksUri;
         } catch (final Exception ex) {
-            throw new WebIdOIDCJwtException("Error fetching/parsing WebId-OIDC provider configuration", ex);
+            throw new WebIdOIDCJwtException(
+                    String.format("Error fetching/parsing WebId-OIDC provider configuration for %s", issuer), ex);
         }
     }
 
@@ -177,7 +179,7 @@ public class WebIdOIDCAuthenticator implements Authenticator {
         final String subject = idTokenClaims.getSubject();
         if (webId == null && subject == null) {
             final String msg =
-                "WebId provider confirmation failed. At least the webid or the sub claim mus be present, found none.";
+                "WebId provider confirmation failed. At least the webid or the sub claim must be present, found none.";
             throw new WebIdOIDCJwtException(msg);
         }
         final String webIdClaim = webId != null ? webId : subject;
@@ -191,13 +193,18 @@ public class WebIdOIDCAuthenticator implements Authenticator {
             final boolean isIssuerHttpURI = issuerURI.getScheme().startsWith("http");
             final boolean isWebIdHttpURI = webIdURI.getScheme().startsWith("http");
             final boolean isSubDomainOrSameOrigin = webIdURI.getHost().endsWith(issuerURI.getHost());
-            if (!isIssuerHttpURI || !isWebIdHttpURI || !isSubDomainOrSameOrigin) {
-                throw new WebIdOIDCJwtException(
-                    String.format("WebId provider confirmation failed, (iss, webid)=(%s, %s).", issuer, webIdClaim));
+            if (!isIssuerHttpURI || !isWebIdHttpURI) {
+                throw new WebIdOIDCJwtException(String.format(
+                        "Issuer and WebId must be HTTP(S) URIs, (iss, webid)=(%s, %s).", issuer, webIdClaim));
+            }
+            if (!isSubDomainOrSameOrigin) {
+                throw new WebIdOIDCJwtException(String.format(
+                        "WebId has neither same domain nor is subdomain of issuer, (iss, webid)=(%s, %s).",
+                        issuer, webIdClaim));
             }
         } catch (final URISyntaxException e) {
             throw new WebIdOIDCJwtException(
-                String.format("WebId provider confirmation failed, received invalid URI: (iss, sub)=(%s, %s).",
+                String.format("WebId provider confirmation failed, received invalid URI: (iss, webid)=(%s, %s).",
                     issuer, webIdClaim), e);
         }
     }
