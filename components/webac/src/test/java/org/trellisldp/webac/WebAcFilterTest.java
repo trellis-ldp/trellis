@@ -379,7 +379,7 @@ class WebAcFilterTest {
             .thenReturn("return=representation; include=\"" + Trellis.PreferAudit.getIRIString() + "\"");
 
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
-                "No expception thrown when not authorized!");
+                "No exception thrown when not authorized!");
 
         modes.add(ACL.Control);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Control ability!");
@@ -519,5 +519,23 @@ class WebAcFilterTest {
         when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         final Session session = WebAcFilter.buildSession(mockContext, null);
         assertEquals(webid, session.getAgent().getIRIString());
+    }
+
+    @Test
+    void testWebAcChecksCanBeDisabled() {
+        when(mockContext.getMethod()).thenReturn("GET");
+
+        final Set<IRI> modes = new HashSet<>();
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
+
+        try {
+            System.setProperty(WebAcFilter.CONFIG_WEBAC_ENABED, "false");
+            final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+
+            assertDoesNotThrow(() -> filter.filter(mockContext),
+                    "No exception thrown when WebAC is disabled!");
+        } finally {
+            System.clearProperty(WebAcFilter.CONFIG_WEBAC_ENABED);
+        }
     }
 }

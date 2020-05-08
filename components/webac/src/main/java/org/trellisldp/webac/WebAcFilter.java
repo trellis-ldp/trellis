@@ -111,8 +111,12 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     /** The configuration key controlling the scope(s) used in a WWW-Authenticate header. */
     public static final String CONFIG_WEBAC_SCOPE = "trellis.webac.scope";
 
+    /** The configuration key controlling if WebAC checks are enabled or not. Its enabled by default. */
+    public static final String CONFIG_WEBAC_ENABED = "trellis.webac.enabled";
+
     /** The session value for storing access modes. */
     public static final String SESSION_WEBAC_MODES = "trellis.webac.session-modes";
+
 
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
     private static final Set<String> readable = new HashSet<>(asList("GET", "HEAD", "OPTIONS"));
@@ -123,6 +127,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     protected final WebAcService accessService;
     private final List<String> challenges;
     private final String baseUrl;
+    private final boolean enabled;
 
     /**
      * For use with RESTeasy and CDI proxies.
@@ -149,7 +154,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
                 asList(config.getOptionalValue(CONFIG_WEBAC_CHALLENGES, String.class).orElse("").split(",")),
                 config.getOptionalValue(CONFIG_WEBAC_REALM, String.class).orElse("trellis"),
                 config.getOptionalValue(CONFIG_WEBAC_SCOPE, String.class).orElse(""),
-                config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
+                config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null),
+                config.getOptionalValue(CONFIG_WEBAC_ENABED, Boolean.class).orElse(Boolean.TRUE));
     }
 
     /**
@@ -160,9 +166,26 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param realm the authentication realm
      * @param scope the authentication scope
      * @param baseUrl the base URL, may be null
+     * @deprecated This constructor should not be used and will be removed in a future release
+     */
+    @Deprecated
+    public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes,
+                       final String realm, final String scope, final String baseUrl) {
+        this(accessService, challengeTypes, realm, scope, baseUrl, Boolean.TRUE);
+    }
+
+    /**
+     * Create a WebAc-based auth filter.
+     *
+     * @param accessService the access service
+     * @param challengeTypes the WWW-Authenticate challenge types
+     * @param realm the authentication realm
+     * @param scope the authentication scope
+     * @param baseUrl the base URL, may be null
+     * @param enabled boolean flag to enable or disable WebAC
      */
     public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes,
-            final String realm, final String scope, final String baseUrl) {
+            final String realm, final String scope, final String baseUrl, final boolean enabled) {
         requireNonNull(challengeTypes, "Challenges may not be null!");
         requireNonNull(realm, "Realm may not be null!");
         requireNonNull(scope, "Scope may not be null!");
@@ -174,6 +197,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + realmParam + scopeParam)
             .collect(toList());
         this.baseUrl = baseUrl;
+        this.enabled = enabled;
         final Config config = getConfig();
         config.getOptionalValue(CONFIG_WEBAC_READABLE_METHODS, String.class).ifPresent(r ->
                 stream(r.split(",")).map(String::trim).map(String::toUpperCase).forEach(readable::add));
@@ -186,6 +210,10 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     @Timed
     @Override
     public void filter(final ContainerRequestContext ctx) {
+        if (!enabled) {
+            return; // If WebAC is disabled then skip the checks
+        }
+
         final String path = ctx.getUriInfo().getPath();
         final Session s = buildSession(ctx, baseUrl);
         final String method = ctx.getMethod();
