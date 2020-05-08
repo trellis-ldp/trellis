@@ -166,7 +166,9 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param realm the authentication realm
      * @param scope the authentication scope
      * @param baseUrl the base URL, may be null
+     * @deprecated This constructor should not be used and will be removed in a future release
      */
+    @Deprecated
     public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes,
                        final String realm, final String scope, final String baseUrl) {
         this(accessService, challengeTypes, realm, scope, baseUrl, Boolean.TRUE);
