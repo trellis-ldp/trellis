@@ -57,6 +57,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.test.JerseyTest;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
@@ -161,11 +162,17 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     @BeforeEach
     void setUpMocks() {
+        System.setProperty(WebSubHeaderFilter.CONFIG_HTTP_WEB_SUB_HUB, HUB);
         setUpBundler();
         setUpResourceService();
         setUpMementoService();
         setUpBinaryService();
         setUpResources();
+    }
+
+    @AfterEach
+    void cleanUpProperties() {
+        System.clearProperty(WebSubHeaderFilter.CONFIG_HTTP_WEB_SUB_HUB);
     }
 
     private void setUpBundler() {

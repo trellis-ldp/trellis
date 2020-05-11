@@ -94,11 +94,19 @@ final class TrellisUtils {
         final Set<String> admins = new HashSet<>(config.getAuth().getAdminUsers());
 
         if (auth.getJwt().getEnabled()) {
-            filters.add(new OAuthFilter(getJwtAuthenticator(auth.getJwt()), realm, admins));
+            final OAuthFilter filter = new OAuthFilter();
+            filter.setAuthenticator(getJwtAuthenticator(auth.getJwt()));
+            filter.setChallenge("Bearer realm=\"" + realm + "\"");
+            filter.setAdmins(admins);
+            filters.add(filter);
         }
 
         if (auth.getBasic().getEnabled() && auth.getBasic().getUsersFile() != null) {
-            filters.add(new BasicAuthFilter(new File(auth.getBasic().getUsersFile()), realm, admins));
+            final BasicAuthFilter filter = new BasicAuthFilter();
+            filter.setFile(new File(auth.getBasic().getUsersFile()));
+            filter.setChallenge("Basic realm=\"" + realm + "\"");
+            filter.setAdmins(admins);
+            filters.add(filter);
         }
 
         return filters;

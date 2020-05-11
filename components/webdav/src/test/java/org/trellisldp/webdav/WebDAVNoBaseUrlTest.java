@@ -26,9 +26,11 @@ import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.SecurityContext;
 
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.http.TrellisHttpResource;
+import org.trellisldp.http.core.ServiceBundler;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
@@ -79,10 +81,16 @@ class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
 
         config.register(new DebugExceptionMapper());
         config.register(new TestAuthnFilter("testUser", ""));
-        config.register(new TrellisWebDAVRequestFilter(mockBundler));
+        config.register(new TrellisWebDAVRequestFilter());
         config.register(new TrellisWebDAVResponseFilter());
         config.register(new TrellisWebDAV(mockBundler));
         config.register(new TrellisHttpResource(mockBundler));
+        config.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(mockBundler).to(ServiceBundler.class);
+            }
+        });
         return config;
     }
 }

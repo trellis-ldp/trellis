@@ -40,12 +40,14 @@ class TrellisHttpResourceNoAgentTest extends AbstractTrellisHttpResourceTest {
         // Junit runner doesn't seem to work very well with JerseyTest
         initMocks(this);
 
+        System.setProperty(WebSubHeaderFilter.CONFIG_HTTP_WEB_SUB_HUB, HUB);
+
         final String baseUri = getBaseUri().toString();
 
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler, singletonMap(ACL, PreferAccessControl), baseUri));
         config.register(new CacheControlFilter());
-        config.register(new WebSubHeaderFilter(HUB));
+        config.register(new WebSubHeaderFilter());
         config.register(new TrellisHttpFilter());
         return config;
     }

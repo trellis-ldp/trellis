@@ -83,7 +83,8 @@ class OAuthFilterTest {
         when(mockCtx.getSecurityContext()).thenReturn(null);
         when(mockCtx.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
-        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key));
+        final OAuthFilter filter = new OAuthFilter();
+        filter.setAuthenticator(new JwtAuthenticator(key));
         filter.filter(mockCtx);
         verify(mockCtx).setSecurityContext(securityArgument.capture());
         assertEquals(WEBID1, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
@@ -101,7 +102,8 @@ class OAuthFilterTest {
         when(mockSecurityContext.isSecure()).thenReturn(true);
         when(mockCtx.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
-        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key));
+        final OAuthFilter filter = new OAuthFilter();
+        filter.setAuthenticator(new JwtAuthenticator(key));
         filter.filter(mockCtx);
         verify(mockCtx).setSecurityContext(securityArgument.capture());
         assertEquals(WEBID1, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
@@ -118,7 +120,8 @@ class OAuthFilterTest {
         when(mockCtx.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockCtx.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
-        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key));
+        final OAuthFilter filter = new OAuthFilter();
+        filter.setAuthenticator(new JwtAuthenticator(key));
         filter.filter(mockCtx);
         verify(mockCtx).setSecurityContext(securityArgument.capture());
         assertEquals(WEBID1, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
@@ -134,7 +137,8 @@ class OAuthFilterTest {
         when(mockCtx.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockCtx.getHeaderString(AUTHORIZATION)).thenReturn(null);
 
-        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key));
+        final OAuthFilter filter = new OAuthFilter();
+        filter.setAuthenticator(new JwtAuthenticator(key));
         filter.filter(mockCtx);
         verify(mockCtx, never()).setSecurityContext(securityArgument.capture());
     }
@@ -145,7 +149,8 @@ class OAuthFilterTest {
         final String token = Jwts.builder().claim("webid", WEBID2).signWith(key).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
-        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key));
+        final OAuthFilter filter = new OAuthFilter();
+        filter.setAuthenticator(new JwtAuthenticator(key));
         filter.filter(mockContext);
         verify(mockContext).setSecurityContext(securityArgument.capture());
         assertEquals(WEBID2, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
@@ -161,7 +166,10 @@ class OAuthFilterTest {
         final String token = Jwts.builder().claim("webid", WEBID2).signWith(key).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
-        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key), "trellis", singleton(WEBID2));
+        final OAuthFilter filter = new OAuthFilter();
+        filter.setAuthenticator(new JwtAuthenticator(key));
+        filter.setChallenge("Bearer realm=\"trellis\"");
+        filter.setAdmins(singleton(WEBID2));
         filter.filter(mockContext);
         verify(mockContext).setSecurityContext(securityArgument.capture());
         assertEquals(WEBID2, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
@@ -178,8 +186,8 @@ class OAuthFilterTest {
         final String token = Jwts.builder().setSubject(WEBID1).signWith(hmacShaKeyFor(key.getBytes(UTF_8))).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
-        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(hmacShaKeyFor(key.replaceFirst("B", "A")
-                        .getBytes())));
+        final OAuthFilter filter = new OAuthFilter();
+        filter.setAuthenticator(new JwtAuthenticator(hmacShaKeyFor(key.replaceFirst("B", "A").getBytes())));
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext));
     }
 
@@ -190,7 +198,8 @@ class OAuthFilterTest {
             .signWith(key).compact();
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("Bearer " + token);
 
-        final OAuthFilter filter = new OAuthFilter(new JwtAuthenticator(key));
+        final OAuthFilter filter = new OAuthFilter();
+        filter.setAuthenticator(new JwtAuthenticator(key));
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext));
     }
 

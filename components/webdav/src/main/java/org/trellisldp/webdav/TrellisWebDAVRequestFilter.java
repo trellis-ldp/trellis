@@ -15,6 +15,7 @@
  */
 package org.trellisldp.webdav;
 
+import static java.util.Objects.requireNonNull;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
@@ -55,28 +56,30 @@ import org.trellisldp.vocabulary.LDP;
 @PreMatching
 public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
 
-    private final ServiceBundler services;
-    private final boolean createUncontained;
-    private final String baseUrl;
+
+    private boolean createUncontained;
+    private String baseUrl;
+    private ServiceBundler services;
+
+    /**
+     * Create a Trellis HTTP request filter for WebDAV.
+     */
+    public TrellisWebDAVRequestFilter() {
+        final Config config = getConfig();
+        this.createUncontained = config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class)
+            .orElse(Boolean.FALSE);
+        this.baseUrl = config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null);
+    }
 
     /**
      * Create a Trellis HTTP request filter for WebDAV.
      *
      * @param services the Trellis application bundle
+     * @deprecated This constructor should not be used and will be removed in a future release
      */
-    @Inject
+    @Deprecated
     public TrellisWebDAVRequestFilter(final ServiceBundler services) {
         this(services, getConfig());
-    }
-
-    /**
-     * For use with RESTeasy and CDI proxies.
-     *
-     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
-     *          It should not be invoked directly in user code.
-     */
-    public TrellisWebDAVRequestFilter() {
-        this(null);
     }
 
     private TrellisWebDAVRequestFilter(final ServiceBundler services, final Config config) {
@@ -91,11 +94,38 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
      * @param services the Trellis application bundle
      * @param createUncontained whether the put-uncontained configuration is in effect
      * @param baseUrl the baseURL
+     * @deprecated This constructor should not be used and will be removed in a future release
      */
+    @Deprecated
     public TrellisWebDAVRequestFilter(final ServiceBundler services, final boolean createUncontained,
             final String baseUrl) {
         this.services = services;
         this.createUncontained = createUncontained;
+        this.baseUrl = baseUrl;
+    }
+
+    /**
+     * Set the service bundler.
+     * @param services the services
+     */
+    @Inject
+    public void setServiceBundler(final ServiceBundler services) {
+        this.services = requireNonNull(services, "Services may not be null!");
+    }
+
+    /**
+     * Set the create-uncontained flag.
+     * @param createUncontained whether created resources should be uncontained by parent containers
+     */
+    public void setCreateUncontained(final boolean createUncontained) {
+        this.createUncontained = createUncontained;
+    }
+
+    /**
+     * Set the base URL.
+     * @param baseUrl the base URL
+     */
+    public void setBaseUrl(final String baseUrl) {
         this.baseUrl = baseUrl;
     }
 

@@ -128,7 +128,8 @@ class WebAcFilterTest {
     void testFilterUnknownMethod() {
         when(mockContext.getMethod()).thenReturn("FOO");
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Exception thrown with unknown method!");
     }
 
@@ -138,7 +139,8 @@ class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("GET");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
@@ -163,7 +165,8 @@ class WebAcFilterTest {
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
         when(mockUriInfo.getPath()).thenReturn("container/");
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
@@ -182,7 +185,8 @@ class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("READ");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
@@ -201,7 +205,8 @@ class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("PUT");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Write);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Write ability!");
 
@@ -221,7 +226,8 @@ class WebAcFilterTest {
         when(mockContext.getHeaderString(eq(PREFER))).thenReturn("return=representation");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Write);
 
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
@@ -238,7 +244,8 @@ class WebAcFilterTest {
         when(mockContext.getHeaderString(eq(PREFER))).thenReturn("return=minimal");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Write);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Write ability!");
 
@@ -252,7 +259,8 @@ class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("WRITE");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Write);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Write ability!");
 
@@ -271,7 +279,8 @@ class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("POST");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Append);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Append ability!");
 
@@ -296,7 +305,8 @@ class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("APPEND");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Append);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Append ability!");
 
@@ -321,7 +331,8 @@ class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("GET");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
@@ -346,7 +357,8 @@ class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("GET");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
@@ -370,7 +382,8 @@ class WebAcFilterTest {
         when(mockContext.getMethod()).thenReturn("GET");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
@@ -391,12 +404,39 @@ class WebAcFilterTest {
     }
 
     @Test
+    @SuppressWarnings("deprecation")
+    void testDeprecatedMethod() {
+        final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getMethod()).thenReturn("GET");
+        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
+
+        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+        modes.add(ACL.Read);
+        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
+
+        verify(mockContext).setProperty(eq(WebAcFilter.SESSION_WEBAC_MODES), modesArgument.capture());
+        assertTrue(modesArgument.getValue().contains(ACL.Read));
+        assertEquals(modes.size(), modesArgument.getValue().size());
+
+        modes.clear();
+        assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
+                "No expception thrown when not authorized!");
+
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
+        assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
+                "No exception thrown!");
+    }
+
+    @Test
     void testFilterChallenges() {
         when(mockContext.getMethod()).thenReturn("POST");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "my-scope",
-                "http://example.com/");
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
+        filter.setChallenges(asList("Foo realm=\"my-realm\" scope=\"my-scope\"",
+                    "Bar realm=\"my-realm\" scope=\"my-scope\""));
+        filter.setBaseUrl("http://example.com/");
 
         final List<Object> challenges = assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No auth exception thrown with no access modes!").getChallenges();
@@ -411,7 +451,8 @@ class WebAcFilterTest {
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "", null);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -430,7 +471,8 @@ class WebAcFilterTest {
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "", null);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -444,8 +486,8 @@ class WebAcFilterTest {
         when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockUriInfo.getPath()).thenReturn("/path");
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "",
-                "http://example.com/");
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -468,7 +510,8 @@ class WebAcFilterTest {
         when(mockUriInfo.getQueryParameters()).thenReturn(params);
         when(mockUriInfo.getPath()).thenReturn("path/");
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "", null);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -486,7 +529,8 @@ class WebAcFilterTest {
         when(mockResponseContext.getStatusInfo()).thenReturn(FORBIDDEN);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
 
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService, asList("Foo", "Bar"), "my-realm", "", null);
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -530,7 +574,8 @@ class WebAcFilterTest {
 
         try {
             System.setProperty(WebAcFilter.CONFIG_WEBAC_ENABED, "false");
-            final WebAcFilter filter = new WebAcFilter(mockWebAcService);
+            final WebAcFilter filter = new WebAcFilter();
+            filter.setAccessService(mockWebAcService);
 
             assertDoesNotThrow(() -> filter.filter(mockContext),
                     "No exception thrown when WebAC is disabled!");
