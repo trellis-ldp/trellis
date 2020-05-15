@@ -1,0 +1,2 @@
+id,subject,interaction_model,modified,acl
+0,trellis:data/,http://www.w3.org/ns/ldp#BasicContainer,0,FALSE

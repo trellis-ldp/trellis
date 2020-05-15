@@ -122,6 +122,16 @@ public class OSGiTest {
     }
 
     @Test
+    public void testJdbcInstallation() throws Exception {
+        if (!featuresService.isInstalled(featuresService.getFeature("trellis-jdbc"))) {
+            featuresService.installFeature("trellis-jdbc");
+        }
+        assertTrue("trellis-jdbc not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-jdbc")));
+        checkTrellisBundlesAreActive();
+    }
+
+    @Test
     public void testTriplestoreInstallation() throws Exception {
         if (!featuresService.isInstalled(featuresService.getFeature("trellis-triplestore"))) {
             featuresService.installFeature("trellis-triplestore");

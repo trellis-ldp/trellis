@@ -58,6 +58,6 @@ to have Java 8+ available. The software can be built with [Gradle](https://gradl
 
 * [py-ldnlib](https://github.com/trellis-ldp/py-ldnlib) A Python3 library for linked data notifications
 * [static-ldp](https://github.com/trellis-ldp/static-ldp) A PHP application that serves static files as LDP resources
-* [trellis-extensions](https://github.com/trellis-ldp/trellis-extensions) Trellis extension modules, including high performance persistence layers
+* [trellis-extensions](https://github.com/trellis-ldp/trellis-extensions) Trellis extension modules
 * [camel-ldp-recipes](https://github.com/trellis-ldp/camel-ldp-recipes) Integration workflows built with [Apache Camel](https://camel.apache.org)
 

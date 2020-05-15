@@ -147,6 +147,23 @@
     <bundle>mvn:org.trellisldp/trellis-namespaces/${project.version}</bundle>
   </feature>
 
+  <feature name="trellis-jdbc" version="${project.version}">
+    <details>Installs the JDBC-based Resource service</details>
+
+    <feature prerequisite="true">wrap</feature>
+
+    <feature dependency="true">commons-rdf-jena</feature>
+    <feature dependency="true">trellis-api</feature>
+    <feature dependency="true">trellis-vocabulary</feature>
+
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
+    <bundle dependency="true">mvn:org.eclipse.microprofile.health/microprofile-health-api/${microprofileHealthVersion}</bundle>
+    <bundle dependency="true">wrap:mvn:org.jdbi/jdbi3-core/${jdbiVersion}</bundle>
+
+    <bundle>mvn:org.trellisldp/trellis-jdbc/${project.version}</bundle>
+  </feature>
+
   <feature name="trellis-triplestore" version="${project.version}">
     <details>Installs the Triplestore-based Resource service</details>
 
