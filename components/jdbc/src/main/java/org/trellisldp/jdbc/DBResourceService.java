@@ -90,19 +90,19 @@ public class DBResourceService implements ResourceService {
     private static final String CONFIG_HTTP_EXTENSION_GRAPHS = "trellis.http.extension-graphs";
 
     /** Configuration key used to define a database connection url. */
-    public static final String CONFIG_DB_URL = "trellis.db.url";
+    public static final String CONFIG_JDBC_URL = "trellis.jdbc.url";
 
     /** Configuration key used to define the size of database write batches. */
-    public static final String CONFIG_DB_BATCH_SIZE = "trellis.db.batch-size";
+    public static final String CONFIG_JDBC_BATCH_SIZE = "trellis.jdbc.batch-size";
 
     /** The configuration key used to define whether to include the LDP type in an RDF body. */
-    public static final String CONFIG_DB_LDP_TYPE = "trellis.db.ldp-type";
+    public static final String CONFIG_JDBC_LDP_TYPE = "trellis.jdbc.ldp-type";
 
     /** The configuration key used to define whether indirect containers are supported. */
-    public static final String CONFIG_DB_DIRECT_CONTAINMENT = "trellis.db.direct-containment";
+    public static final String CONFIG_JDBC_DIRECT_CONTAINMENT = "trellis.jdbc.direct-containment";
 
     /** The configuration key used to define whether direct containers are supported. */
-    public static final String CONFIG_DB_INDIRECT_CONTAINMENT = "trellis.db.indirect-containment";
+    public static final String CONFIG_JDBC_INDIRECT_CONTAINMENT = "trellis.jdbc.indirect-containment";
 
     /** The default size of a database batch write operation. */
     public static final int DEFAULT_BATCH_SIZE = 1000;
@@ -127,7 +127,7 @@ public class DBResourceService implements ResourceService {
      * not be invoked directly.
      */
     public DBResourceService() {
-        this(Jdbi.create(getConfig().getOptionalValue(CONFIG_DB_URL, String.class).orElse("")),
+        this(Jdbi.create(getConfig().getOptionalValue(CONFIG_JDBC_URL, String.class).orElse("")),
                 DEFAULT_BATCH_SIZE, false, new DefaultIdentifierService());
     }
 
@@ -145,10 +145,10 @@ public class DBResourceService implements ResourceService {
      * @param jdbi the jdbi object
      */
     public DBResourceService(final Jdbi jdbi) {
-        this(jdbi, getConfig().getOptionalValue(CONFIG_DB_BATCH_SIZE, Integer.class).orElse(DEFAULT_BATCH_SIZE),
-                getConfig().getOptionalValue(CONFIG_DB_LDP_TYPE, Boolean.class).orElse(Boolean.TRUE),
-                getConfig().getOptionalValue(CONFIG_DB_DIRECT_CONTAINMENT, Boolean.class).orElse(Boolean.TRUE),
-                getConfig().getOptionalValue(CONFIG_DB_INDIRECT_CONTAINMENT, Boolean.class).orElse(Boolean.TRUE),
+        this(jdbi, getConfig().getOptionalValue(CONFIG_JDBC_BATCH_SIZE, Integer.class).orElse(DEFAULT_BATCH_SIZE),
+                getConfig().getOptionalValue(CONFIG_JDBC_LDP_TYPE, Boolean.class).orElse(Boolean.TRUE),
+                getConfig().getOptionalValue(CONFIG_JDBC_DIRECT_CONTAINMENT, Boolean.class).orElse(Boolean.TRUE),
+                getConfig().getOptionalValue(CONFIG_JDBC_INDIRECT_CONTAINMENT, Boolean.class).orElse(Boolean.TRUE),
                 of(load(IdentifierService.class)).map(ServiceLoader::iterator).filter(Iterator::hasNext)
                     .map(Iterator::next).orElseGet(DefaultIdentifierService::new));
     }

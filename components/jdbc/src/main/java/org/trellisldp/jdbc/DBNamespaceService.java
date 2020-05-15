@@ -47,7 +47,7 @@ public class DBNamespaceService implements NamespaceService {
      * <p>Note: this is generally used for CDI proxies and should not be invoked directly
      */
     public DBNamespaceService() {
-        this(Jdbi.create(getConfig().getOptionalValue(DBResourceService.CONFIG_DB_URL, String.class).orElse("")));
+        this(Jdbi.create(getConfig().getOptionalValue(DBResourceService.CONFIG_JDBC_URL, String.class).orElse("")));
     }
 
     /**

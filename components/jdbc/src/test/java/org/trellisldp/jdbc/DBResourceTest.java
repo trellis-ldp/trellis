@@ -122,21 +122,21 @@ class DBResourceTest {
     @Test
     void testNoargResourceService() {
         try {
-            System.setProperty(DBResourceService.CONFIG_DB_URL, pg.getJdbcUrl("postgres", "postgres"));
+            System.setProperty(DBResourceService.CONFIG_JDBC_URL, pg.getJdbcUrl("postgres", "postgres"));
             final ResourceService svc2 = new DBResourceService();
             final Resource res = svc2.get(root).toCompletableFuture().join();
             assertEquals(LDP.BasicContainer, res.getInteractionModel());
             assertFalse(res.getContainer().isPresent());
         } finally {
-            System.clearProperty(DBResourceService.CONFIG_DB_URL);
+            System.clearProperty(DBResourceService.CONFIG_JDBC_URL);
         }
     }
 
     @Test
     void testDisableExtendedContainers() {
         try {
-            System.setProperty(DBResourceService.CONFIG_DB_DIRECT_CONTAINMENT, "false");
-            System.setProperty(DBResourceService.CONFIG_DB_INDIRECT_CONTAINMENT, "false");
+            System.setProperty(DBResourceService.CONFIG_JDBC_DIRECT_CONTAINMENT, "false");
+            System.setProperty(DBResourceService.CONFIG_JDBC_INDIRECT_CONTAINMENT, "false");
             assertTrue(svc.supportedInteractionModels().contains(LDP.IndirectContainer));
             assertTrue(svc.supportedInteractionModels().contains(LDP.DirectContainer));
             final ResourceService svc2 = new DBResourceService(pg.getPostgresDatabase());
@@ -144,8 +144,8 @@ class DBResourceTest {
             assertFalse(svc2.supportedInteractionModels().contains(LDP.DirectContainer));
 
         } finally {
-            System.clearProperty(DBResourceService.CONFIG_DB_DIRECT_CONTAINMENT);
-            System.clearProperty(DBResourceService.CONFIG_DB_INDIRECT_CONTAINMENT);
+            System.clearProperty(DBResourceService.CONFIG_JDBC_DIRECT_CONTAINMENT);
+            System.clearProperty(DBResourceService.CONFIG_JDBC_INDIRECT_CONTAINMENT);
         }
     }
 
