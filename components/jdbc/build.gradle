@@ -1,0 +1,54 @@
+plugins {
+    id 'java-library'
+    id 'biz.aQute.bnd.builder'
+}
+
+description = 'Trellis JDBC component'
+
+ext {
+    moduleName = 'org.trellisldp.jdbc'
+    testModules = ['smallrye.config', 'org.trellisldp.test', 'org.trellisldp.file', 'liquibase.core']
+}
+
+dependencies {
+    api "jakarta.annotation:jakarta.annotation-api:$annotationApiVersion"
+    api "jakarta.enterprise:jakarta.enterprise.cdi-api:$cdiApiVersion"
+    api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
+    api "org.apache.commons:commons-lang3:$commonsLangVersion"
+    api "org.apache.commons:commons-rdf-api:$commonsRdfVersion"
+    api("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
+        exclude group: 'org.apache.jena', module: 'jena-osgi'
+        exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
+    }
+    api("org.apache.jena:jena-arq:$jenaVersion")
+    api "org.eclipse.microprofile.health:microprofile-health-api:$microprofileHealthVersion"
+    api "org.jdbi:jdbi3-core:$jdbiVersion"
+    api project(":trellis-api")
+
+    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    implementation project(":trellis-vocabulary")
+
+    testImplementation "com.google.guava:guava:$guavaVersion"
+    testImplementation "com.opentable.components:otj-pg-embedded:$otjPgVersion"
+    testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
+    testImplementation("io.smallrye:smallrye-health:$smallryeHealthVersion") {
+        exclude group: 'io.smallrye', module: 'smallrye-health-extension-api'
+    }
+    testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"
+    testImplementation "org.apache.commons:commons-text:$commonsTextVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.yaml:snakeyaml:$snakeyamlVersion"
+
+    testImplementation "org.liquibase:liquibase-core:$liquibaseVersion"
+
+    testImplementation project(":trellis-file")
+    testImplementation project(":trellis-test")
+}
+
+test {
+    systemProperty 'trellis.file.memento-path', "$buildDir/data/mementos"
+    systemProperty 'trellis.http.extension-graphs', "acl=http://www.trellisldp.org/ns/trellis#PreferAccessControl,test=http://example.com/TestGraph"
+}
+
