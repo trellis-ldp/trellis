@@ -124,10 +124,9 @@ class DBResourceTest {
         try {
             System.setProperty(DBResourceService.CONFIG_DB_URL, pg.getJdbcUrl("postgres", "postgres"));
             final ResourceService svc2 = new DBResourceService();
-            svc2.get(root).thenAccept(res -> {
-                assertEquals(LDP.BasicContainer, res.getInteractionModel());
-                assertFalse(res.getContainer().isPresent());
-            }).toCompletableFuture().join();
+            final Resource res = svc2.get(root).toCompletableFuture().join();
+            assertEquals(LDP.BasicContainer, res.getInteractionModel());
+            assertFalse(res.getContainer().isPresent());
         } finally {
             System.clearProperty(DBResourceService.CONFIG_DB_URL);
         }

@@ -109,10 +109,10 @@ public class DBResource implements Resource {
         this.includeLdpType = includeLdpType;
         this.supportDirectContainment = supportDirectContainment;
         this.supportIndirectContainment = supportIndirectContainment;
-        graphMapper.put(Trellis.PreferUserManaged, this::fetchUserQuads);
-        graphMapper.put(Trellis.PreferServerManaged, this::fetchServerQuads);
+        graphMapper.put(Trellis.PreferServerManaged, this::fetchServerManagedQuads);
+        graphMapper.put(Trellis.PreferUserManaged, this::fetchUserManagedQuads);
         graphMapper.put(Trellis.PreferAudit, this::fetchAuditQuads);
-        graphMapper.put(Trellis.PreferAccessControl, this::fetchAclQuads);
+        graphMapper.put(Trellis.PreferAccessControl, this::fetchAccessControlQuads);
         graphMapper.put(LDP.PreferContainment, this::fetchContainmentQuads);
         graphMapper.put(LDP.PreferMembership, this::fetchMembershipQuads);
 
@@ -274,14 +274,14 @@ public class DBResource implements Resource {
     /**
      * Fetch a stream of user-managed quads.
      */
-    private Stream<Quad> fetchUserQuads() {
+    private Stream<Quad> fetchUserManagedQuads() {
         return fetchQuadsFromTable("description", Trellis.PreferUserManaged);
     }
 
     /**
      * Fetch a stream of server-managed quads.
      */
-    private Stream<Quad> fetchServerQuads() {
+    private Stream<Quad> fetchServerManagedQuads() {
         if (includeLdpType) {
             return Stream.of(rdf.createQuad(Trellis.PreferServerManaged,
                             adjustIdentifier(getIdentifier(), getInteractionModel()), type, getInteractionModel()));
@@ -292,7 +292,7 @@ public class DBResource implements Resource {
     /**
      * Fetch a stream of webac quads.
      */
-    private Stream<Quad> fetchAclQuads() {
+    private Stream<Quad> fetchAccessControlQuads() {
         return fetchQuadsFromTable("acl", Trellis.PreferAccessControl);
     }
 
