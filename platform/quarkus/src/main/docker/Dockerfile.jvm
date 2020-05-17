@@ -14,7 +14,7 @@
 # docker run -i --rm -p 8080:8080 trellisldp/trellis-triplestore
 #
 ###
-FROM openjdk:8-jre-alpine
+FROM openjdk:11-jre-alpine
 LABEL maintainer="Aaron Coburn <acoburn@apache.org>"
 
 ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -XX:+ExitOnOutOfMemeoryError"
