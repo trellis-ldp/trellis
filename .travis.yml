@@ -63,7 +63,7 @@ jobs:
     # deploy to Docker hub
     - name: "Publish to Docker hub"
       stage: deploy
-      jdk: openjdk8
+      jdk: openjdk11
       if: (branch = master OR branch =~ /^trellis-\d+\.\d+\.\d+$/) AND type = push
       env: JOB=docker
       before_script: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
