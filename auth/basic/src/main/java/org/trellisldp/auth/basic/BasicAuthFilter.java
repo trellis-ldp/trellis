@@ -31,17 +31,18 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.annotation.Priority;
-import javax.inject.Inject;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.ext.Provider;
 
 import org.eclipse.microprofile.config.Config;
 
 /**
  * A basic authentication filter using an Authorization HTTP header.
  */
+@Provider
 @Priority(AUTHENTICATION)
 public class BasicAuthFilter implements ContainerRequestFilter {
 
@@ -57,22 +58,28 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     /** The admin role. */
     public static final String ADMIN_ROLE = "admin";
 
-    private final File file;
-    private final String challenge;
-    private final Set<String> admins;
+    private File file;
+    private String challenge;
+    private Set<String> admins;
 
     /**
      * Create a basic auth filter.
      */
-    @Inject
     public BasicAuthFilter() {
-        this(getConfig().getValue(CONFIG_AUTH_BASIC_CREDENTIALS, String.class));
+        final Config config = getConfig();
+        this.file = config.getOptionalValue(CONFIG_AUTH_BASIC_CREDENTIALS, String.class)
+            .map(File::new).orElse(null);
+        this.challenge = "Basic realm=\""
+            + config.getOptionalValue(CONFIG_AUTH_REALM, String.class).orElse("trellis") + "\"";
+        this.admins = unmodifiableSet(getConfiguredAdmins(config));
     }
 
     /**
      * Create a basic auth filter.
      * @param credentialsFile a credentials file
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public BasicAuthFilter(final String credentialsFile) {
         this(new File(credentialsFile));
     }
@@ -80,7 +87,9 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     /**
      * Create a basic auth filter.
      * @param file the credentials file
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public BasicAuthFilter(final File file) {
         this(file, getConfig());
     }
@@ -95,11 +104,37 @@ public class BasicAuthFilter implements ContainerRequestFilter {
      * @param file the credentials file
      * @param realm the authentication realm
      * @param admins the admin users
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public BasicAuthFilter(final File file, final String realm, final Set<String> admins) {
         this.file = file;
         this.challenge = "Basic realm=\"" + realm + "\"";
         this.admins = unmodifiableSet(requireNonNull(admins, "admins set may not be null!"));
+    }
+
+    /**
+     * Set the credentials file.
+     * @param file the credentials file
+     */
+    public void setFile(final File file) {
+        this.file = requireNonNull(file, "Credentials file may not be null!");
+    }
+
+    /**
+     * Set the challenge response on auth failures.
+     * @param challenge the challenge response
+     */
+    public void setChallenge(final String challenge) {
+        this.challenge = requireNonNull(challenge, "Challenge may not be null!");
+    }
+
+    /**
+     * Set the admin users.
+     * @param admins the admin users
+     */
+    public void setAdmins(final Set<String> admins) {
+        this.admins = requireNonNull(admins, "Admin set may not be null!");
     }
 
     @Override
@@ -118,7 +153,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
 
     private Principal authenticate(final String credentials) {
         final Credentials creds = Credentials.parse(credentials);
-        if (creds != null  && file.exists()) {
+        if (creds != null  && file != null && file.exists()) {
             final Path path = file.toPath();
             try (final Stream<String> lineStream = BasicAuthUtils.uncheckedLines(path)) {
                 return lineStream.map(String::trim).filter(line -> !line.startsWith("#"))
