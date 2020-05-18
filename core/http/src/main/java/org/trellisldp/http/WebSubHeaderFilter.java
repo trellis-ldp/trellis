@@ -49,17 +49,6 @@ public class WebSubHeaderFilter implements ContainerResponseFilter {
     }
 
     /**
-     * Create a new WebSub Header Decorator.
-     *
-     * @param hub the location of the websub hub
-     * @deprecated this constructor is deprecated and will be removed in a future release
-     */
-    @Deprecated
-    public WebSubHeaderFilter(final String hub) {
-        this.hub = hub;
-    }
-
-    /**
      * Set the hub value.
      * @param hub the WebSubHub location
      */

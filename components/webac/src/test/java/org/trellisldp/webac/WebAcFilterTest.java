@@ -404,30 +404,6 @@ class WebAcFilterTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    void testDeprecatedMethod() {
-        final Set<IRI> modes = new HashSet<>();
-        when(mockContext.getMethod()).thenReturn("GET");
-        when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(modes);
-
-        final WebAcFilter filter = new WebAcFilter(mockWebAcService);
-        modes.add(ACL.Read);
-        assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
-
-        verify(mockContext).setProperty(eq(WebAcFilter.SESSION_WEBAC_MODES), modesArgument.capture());
-        assertTrue(modesArgument.getValue().contains(ACL.Read));
-        assertEquals(modes.size(), modesArgument.getValue().size());
-
-        modes.clear();
-        assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
-                "No expception thrown when not authorized!");
-
-        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
-        assertThrows(ForbiddenException.class, () -> filter.filter(mockContext),
-                "No exception thrown!");
-    }
-
-    @Test
     void testFilterChallenges() {
         when(mockContext.getMethod()).thenReturn("POST");
         when(mockWebAcService.getAccessModes(any(IRI.class), any(Session.class))).thenReturn(emptySet());

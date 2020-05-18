@@ -86,35 +86,6 @@ public class OAuthFilter implements ContainerRequestFilter {
     }
 
     /**
-     * Create an OAuth filter with a defined authenticator.
-     * @param authenticator the authenticator
-     * @deprecated this constructor is deprecated and will be removed in a future release
-     */
-    @Deprecated
-    public OAuthFilter(final Authenticator authenticator) {
-        this(authenticator, getConfig());
-    }
-
-    private OAuthFilter(final Authenticator authenticator, final Config config) {
-        this(authenticator, config.getOptionalValue(CONFIG_AUTH_REALM, String.class).orElse("trellis"),
-                getConfiguredAdmins(config));
-    }
-
-    /**
-     * Create an OAuth filter with a defined authenticator.
-     * @param authenticator the authenticator
-     * @param realm the authentication realm
-     * @param admins the admin users
-     * @deprecated this constructor is deprecated and will be removed in a future release
-     */
-    @Deprecated
-    public OAuthFilter(final Authenticator authenticator, final String realm, final Set<String> admins) {
-        this.authenticator = authenticator;
-        this.challenge = "Bearer realm=\"" + realm + "\"";
-        this.admins = unmodifiableSet(requireNonNull(admins, "Admin set may not be null!"));
-    }
-
-    /**
      * Set the authenticator to use.
      * @param authenticator the authenticator in use
      */

@@ -75,45 +75,6 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     }
 
     /**
-     * Create a basic auth filter.
-     * @param credentialsFile a credentials file
-     * @deprecated this constructor is deprecated and will be removed in a future release
-     */
-    @Deprecated
-    public BasicAuthFilter(final String credentialsFile) {
-        this(new File(credentialsFile));
-    }
-
-    /**
-     * Create a basic auth filter.
-     * @param file the credentials file
-     * @deprecated this constructor is deprecated and will be removed in a future release
-     */
-    @Deprecated
-    public BasicAuthFilter(final File file) {
-        this(file, getConfig());
-    }
-
-    private BasicAuthFilter(final File file, final Config config) {
-        this(file, config.getOptionalValue(CONFIG_AUTH_REALM, String.class).orElse("trellis"),
-                getConfiguredAdmins(config));
-    }
-
-    /**
-     * Create a basic auth filter.
-     * @param file the credentials file
-     * @param realm the authentication realm
-     * @param admins the admin users
-     * @deprecated this constructor is deprecated and will be removed in a future release
-     */
-    @Deprecated
-    public BasicAuthFilter(final File file, final String realm, final Set<String> admins) {
-        this.file = file;
-        this.challenge = "Basic realm=\"" + realm + "\"";
-        this.admins = unmodifiableSet(requireNonNull(admins, "admins set may not be null!"));
-    }
-
-    /**
      * Set the credentials file.
      * @param file the credentials file
      */

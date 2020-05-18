@@ -72,39 +72,6 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
     }
 
     /**
-     * Create a Trellis HTTP request filter for WebDAV.
-     *
-     * @param services the Trellis application bundle
-     * @deprecated This constructor should not be used and will be removed in a future release
-     */
-    @Deprecated
-    public TrellisWebDAVRequestFilter(final ServiceBundler services) {
-        this(services, getConfig());
-    }
-
-    private TrellisWebDAVRequestFilter(final ServiceBundler services, final Config config) {
-        this(services,
-                config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class).orElse(Boolean.FALSE),
-                config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
-    }
-
-    /**
-     * Create a Trellis HTTP request filter for WebDAV.
-     *
-     * @param services the Trellis application bundle
-     * @param createUncontained whether the put-uncontained configuration is in effect
-     * @param baseUrl the baseURL
-     * @deprecated This constructor should not be used and will be removed in a future release
-     */
-    @Deprecated
-    public TrellisWebDAVRequestFilter(final ServiceBundler services, final boolean createUncontained,
-            final String baseUrl) {
-        this.services = services;
-        this.createUncontained = createUncontained;
-        this.baseUrl = baseUrl;
-    }
-
-    /**
      * Set the service bundler.
      * @param services the services
      */

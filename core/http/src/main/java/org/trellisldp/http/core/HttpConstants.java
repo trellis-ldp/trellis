@@ -106,10 +106,6 @@ public final class HttpConstants {
     /** The Memento link relation for original resources. */
     public static final String ORIGINAL = "original";
 
-    /** The name of the HTTP verb used to update resources. */
-    @Deprecated
-    public static final String PATCH = "PATCH";
-
     /** The name of the HTTP response code for a Precondition Required error. */
     public static final int PRECONDITION_REQUIRED = 428;
 

@@ -40,12 +40,6 @@ class TrellisUtilsTest {
         .withinRange('a', 'z').build();
 
     @Test
-    @SuppressWarnings("deprecation")
-    void testGetInstance() {
-        assertNotNull(TrellisUtils.getInstance(), "RDF instance is null!");
-    }
-
-    @Test
     void testCollectGraph() throws Exception {
         try (final Graph graph = generate(() -> rdf.createTriple(getIRI(), getIRI(), getIRI()))
                 .parallel().limit(size).collect(toGraph())) {
