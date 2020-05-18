@@ -124,12 +124,6 @@ test {
     systemProperty 'karaf.rmiServer.port', randomPort()
     systemProperty 'karaf.rmiRegistry.port', randomPort()
 
-    if (project.hasProperty("osgi") && JavaVersion.current().isJava9Compatible()) {
-        println "--------------------------------------------------"
-        println "OSGi tests are not guaranteed to succeed on JDK 9+"
-        println "   Please run OSGi tests on a JDK 8 environment   "
-        println "--------------------------------------------------"
-    }
     enabled = project.hasProperty("osgi")
 }
 
