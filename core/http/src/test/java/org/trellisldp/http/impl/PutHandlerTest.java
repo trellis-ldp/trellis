@@ -76,8 +76,8 @@ class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
         final PutHandler handler = buildPutHandler(RESOURCE_TURTLE, "http://example.com/");
-        try (final Response res = assertThrows(WebApplicationException.class, () -> handler.setResource(handler
-                        .initialize(mockParent, mockResource)),
+        final Response.ResponseBuilder builder = handler.initialize(mockParent, mockResource);
+        try (final Response res = assertThrows(WebApplicationException.class, () -> handler.setResource(builder),
                 "No exception when trying to invalidly change IXN models!").getResponse()) {
             assertEquals(CONFLICT, res.getStatusInfo(), ERR_RESPONSE_CODE);
         }
