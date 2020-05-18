@@ -49,6 +49,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -417,7 +418,8 @@ class DBResourceTest {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, rdf.createLiteral("Invalid quad"));
-        assertThrows(CompletionException.class, () -> svc.add(identifier, dataset).toCompletableFuture().join());
+        final CompletableFuture<Void> future = svc.add(identifier, dataset).toCompletableFuture();
+        assertThrows(CompletionException.class, future::join);
     }
 
     @Test
@@ -427,16 +429,17 @@ class DBResourceTest {
         doThrow(RuntimeException.class).when(mockJdbi).useTransaction(any());
 
         final ResourceService svc2 = new DBResourceService(mockJdbi, 100, false, idService);
-        assertThrows(CompletionException.class, () -> svc2.delete(builder(identifier).interactionModel(LDP.Resource)
-                    .build()).toCompletableFuture().join(), "No exception with invalid connection!");
+        final CompletableFuture<Void> future = svc2.delete(builder(identifier).interactionModel(LDP.Resource)
+                .build()).toCompletableFuture();
+        assertThrows(CompletionException.class, future::join, "No exception with invalid connection!");
     }
 
     @Test
     void testCreateErrorCondition() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        assertThrows(CompletionException.class, () ->
-                svc.create(builder(identifier).interactionModel(LDP.RDFSource).build(), null)
-                .toCompletableFuture().join());
+        final CompletableFuture<Void> future = svc.create(builder(identifier)
+                .interactionModel(LDP.RDFSource).build(), null).toCompletableFuture();
+        assertThrows(CompletionException.class, future::join);
     }
 
     @Test
@@ -446,7 +449,8 @@ class DBResourceTest {
         doThrow(RuntimeException.class).when(mockJdbi).useHandle(any());
 
         final ResourceService svc2 = new DBResourceService(mockJdbi, 100, false, idService);
-        assertThrows(CompletionException.class, () -> svc2.touch(identifier).toCompletableFuture().join());
+        final CompletableFuture<Void> future = svc2.touch(identifier).toCompletableFuture();
+        assertThrows(CompletionException.class, future::join);
     }
 
     @Test
@@ -454,12 +458,13 @@ class DBResourceTest {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
         final Jdbi mockJdbi = mock(Jdbi.class);
-        final ResourceService svc2 = new DBResourceService(mockJdbi, 100, false, idService);
         doThrow(RuntimeException.class).when(mockJdbi).useTransaction(any());
 
-        assertThrows(CompletionException.class, () ->
-                svc2.create(builder(identifier).interactionModel(LDP.Container).build(), dataset)
-                .toCompletableFuture().join());
+        final ResourceService svc2 = new DBResourceService(mockJdbi, 100, false, idService);
+        final CompletableFuture<Void> future = svc2.create(builder(identifier).interactionModel(LDP.Container).build(),
+                dataset).toCompletableFuture();
+
+        assertThrows(CompletionException.class, future::join);
     }
 
     @Test

@@ -38,6 +38,7 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -97,9 +98,9 @@ class PostHandlerTest extends BaseTestHandler {
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
 
         final PostHandler handler = buildPostHandler(RESOURCE_TURTLE, null, null);
-
-        assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))),
+        final CompletionStage<Response.ResponseBuilder> builder = handler.createResource(handler
+                .initialize(mockParent, MISSING_RESOURCE));
+        assertThrows(CompletionException.class, () -> unwrapAsyncError(builder),
                 "No exception when the backend audit service throws an error!");
     }
 
@@ -173,8 +174,8 @@ class PostHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Container.getIRIString()).rel(TYPE).build());
 
         final PostHandler handler = buildPostHandler(RESOURCE_EMPTY, NEW_RESOURCE, null);
-        try (final Response res = assertThrows(BadRequestException.class, () ->
-                handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE)).toCompletableFuture().join(),
+        try (final Response res = assertThrows(BadRequestException.class,
+                    () -> handler.initialize(mockParent, MISSING_RESOURCE),
                 "No exception thrown when the IXN model isn't supported!").getResponse()) {
             assertEquals(BAD_REQUEST, res.getStatusInfo(), ERR_RESPONSE_CODE);
             assertTrue(res.getLinks().stream().anyMatch(link ->
@@ -247,8 +248,8 @@ class PostHandlerTest extends BaseTestHandler {
         ioStream.close();
         final PostHandler handler = new PostHandler(mockTrellisRequest, root, NEW_RESOURCE, ioStream, mockBundler,
                 extensions, null);
-        assertThrows(BadRequestException.class, () ->
-                unwrapAsyncError(handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))));
+        final Response.ResponseBuilder builder = handler.initialize(mockParent, MISSING_RESOURCE);
+        assertThrows(BadRequestException.class, () -> handler.createResource(builder));
     }
 
 
@@ -258,9 +259,9 @@ class PostHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn("text/turtle");
 
         final PostHandler handler = buildPostHandler(RESOURCE_EMPTY, NEW_RESOURCE, baseUrl);
-
-        assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))),
+        final CompletionStage<Response.ResponseBuilder> builder = handler.createResource(handler
+                .initialize(mockParent, MISSING_RESOURCE));
+        assertThrows(CompletionException.class, () -> unwrapAsyncError(builder),
                 "No exception thrown when the backend errors!");
     }
 

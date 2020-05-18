@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
@@ -118,7 +119,8 @@ class FileUtilsTest {
     void testListFilesBadDirectory() {
         final File file = new File(getClass().getResource("/resource.nq").getFile());
         final File dir = new File(file.getParentFile(), "nonexistent");
-        assertThrows(UncheckedIOException.class, () -> FileUtils.uncheckedList(dir.toPath()));
+        final Path path = dir.toPath();
+        assertThrows(UncheckedIOException.class, () -> FileUtils.uncheckedList(path));
     }
 
     @Test
@@ -143,8 +145,9 @@ class FileUtilsTest {
         final File file = new File(getClass().getResource("/resource.nq").getFile());
         final Resource res = new FileResource(identifier, file);
         final File dir = new File(file.getParentFile(), "nonexistent");
+        final Instant time = now();
 
-        assertThrows(UncheckedIOException.class, () -> FileUtils.writeMemento(dir, res, now()));
+        assertThrows(UncheckedIOException.class, () -> FileUtils.writeMemento(dir, res, time));
     }
 
     @Test

@@ -34,6 +34,7 @@ import static org.trellisldp.http.core.HttpConstants.PRECONDITION_REQUIRED;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
@@ -109,9 +110,10 @@ class HttpUtilsTest {
     @Test
     void testCheckIfModifiedSince() {
         final String time = "Wed, 21 Oct 2015 07:28:00 GMT";
-        assertThrows(RedirectionException.class, () ->
-                HttpUtils.checkIfModifiedSince("GET", time, ofEpochSecond(1445412479)));
-        assertDoesNotThrow(() -> HttpUtils.checkIfModifiedSince("GET", time, ofEpochSecond(1445412480)));
+        final Instant timestamp1 = ofEpochSecond(1445412479);
+        assertThrows(RedirectionException.class, () -> HttpUtils.checkIfModifiedSince("GET", time, timestamp1));
+        final Instant timestamp2 = ofEpochSecond(1445412480);
+        assertDoesNotThrow(() -> HttpUtils.checkIfModifiedSince("GET", time, timestamp2));
     }
 
     @Test

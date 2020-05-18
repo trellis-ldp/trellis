@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import org.apache.commons.io.IOUtils;
@@ -131,10 +132,21 @@ class FileBinaryServiceTest {
     void testGetFileContentError() {
         final BinaryService service = new FileBinaryService();
         final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
-        assertThrows(CompletionException.class, () -> service.get(fileIRI).thenApply(Binary::getContent)
-                .toCompletableFuture().join(), "Fetching from invalid file should have thrown an exception!");
-        assertThrows(CompletionException.class, () -> service.get(fileIRI).thenApply(b -> b.getContent(0, 4))
-                .toCompletableFuture().join(),
+
+        final CompletableFuture<InputStream> future = service.get(fileIRI).thenApply(Binary::getContent)
+            .toCompletableFuture();
+        assertThrows(CompletionException.class, () -> future.join(),
+                "Fetching from invalid file should have thrown an exception!");
+    }
+
+    @Test
+    void testGetFileSegmentError() {
+        final BinaryService service = new FileBinaryService();
+        final IRI fileIRI = rdf.createIRI("file:///" + randomFilename());
+
+        final CompletableFuture<InputStream> future = service.get(fileIRI).thenApply(b -> b.getContent(0, 4))
+            .toCompletableFuture();
+        assertThrows(CompletionException.class, () -> future.join(),
                 "Fetching binary segment from invalid file should have thrown an exception!");
     }
 
