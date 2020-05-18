@@ -27,7 +27,7 @@ import javax.ws.rs.HttpMethod;
 /**
  * PATCH HTTP method.
  *
- * @deprecated Please use {@link javax.ws.rs.HttpMethod.PATCH} instead.
+ * @deprecated Please use {@link javax.ws.rs.PATCH} instead.
  * @author acoburn
  */
 @Target(value = METHOD)
