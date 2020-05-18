@@ -57,7 +57,7 @@ ext {
     jjwtVersion = "0.11.1"
     jsonldVersion = "0.13.0"
     kafkaVersion = "2.5.0"
-    liquibaseVersion = "3.8.0"
+    liquibaseVersion = "3.9.0"
     mustacheVersion = "0.9.6"
     nettyVersion = "4.1.50.Final"
     quarkusVersion = "1.4.2.Final"
