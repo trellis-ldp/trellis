@@ -60,21 +60,6 @@ public class CacheControlFilter implements ContainerResponseFilter {
     }
 
     /**
-     * Create a CacheControl decorator.
-     *
-     * @param cacheAge the length of time to cache resources
-     * @param revalidate whether the cache must verify the status of stale resources
-     * @param noCache whether to set the no-cache value
-     * @deprecated this constructor is deprecated and will be removed in a future release
-     */
-    @Deprecated
-    public CacheControlFilter(final int cacheAge, final boolean revalidate, final boolean noCache) {
-        this.maxAge = cacheAge;
-        this.mustRevalidate = revalidate;
-        this.noCache = noCache;
-    }
-
-    /**
      * Set the cache age.
      * @param maxAge the cache age in seconds
      */

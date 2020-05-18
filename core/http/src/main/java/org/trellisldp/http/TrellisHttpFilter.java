@@ -17,7 +17,6 @@ package org.trellisldp.http;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.unmodifiableList;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.PATCH;
@@ -64,18 +63,6 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
     public TrellisHttpFilter() {
         this.mutatingMethods = asList(POST, PUT, DELETE, PATCH);
         this.extensions = buildExtensionMapFromConfig(getConfig());
-    }
-
-    /**
-     * Create a simple pre-matching filter with a custom method list.
-     * @param mutatingMethods a list of mutating HTTP methods
-     * @param extensions a map of named graph extensions
-     * @deprecated this constructor is deprecated and will be removed in a future release
-     */
-    @Deprecated
-    public TrellisHttpFilter(final List<String> mutatingMethods, final Map<String, IRI> extensions) {
-        this.mutatingMethods = unmodifiableList(mutatingMethods);
-        this.extensions = extensions;
     }
 
     /**

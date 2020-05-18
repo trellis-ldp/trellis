@@ -46,7 +46,6 @@ import org.apache.commons.rdf.api.Triple;
 public final class TrellisUtils {
 
     private static final RDF rdf = RDFFactory.getInstance();
-
     private static final String SLASH = "/";
 
     /**
@@ -73,17 +72,6 @@ public final class TrellisUtils {
      * The name of the trellis admin role.
      */
     public static final String TRELLIS_ADMIN_ROLE = "trellis_admin_role";
-
-    /**
-     * Get the Commons RDF instance in use.
-     *
-     * @deprecated Please use {@link RDFFactory#getInstance}
-     * @return the RDF instance
-     */
-    @Deprecated
-    public static RDF getInstance() {
-        return rdf;
-    }
 
     /**
      * Get the structural-logical container for this resource.

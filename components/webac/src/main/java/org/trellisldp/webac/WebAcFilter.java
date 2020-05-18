@@ -156,78 +156,12 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     }
 
     /**
-     * Create a new WebAc-based auth filter.
-     *
-     * @param accessService the access service
-     * @deprecated This constructor should not be used and will be removed in a future release
-     */
-    @Deprecated
-    public WebAcFilter(final WebAcService accessService) {
-        this(accessService,
-            asList(getConfig().getOptionalValue(CONFIG_WEBAC_CHALLENGES, String.class).orElse("").split(",")),
-            getConfig().getOptionalValue(CONFIG_WEBAC_REALM, String.class).orElse("trellis"),
-            getConfig().getOptionalValue(CONFIG_WEBAC_SCOPE, String.class).orElse(""),
-            getConfig().getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
-    }
-
-    /**
-     * Create a WebAc-based auth filter.
-     *
-     * @param accessService the access service
-     * @param challengeTypes the WWW-Authenticate challenge types
-     * @param realm the authentication realm
-     * @param scope the authentication scope
-     * @param baseUrl the base URL, may be null
-     * @deprecated This constructor should not be used and will be removed in a future release
-     */
-    @Deprecated
-    public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes,
-                       final String realm, final String scope, final String baseUrl) {
-        this(accessService, challengeTypes, realm, scope, baseUrl, Boolean.TRUE);
-    }
-
-    /**
-     * Create a WebAc-based auth filter.
-     *
-     * @param accessService the access service
-     * @param challengeTypes the WWW-Authenticate challenge types
-     * @param realm the authentication realm
-     * @param scope the authentication scope
-     * @param baseUrl the base URL, may be null
-     * @param enabled boolean flag to enable or disable WebAC
-     * @deprecated This constructor should not be used and will be removed in a future release
-     */
-    @Deprecated
-    public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes,
-            final String realm, final String scope, final String baseUrl, final boolean enabled) {
-        requireNonNull(challengeTypes, "Challenges may not be null!");
-        requireNonNull(realm, "Realm may not be null!");
-        requireNonNull(scope, "Scope may not be null!");
-
-        final String realmParam = " realm=\"" + realm + "\"";
-        final String scopeParam = scope.isEmpty() ? "" : " scope=\"" + scope + "\"";
-
-        this.accessService = accessService;
-        this.challenges = challengeTypes.stream().map(String::trim).map(ch -> ch + realmParam + scopeParam)
-            .collect(toList());
-        this.baseUrl = baseUrl;
-        this.enabled = enabled;
-        final Config config = getConfig();
-        config.getOptionalValue(CONFIG_WEBAC_READABLE_METHODS, String.class).ifPresent(r ->
-                stream(r.split(",")).map(String::trim).map(String::toUpperCase).forEach(readable::add));
-        config.getOptionalValue(CONFIG_WEBAC_WRITABLE_METHODS, String.class).ifPresent(w ->
-                stream(w.split(",")).map(String::trim).map(String::toUpperCase).forEach(writable::add));
-        config.getOptionalValue(CONFIG_WEBAC_APPENDABLE_METHODS, String.class).ifPresent(a ->
-                stream(a.split(",")).map(String::trim).map(String::toUpperCase).forEach(appendable::add));
-    }
-
-    /**
      * Set the access service.
      * @param accessService the access service
      */
     @Inject
     public void setAccessService(final WebAcService accessService) {
-        this.accessService = accessService;
+        this.accessService = requireNonNull(accessService, "Access service may not be null!");
     }
 
     /**
@@ -235,7 +169,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param challenges the response challenges
      */
     public void setChallenges(final List<String> challenges) {
-        this.challenges = challenges;
+        this.challenges = requireNonNull(challenges, "Challenges may not be null!");
     }
 
     /**
