@@ -27,11 +27,13 @@ import javax.ws.rs.HttpMethod;
 /**
  * PATCH HTTP method.
  *
+ * @deprecated Please use {@link javax.ws.rs.PATCH} instead.
  * @author acoburn
  */
 @Target(value = METHOD)
 @Retention(value = RUNTIME)
 @HttpMethod(value = "PATCH")
 @Documented
+@Deprecated
 public @interface PATCH {
 }

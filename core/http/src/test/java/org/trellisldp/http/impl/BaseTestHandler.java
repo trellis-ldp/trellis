@@ -31,6 +31,7 @@ import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
 import static javax.ws.rs.HttpMethod.OPTIONS;
+import static javax.ws.rs.HttpMethod.PATCH;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static javax.ws.rs.core.HttpHeaders.ALLOW;
@@ -47,7 +48,6 @@ import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.core.HttpConstants.PATCH;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.io.ByteArrayInputStream;
