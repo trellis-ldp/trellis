@@ -107,6 +107,7 @@ public final class HttpConstants {
     public static final String ORIGINAL = "original";
 
     /** The name of the HTTP verb used to update resources. */
+    @Deprecated
     public static final String PATCH = "PATCH";
 
     /** The name of the HTTP response code for a Precondition Required error. */
