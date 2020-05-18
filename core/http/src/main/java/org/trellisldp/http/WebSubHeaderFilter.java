@@ -22,7 +22,6 @@ import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
-import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -40,22 +39,31 @@ public class WebSubHeaderFilter implements ContainerResponseFilter {
     /** The configuration key controlling the location of a web-sub-hub. */
     public static final String CONFIG_HTTP_WEB_SUB_HUB = "trellis.http.web-sub-hub";
 
-    private final String hub;
+    private String hub;
 
     /**
      * Create a new WebSub header Decorator.
      */
-    @Inject
     public WebSubHeaderFilter() {
-        this(getConfig().getOptionalValue(CONFIG_HTTP_WEB_SUB_HUB, String.class).orElse(null));
+        this.hub = getConfig().getOptionalValue(CONFIG_HTTP_WEB_SUB_HUB, String.class).orElse(null);
     }
 
     /**
      * Create a new WebSub Header Decorator.
      *
      * @param hub the location of the websub hub
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public WebSubHeaderFilter(final String hub) {
+        this.hub = hub;
+    }
+
+    /**
+     * Set the hub value.
+     * @param hub the WebSubHub location
+     */
+    public void setHub(final String hub) {
         this.hub = hub;
     }
 

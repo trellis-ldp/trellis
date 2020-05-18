@@ -53,7 +53,8 @@ class CacheControlFilterTest {
         when(mockRequest.getMethod()).thenReturn(GET);
         when(mockResponse.getStatusInfo()).thenReturn(OK);
 
-        final CacheControlFilter filter = new CacheControlFilter(0, true, false);
+        final CacheControlFilter filter = new CacheControlFilter();
+        filter.setMaxAge(0);
 
         filter.filter(mockRequest, mockResponse);
         verify(mockResponse, never()).getHeaders();
@@ -66,7 +67,10 @@ class CacheControlFilterTest {
         when(mockResponse.getStatusInfo()).thenReturn(OK);
         when(mockResponse.getHeaders()).thenReturn(mockHeaders);
 
-        final CacheControlFilter filter = new CacheControlFilter(180, true, false);
+        final CacheControlFilter filter = new CacheControlFilter();
+        filter.setMaxAge(180);
+        filter.setMustRevalidate(false);
+        filter.setNoCache(true);
 
         filter.filter(mockRequest, mockResponse);
         verify(mockResponse).getHeaders();

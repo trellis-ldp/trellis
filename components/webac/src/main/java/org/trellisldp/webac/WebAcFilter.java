@@ -124,38 +124,50 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private static final Set<String> appendable = new HashSet<>(singletonList("POST"));
     private static final RDF rdf = RDFFactory.getInstance();
 
-    protected final WebAcService accessService;
-    private final List<String> challenges;
-    private final String baseUrl;
+    private WebAcService accessService;
+    private List<String> challenges;
+    private String baseUrl;
+
     private final boolean enabled;
 
     /**
-     * For use with RESTeasy and CDI proxies.
-     *
-     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
-     *          It should not be invoked directly in user code.
+     * Create a WebAC filter.
      */
     public WebAcFilter() {
-        this(null);
+        final Config config = getConfig();
+
+        final String realm = config.getOptionalValue(CONFIG_WEBAC_REALM, String.class).orElse("trellis");
+        final String scope = config.getOptionalValue(CONFIG_WEBAC_SCOPE, String.class).orElse("");
+
+        final String realmParam = " realm=\"" + realm + "\"";
+        final String scopeParam = scope.isEmpty() ? "" : " scope=\"" + scope + "\"";
+
+        this.challenges = stream(config.getOptionalValue(CONFIG_WEBAC_CHALLENGES, String.class).orElse("").split(","))
+                .map(String::trim).map(ch -> ch + realmParam + scopeParam).collect(toList());
+        this.baseUrl = config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null);
+        this.enabled = config.getOptionalValue(CONFIG_WEBAC_ENABED, Boolean.class).orElse(Boolean.TRUE);
+
+        config.getOptionalValue(CONFIG_WEBAC_READABLE_METHODS, String.class).ifPresent(r ->
+                stream(r.split(",")).map(String::trim).map(String::toUpperCase).forEach(readable::add));
+        config.getOptionalValue(CONFIG_WEBAC_WRITABLE_METHODS, String.class).ifPresent(w ->
+                stream(w.split(",")).map(String::trim).map(String::toUpperCase).forEach(writable::add));
+        config.getOptionalValue(CONFIG_WEBAC_APPENDABLE_METHODS, String.class).ifPresent(a ->
+                stream(a.split(",")).map(String::trim).map(String::toUpperCase).forEach(appendable::add));
     }
 
     /**
      * Create a new WebAc-based auth filter.
      *
      * @param accessService the access service
+     * @deprecated This constructor should not be used and will be removed in a future release
      */
-    @Inject
+    @Deprecated
     public WebAcFilter(final WebAcService accessService) {
-        this(accessService, getConfig());
-    }
-
-    private WebAcFilter(final WebAcService accessService, final Config config) {
         this(accessService,
-                asList(config.getOptionalValue(CONFIG_WEBAC_CHALLENGES, String.class).orElse("").split(",")),
-                config.getOptionalValue(CONFIG_WEBAC_REALM, String.class).orElse("trellis"),
-                config.getOptionalValue(CONFIG_WEBAC_SCOPE, String.class).orElse(""),
-                config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null),
-                config.getOptionalValue(CONFIG_WEBAC_ENABED, Boolean.class).orElse(Boolean.TRUE));
+            asList(getConfig().getOptionalValue(CONFIG_WEBAC_CHALLENGES, String.class).orElse("").split(",")),
+            getConfig().getOptionalValue(CONFIG_WEBAC_REALM, String.class).orElse("trellis"),
+            getConfig().getOptionalValue(CONFIG_WEBAC_SCOPE, String.class).orElse(""),
+            getConfig().getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null));
     }
 
     /**
@@ -183,7 +195,9 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
      * @param scope the authentication scope
      * @param baseUrl the base URL, may be null
      * @param enabled boolean flag to enable or disable WebAC
+     * @deprecated This constructor should not be used and will be removed in a future release
      */
+    @Deprecated
     public WebAcFilter(final WebAcService accessService, final List<String> challengeTypes,
             final String realm, final String scope, final String baseUrl, final boolean enabled) {
         requireNonNull(challengeTypes, "Challenges may not be null!");
@@ -205,6 +219,31 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
                 stream(w.split(",")).map(String::trim).map(String::toUpperCase).forEach(writable::add));
         config.getOptionalValue(CONFIG_WEBAC_APPENDABLE_METHODS, String.class).ifPresent(a ->
                 stream(a.split(",")).map(String::trim).map(String::toUpperCase).forEach(appendable::add));
+    }
+
+    /**
+     * Set the access service.
+     * @param accessService the access service
+     */
+    @Inject
+    public void setAccessService(final WebAcService accessService) {
+        this.accessService = accessService;
+    }
+
+    /**
+     * Set the challenges.
+     * @param challenges the response challenges
+     */
+    public void setChallenges(final List<String> challenges) {
+        this.challenges = challenges;
+    }
+
+    /**
+     * Set the base URL.
+     * @param baseUrl the base URL
+     */
+    public void setBaseUrl(final String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 
     @Timed

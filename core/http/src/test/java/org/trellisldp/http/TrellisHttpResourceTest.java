@@ -76,11 +76,13 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
 
         initMocks(this);
 
+        System.setProperty(WebSubHeaderFilter.CONFIG_HTTP_WEB_SUB_HUB, HUB);
+
         final ResourceConfig config = new ResourceConfig();
         config.register(new TrellisHttpResource(mockBundler, singletonMap(ACL, PreferAccessControl), null));
         config.register(new CacheControlFilter());
-        config.register(new WebSubHeaderFilter(HUB));
         config.register(new TrellisHttpFilter());
+        config.register(new WebSubHeaderFilter());
         return config;
     }
 

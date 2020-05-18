@@ -21,7 +21,6 @@ import static javax.ws.rs.core.HttpHeaders.CACHE_CONTROL;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
-import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -46,44 +45,66 @@ public class CacheControlFilter implements ContainerResponseFilter {
     /** The configuration key for setting a cache-control no-cache header. */
     public static final String CONFIG_HTTP_CACHE_NOCACHE = "trellis.http.cache-nocache";
 
-    private final int cacheAge;
-    private final boolean revalidate;
-    private final boolean noCache;
+    private int maxAge;
+    private boolean mustRevalidate;
+    private boolean noCache;
 
     /**
-     * Create a new CacheControl Decorator.
+     * Create a CacheControl decorator.
      */
-    @Inject
     public CacheControlFilter() {
-        this(getConfig());
-    }
-
-    private CacheControlFilter(final Config config) {
-        this(config.getOptionalValue(CONFIG_HTTP_CACHE_MAX_AGE, Integer.class).orElse(86400),
-             config.getOptionalValue(CONFIG_HTTP_CACHE_REVALIDATE, Boolean.class).orElse(Boolean.TRUE),
-             config.getOptionalValue(CONFIG_HTTP_CACHE_NOCACHE, Boolean.class).orElse(Boolean.FALSE));
+        final Config config = getConfig();
+        this.maxAge = config.getOptionalValue(CONFIG_HTTP_CACHE_MAX_AGE, Integer.class).orElse(86400);
+        this.mustRevalidate = config.getOptionalValue(CONFIG_HTTP_CACHE_REVALIDATE, Boolean.class).orElse(Boolean.TRUE);
+        this.noCache = config.getOptionalValue(CONFIG_HTTP_CACHE_NOCACHE, Boolean.class).orElse(Boolean.FALSE);
     }
 
     /**
-     * Create a new CacheControl Decorator.
+     * Create a CacheControl decorator.
      *
      * @param cacheAge the length of time to cache resources
      * @param revalidate whether the cache must verify the status of stale resources
      * @param noCache whether to set the no-cache value
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public CacheControlFilter(final int cacheAge, final boolean revalidate, final boolean noCache) {
-        this.cacheAge = cacheAge;
-        this.revalidate = revalidate;
+        this.maxAge = cacheAge;
+        this.mustRevalidate = revalidate;
+        this.noCache = noCache;
+    }
+
+    /**
+     * Set the cache age.
+     * @param maxAge the cache age in seconds
+     */
+    public void setMaxAge(final int maxAge) {
+        this.maxAge = maxAge;
+    }
+
+    /**
+     * Set the revalidate flag.
+     * @param mustRevalidate true if cliens must revalidate
+     */
+    public void setMustRevalidate(final boolean mustRevalidate) {
+        this.mustRevalidate = mustRevalidate;
+    }
+
+    /**
+     * Set the no-cache flag.
+     * @param noCache true if the no-cache flag is to be returned
+     */
+    public void setNoCache(final boolean noCache) {
         this.noCache = noCache;
     }
 
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) {
         if ((GET.equals(req.getMethod()) || HEAD.equals(req.getMethod()))
-                && SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && cacheAge > 0) {
+                && SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && maxAge > 0) {
             final CacheControl cc = new CacheControl();
-            cc.setMaxAge(cacheAge);
-            cc.setMustRevalidate(revalidate);
+            cc.setMaxAge(maxAge);
+            cc.setMustRevalidate(mustRevalidate);
             cc.setNoCache(noCache);
             res.getHeaders().add(CACHE_CONTROL, cc);
         }
