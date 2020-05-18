@@ -83,7 +83,8 @@ class DefaultRdfaWriterServiceTest {
     @Test
     void testWriteError() throws IOException {
         doThrow(new IOException()).when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
-        assertThrows(UncheckedIOException.class, () -> service.write(getTriples(), mockOutputStream, ""),
+        final Stream<Triple> triples = getTriples();
+        assertThrows(UncheckedIOException.class, () -> service.write(triples, mockOutputStream, ""),
                 "IOException in write operation doesn't cause failure!");
     }
 

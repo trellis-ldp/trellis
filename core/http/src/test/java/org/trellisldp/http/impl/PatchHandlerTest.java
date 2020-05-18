@@ -44,6 +44,7 @@ import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ClientErrorException;
@@ -145,9 +146,9 @@ class PatchHandlerTest extends BaseTestHandler {
 
         final PatchHandler handler = new PatchHandler(mockTrellisRequest, "", mockBundler, extensions, false,
                 null, null);
-
-        assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.updateResource(handler.initialize(mockParent, mockResource))),
+        final CompletionStage<Response.ResponseBuilder> builder = handler.updateResource(handler.initialize(mockParent,
+                    mockResource));
+        assertThrows(CompletionException.class, () -> unwrapAsyncError(builder),
                 "No exception thrown when there is an error in the audit backend!");
     }
 
@@ -281,8 +282,9 @@ class PatchHandlerTest extends BaseTestHandler {
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,
                 false, null, null);
-        assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))),
+        final CompletionStage<Response.ResponseBuilder> builder = patchHandler.updateResource(patchHandler
+                .initialize(mockParent, mockResource));
+        assertThrows(CompletionException.class, () -> unwrapAsyncError(builder),
                 "No exception thrown when the backend triggers an exception!");
     }
 
@@ -312,9 +314,9 @@ class PatchHandlerTest extends BaseTestHandler {
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,
                 false, null, baseUrl);
-        try (final Response res = assertThrows(BadRequestException.class, () ->
-                patchHandler.updateResource(patchHandler.initialize(mockParent, mockResource))
-                .toCompletableFuture().join(), "No exception when the update triggers an error!").getResponse()) {
+        final Response.ResponseBuilder builder = patchHandler.initialize(mockParent, mockResource);
+        try (final Response res = assertThrows(BadRequestException.class, () -> patchHandler.updateResource(builder),
+                "No exception when the update triggers an error!").getResponse()) {
             assertEquals(BAD_REQUEST, res.getStatusInfo(), ERR_RESPONSE_CODE);
         }
     }

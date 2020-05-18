@@ -224,8 +224,7 @@ class GetHandlerTest extends BaseTestHandler {
         final GetConfiguration config = new GetConfiguration(false, true, true, null, baseUrl);
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, config);
 
-        try (final Response res = assertThrows(NotAcceptableException.class, () ->
-                handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource))),
+        try (final Response res = assertThrows(NotAcceptableException.class, () -> handler.initialize(mockResource),
                 "No error thrown when given an unaccepable media type!").getResponse()) {
             assertEquals(NOT_ACCEPTABLE, res.getStatusInfo(), ERR_RESPONSE_CODE);
         }

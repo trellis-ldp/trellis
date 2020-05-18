@@ -25,6 +25,7 @@ import java.io.UncheckedIOException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.SecureRandom;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.NamespaceService;
@@ -82,7 +83,8 @@ class FileNamespaceServiceTest {
         final File mockFile = mock(File.class, inv -> {
             throw new IOException("Expected exception.");
         });
-        assertThrows(UncheckedIOException.class, () -> FileNamespaceService.write(mockFile, emptyMap()));
+        final Map<String, String> namespaces = emptyMap();
+        assertThrows(UncheckedIOException.class, () -> FileNamespaceService.write(mockFile, namespaces));
     }
 
     @Test

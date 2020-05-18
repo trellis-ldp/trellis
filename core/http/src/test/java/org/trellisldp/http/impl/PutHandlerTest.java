@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
@@ -75,9 +76,8 @@ class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
 
         final PutHandler handler = buildPutHandler(RESOURCE_TURTLE, "http://example.com/");
-
-        try (final Response res = assertThrows(WebApplicationException.class, () ->
-                handler.setResource(handler.initialize(mockParent, mockResource)).toCompletableFuture().join(),
+        try (final Response res = assertThrows(WebApplicationException.class, () -> handler.setResource(handler
+                        .initialize(mockParent, mockResource)),
                 "No exception when trying to invalidly change IXN models!").getResponse()) {
             assertEquals(CONFLICT, res.getStatusInfo(), ERR_RESPONSE_CODE);
         }
@@ -113,9 +113,10 @@ class PutHandlerTest extends BaseTestHandler {
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
 
         final PutHandler handler = buildPutHandler(RESOURCE_TURTLE, null);
+        final CompletionStage<Response.ResponseBuilder> builder = handler.setResource(handler.initialize(mockParent,
+                    mockResource));
 
-        assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
+        assertThrows(CompletionException.class, () -> unwrapAsyncError(builder),
                 "No exception when the audit backend completes exceptionally!");
     }
 
@@ -316,8 +317,8 @@ class PutHandlerTest extends BaseTestHandler {
         when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel(TYPE).build());
 
         final PutHandler handler = buildPutHandler(RESOURCE_TURTLE, null);
-        try (final Response res = assertThrows(BadRequestException.class, () ->
-                handler.setResource(handler.initialize(mockParent, mockResource)).toCompletableFuture().join(),
+        final Response.ResponseBuilder builder = handler.initialize(mockParent, mockResource);
+        try (final Response res = assertThrows(BadRequestException.class, () -> handler.setResource(builder),
                 "No exception when the interaction model isn't supported!").getResponse()) {
             assertEquals(BAD_REQUEST, res.getStatusInfo(), ERR_RESPONSE_CODE);
             assertTrue(res.getLinks().stream().anyMatch(link ->
@@ -335,9 +336,9 @@ class PutHandlerTest extends BaseTestHandler {
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
 
         final PutHandler handler = buildPutHandler(RESOURCE_SIMPLE, null);
-
-        assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
+        final CompletionStage<Response.ResponseBuilder> builder = handler.setResource(handler.initialize(mockParent,
+                    mockResource));
+        assertThrows(CompletionException.class, () -> unwrapAsyncError(builder),
                 "No exception when there's a problem with the backend!");
     }
 
@@ -368,8 +369,9 @@ class PutHandlerTest extends BaseTestHandler {
         try (final InputStream entity = getClass().getResource(RESOURCE_SIMPLE).openStream()) {
             final PutHandler handler = new PutHandler(mockTrellisRequest, entity, mockBundler, extensions,
                     false, true, null);
-            assertThrows(CompletionException.class,
-                            () -> unwrapAsyncError(handler.setResource(handler.initialize(mockParent, mockResource))),
+            final CompletionStage<Response.ResponseBuilder> builder = handler.setResource(handler
+                    .initialize(mockParent, mockResource));
+            assertThrows(CompletionException.class, () -> unwrapAsyncError(builder),
                             "No exception when there's a problem with the backend binary service!");
         }
     }

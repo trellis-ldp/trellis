@@ -397,7 +397,8 @@ class JenaIOServiceTest {
     @Test
     void testWriteError() throws IOException {
         doThrow(new IOException()).when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
-        assertThrows(RuntimeTrellisException.class, () -> service.write(getTriples(), mockOutputStream, TURTLE,
+        final Stream<Triple> triples = getTriples();
+        assertThrows(RuntimeTrellisException.class, () -> service.write(triples, mockOutputStream, TURTLE,
                     identifier), "No write exception on bad input stream!");
     }
 
@@ -434,7 +435,8 @@ class JenaIOServiceTest {
         when(mockSyntax.mediaType()).thenReturn("fake/mediatype");
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        assertThrows(RuntimeTrellisException.class, () -> service.write(getTriples(), out, mockSyntax,
+        final Stream<Triple> triples = getTriples();
+        assertThrows(RuntimeTrellisException.class, () -> service.write(triples, out, mockSyntax,
                     identifier), "No exception thrown with invalid write syntax!");
     }
 
@@ -443,8 +445,8 @@ class JenaIOServiceTest {
         when(mockSyntax.mediaType()).thenReturn("fake/mediatype");
         final String output = "blah blah blah";
 
-        assertThrows(RuntimeTrellisException.class, () ->
-                service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), mockSyntax, null),
+        final InputStream input = new ByteArrayInputStream(output.getBytes(UTF_8));
+        assertThrows(RuntimeTrellisException.class, () -> service.read(input, mockSyntax, null),
                 "No exception thrown with invalid read syntax!");
     }
 

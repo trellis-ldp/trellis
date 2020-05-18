@@ -27,6 +27,7 @@ import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -63,8 +64,9 @@ class DeleteHandlerTest extends BaseTestHandler {
         final AuditService badAuditService = new DefaultAuditService() {};
         when(mockBundler.getAuditService()).thenReturn(badAuditService);
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, null);
-        assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
+        final CompletionStage<Response.ResponseBuilder> builder = handler
+            .deleteResource(handler.initialize(mockParent, mockResource));
+        assertThrows(CompletionException.class, () -> unwrapAsyncError(builder),
                 "No exception thrown when the backend reports an exception!");
     }
 
@@ -72,8 +74,9 @@ class DeleteHandlerTest extends BaseTestHandler {
     void testDeleteError() {
         when(mockResourceService.delete(any(Metadata.class))).thenReturn(asyncException());
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, baseUrl);
-        assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
+        final CompletionStage<Response.ResponseBuilder> builder = handler.deleteResource(handler.initialize(mockParent,
+                    mockResource));
+        assertThrows(CompletionException.class, () -> unwrapAsyncError(builder),
                 "No exception thrown when the backend reports an exception!");
     }
 
@@ -95,8 +98,9 @@ class DeleteHandlerTest extends BaseTestHandler {
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, baseUrl);
-        assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
+        final CompletionStage<Response.ResponseBuilder> builder = handler.deleteResource(handler.initialize(mockParent,
+                    mockResource));
+        assertThrows(CompletionException.class, () -> unwrapAsyncError(builder),
                 "No exception thrown when an ACL couldn't be deleted!");
     }
 
@@ -106,8 +110,9 @@ class DeleteHandlerTest extends BaseTestHandler {
         when(mockResourceService.add(any(IRI.class), any(Dataset.class))).thenReturn(asyncException());
         when(mockTrellisRequest.getExt()).thenReturn(ACL);
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, baseUrl);
-        assertThrows(CompletionException.class, () ->
-                unwrapAsyncError(handler.deleteResource(handler.initialize(mockParent, mockResource))),
+        final CompletionStage<Response.ResponseBuilder> builder = handler.deleteResource(handler.initialize(mockParent,
+                    mockResource));
+        assertThrows(CompletionException.class, () -> unwrapAsyncError(builder),
                 "No exception thrown when an ACL audit stream couldn't be written!");
     }
 }
