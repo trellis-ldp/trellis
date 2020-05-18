@@ -32,7 +32,6 @@ import java.security.Principal;
 import java.util.Set;
 
 import javax.annotation.Priority;
-import javax.inject.Inject;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -71,22 +70,27 @@ public class OAuthFilter implements ContainerRequestFilter {
 
     private static final Logger LOGGER = getLogger(OAuthFilter.class);
 
-    private final Authenticator authenticator;
-    private final String challenge;
-    private final Set<String> admins;
+    private Authenticator authenticator;
+    private String challenge;
+    private Set<String> admins;
 
     /**
      * Create an OAuth filter.
      */
-    @Inject
     public OAuthFilter() {
-        this(buildAuthenticator());
+        final Config config = getConfig();
+        this.authenticator = buildAuthenticator();
+        this.challenge = "Bearer realm=\"" +
+            config.getOptionalValue(CONFIG_AUTH_REALM, String.class).orElse("trellis") + "\"";
+        this.admins = unmodifiableSet(getConfiguredAdmins(config));
     }
 
     /**
      * Create an OAuth filter with a defined authenticator.
      * @param authenticator the authenticator
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public OAuthFilter(final Authenticator authenticator) {
         this(authenticator, getConfig());
     }
@@ -101,11 +105,37 @@ public class OAuthFilter implements ContainerRequestFilter {
      * @param authenticator the authenticator
      * @param realm the authentication realm
      * @param admins the admin users
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public OAuthFilter(final Authenticator authenticator, final String realm, final Set<String> admins) {
         this.authenticator = authenticator;
         this.challenge = "Bearer realm=\"" + realm + "\"";
         this.admins = unmodifiableSet(requireNonNull(admins, "Admin set may not be null!"));
+    }
+
+    /**
+     * Set the authenticator to use.
+     * @param authenticator the authenticator in use
+     */
+    public void setAuthenticator(final Authenticator authenticator) {
+        this.authenticator = authenticator;
+    }
+
+    /**
+     * Set the challenge text.
+     * @param challenge the challenge text
+     */
+    public void setChallenge(final String challenge) {
+        this.challenge = challenge;
+    }
+
+    /**
+     * Set the admin users.
+     * @param admins the admin users
+     */
+    public void setAdmins(final Set<String> admins) {
+        this.admins = requireNonNull(admins, "Admin set may not be null!");
     }
 
     @Override

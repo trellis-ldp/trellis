@@ -66,7 +66,8 @@ class WebSubHeaderFilterTest {
         when(mockResponse.getStatusInfo()).thenReturn(OK);
         when(mockResponse.getHeaders()).thenReturn(mockHeaders);
 
-        final WebSubHeaderFilter filter = new WebSubHeaderFilter("http://example.com");
+        final WebSubHeaderFilter filter = new WebSubHeaderFilter();
+        filter.setHub("http://example.com");
 
         filter.filter(mockRequest, mockResponse);
         verify(mockResponse).getHeaders();

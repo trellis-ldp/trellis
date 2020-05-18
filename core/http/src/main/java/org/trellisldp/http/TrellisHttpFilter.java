@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Priority;
-import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Link;
@@ -56,24 +55,42 @@ import org.trellisldp.http.core.Version;
 @Priority(AUTHORIZATION - 20)
 public class TrellisHttpFilter implements ContainerRequestFilter {
 
-    private final List<String> mutatingMethods;
-    private final Map<String, IRI> extensions;
+    private List<String> mutatingMethods;
+    private Map<String, IRI> extensions;
 
     /**
      * Create a simple pre-matching filter.
      */
-    @Inject
     public TrellisHttpFilter() {
-        this(asList(POST, PUT, DELETE, PATCH), buildExtensionMapFromConfig(getConfig()));
+        this.mutatingMethods = asList(POST, PUT, DELETE, PATCH);
+        this.extensions = buildExtensionMapFromConfig(getConfig());
     }
 
     /**
      * Create a simple pre-matching filter with a custom method list.
      * @param mutatingMethods a list of mutating HTTP methods
      * @param extensions a map of named graph extensions
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public TrellisHttpFilter(final List<String> mutatingMethods, final Map<String, IRI> extensions) {
         this.mutatingMethods = unmodifiableList(mutatingMethods);
+        this.extensions = extensions;
+    }
+
+    /**
+     * Set the mutating methods.
+     * @param mutatingMethods a list of mutating HTTP methods
+     */
+    public void setMutatingMethods(final List<String> mutatingMethods) {
+        this.mutatingMethods = mutatingMethods;
+    }
+
+    /**
+     * Set the extension map.
+     * @param extensions a map of named graph extensions
+     */
+    public void setExtensions(final Map<String, IRI> extensions) {
         this.extensions = extensions;
     }
 

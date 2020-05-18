@@ -19,6 +19,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonMap;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.dropwizard.TrellisUtils.getAuthFilters;
@@ -34,6 +35,7 @@ import io.dropwizard.setup.Environment;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
 import org.trellisldp.dropwizard.config.BasicAuthConfiguration;
 import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
@@ -45,6 +47,7 @@ import org.trellisldp.http.WebSubHeaderFilter;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.webac.WebAcFilter;
+import org.trellisldp.webac.WebAcService;
 
 /**
  * A base class for Dropwizard-based Trellis applications.
@@ -127,22 +130,46 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
 
         // Filters
         environment.jersey().register(new TrellisHttpFilter());
-        environment.jersey().register(new CacheControlFilter(config.getCache().getMaxAge(),
-                    config.getCache().getMustRevalidate(), config.getCache().getNoCache()));
+        final CacheControlFilter cacheFilter = new CacheControlFilter();
+        cacheFilter.setMaxAge(config.getCache().getMaxAge());
+        cacheFilter.setMustRevalidate(config.getCache().getMustRevalidate());
+        cacheFilter.setNoCache(config.getCache().getNoCache());
+        environment.jersey().register(cacheFilter);
 
         // Authorization
         ofNullable(getWebacService(config, getServiceBundler().getResourceService())).ifPresent(webac -> {
-            final List<String> challenges = new ArrayList<>();
+            final List<String> challengeTypes = new ArrayList<>();
             of(config.getAuth().getJwt()).filter(JwtAuthConfiguration::getEnabled).map(x -> "Bearer")
-                .ifPresent(challenges::add);
+                .ifPresent(challengeTypes::add);
             of(config.getAuth().getBasic()).filter(BasicAuthConfiguration::getEnabled).map(x -> "Basic")
-                .ifPresent(challenges::add);
-            environment.jersey().register(new WebAcFilter(webac, challenges, config.getAuth().getRealm(),
-                        config.getAuth().getScope(), config.getBaseUrl()));
+                .ifPresent(challengeTypes::add);
+
+            final String realmParam = " realm=\"" + config.getAuth().getRealm() + "\"";
+            final String scopeParam = config.getAuth().getScope().isEmpty() ?
+                "" : " scope=\"" + config.getAuth().getScope() + "\"";
+
+            final List<String> challenges = challengeTypes.stream().map(String::trim)
+                .map(ch -> ch + realmParam + scopeParam).collect(toList());
+
+            final WebAcFilter webacFilter = new WebAcFilter();
+            webacFilter.setChallenges(challenges);
+            webacFilter.setBaseUrl(config.getBaseUrl());
+            environment.jersey().register(webacFilter);
+            environment.jersey().register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(webac).to(WebAcService.class);
+            }
+        });
+
         });
 
         // WebSub
-        ofNullable(config.getHubUrl()).ifPresent(hub -> environment.jersey().register(new WebSubHeaderFilter(hub)));
+        ofNullable(config.getHubUrl()).ifPresent(hub -> {
+            final WebSubHeaderFilter webSubFilter = new WebSubHeaderFilter();
+            webSubFilter.setHub(hub);
+            environment.jersey().register(webSubFilter);
+        });
 
         // CORS
         ofNullable(getCorsConfiguration(config)).ifPresent(cors ->
