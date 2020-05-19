@@ -35,6 +35,9 @@ public final class Trellis {
     public static final IRI ConstraintViolation = createIRI(getNamespace() + "ConstraintViolation");
     public static final IRI DeletedResource = createIRI(getNamespace() + "DeletedResource");
 
+    /* Properties */
+    public static final IRI effectiveAcl = createIRI(getNamespace() + "effectiveAcl");
+
     /* Named Individuals */
     public static final IRI AdministratorAgent = createIRI(getNamespace() + "AdministratorAgent");
     public static final IRI AnonymousAgent = createIRI(getNamespace() + "AnonymousAgent");
