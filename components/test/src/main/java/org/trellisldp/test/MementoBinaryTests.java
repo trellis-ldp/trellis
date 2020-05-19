@@ -41,7 +41,6 @@ public interface MementoBinaryTests extends MementoResourceTests {
         setUp();
         return Stream.of(this::testMementosWereFound,
                 this::testMementoDateTimeHeader,
-                this::testMementoAcceptDateTimeHeader,
                 this::testMementoAllowedMethods,
                 this::testMementoLdpResource,
                 this::testMementoContent,
