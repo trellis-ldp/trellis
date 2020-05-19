@@ -22,6 +22,12 @@ package org.trellisldp.vocabulary;
 class TrellisTest extends AbstractVocabularyTest {
 
     @Override
+    boolean isStrict() {
+        // TODO remove this once the new vocab has been published
+        return false;
+    }
+
+    @Override
     String namespace() {
         return "http://www.trellisldp.org/ns/trellis#";
     }
