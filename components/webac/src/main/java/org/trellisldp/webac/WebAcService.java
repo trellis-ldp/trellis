@@ -130,7 +130,9 @@ public class WebAcService {
      * Create a WebAC-based authorization service.
      *
      * @param services the trellis service bundler
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public WebAcService(final ServiceBundler services) {
         this(services, new NoopAuthorizationCache());
     }
@@ -140,8 +142,10 @@ public class WebAcService {
      *
      * @param services the trellis service bundler
      * @param cache a cache
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
     @Inject
+    @Deprecated
     public WebAcService(final ServiceBundler services,
             @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
         this(services.getResourceService(), cache);
@@ -151,7 +155,9 @@ public class WebAcService {
      * Create a WebAC-based authorization service.
      *
      * @param resourceService the resource service
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public WebAcService(final ResourceService resourceService) {
         this(resourceService, new NoopAuthorizationCache());
     }
@@ -161,7 +167,9 @@ public class WebAcService {
      *
      * @param resourceService the resource service
      * @param cache a cache
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public WebAcService(final ResourceService resourceService, final CacheService<String, Set<IRI>> cache) {
         this(resourceService, cache, getConfig());
     }
@@ -179,7 +187,9 @@ public class WebAcService {
      * @param resourceService the resource service
      * @param cache a cache
      * @param checkMembershipResources whether to check membership resource permissions (default=false)
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public WebAcService(final ResourceService resourceService,
             final CacheService<String, Set<IRI>> cache, final boolean checkMembershipResources) {
         this(resourceService, cache, checkMembershipResources, DEFAULT_ACL_LOCATION);
@@ -192,7 +202,9 @@ public class WebAcService {
      * @param cache a cache
      * @param checkMembershipResources whether to check membership resource permissions (default=false)
      * @param defaultAuthResourceLocation a classpath location of a default root ACL (in Turtle)
+     * @deprecated this constructor is deprecated and will be removed in a future release
      */
+    @Deprecated
     public WebAcService(final ResourceService resourceService, final CacheService<String, Set<IRI>> cache,
             final boolean checkMembershipResources, final String defaultAuthResourceLocation) {
         this.resourceService = requireNonNull(resourceService, "A non-null ResourceService must be provided!");
@@ -364,6 +376,7 @@ public class WebAcService {
     }
 
     @TrellisAuthorizationCache
+    @Deprecated
     public static class NoopAuthorizationCache implements CacheService<String, Set<IRI>> {
 
         @Override
