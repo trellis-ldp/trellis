@@ -19,7 +19,6 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
@@ -117,11 +116,11 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     /** The session value for storing access modes. */
     public static final String SESSION_WEBAC_MODES = "trellis.webac.session-modes";
 
-
     private static final Logger LOGGER = getLogger(WebAcFilter.class);
     private static final Set<String> readable = new HashSet<>(asList("GET", "HEAD", "OPTIONS"));
     private static final Set<String> writable = new HashSet<>(asList("PUT", "PATCH", "DELETE"));
     private static final Set<String> appendable = new HashSet<>(singletonList("POST"));
+    private static final String SLASH = "/";
     private static final RDF rdf = RDFFactory.getInstance();
 
     private WebAcService accessService;
@@ -139,11 +138,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         final String realm = config.getOptionalValue(CONFIG_WEBAC_REALM, String.class).orElse("trellis");
         final String scope = config.getOptionalValue(CONFIG_WEBAC_SCOPE, String.class).orElse("");
 
-        final String realmParam = " realm=\"" + realm + "\"";
-        final String scopeParam = scope.isEmpty() ? "" : " scope=\"" + scope + "\"";
-
         this.challenges = stream(config.getOptionalValue(CONFIG_WEBAC_CHALLENGES, String.class).orElse("").split(","))
-                .map(String::trim).map(ch -> ch + realmParam + scopeParam).collect(toList());
+                .map(String::trim).map(ch -> buildChallenge(ch, realm, scope)).collect(toList());
         this.baseUrl = config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null);
         this.enabled = config.getOptionalValue(CONFIG_WEBAC_ENABED, Boolean.class).orElse(Boolean.TRUE);
 
@@ -191,38 +187,47 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         final Session s = buildSession(ctx, baseUrl);
         final String method = ctx.getMethod();
 
-        final Set<IRI> modes = accessService.getAccessModes(buildTrellisIdentifier(path), s);
-        ctx.setProperty(SESSION_WEBAC_MODES, unmodifiableSet(modes));
+        final AuthorizedModes modes = accessService.getAuthorizedModes(buildTrellisIdentifier(path), s);
+        ctx.setProperty(SESSION_WEBAC_MODES, modes);
 
         final Prefer prefer = Prefer.valueOf(ctx.getHeaderString(PREFER));
 
         // Control-level access
         if (ctx.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
                 .contains(HttpConstants.ACL) || reqAudit(prefer)) {
-            verifyCanControl(modes, s, path);
+            verifyCanControl(modes.getAccessModes(), s, path);
         // Everything else
         } else {
             if (readable.contains(method) || reqRepresentation(prefer)) {
-                verifyCanRead(modes, s, path);
+                verifyCanRead(modes.getAccessModes(), s, path);
             }
             if (writable.contains(method)) {
-                verifyCanWrite(modes, s, path);
+                verifyCanWrite(modes.getAccessModes(), s, path);
             }
             if (appendable.contains(method)) {
-                verifyCanAppend(modes, s, path);
+                verifyCanAppend(modes.getAccessModes(), s, path);
             }
         }
     }
 
     @Override
     public void filter(final ContainerRequestContext req, final ContainerResponseContext res) {
-        if (SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && !DELETE.equals(req.getMethod())) {
-            final boolean isAcl = req.getUriInfo().getQueryParameters()
-                .getOrDefault(HttpConstants.EXT, emptyList()).contains(HttpConstants.ACL);
-            final String rel = isAcl ? HttpConstants.ACL + " self" : HttpConstants.ACL;
-            final String path = req.getUriInfo().getPath();
-            res.getHeaders().add(LINK, fromUri(fromPath(path.startsWith("/") ? path : "/" + path)
-                        .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(rel).build());
+        final Object sessionModes = req.getProperty(SESSION_WEBAC_MODES);
+        if (SUCCESSFUL.equals(res.getStatusInfo().getFamily()) && !DELETE.equals(req.getMethod())
+                && sessionModes instanceof AuthorizedModes) {
+            final AuthorizedModes modes = (AuthorizedModes) sessionModes;
+            if (modes.getAccessModes().contains(ACL.Control)) {
+                final boolean isAcl = req.getUriInfo().getQueryParameters()
+                    .getOrDefault(HttpConstants.EXT, emptyList()).contains(HttpConstants.ACL);
+                final String rel = isAcl ? HttpConstants.ACL + " self" : HttpConstants.ACL;
+                final String path = req.getUriInfo().getPath();
+                res.getHeaders().add(LINK, fromUri(fromPath(path.startsWith(SLASH) ? path : SLASH + path)
+                            .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(rel).build());
+                res.getHeaders().add(LINK, fromUri(fromPath(modes.getEffectiveAcl().getIRIString()
+                                .replace(TRELLIS_DATA_PREFIX, SLASH))
+                                .queryParam(HttpConstants.EXT, HttpConstants.ACL).build())
+                            .rel(Trellis.effectiveAcl.getIRIString()).build());
+            }
         }
     }
 
@@ -294,11 +299,17 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         final String context = getBaseUrl(ctx, baseUrl);
         if (session.getAgent().getIRIString().startsWith(context)) {
             final String path = session.getAgent().getIRIString().substring(context.length());
-            if (path.startsWith("/")) {
+            if (path.startsWith(SLASH)) {
                 return new HttpSession(rdf.createIRI(TRELLIS_DATA_PREFIX + path.substring(1)));
             }
             return new HttpSession(rdf.createIRI(TRELLIS_DATA_PREFIX + path));
         }
         return session;
+    }
+
+    static String buildChallenge(final String challenge, final String realm, final String scope) {
+        final String realmParam = realm.isEmpty() ? "" : " realm=\"" + realm + "\"";
+        final String scopeParam = scope.isEmpty() ? "" : " scope=\"" + scope + "\"";
+        return challenge + realmParam + scopeParam;
     }
 }
