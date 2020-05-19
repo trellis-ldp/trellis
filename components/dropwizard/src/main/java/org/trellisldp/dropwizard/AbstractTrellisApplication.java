@@ -144,24 +144,20 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
             of(config.getAuth().getBasic()).filter(BasicAuthConfiguration::getEnabled).map(x -> "Basic")
                 .ifPresent(challengeTypes::add);
 
-            final String realmParam = " realm=\"" + config.getAuth().getRealm() + "\"";
-            final String scopeParam = config.getAuth().getScope().isEmpty() ?
-                "" : " scope=\"" + config.getAuth().getScope() + "\"";
-
             final List<String> challenges = challengeTypes.stream().map(String::trim)
-                .map(ch -> ch + realmParam + scopeParam).collect(toList());
+                .map(ch -> TrellisUtils.buildChallenge(ch, config.getAuth().getRealm(), config.getAuth().getScope()))
+                .collect(toList());
 
             final WebAcFilter webacFilter = new WebAcFilter();
             webacFilter.setChallenges(challenges);
             webacFilter.setBaseUrl(config.getBaseUrl());
             environment.jersey().register(webacFilter);
             environment.jersey().register(new AbstractBinder() {
-            @Override
-            protected void configure() {
-                bind(webac).to(WebAcService.class);
-            }
-        });
-
+                @Override
+                protected void configure() {
+                    bind(webac).to(WebAcService.class);
+                }
+            });
         });
 
         // WebSub

@@ -15,6 +15,7 @@
  */
 package org.trellisldp.http;
 
+import static java.util.Collections.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -47,6 +48,8 @@ class TrellisHttpFilterTest {
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
 
         final TrellisHttpFilter filter = new TrellisHttpFilter();
+        filter.setMutatingMethods(emptyList());
+        filter.setExtensions(emptyMap());
 
         filter.filter(mockContext);
         verify(mockContext, never().description("Trailing slash should trigger a redirect!")).abortWith(any());

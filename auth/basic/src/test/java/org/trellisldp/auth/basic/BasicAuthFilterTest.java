@@ -234,6 +234,12 @@ class BasicAuthFilterTest {
         assertTrue(credentials.toString().contains("acoburn"));
     }
 
+    @Test
+    void testNullFile() {
+        assertNull(BasicAuthFilter.getPath(null));
+        assertNull(BasicAuthFilter.getPath(new File(getAuthFile(), "nonexistent")));
+    }
+
     private String encodeCredentials(final String username, final String password) {
         final String combined = username + ":" + password;
         return new String(Base64.getEncoder().encode(combined.getBytes(UTF_8)), UTF_8);

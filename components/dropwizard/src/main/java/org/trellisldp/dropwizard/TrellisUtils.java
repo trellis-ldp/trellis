@@ -112,6 +112,13 @@ final class TrellisUtils {
         return filters;
     }
 
+    public static String buildChallenge(final String scheme, final String realm, final String scope) {
+        final String realmParam = realm.isEmpty() ? "" : " realm=\"" + realm + "\"";
+        final String scopeParam = scope.isEmpty() ? "" : " scope=\"" + scope + "\"";
+
+        return scheme + realmParam + scopeParam;
+    }
+
     public static CORSConfiguration getCorsConfiguration(final TrellisConfiguration config) {
         if (config.getCors().getEnabled()) {
             return config.getCors();

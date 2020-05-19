@@ -114,6 +114,13 @@ class TrellisUtilsTest {
     }
 
     @Test
+    void testBuildChallenge() {
+        assertEquals("Bearer", TrellisUtils.buildChallenge("Bearer", "", ""));
+        assertEquals("Basic realm=\"trellis\" scope=\"webid\"",
+                TrellisUtils.buildChallenge("Basic", "trellis", "webid"));
+    }
+
+    @Test
     void testGetAuthFilters() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")

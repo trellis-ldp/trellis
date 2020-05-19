@@ -114,8 +114,8 @@ public class BasicAuthFilter implements ContainerRequestFilter {
 
     private Principal authenticate(final String credentials) {
         final Credentials creds = Credentials.parse(credentials);
-        if (creds != null  && file != null && file.exists()) {
-            final Path path = file.toPath();
+        final Path path = getPath(file);
+        if (creds != null  && path != null) {
             try (final Stream<String> lineStream = BasicAuthUtils.uncheckedLines(path)) {
                 return lineStream.map(String::trim).filter(line -> !line.startsWith("#"))
                     .map(line -> line.split(":", 3)).filter(x -> x.length == 3)
@@ -135,12 +135,16 @@ public class BasicAuthFilter implements ContainerRequestFilter {
         return null;
     }
 
-    private static Set<String> getConfiguredAdmins(final Config config) {
+    static Path getPath(final File file) {
+        return file != null && file.exists() ? file.toPath() : null;
+    }
+
+    static Set<String> getConfiguredAdmins(final Config config) {
         final String admins = config.getOptionalValue(CONFIG_AUTH_ADMIN_USERS, String.class).orElse("");
         return stream(admins.split(",")).map(String::trim).collect(toSet());
     }
 
-    private static final class BasicAuthSecurityContext implements SecurityContext {
+    static final class BasicAuthSecurityContext implements SecurityContext {
         private final Principal principal;
         private final Set<String> admins;
         private final boolean secure;
