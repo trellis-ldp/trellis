@@ -21,11 +21,6 @@ import static org.apache.jena.graph.NodeFactory.createBlankNode;
 import static org.apache.jena.graph.NodeFactory.createLiteral;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
-import static org.apache.jena.vocabulary.DCTerms.spatial;
-import static org.apache.jena.vocabulary.DCTerms.subject;
-import static org.apache.jena.vocabulary.DCTerms.title;
-import static org.apache.jena.vocabulary.DCTypes.Text;
-import static org.apache.jena.vocabulary.RDF.Nodes.type;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -39,26 +34,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.jena.commonsrdf.JenaCommonsRDF;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.DCTypes;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopNamespaceService;
-import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.RDFaWriterService;
 
 /**
  * @author acoburn
  */
 class DefaultRdfaWriterServiceTest {
-
-    private static final RDF rdf = RDFFactory.getInstance();
 
     @Mock
     private NamespaceService mockNamespaceService;
@@ -73,7 +66,7 @@ class DefaultRdfaWriterServiceTest {
         initMocks(this);
         final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("dc", DCTerms.NS);
-        namespaces.put("rdf", org.apache.jena.vocabulary.RDF.uri);
+        namespaces.put("rdf", RDF.uri);
         namespaces.put("dcmitype", "http://purl.org/dc/dcmitype/");
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
 
@@ -191,13 +184,13 @@ class DefaultRdfaWriterServiceTest {
         final Node sub = createURI("trellis:data/resource");
         final Node bn = createBlankNode();
         return of(
-                create(sub, title.asNode(), createLiteral("A title")),
-                create(sub, subject.asNode(), bn),
-                create(bn, title.asNode(), createLiteral("Other title")),
-                create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
-                create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929023/")),
-                create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929024/")),
-                create(sub, type, Text.asNode()))
+                create(sub, DCTerms.title.asNode(), createLiteral("A title")),
+                create(sub, DCTerms.subject.asNode(), bn),
+                create(bn, DCTerms.title.asNode(), createLiteral("Other title")),
+                create(sub, DCTerms.spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
+                create(sub, DCTerms.spatial.asNode(), createURI("http://sws.geonames.org/4929023/")),
+                create(sub, DCTerms.spatial.asNode(), createURI("http://sws.geonames.org/4929024/")),
+                create(sub, RDF.type.asNode(), DCTypes.Text.asNode()))
             .map(JenaCommonsRDF::fromJena);
     }
 
@@ -206,11 +199,11 @@ class DefaultRdfaWriterServiceTest {
         final Node other = createURI("mailto:user@example.com");
         final Node bn = createBlankNode();
         return of(
-                create(sub, subject.asNode(), bn),
-                create(sub, spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
-                create(bn, type, Text.asNode()),
-                create(bn, subject.asNode(), other),
-                create(sub, type, Text.asNode()))
+                create(sub, DCTerms.subject.asNode(), bn),
+                create(sub, DCTerms.spatial.asNode(), createURI("http://sws.geonames.org/4929022/")),
+                create(bn, RDF.type.asNode(), DCTypes.Text.asNode()),
+                create(bn, DCTerms.subject.asNode(), other),
+                create(sub, RDF.type.asNode(), DCTypes.Text.asNode()))
             .map(JenaCommonsRDF::fromJena);
     }
 }
