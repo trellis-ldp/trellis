@@ -18,12 +18,9 @@ package org.trellisldp.test;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
@@ -60,7 +57,6 @@ public interface MementoResourceTests extends MementoCommonTests {
         setUp();
         return Stream.of(this::testMementosWereFound,
                 this::testMementoDateTimeHeader,
-                this::testMementoAcceptDateTimeHeader,
                 this::testMementoAllowedMethods,
                 this::testMementoLdpResource,
                 this::testMementoContent);
@@ -99,35 +95,6 @@ public interface MementoResourceTests extends MementoCommonTests {
                 final ZonedDateTime zdt = ZonedDateTime.parse(date, RFC_1123_DATE_TIME);
                 assertEquals(zdt, ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME), RFC_1123_DATE_TIME),
                         "Check that the memento-datetime header is correct");
-            }
-        });
-    }
-
-    /**
-     * Test the presence of a datetime header for each memento.
-     */
-    default void testMementoAcceptDateTimeHeader() {
-        getMementos().forEach((memento, date) -> {
-            final String location;
-            try (final Response res = target(getResourceLocation()).request().header(ACCEPT_DATETIME, date).head()) {
-                if (REDIRECTION.equals(res.getStatusInfo().getFamily())) {
-                    location = res.getLocation().toString();
-                } else {
-                    assumeTrue(SUCCESSFUL.equals(res.getStatusInfo().getFamily()));
-                    location = getResourceLocation();
-                }
-            }
-
-            try (final Response res = target(location).request().header(ACCEPT_DATETIME, date).head()) {
-                assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(),
-                                "Check for a successful memento request");
-                assertNotNull(res.getHeaderString(MEMENTO_DATETIME));
-                final ZonedDateTime zdt1 = ZonedDateTime.parse(date, RFC_1123_DATE_TIME);
-                final ZonedDateTime zdt2 = ZonedDateTime.parse(res.getHeaderString(MEMENTO_DATETIME),
-                        RFC_1123_DATE_TIME);
-                assertFalse(zdt2.isBefore(zdt1), "Invalid datetime header. "
-                        + " Request header: " + date
-                        + " Response header: " + res.getHeaderString(MEMENTO_DATETIME));
             }
         });
     }
