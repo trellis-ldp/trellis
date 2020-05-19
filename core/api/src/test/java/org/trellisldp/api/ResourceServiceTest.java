@@ -27,7 +27,6 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.jena.JenaRDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -38,7 +37,7 @@ import org.trellisldp.vocabulary.LDP;
  */
 class ResourceServiceTest {
 
-    private static final RDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final IRI existing = rdf.createIRI("trellis:data/existing");
 
     @Mock

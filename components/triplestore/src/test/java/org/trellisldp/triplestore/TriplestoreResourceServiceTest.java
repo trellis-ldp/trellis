@@ -20,6 +20,7 @@ import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.function.Predicate.isEqual;
+import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.awaitility.Awaitility.await;
@@ -31,6 +32,7 @@ import static org.trellisldp.api.Metadata.builder;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.vocabulary.RDF.type;
 
 import java.io.File;
 import java.time.Instant;
@@ -43,8 +45,7 @@ import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
-import org.apache.commons.rdf.jena.JenaDataset;
-import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionLocal;
 import org.apache.jena.rdfconnection.RDFConnectionRemote;
@@ -54,13 +55,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.BinaryMetadata;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
-import org.trellisldp.vocabulary.RDF;
 import org.trellisldp.vocabulary.RDFS;
 import org.trellisldp.vocabulary.SKOS;
 import org.trellisldp.vocabulary.Trellis;
@@ -71,7 +72,7 @@ import org.trellisldp.vocabulary.XSD;
  */
 class TriplestoreResourceServiceTest {
 
-    private static final JenaRDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     private static final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
     private static final IRI resource2 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource2");
@@ -127,11 +128,11 @@ class TriplestoreResourceServiceTest {
     @Test
     void testInitializeRoot2() {
         final Instant early = now();
-        final JenaDataset dataset = rdf.createDataset();
-        dataset.add(Trellis.PreferServerManaged, root, RDF.type, LDP.BasicContainer);
+        final Dataset dataset = rdf.createDataset();
+        dataset.add(Trellis.PreferServerManaged, root, type, LDP.BasicContainer);
         dataset.add(Trellis.PreferServerManaged, root, DC.modified, rdf.createLiteral(early.toString(), XSD.dateTime));
 
-        final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
+        final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
         final TriplestoreResourceService svc = new TriplestoreResourceService(rdfConnection);
         svc.initialize();
 
@@ -144,7 +145,7 @@ class TriplestoreResourceServiceTest {
     void testUpdateRoot() {
         final Instant early = now();
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final Resource res1 = svc.get(root).toCompletableFuture().join();
@@ -154,13 +155,13 @@ class TriplestoreResourceServiceTest {
         final Dataset data = rdf.createDataset();
         svc.get(root).thenAccept(res ->
                 res.stream().filter(q -> !q.getGraphName().filter(Trellis.PreferServerManaged::equals).isPresent())
-                        .filter(q -> !q.getPredicate().equals(RDF.type) && !q.getObject().equals(LDP.BasicContainer))
+                        .filter(q -> !q.getPredicate().equals(type) && !q.getObject().equals(LDP.BasicContainer))
                         .forEach(data::add)).toCompletableFuture().join();
         data.add(Trellis.PreferUserManaged, root, RDFS.label, rdf.createLiteral("Resource Label"));
         data.add(Trellis.PreferUserManaged, root, RDFS.seeAlso, rdf.createIRI("http://example.com"));
         data.add(Trellis.PreferUserManaged, root, LDP.inbox, rdf.createIRI("http://ldn.example.com/"));
-        data.add(Trellis.PreferUserManaged, root, RDF.type, rdf.createLiteral("Some weird type"));
-        data.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Update);
+        data.add(Trellis.PreferUserManaged, root, type, rdf.createLiteral("Some weird type"));
+        data.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Update);
 
         final Instant later = meanwhile();
 
@@ -196,15 +197,15 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpRs() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         final BlankNode bnode = rdf.createBlankNode();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferAudit, resource, PROV.wasGeneratedBy, bnode);
-        dataset.add(Trellis.PreferAudit, bnode, RDF.type, PROV.Activity);
-        dataset.add(Trellis.PreferAudit, bnode, RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode, type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode, type, AS.Create);
 
         final Instant later = meanwhile();
 
@@ -221,12 +222,12 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpRsWithoutBaseUrl() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant later = meanwhile();
 
@@ -243,14 +244,14 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpNr() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final IRI binaryIdentifier = rdf.createIRI("foo:binary");
         final Dataset dataset = rdf.createDataset();
         final BinaryMetadata binary = BinaryMetadata.builder(binaryIdentifier).mimeType("text/plain").build();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("title"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant later = meanwhile();
 
@@ -268,7 +269,7 @@ class TriplestoreResourceServiceTest {
         final IRI resource3 = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/notachild");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, resource3, DC.title, rdf.createLiteral("title"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
@@ -293,7 +294,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpC() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -302,8 +303,8 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource, DC.alternative, rdf.createLiteral("alt title"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("description"));
         dataset.add(Trellis.PreferAudit, resource, PROV.wasGeneratedBy, bnode);
-        dataset.add(Trellis.PreferAudit, bnode, RDF.type, PROV.Activity);
-        dataset.add(Trellis.PreferAudit, bnode, RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode, type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode, type, AS.Create);
 
         final Instant later = meanwhile();
 
@@ -319,7 +320,7 @@ class TriplestoreResourceServiceTest {
         // Now add a child resource
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("child"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
@@ -339,7 +340,7 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, child, DC.description, rdf.createLiteral("a description"));
         dataset.add(Trellis.PreferUserManaged, child, RDFS.label, rdf.createLiteral("other title"));
         dataset.add(Trellis.PreferUserManaged, child, RDFS.seeAlso, rdf.createIRI("http://example.com"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Update);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Update);
 
         final Instant evenLater2 = meanwhile();
 
@@ -357,7 +358,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testAddAuditTriples() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final Dataset dataset1 = rdf.createDataset();
@@ -366,7 +367,7 @@ class TriplestoreResourceServiceTest {
         dataset1.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("resource"));
         dataset1.add(Trellis.PreferUserManaged, resource, DC.alternative, rdf.createLiteral("alt title"));
         dataset2.add(Trellis.PreferAudit, resource, PROV.wasGeneratedBy, bnode);
-        dataset2.add(Trellis.PreferAudit, bnode, RDF.type, AS.Create);
+        dataset2.add(Trellis.PreferAudit, bnode, type, AS.Create);
 
         final Instant later = meanwhile();
 
@@ -384,13 +385,13 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutDeleteLdpC() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("resource title"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("resource description"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant later = meanwhile();
 
@@ -405,7 +406,7 @@ class TriplestoreResourceServiceTest {
 
         // Now add a child resource
         dataset.clear();
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("child"));
         dataset.add(Trellis.PreferUserManaged, child, DC.description, rdf.createLiteral("nested resource"));
 
@@ -425,9 +426,9 @@ class TriplestoreResourceServiceTest {
         // Now delete the child resource
         final BlankNode bnode = rdf.createBlankNode();
         dataset.clear();
-        dataset.add(Trellis.PreferAudit, bnode, RDF.type, AS.Delete);
-        dataset.add(Trellis.PreferAudit, bnode, RDF.type, PROV.Activity);
-        dataset.add(Trellis.PreferServerManaged, child, RDF.type, LDP.Resource);
+        dataset.add(Trellis.PreferAudit, bnode, type, AS.Delete);
+        dataset.add(Trellis.PreferAudit, bnode, type, PROV.Activity);
+        dataset.add(Trellis.PreferServerManaged, child, type, LDP.Resource);
 
         final Instant preDelete = meanwhile();
 
@@ -447,7 +448,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpBc() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -470,7 +471,7 @@ class TriplestoreResourceServiceTest {
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("title"));
         dataset.add(Trellis.PreferUserManaged, child, RDFS.label, rdf.createLiteral("label"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant later2 = meanwhile();
 
@@ -487,7 +488,7 @@ class TriplestoreResourceServiceTest {
 
         // Now update the child resource
         dataset.clear();
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Update);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Update);
         dataset.add(Trellis.PreferUserManaged, child, RDFS.seeAlso, rdf.createIRI("http://www.example.com/"));
         dataset.add(Trellis.PreferUserManaged, child, RDFS.label, rdf.createLiteral("a label"));
 
@@ -509,7 +510,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpDcSelf() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final IRI container = rdf.createIRI(resource.getIRIString() + "/");
@@ -559,7 +560,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpDc() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -630,7 +631,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpDcMultiple() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -638,7 +639,7 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("multiple LDP-DC test"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, DC.relation);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant later = meanwhile();
 
@@ -652,7 +653,7 @@ class TriplestoreResourceServiceTest {
             svc.get(root).thenAccept(checkRoot(later, 1L)).toCompletableFuture()).join();
 
         dataset.clear();
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("second LDP-DC"));
         dataset.add(Trellis.PreferUserManaged, resource2, DC.description, rdf.createLiteral("another LDP-DC"));
         dataset.add(Trellis.PreferUserManaged, resource2, RDFS.label, rdf.createLiteral("test multple LDP-DCs"));
@@ -676,7 +677,7 @@ class TriplestoreResourceServiceTest {
 
         // Now add a membership resource
         dataset.clear();
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("member resource"));
         dataset.add(Trellis.PreferUserManaged, members, DC.description, rdf.createLiteral("LDP-RS membership test"));
 
@@ -699,7 +700,7 @@ class TriplestoreResourceServiceTest {
         // Now add the child resources to the ldp-dc
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("ldp-dc (1) child resource"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant later4 = meanwhile();
 
@@ -726,7 +727,7 @@ class TriplestoreResourceServiceTest {
 
         // Now add a child resources to the other ldp-dc
         dataset.clear();
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("ldp-dc (2) child resource"));
 
         final Instant later5 = meanwhile();
@@ -759,7 +760,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpDcMultipleInverse() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final IRI container = rdf.createIRI(resource.getIRIString() + "/");
@@ -770,7 +771,7 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("LDP-DC inverse test"));
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.isMemberOfRelation, DC.relation);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant later = meanwhile();
 
@@ -788,7 +789,7 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource2, DC.title, rdf.createLiteral("Second LDP-DC"));
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.isMemberOfRelation, DC.subject);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
@@ -808,7 +809,7 @@ class TriplestoreResourceServiceTest {
         // Now add a membership resource
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Membership resource"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant evenLater2 = meanwhile();
 
@@ -829,7 +830,7 @@ class TriplestoreResourceServiceTest {
         // Now add the child resources to the ldp-dc
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, DC.title, rdf.createLiteral("Child resource"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant evenLater3 = meanwhile();
 
@@ -855,7 +856,7 @@ class TriplestoreResourceServiceTest {
 
         // Now add a child resources to the other ldp-dc
         dataset.clear();
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
         dataset.add(Trellis.PreferUserManaged, child2, DC.title, rdf.createLiteral("Second child resource"));
 
         final Instant evenLater4 = meanwhile();
@@ -885,7 +886,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpIc() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -894,14 +895,14 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource, DC.title, rdf.createLiteral("Indirect Container"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.description, rdf.createLiteral("Test LDP-IC"));
         dataset.add(Trellis.PreferUserManaged, resource, DC.subject, rdf.createIRI("http://example.com/subject"));
-        dataset.add(Trellis.PreferUserManaged, resource, RDF.type, SKOS.Concept);
+        dataset.add(Trellis.PreferUserManaged, resource, type, SKOS.Concept);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.insertedContentRelation, SKOS.prefLabel);
         dataset.add(Trellis.PreferAudit, resource, PROV.wasGeneratedBy, bnode0);
         dataset.add(Trellis.PreferAudit, bnode0, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
-        dataset.add(Trellis.PreferAudit, bnode0, RDF.type, PROV.Activity);
-        dataset.add(Trellis.PreferAudit, bnode0, RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode0, type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode0, type, AS.Create);
 
         final Instant later = meanwhile();
 
@@ -920,8 +921,8 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Membership resource"));
         dataset.add(Trellis.PreferAudit, members, PROV.wasGeneratedBy, bnode1);
         dataset.add(Trellis.PreferAudit, bnode1, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
-        dataset.add(Trellis.PreferAudit, bnode1, RDF.type, PROV.Activity);
-        dataset.add(Trellis.PreferAudit, bnode1, RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode1, type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode1, type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
@@ -942,8 +943,8 @@ class TriplestoreResourceServiceTest {
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label);
         dataset.add(Trellis.PreferAudit, child, PROV.wasGeneratedBy, bnode2);
-        dataset.add(Trellis.PreferAudit, bnode2, RDF.type, AS.Create);
-        dataset.add(Trellis.PreferAudit, bnode2, RDF.type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode2, type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode2, type, PROV.Activity);
 
         final Instant evenLater2 = meanwhile();
 
@@ -971,7 +972,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpIcDefaultContent() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final IRI container = rdf.createIRI(resource.getIRIString() + "/");
@@ -982,7 +983,7 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.insertedContentRelation, LDP.MemberSubject);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant later = meanwhile();
 
@@ -999,8 +1000,8 @@ class TriplestoreResourceServiceTest {
         // Now add a membership resource
         final BlankNode bnode = rdf.createBlankNode();
         dataset.clear();
-        dataset.add(Trellis.PreferAudit, bnode, RDF.type, AS.Create);
-        dataset.add(Trellis.PreferAudit, bnode, RDF.type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode, type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode, type, PROV.Activity);
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Member resource"));
 
         final Instant evenLater = meanwhile();
@@ -1020,7 +1021,7 @@ class TriplestoreResourceServiceTest {
         final Literal label = rdf.createLiteral("label1");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant evenLater2 = meanwhile();
 
@@ -1048,7 +1049,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpIcMultipleStatements() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final IRI container = rdf.createIRI(resource.getIRIString() + "/");
@@ -1059,7 +1060,7 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.insertedContentRelation, SKOS.prefLabel);
         dataset.add(Trellis.PreferAudit, resource, PROV.wasGeneratedBy, bnode);
-        dataset.add(Trellis.PreferAudit, bnode, RDF.type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode, type, PROV.Activity);
 
         final Instant later = meanwhile();
 
@@ -1077,8 +1078,8 @@ class TriplestoreResourceServiceTest {
         // Now add a membership resource
         dataset.clear();
         final BlankNode bnode2 = rdf.createBlankNode();
-        dataset.add(Trellis.PreferAudit, bnode2, RDF.type, AS.Create);
-        dataset.add(Trellis.PreferAudit, bnode2, RDF.type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode2, type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode2, type, PROV.Activity);
         dataset.add(Trellis.PreferAudit, members, PROV.wasGeneratedBy, bnode2);
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Membership LDP-RS"));
 
@@ -1101,7 +1102,7 @@ class TriplestoreResourceServiceTest {
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label1);
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label2);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant evenLater2 = meanwhile();
 
@@ -1132,7 +1133,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpIcMultipleResources() {
         final TriplestoreResourceService svc = new TriplestoreResourceService(
-                connect(wrap(rdf.createDataset().asJenaDatasetGraph())));
+                connect(wrap(toJena(rdf.createDataset()))));
         svc.initialize();
 
         final IRI container = rdf.createIRI(resource.getIRIString() + "/");
@@ -1145,8 +1146,8 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource, LDP.hasMemberRelation, RDFS.label);
         dataset.add(Trellis.PreferUserManaged, resource, LDP.insertedContentRelation, SKOS.prefLabel);
         dataset.add(Trellis.PreferAudit, resource, PROV.wasGeneratedBy, bnode);
-        dataset.add(Trellis.PreferAudit, bnode, RDF.type, PROV.Activity);
-        dataset.add(Trellis.PreferAudit, bnode, RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode, type, PROV.Activity);
+        dataset.add(Trellis.PreferAudit, bnode, type, AS.Create);
 
         final Instant later = meanwhile();
 
@@ -1165,7 +1166,7 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.membershipResource, members);
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.insertedContentRelation, SKOS.prefLabel);
         dataset.add(Trellis.PreferUserManaged, resource2, LDP.hasMemberRelation, RDFS.label);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant evenLater = meanwhile();
 
@@ -1185,7 +1186,7 @@ class TriplestoreResourceServiceTest {
         // Now add a membership resource
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, members, DC.title, rdf.createLiteral("Shared member resource"));
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant evenLater2 = meanwhile();
 
@@ -1207,7 +1208,7 @@ class TriplestoreResourceServiceTest {
         final Literal label = rdf.createLiteral("first label");
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child, SKOS.prefLabel, label);
-        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, AS.Create);
 
         final Instant evenLater3 = meanwhile();
 
@@ -1237,7 +1238,7 @@ class TriplestoreResourceServiceTest {
         dataset.clear();
         dataset.add(Trellis.PreferUserManaged, child2, SKOS.prefLabel, label2);
         dataset.add(Trellis.PreferAudit, child2, PROV.wasGeneratedBy, bnode2);
-        dataset.add(Trellis.PreferAudit, bnode2, RDF.type, AS.Create);
+        dataset.add(Trellis.PreferAudit, bnode2, type, AS.Create);
         dataset.add(Trellis.PreferAudit, bnode2, PROV.atTime, rdf.createLiteral(now().toString(), XSD.dateTime));
 
         final Instant evenLater4 = meanwhile();

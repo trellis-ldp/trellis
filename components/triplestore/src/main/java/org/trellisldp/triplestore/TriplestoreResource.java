@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.builder;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
+import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.apache.jena.vocabulary.RDF.type;
@@ -45,8 +46,8 @@ import java.util.stream.Stream;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.Quad;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
-import org.apache.commons.rdf.jena.JenaRDF;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdfconnection.RDFConnection;
@@ -57,10 +58,10 @@ import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.RDF;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
@@ -69,7 +70,7 @@ import org.trellisldp.vocabulary.Trellis;
 public class TriplestoreResource implements Resource {
 
     private static final Logger LOGGER = getLogger(TriplestoreResource.class);
-    private static final JenaRDF rdf = getInstance();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final Set<IRI> containerTypes;
 
     static {
@@ -184,18 +185,18 @@ public class TriplestoreResource implements Resource {
         q.addResultVar(binaryObject);
 
         final ElementPathBlock epb1 = new ElementPathBlock();
-        epb1.addTriple(create(rdf.asJenaNode(identifier), PREDICATE, OBJECT));
+        epb1.addTriple(create(toJena(identifier), PREDICATE, OBJECT));
 
         final ElementPathBlock epb2 = new ElementPathBlock();
-        epb2.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.hasPart), binarySubject));
-        epb2.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.NonRDFSource)));
+        epb2.addTriple(create(toJena(identifier), toJena(DC.hasPart), binarySubject));
+        epb2.addTriple(create(toJena(identifier), type.asNode(), toJena(LDP.NonRDFSource)));
         epb2.addTriple(create(binarySubject, binaryPredicate, binaryObject));
 
         final ElementGroup elg = new ElementGroup();
         elg.addElement(epb1);
         elg.addElement(new ElementOptional(epb2));
 
-        q.setQueryPattern(new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), elg));
+        q.setQueryPattern(new ElementNamedGraph(toJena(Trellis.PreferServerManaged), elg));
 
         rdfConnection.querySelect(q, qs -> {
             final RDFNode s = qs.get("binarySubject");
@@ -230,7 +231,7 @@ public class TriplestoreResource implements Resource {
 
     @Override
     public IRI getInteractionModel() {
-        return asIRI(RDF.type).orElse(null);
+        return asIRI(org.trellisldp.vocabulary.RDF.type).orElse(null);
     }
 
     @Override
@@ -374,18 +375,18 @@ public class TriplestoreResource implements Resource {
         q.addResultVar(OBJECT);
 
         final ElementPathBlock epb1 = new ElementPathBlock();
-        epb1.addTriple(create(s, rdf.asJenaNode(LDP.member), rdf.asJenaNode(identifier)));
-        epb1.addTriple(create(s, rdf.asJenaNode(LDP.membershipResource), SUBJECT));
-        epb1.addTriple(create(s, rdf.asJenaNode(RDF.type), rdf.asJenaNode(LDP.IndirectContainer)));
-        epb1.addTriple(create(s, rdf.asJenaNode(LDP.hasMemberRelation), PREDICATE));
-        epb1.addTriple(create(s, rdf.asJenaNode(LDP.insertedContentRelation), o));
-        epb1.addTriple(create(res, rdf.asJenaNode(DC.isPartOf), s));
+        epb1.addTriple(create(s, toJena(LDP.member), toJena(identifier)));
+        epb1.addTriple(create(s, toJena(LDP.membershipResource), SUBJECT));
+        epb1.addTriple(create(s, type.asNode(), toJena(LDP.IndirectContainer)));
+        epb1.addTriple(create(s, toJena(LDP.hasMemberRelation), PREDICATE));
+        epb1.addTriple(create(s, toJena(LDP.insertedContentRelation), o));
+        epb1.addTriple(create(res, toJena(DC.isPartOf), s));
 
         final ElementPathBlock epb2 = new ElementPathBlock();
         epb2.addTriple(create(res, o, OBJECT));
 
         final ElementGroup elg = new ElementGroup();
-        elg.addElement(new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb1));
+        elg.addElement(new ElementNamedGraph(toJena(Trellis.PreferServerManaged), epb1));
         elg.addElement(new ElementNamedGraph(res, epb2));
 
         q.setQueryPattern(elg);
@@ -423,14 +424,14 @@ public class TriplestoreResource implements Resource {
         final Var s = Var.alloc("s");
 
         final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(create(s, rdf.asJenaNode(LDP.member), rdf.asJenaNode(identifier)));
-        epb.addTriple(create(s, rdf.asJenaNode(LDP.membershipResource), SUBJECT));
-        epb.addTriple(create(s, rdf.asJenaNode(LDP.hasMemberRelation), PREDICATE));
-        epb.addTriple(create(s, rdf.asJenaNode(LDP.insertedContentRelation), rdf.asJenaNode(LDP.MemberSubject)));
-        epb.addTriple(create(OBJECT, rdf.asJenaNode(DC.isPartOf), s));
+        epb.addTriple(create(s, toJena(LDP.member), toJena(identifier)));
+        epb.addTriple(create(s, toJena(LDP.membershipResource), SUBJECT));
+        epb.addTriple(create(s, toJena(LDP.hasMemberRelation), PREDICATE));
+        epb.addTriple(create(s, toJena(LDP.insertedContentRelation), toJena(LDP.MemberSubject)));
+        epb.addTriple(create(OBJECT, toJena(DC.isPartOf), s));
         epb.addTriple(create(OBJECT, type.asNode(), TYPE));
 
-        final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb);
+        final ElementNamedGraph ng = new ElementNamedGraph(toJena(Trellis.PreferServerManaged), epb);
 
         final ElementGroup elg = new ElementGroup();
         elg.addElement(ng);
@@ -467,13 +468,13 @@ public class TriplestoreResource implements Resource {
         q.addResultVar(TYPE);
 
         final ElementPathBlock epb = new ElementPathBlock();
-        epb.addTriple(create(rdf.asJenaNode(identifier), rdf.asJenaNode(DC.isPartOf), SUBJECT));
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.isMemberOfRelation), PREDICATE));
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.membershipResource), OBJECT));
-        epb.addTriple(create(SUBJECT, rdf.asJenaNode(LDP.insertedContentRelation), rdf.asJenaNode(LDP.MemberSubject)));
+        epb.addTriple(create(toJena(identifier), toJena(DC.isPartOf), SUBJECT));
+        epb.addTriple(create(SUBJECT, toJena(LDP.isMemberOfRelation), PREDICATE));
+        epb.addTriple(create(SUBJECT, toJena(LDP.membershipResource), OBJECT));
+        epb.addTriple(create(SUBJECT, toJena(LDP.insertedContentRelation), toJena(LDP.MemberSubject)));
         epb.addTriple(create(OBJECT, type.asNode(), TYPE));
 
-        final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb);
+        final ElementNamedGraph ng = new ElementNamedGraph(toJena(Trellis.PreferServerManaged), epb);
 
         final ElementGroup elg = new ElementGroup();
         elg.addElement(ng);
@@ -509,10 +510,10 @@ public class TriplestoreResource implements Resource {
             q.addResultVar(TYPE);
 
             final ElementPathBlock epb = new ElementPathBlock();
-            epb.addTriple(create(OBJECT, rdf.asJenaNode(DC.isPartOf), rdf.asJenaNode(identifier)));
+            epb.addTriple(create(OBJECT, toJena(DC.isPartOf), toJena(identifier)));
             epb.addTriple(create(OBJECT, type.asNode(), TYPE));
 
-            final ElementNamedGraph ng = new ElementNamedGraph(rdf.asJenaNode(Trellis.PreferServerManaged), epb);
+            final ElementNamedGraph ng = new ElementNamedGraph(toJena(Trellis.PreferServerManaged), epb);
 
             final ElementGroup elg = new ElementGroup();
             elg.addElement(ng);
@@ -548,7 +549,7 @@ public class TriplestoreResource implements Resource {
         if (includeLdpType) {
             final IRI ixnModel = getInteractionModel();
             return of(rdf.createQuad(Trellis.PreferServerManaged, adjustIdentifier(identifier, ixnModel),
-                            RDF.type, ixnModel));
+                            org.trellisldp.vocabulary.RDF.type, ixnModel));
         }
         return Stream.empty();
     }

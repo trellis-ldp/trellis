@@ -26,8 +26,8 @@ module org.trellisldp.test {
     requires org.apache.commons.codec;
     requires org.apache.commons.io;
     requires org.apache.commons.rdf.api;
-    requires org.apache.commons.rdf.jena;
     requires org.apache.jena.arq;
+    requires org.apache.jena.commonsrdf;
     requires org.junit.jupiter.api;
     requires org.slf4j;
 

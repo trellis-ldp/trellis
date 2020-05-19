@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -33,7 +32,7 @@ import org.junit.jupiter.api.Test;
  */
 class BinaryMetadataTest {
 
-    private static final RDF rdf = new SimpleRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
 
     private final IRI identifier = rdf.createIRI("trellis:data/resource");
 

@@ -15,12 +15,14 @@
  */
 package org.trellisldp.triplestore;
 
+import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 
-import org.apache.commons.rdf.jena.JenaDataset;
-import org.apache.commons.rdf.jena.JenaRDF;
+import org.apache.commons.rdf.api.Dataset;
+import org.apache.commons.rdf.api.RDF;
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.test.AbstractResourceServiceTests;
 
@@ -29,10 +31,10 @@ import org.trellisldp.test.AbstractResourceServiceTests;
  */
 public class ResourceServiceTest extends AbstractResourceServiceTests {
 
-    private static final JenaRDF rdf = new JenaRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
 
-    private final JenaDataset dataset = rdf.createDataset();
-    private final RDFConnection rdfConnection = connect(wrap(dataset.asJenaDatasetGraph()));
+    private final Dataset dataset = rdf.createDataset();
+    private final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
     private final ResourceService svc = new TriplestoreResourceService(rdfConnection);
 
     @Override

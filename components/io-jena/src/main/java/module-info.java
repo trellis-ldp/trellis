@@ -21,8 +21,8 @@ module org.trellisldp.io {
 
     requires org.apache.commons.io;
     requires org.apache.commons.rdf.api;
-    requires org.apache.commons.rdf.jena;
     requires org.apache.jena.arq;
+    requires org.apache.jena.commonsrdf;
     requires jakarta.enterprise.cdi.api;
     requires jakarta.inject;
     requires microprofile.config.api;

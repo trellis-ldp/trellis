@@ -21,7 +21,6 @@ import static org.trellisldp.vocabulary.Trellis.InvalidProperty;
 
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
-import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.vocabulary.LDP;
 
@@ -30,7 +29,7 @@ import org.trellisldp.vocabulary.LDP;
  */
 class ConstraintViolationTest {
 
-    private static final RDF rdf = new SimpleRDF();
+    private static final RDF rdf = RDFFactory.getInstance();
     private static final Triple triple = rdf.createTriple(rdf.createIRI("ex:subject"), LDP.contains,
             rdf.createIRI("ex:object"));
     private static final Triple triple2 = rdf.createTriple(rdf.createIRI("ex:subject"), LDP.contains,

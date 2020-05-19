@@ -23,7 +23,7 @@ module org.trellisldp.file {
     requires com.fasterxml.jackson.databind;
     requires org.apache.commons.io;
     requires org.apache.commons.rdf.api;
-    requires org.apache.commons.rdf.jena;
+    requires org.apache.jena.commonsrdf;
     requires org.apache.jena.arq;
     requires org.slf4j;
     requires jakarta.enterprise.cdi.api;

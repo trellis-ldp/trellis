@@ -8,7 +8,7 @@ description = 'Trellis WebAC'
 
 ext {
     moduleName = 'org.trellisldp.webac'
-    testModules = ['org.apache.commons.rdf.jena', 'smallrye.config']
+    testModules = ['org.apache.jena.commonsrdf', 'smallrye.config']
 }
 
 dependencies {
@@ -21,11 +21,8 @@ dependencies {
     api project(':trellis-http')
 
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
-    implementation("org.apache.commons:commons-rdf-jena:$commonsRdfVersion") {
-        exclude group: 'org.apache.jena', module: 'jena-osgi'
-        exclude group: 'org.apache.servicemix.bundles', module: 'org.apache.servicemix.bundles.xerces'
-    }
     implementation "org.apache.jena:jena-arq:$jenaVersion"
+    implementation "org.apache.jena:jena-commonsrdf:$jenaVersion"
     implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation project(':trellis-vocabulary')
