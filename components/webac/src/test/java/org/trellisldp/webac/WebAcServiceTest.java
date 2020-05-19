@@ -36,6 +36,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Dataset;
+import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,12 +47,13 @@ import org.trellisldp.api.CacheService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
-import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
+import org.trellisldp.vocabulary.RDFS;
 import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.vocabulary.VCARD;
 
@@ -106,10 +108,7 @@ class WebAcServiceTest {
     private Session mockSession;
 
     @Mock
-    private CacheService<String, Set<IRI>> mockCache;
-
-    @Mock
-    private ServiceBundler mockServiceBundler;
+    private CacheService<String, AuthorizedModes> mockCache;
 
     @Mock
     private Resource mockResource, mockChildResource, mockParentResource, mockRootResource, mockGroupResource,
@@ -120,9 +119,7 @@ class WebAcServiceTest {
     void setUp() {
         initMocks(this);
 
-        when(mockServiceBundler.getResourceService()).thenReturn(mockResourceService);
-
-        testService = new WebAcService(mockServiceBundler);
+        testService = new WebAcService(mockResourceService, new WebAcService.NoopAuthorizationCache());
 
         when(mockCache.get(anyString(), any(Function.class))).thenAnswer(inv -> {
             final String key = inv.getArgument(0);
@@ -164,11 +161,50 @@ class WebAcServiceTest {
     }
 
     @Test
+    void testInitializeError() {
+        when(mockResourceService.get(any(IRI.class))).thenThrow(new RuntimeException("Expected"));
+        assertThrows(RuntimeTrellisException.class, testService::initialize);
+    }
+
+    @Test
     void testDontInitialize() {
         when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
 
         assertDoesNotThrow(() -> testService.initialize());
         verify(mockRootResource, never()).stream(PreferUserManaged);
+    }
+
+    @Test
+    void testGetAuthorizationFromGraphError() {
+        final Graph mockGraph = mock(Graph.class);
+        final IRI subject = rdf.createIRI("https://example.com/Subject");
+        when(mockGraph.stream()).thenAnswer(inv ->
+                Stream.of(rdf.createTriple(subject, RDFS.label, rdf.createLiteral("literal"))));
+        when(mockGraph.stream(eq(subject), any(), any())).thenThrow(new RuntimeException("Expected"));
+        assertThrows(RuntimeTrellisException.class, () ->
+                WebAcService.getAuthorizationFromGraph(resourceIRI, mockGraph));
+    }
+
+    @Test
+    void testAccessControlGraphError() {
+        when(mockSession.getAgent()).thenReturn(acoburnIRI);
+        when(mockResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
+        when(mockResource.stream(eq(PreferAccessControl))).thenThrow(new RuntimeException("Expected"));
+
+        assertThrows(RuntimeTrellisException.class, () ->
+                testService.getAuthorizedModes(resourceIRI, mockSession));
+    }
+
+    @Test
+    void testMissingRootResource() {
+        when(mockResourceService.get(eq(rootIRI))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockSession.getAgent()).thenReturn(acoburnIRI);
+
+        assertAll("Check readability for " + acoburnIRI,
+                checkCannotRead(resourceIRI),
+                checkCannotRead(childIRI),
+                checkCannotRead(parentIRI),
+                checkCannotRead(rootIRI));
     }
 
     @Test
@@ -291,7 +327,7 @@ class WebAcServiceTest {
     @Test
     void testCanWrite6() {
         final WebAcService testService2 = new WebAcService(mockResourceService,
-                new WebAcService.NoopAuthorizationCache(), false);
+                new WebAcService.NoopAuthorizationCache(), false, WebAcService.DEFAULT_ACL_LOCATION);
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
@@ -313,7 +349,7 @@ class WebAcServiceTest {
     @Test
     void testCanWrite7() {
         final WebAcService testService2 = new WebAcService(mockResourceService,
-                new WebAcService.NoopAuthorizationCache(), false);
+                new WebAcService.NoopAuthorizationCache(), false, WebAcService.DEFAULT_ACL_LOCATION);
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));

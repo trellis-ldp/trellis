@@ -28,7 +28,6 @@ import java.util.Set;
 
 import javax.ws.rs.container.ContainerRequestFilter;
 
-import org.apache.commons.rdf.api.IRI;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.auth.basic.BasicAuthFilter;
@@ -41,6 +40,7 @@ import org.trellisldp.dropwizard.config.AuthConfiguration;
 import org.trellisldp.dropwizard.config.CORSConfiguration;
 import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
+import org.trellisldp.webac.AuthorizedModes;
 import org.trellisldp.webac.WebAcService;
 
 /**
@@ -72,7 +72,7 @@ final class TrellisUtils {
     public static WebAcService getWebacService(final TrellisConfiguration config,
             final ResourceService resourceService) {
         if (config.getAuth().getWebac().getEnabled()) {
-            final Cache<String, Set<IRI>> authCache = newBuilder().maximumSize(config.getAuth().getWebac()
+            final Cache<String, AuthorizedModes> authCache = newBuilder().maximumSize(config.getAuth().getWebac()
                     .getCacheSize()).expireAfterWrite(config.getAuth().getWebac()
                     .getCacheExpireSeconds(), SECONDS).build();
             final WebAcService webac = new WebAcService(resourceService, new TrellisCache<>(authCache));

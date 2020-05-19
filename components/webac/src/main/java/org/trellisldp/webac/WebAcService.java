@@ -22,8 +22,8 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableList;
-import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -76,7 +76,6 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
 import org.trellisldp.api.TrellisUtils;
-import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.Trellis;
@@ -116,7 +115,7 @@ public class WebAcService {
     }
 
     private final ResourceService resourceService;
-    private final CacheService<String, Set<IRI>> cache;
+    private final CacheService<String, AuthorizedModes> cache;
     private final String defaultAuthResourceLocation;
     private final List<Authorization> defaultRootAuthorizations;
     private final boolean checkMembershipResources;
@@ -125,50 +124,22 @@ public class WebAcService {
      * Create a WebAC-based authorization service.
      */
     public WebAcService() {
-        this(new NoopResourceService());
+        this(new NoopResourceService(), new NoopAuthorizationCache());
     }
 
     /**
      * Create a WebAC-based authorization service.
      *
-     * @param services the trellis service bundler
-     */
-    public WebAcService(final ServiceBundler services) {
-        this(services, new NoopAuthorizationCache());
-    }
-
-    /**
-     * Create a WebAC-based authorization service.
-     *
-     * @param services the trellis service bundler
+     * @param resourceService the trellis service bundler
      * @param cache a cache
      */
     @Inject
-    public WebAcService(final ServiceBundler services,
-            @TrellisAuthorizationCache final CacheService<String, Set<IRI>> cache) {
-        this(services.getResourceService(), cache);
-    }
-
-    /**
-     * Create a WebAC-based authorization service.
-     *
-     * @param resourceService the resource service
-     */
-    public WebAcService(final ResourceService resourceService) {
-        this(resourceService, new NoopAuthorizationCache());
-    }
-
-    /**
-     * Create a WebAC-based authorization service.
-     *
-     * @param resourceService the resource service
-     * @param cache a cache
-     */
-    public WebAcService(final ResourceService resourceService, final CacheService<String, Set<IRI>> cache) {
+    public WebAcService(final ResourceService resourceService,
+            @TrellisAuthorizationCache final CacheService<String, AuthorizedModes> cache) {
         this(resourceService, cache, getConfig());
     }
 
-    private WebAcService(final ResourceService resourceService, final CacheService<String, Set<IRI>> cache,
+    private WebAcService(final ResourceService resourceService, final CacheService<String, AuthorizedModes> cache,
             final Config config) {
         this(resourceService, cache,
                 config.getOptionalValue(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class).orElse(Boolean.FALSE),
@@ -181,21 +152,9 @@ public class WebAcService {
      * @param resourceService the resource service
      * @param cache a cache
      * @param checkMembershipResources whether to check membership resource permissions (default=false)
-     */
-    public WebAcService(final ResourceService resourceService,
-            final CacheService<String, Set<IRI>> cache, final boolean checkMembershipResources) {
-        this(resourceService, cache, checkMembershipResources, DEFAULT_ACL_LOCATION);
-    }
-
-    /**
-     * Create a WebAC-based authorization service.
-     *
-     * @param resourceService the resource service
-     * @param cache a cache
-     * @param checkMembershipResources whether to check membership resource permissions (default=false)
      * @param defaultAuthResourceLocation a classpath location of a default root ACL (in Turtle)
      */
-    public WebAcService(final ResourceService resourceService, final CacheService<String, Set<IRI>> cache,
+    public WebAcService(final ResourceService resourceService, final CacheService<String, AuthorizedModes> cache,
             final boolean checkMembershipResources, final String defaultAuthResourceLocation) {
         this.resourceService = requireNonNull(resourceService, "A non-null ResourceService must be provided!");
         this.cache = cache;
@@ -243,20 +202,31 @@ public class WebAcService {
      * @return a set of allowable access modes
      */
     public Set<IRI> getAccessModes(final IRI identifier, final Session session) {
+        return getAuthorizedModes(identifier, session).getAccessModes();
+    }
+
+    /**
+     * Get the authorized modes for the resources.
+     * @param identifier the resource identifier
+     * @param session the agent's session
+     * @return the authorized modes
+     */
+    public AuthorizedModes getAuthorizedModes(final IRI identifier, final Session session) {
         requireNonNull(session, "A non-null session must be provided!");
 
         if (Trellis.AdministratorAgent.equals(session.getAgent())) {
-            return unmodifiableSet(allModes);
+            return new AuthorizedModes(identifier, allModes);
         }
 
-        final Set<IRI> cachedModes = cache.get(generateCacheKey(identifier, session.getAgent()), k ->
+        final AuthorizedModes cachedModes = cache.get(generateCacheKey(identifier, session.getAgent()), k ->
                 getAuthz(identifier, session.getAgent()));
         return session.getDelegatedBy().map(delegate -> {
-                final Set<IRI> delegatedModes = new HashSet<>(cache.get(generateCacheKey(identifier, delegate),
-                            k -> getAuthz(identifier, delegate)));
-                delegatedModes.retainAll(cachedModes);
-                return unmodifiableSet(delegatedModes);
-            }).orElseGet(() -> unmodifiableSet(cachedModes));
+                final Set<IRI> modes = new HashSet<>(cachedModes.getAccessModes());
+                final AuthorizedModes delegatedModes = cache.get(generateCacheKey(identifier, delegate),
+                            k -> getAuthz(identifier, delegate));
+                modes.retainAll(delegatedModes.getAccessModes());
+                return new AuthorizedModes(cachedModes.getEffectiveAcl(), modes);
+            }).orElse(cachedModes);
     }
 
     /**
@@ -269,29 +239,32 @@ public class WebAcService {
         return join("||", identifier.getIRIString(), agent.getIRIString());
     }
 
-    private Set<IRI> getAuthz(final IRI identifier, final IRI agent) {
-        final Set<IRI> modes = getModesFor(identifier, agent);
+    private AuthorizedModes getAuthz(final IRI identifier, final IRI agent) {
+        final AuthorizedModes authModes = getModesFor(identifier, agent);
+        final Set<IRI> modes = new HashSet<>(authModes.getAccessModes());
         // consider membership resources, if relevant
         if (checkMembershipResources && hasWritableMode(modes)) {
             getContainer(identifier).map(resourceService::get).map(CompletionStage::toCompletableFuture)
                 .map(CompletableFuture::join).flatMap(Resource::getMembershipResource)
                 .map(TrellisUtils::normalizeIdentifier).map(member -> getModesFor(member, agent))
                 .ifPresent(memberModes -> {
-                    if (!memberModes.contains(ACL.Write)) {
+                    if (!memberModes.getAccessModes().contains(ACL.Write)) {
                         modes.remove(ACL.Write);
                     }
-                    if (!memberModes.contains(ACL.Append)) {
+                    if (!memberModes.getAccessModes().contains(ACL.Append)) {
                         modes.remove(ACL.Append);
                     }
                 });
+            return new AuthorizedModes(authModes.getEffectiveAcl(), modes);
         }
-        return modes;
+        return authModes;
     }
 
-    private Set<IRI> getModesFor(final IRI identifier, final IRI agent) {
-        return getNearestResource(identifier).map(resource -> getAllAuthorizationsFor(resource, false)
-                .filter(agentFilter(agent))).orElseGet(Stream::empty)
-            .flatMap(auth -> auth.getMode().stream()).collect(toSet());
+    private AuthorizedModes getModesFor(final IRI identifier, final IRI agent) {
+        return getNearestResource(identifier).map(resource ->
+                new AuthorizedModes(resource.getIdentifier(), getAllAuthorizationsFor(resource, false)
+                    .filter(agentFilter(agent)).flatMap(auth -> auth.getMode().stream()).collect(toSet())))
+            .orElseGet(() -> new AuthorizedModes(root, emptySet()));
     }
 
     private Optional<Resource> getNearestResource(final IRI identifier) {
@@ -343,7 +316,7 @@ public class WebAcService {
             .map(res -> getAllAuthorizationsFor(res, true)).orElseGet(Stream::empty);
     }
 
-    private static List<Authorization> getAuthorizationFromGraph(final IRI identifier, final Graph graph) {
+    static List<Authorization> getAuthorizationFromGraph(final IRI identifier, final Graph graph) {
         return graph.stream().map(Triple::getSubject).distinct().map(subject -> {
                 try (final Graph subGraph = graph.stream(subject, null, null).collect(toGraph())) {
                     return Authorization.from(subject, subGraph);
@@ -353,23 +326,22 @@ public class WebAcService {
             }).filter(auth -> auth.getAccessTo().contains(identifier)).collect(toList());
     }
 
-    private static boolean hasWritableMode(final Set<IRI> modes) {
+    static boolean hasWritableMode(final Set<IRI> modes) {
         return modes.contains(ACL.Write) || modes.contains(ACL.Append);
     }
 
-    private static boolean resourceExists(final Resource res) {
+    static boolean resourceExists(final Resource res) {
         return !MISSING_RESOURCE.equals(res) && !DELETED_RESOURCE.equals(res);
     }
 
-    private static Predicate<Authorization> getInheritedAuth(final IRI identifier) {
+    static Predicate<Authorization> getInheritedAuth(final IRI identifier) {
         return auth -> root.equals(identifier) || auth.getDefault().contains(identifier);
     }
 
     @TrellisAuthorizationCache
-    public static class NoopAuthorizationCache implements CacheService<String, Set<IRI>> {
-
+    public static class NoopAuthorizationCache implements CacheService<String, AuthorizedModes> {
         @Override
-        public Set<IRI> get(final String key, final Function<String, Set<IRI>> f) {
+        public AuthorizedModes get(final String key, final Function<String, AuthorizedModes> f) {
             return f.apply(key);
         }
     }
@@ -388,12 +360,9 @@ public class WebAcService {
 
 
     static List<Authorization> getDefaultRootAuthorizations(final String resource) {
-        try (final Dataset dataset = generateDefaultRootAuthorizationsDataset(resource)) {
-            return dataset.getGraph(Trellis.PreferAccessControl).map(graph -> Authorization.from(rootAuth, graph))
-                .map(Collections::singletonList).orElse(emptyList());
-        } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error closing dataset", ex);
-        }
+        return generateDefaultRootAuthorizationsDataset(resource)
+            .getGraph(Trellis.PreferAccessControl).map(graph -> Authorization.from(rootAuth, graph))
+            .map(Collections::singletonList).orElse(emptyList());
     }
 
     static Dataset generateDefaultRootAuthorizationsDataset(final String resource) {
