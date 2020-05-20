@@ -21,4 +21,4 @@
  *
  * @author acoburn
  */
-package org.trellisldp.io;
+package org.trellisldp.jena;

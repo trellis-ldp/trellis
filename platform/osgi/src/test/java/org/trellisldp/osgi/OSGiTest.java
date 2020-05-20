@@ -88,7 +88,7 @@ public class OSGiTest {
                         .version(springFeatureVersion).classifier("features").type("xml"), "spring"),
             features(maven().groupId("org.trellisldp").artifactId("trellis-karaf")
                         .type("xml").classifier("features").versionAsInProject(),
-                        "trellis-io-jena"),
+                        "trellis-jena"),
 
             editConfigurationFilePut("etc/org.ops4j.pax.url.mvn.cfg", "org.ops4j.pax.url.mvn.repositories",
                     "https://repo1.maven.org/maven2@id=central"),
@@ -100,8 +100,8 @@ public class OSGiTest {
 
     @Test
     public void testCoreInstallation() throws Exception {
-        assertTrue("trellis-io-jena not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-io-jena")));
+        assertTrue("trellis-jena not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-jena")));
         assertTrue("trellis-api not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-api")));
         assertTrue("trellis-vocabulary not installed!",

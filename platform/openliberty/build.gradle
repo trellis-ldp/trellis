@@ -23,7 +23,7 @@ dependencies {
     implementation project(':trellis-event-jsonb')
     implementation project(':trellis-file')
     implementation project(':trellis-http')
-    implementation project(':trellis-io-jena')
+    implementation project(':trellis-jena')
     implementation project(':trellis-namespace')
     implementation project(':trellis-oauth')
     implementation project(':trellis-rdfa')

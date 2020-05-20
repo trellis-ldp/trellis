@@ -8,7 +8,7 @@ description = 'Trellis WebDAV'
 
 ext {
     moduleName = 'org.trellisldp.webdav'
-    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'smallrye.config']
+    testModules = ['org.trellisldp.jena', 'org.trellisldp.audit', 'smallrye.config']
 }
 
 dependencies {
@@ -37,8 +37,8 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint')
+    testImplementation project(':trellis-jena')
     testImplementation project(':trellis-event-jackson')
-    testImplementation project(':trellis-io-jena')
 
     testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
     testRuntimeOnly "ch.qos.logback:logback-classic:$logbackVersion"

@@ -13,23 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-module org.trellisldp.io {
-    exports org.trellisldp.io;
+package org.trellisldp.jena;
 
-    requires transitive org.trellisldp.api;
-    requires transitive org.trellisldp.vocabulary;
+import org.trellisldp.api.CacheService.TrellisProfileCache;
+import org.trellisldp.api.NoopCacheService;
 
-    requires org.apache.commons.io;
-    requires org.apache.commons.rdf.api;
-    requires org.apache.jena.arq;
-    requires org.apache.jena.commonsrdf;
-    requires jakarta.enterprise.cdi.api;
-    requires jakarta.inject;
-    requires microprofile.config.api;
-    requires org.slf4j;
-    requires org.apache.jena.core;
-    requires org.apache.jena.base;
-
-    provides org.trellisldp.api.IOService
-        with org.trellisldp.io.JenaIOService;
+/**
+ * A specialized no-op cache.
+ */
+@TrellisProfileCache
+public class NoopProfileCache extends NoopCacheService<String, String> {
 }

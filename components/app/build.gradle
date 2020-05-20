@@ -9,7 +9,7 @@ description = 'Trellis Application'
 ext {
     moduleName = 'org.trellisldp.app'
     testModules = ['org.trellisldp.file', 'org.trellisldp.constraint', 'org.trellisldp.audit',
-                   'org.trellisldp.io', 'org.trellisldp.rdfa', 'smallrye.config']
+                   'org.trellisldp.jena', 'org.trellisldp.rdfa', 'smallrye.config']
 }
 
 dependencies {
@@ -29,12 +29,12 @@ dependencies {
         exclude group: "org.jboss.spec.javax.el", module: "jboss-el-api_3.0_spec"
     }
 
-    testImplementation project(':trellis-triplestore')
-    testImplementation project(':trellis-constraint')
-    testImplementation project(':trellis-io-jena')
-    testImplementation project(':trellis-file')
-    testImplementation project(':trellis-rdfa')
     testImplementation project(':trellis-audit')
+    testImplementation project(':trellis-constraint')
+    testImplementation project(':trellis-file')
+    testImplementation project(':trellis-jena')
+    testImplementation project(':trellis-rdfa')
+    testImplementation project(':trellis-triplestore')
 }
 
 pitest {
@@ -52,7 +52,7 @@ if (project.sourceCompatibility.isJava11Compatible()) {
                 '--add-opens', "org.trellisldp.http/org.trellisldp.http.core=weld.core.impl",
                 '--add-opens', "org.trellisldp.constraint/org.trellisldp.constraint=weld.core.impl",
                 '--add-opens', "org.trellisldp.file/org.trellisldp.file=weld.core.impl",
-                '--add-opens', "org.trellisldp.io/org.trellisldp.io=weld.core.impl"
+                '--add-opens', "org.trellisldp.jena/org.trellisldp.jena=weld.core.impl"
             ]
         }
     }

@@ -40,7 +40,7 @@ include ':trellis-cdi'
 include ':trellis-constraint'
 include ':trellis-dropwizard'
 include ':trellis-file'
-include ':trellis-io-jena'
+include ':trellis-jena'
 include ':trellis-jdbc'
 include ':trellis-namespace'
 include ':trellis-rdfa'
@@ -78,14 +78,13 @@ project(':trellis-cdi').projectDir = new File(rootDir, "components/cdi")
 project(':trellis-constraint').projectDir = new File(rootDir, "components/constraint")
 project(':trellis-dropwizard').projectDir = new File(rootDir, "components/dropwizard")
 project(':trellis-file').projectDir = new File(rootDir, "components/file")
-project(':trellis-io-jena').projectDir = new File(rootDir, "components/io-jena")
+project(':trellis-jena').projectDir = new File(rootDir, "components/jena")
 project(':trellis-jdbc').projectDir = new File(rootDir, "components/jdbc")
 project(':trellis-namespace').projectDir = new File(rootDir, "components/namespace")
 project(':trellis-rdfa').projectDir = new File(rootDir, "components/rdfa")
 project(':trellis-test').projectDir = new File(rootDir, "components/test")
 project(':trellis-triplestore').projectDir = new File(rootDir, "components/triplestore")
 project(':trellis-webdav').projectDir = new File(rootDir, "components/webdav")
-project(':trellis-rdfa').projectDir = new File(rootDir, "components/rdfa")
 
 project(':trellis-bom').projectDir = new File(rootDir, "platform/bom")
 project(':trellis-dropwizard-triplestore').projectDir = new File(rootDir, "platform/dropwizard")

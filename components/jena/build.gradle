@@ -4,10 +4,10 @@ plugins {
     id 'info.solidsoft.pitest'
 }
 
-description = 'Trellis IO Jena'
+description = 'Trellis Jena IO Layer'
 
 ext {
-    moduleName = 'org.trellisldp.io'
+    moduleName = 'org.trellisldp.jena'
     testModules = ['smallrye.config']
 }
 

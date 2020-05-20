@@ -38,7 +38,7 @@ import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
 import org.trellisldp.file.FileNamespaceService;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
-import org.trellisldp.io.JenaIOService;
+import org.trellisldp.jena.JenaIOService;
 import org.trellisldp.rdfa.DefaultRdfaWriterService;
 import org.trellisldp.triplestore.TriplestoreResourceService;
 

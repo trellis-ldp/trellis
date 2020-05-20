@@ -39,12 +39,12 @@ dependencies {
     }
     testImplementation "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
-    testImplementation project(':trellis-triplestore')
-    testImplementation project(':trellis-constraint')
-    testImplementation project(':trellis-io-jena')
-    testImplementation project(':trellis-file')
-    testImplementation project(':trellis-rdfa')
     testImplementation project(':trellis-app')
+    testImplementation project(':trellis-constraint')
+    testImplementation project(':trellis-file')
+    testImplementation project(':trellis-jena')
+    testImplementation project(':trellis-rdfa')
+    testImplementation project(':trellis-triplestore')
     testImplementation "io.dropwizard:dropwizard-client:$dropwizardVersion"
     testImplementation("io.dropwizard:dropwizard-testing:$dropwizardVersion") {
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
