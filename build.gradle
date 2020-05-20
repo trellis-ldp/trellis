@@ -69,7 +69,7 @@ ext {
 
     // Testing
     apiguardianVersion = "1.1.0"
-    awaitilityVersion = "4.0.2"
+    awaitilityVersion = "4.0.3"
     bouncycastleVersion = "1.65"
     commonsTextVersion = "1.8"
     cxfVersion = "3.3.6"
