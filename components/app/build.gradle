@@ -30,7 +30,7 @@ dependencies {
     }
 
     testImplementation project(':trellis-triplestore')
-    testImplementation project(':trellis-constraint-rules')
+    testImplementation project(':trellis-constraint')
     testImplementation project(':trellis-io-jena')
     testImplementation project(':trellis-file')
     testImplementation project(':trellis-rdfa')

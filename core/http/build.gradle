@@ -39,7 +39,7 @@ dependencies {
     testImplementation "org.glassfish.jersey.connectors:jersey-apache-connector:$jerseyVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation project(':trellis-audit')
-    testImplementation project(':trellis-constraint-rules')
+    testImplementation project(':trellis-constraint')
     testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-io-jena')
 

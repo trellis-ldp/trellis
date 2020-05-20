@@ -20,7 +20,7 @@ dependencies {
     implementation project(':trellis-audit')
     implementation project(':trellis-cache')
     implementation project(':trellis-cdi')
-    implementation project(':trellis-constraint-rules')
+    implementation project(':trellis-constraint')
     implementation project(':trellis-dropwizard')
     implementation project(':trellis-file')
     implementation project(':trellis-io-jena')

@@ -38,7 +38,7 @@ dependencies {
     implementation "org.apache.jena:jena-tdb2:$jenaVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
-    implementation project(':trellis-constraint-rules')
+    implementation project(':trellis-constraint')
     implementation project(':trellis-io-jena')
     implementation project(':trellis-api')
     implementation project(':trellis-http')

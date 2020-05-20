@@ -56,7 +56,7 @@ dependencies {
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-cache')
     testImplementation project(':trellis-cdi')
-    testImplementation project(':trellis-constraint-rules')
+    testImplementation project(':trellis-constraint')
     testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-event-jsonb')
     testImplementation project(':trellis-file')

@@ -37,7 +37,7 @@ include ':trellis-app'
 include ':trellis-audit'
 include ':trellis-cache'
 include ':trellis-cdi'
-include ':trellis-constraint-rules'
+include ':trellis-constraint'
 include ':trellis-dropwizard'
 include ':trellis-file'
 include ':trellis-io-jena'
@@ -75,7 +75,7 @@ project(':trellis-app').projectDir = new File(rootDir, "components/app")
 project(':trellis-audit').projectDir = new File(rootDir, "components/audit")
 project(':trellis-cache').projectDir = new File(rootDir, "components/cache")
 project(':trellis-cdi').projectDir = new File(rootDir, "components/cdi")
-project(':trellis-constraint-rules').projectDir = new File(rootDir, "components/constraint-rules")
+project(':trellis-constraint').projectDir = new File(rootDir, "components/constraint")
 project(':trellis-dropwizard').projectDir = new File(rootDir, "components/dropwizard")
 project(':trellis-file').projectDir = new File(rootDir, "components/file")
 project(':trellis-io-jena').projectDir = new File(rootDir, "components/io-jena")
