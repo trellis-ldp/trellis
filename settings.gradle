@@ -29,7 +29,7 @@ include ':trellis-kafka'
 include ':trellis-reactive'
 
 include ':trellis-auth-basic'
-include ':trellis-auth-jwt'
+include ':trellis-jwt'
 include ':trellis-oauth'
 include ':trellis-webac'
 
@@ -67,7 +67,7 @@ project(':trellis-kafka').projectDir = new File(rootDir, "notifications/kafka")
 project(':trellis-reactive').projectDir = new File(rootDir, "notifications/reactive")
 
 project(':trellis-auth-basic').projectDir = new File(rootDir, "auth/basic")
-project(':trellis-auth-jwt').projectDir = new File(rootDir, "auth/jwt")
+project(':trellis-jwt').projectDir = new File(rootDir, "auth/jwt")
 project(':trellis-oauth').projectDir = new File(rootDir, "auth/oauth")
 project(':trellis-webac').projectDir = new File(rootDir, "auth/webac")
 

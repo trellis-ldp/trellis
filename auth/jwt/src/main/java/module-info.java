@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-module org.trellisldp.auth.jwt {
-    exports org.trellisldp.auth.jwt;
+module org.trellisldp.jwt {
+    exports org.trellisldp.jwt;
 
     requires jakarta.inject;
     requires java.ws.rs;

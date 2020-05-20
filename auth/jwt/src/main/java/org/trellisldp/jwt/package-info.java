@@ -18,4 +18,4 @@
  *
  * <p>This package implements a MicroProfile-based OAuth filter for Trellis.
  */
-package org.trellisldp.auth.jwt;
+package org.trellisldp.jwt;

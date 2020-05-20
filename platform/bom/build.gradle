@@ -12,7 +12,7 @@ dependencies {
     implementation project(':trellis-reactive')
 
     implementation project(':trellis-auth-basic')
-    implementation project(':trellis-auth-jwt')
+    implementation project(':trellis-jwt')
     implementation project(':trellis-oauth')
     implementation project(':trellis-webac')
 

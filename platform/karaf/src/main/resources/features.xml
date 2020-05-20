@@ -288,7 +288,7 @@
     <bundle>mvn:org.trellisldp/trellis-oauth/${project.version}</bundle>
   </feature>
 
-  <feature name="trellis-auth-jwt" version="${project.version}">
+  <feature name="trellis-jwt" version="${project.version}">
     <details>Installs the microprofile jwt auth package</details>
 
     <!-- microprofile-auth-jwt depends on 1.x version of cdi -->
@@ -302,7 +302,7 @@
     <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
     <bundle dependency="true">mvn:org.eclipse.microprofile.jwt/microprofile-jwt-auth-api/${microprofileJwtVersion}</bundle>
 
-    <bundle>mvn:org.trellisldp/trellis-auth-jwt/${project.version}</bundle>
+    <bundle>mvn:org.trellisldp/trellis-jwt/${project.version}</bundle>
   </feature>
 
 
