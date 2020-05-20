@@ -31,6 +31,7 @@ include ':trellis-reactive'
 include ':trellis-auth-oauth'
 include ':trellis-auth-basic'
 include ':trellis-auth-jwt'
+include ':trellis-webac'
 
 include ':trellis-app'
 include ':trellis-audit'
@@ -44,7 +45,6 @@ include ':trellis-jdbc'
 include ':trellis-namespaces'
 include ':trellis-rdfa'
 include ':trellis-triplestore'
-include ':trellis-webac'
 include ':trellis-webdav'
 
 include ':trellis-bom'
@@ -69,6 +69,7 @@ project(':trellis-reactive').projectDir = new File(rootDir, "notifications/react
 project(':trellis-auth-oauth').projectDir = new File(rootDir, "auth/oauth")
 project(':trellis-auth-basic').projectDir = new File(rootDir, "auth/basic")
 project(':trellis-auth-jwt').projectDir = new File(rootDir, "auth/jwt")
+project(':trellis-webac').projectDir = new File(rootDir, "auth/webac")
 
 project(':trellis-app').projectDir = new File(rootDir, "components/app")
 project(':trellis-audit').projectDir = new File(rootDir, "components/audit")
@@ -83,7 +84,6 @@ project(':trellis-namespaces').projectDir = new File(rootDir, "components/namesp
 project(':trellis-rdfa').projectDir = new File(rootDir, "components/rdfa")
 project(':trellis-test').projectDir = new File(rootDir, "components/test")
 project(':trellis-triplestore').projectDir = new File(rootDir, "components/triplestore")
-project(':trellis-webac').projectDir = new File(rootDir, "components/webac")
 project(':trellis-webdav').projectDir = new File(rootDir, "components/webdav")
 project(':trellis-rdfa').projectDir = new File(rootDir, "components/rdfa")
 
