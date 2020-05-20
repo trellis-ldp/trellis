@@ -99,13 +99,13 @@
     <bundle>mvn:org.trellisldp/trellis-file/${project.version}</bundle>
   </feature>
 
-  <feature name="trellis-constraint-rules" version="${project.version}">
-    <details>Installs the Trellis Constraint rules service bundle</details>
+  <feature name="trellis-constraint" version="${project.version}">
+    <details>Installs the Trellis constraint service bundle</details>
 
     <feature dependency="true">trellis-api</feature>
     <feature dependency="true">trellis-vocabulary</feature>
 
-    <bundle>mvn:org.trellisldp/trellis-constraint-rules/${project.version}</bundle>
+    <bundle>mvn:org.trellisldp/trellis-constraint/${project.version}</bundle>
   </feature>
 
   <feature name="trellis-io-jena" version="${project.version}">
