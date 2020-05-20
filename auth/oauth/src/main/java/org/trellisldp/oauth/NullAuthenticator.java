@@ -13,30 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.auth.oauth;
+package org.trellisldp.oauth;
+
+import io.jsonwebtoken.Claims;
 
 import java.security.Principal;
 
-public class OAuthPrincipal implements Principal {
+/**
+ * A null authenticator.
+ */
+public class NullAuthenticator implements Authenticator {
 
-    private final String name;
-
-    /**
-     * A simple Principal implementation.
-     * @param name the name of the Principal
-     */
-    public OAuthPrincipal(final String name) {
-        this.name = name;
+    @Override
+    public Claims parse(final String credentials) {
+        return null;
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return getName();
+    public Principal authenticate(final String credentials) {
+        return null;
     }
 }
-

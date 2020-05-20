@@ -13,31 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.auth.oauth;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-
-import java.security.Key;
-
 /**
- * A JWT-based authenticator.
+ * Trellis OAuth filter
+ *
+ * <p>This package implements a JWT-based OAuth filter for Trellis.
  */
-public class JwtAuthenticator implements Authenticator {
-
-    private final Key key;
-
-    /**
-     * Create a JWT-based authenticator.
-     * @param key a key
-     */
-    public JwtAuthenticator(final Key key) {
-        this.key = key;
-    }
-
-    @Override
-    public Claims parse(final String token) {
-        // Parse the JWT claims
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-    }
-}
+package org.trellisldp.oauth;

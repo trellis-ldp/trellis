@@ -268,7 +268,7 @@
   </feature>
 
   <!-- auth features -->
-  <feature name="trellis-auth-oauth" version="${project.version}">
+  <feature name="trellis-oauth" version="${project.version}">
     <details>Installs the OAuth package</details>
 
     <feature prerequisite="true">wrap</feature>
@@ -285,7 +285,7 @@
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
     <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
 
-    <bundle>mvn:org.trellisldp/trellis-auth-oauth/${project.version}</bundle>
+    <bundle>mvn:org.trellisldp/trellis-oauth/${project.version}</bundle>
   </feature>
 
   <feature name="trellis-auth-jwt" version="${project.version}">

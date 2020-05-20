@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.auth.oauth;
+package org.trellisldp.oauth;
 
-import static org.trellisldp.auth.oauth.OAuthUtils.withSubjectClaim;
-import static org.trellisldp.auth.oauth.OAuthUtils.withWebIdClaim;
+import static org.trellisldp.oauth.OAuthUtils.withSubjectClaim;
+import static org.trellisldp.oauth.OAuthUtils.withWebIdClaim;
 
 import io.jsonwebtoken.Claims;
 

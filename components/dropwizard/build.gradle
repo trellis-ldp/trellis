@@ -23,7 +23,7 @@ dependencies {
     implementation project(':trellis-audit')
     implementation project(':trellis-webac')
     implementation project(':trellis-auth-basic')
-    implementation project(':trellis-auth-oauth')
+    implementation project(':trellis-oauth')
 
     testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
 

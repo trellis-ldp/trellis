@@ -27,8 +27,8 @@ import javax.inject.Inject;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
-import org.trellisldp.auth.oauth.OAuthFilter;
 import org.trellisldp.http.*;
+import org.trellisldp.oauth.OAuthFilter;
 
 /**
  * Web Application wrapper.

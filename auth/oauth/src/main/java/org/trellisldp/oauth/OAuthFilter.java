@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.auth.oauth;
+package org.trellisldp.oauth;
 
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
@@ -54,15 +54,15 @@ public class OAuthFilter implements ContainerRequestFilter {
     /** The configuration key controlling the realm used in a WWW-Authenticate header, or 'trellis' by default. */
     public static final String CONFIG_AUTH_REALM = "trellis.auth.realm";
     /** The configuration key controlling the OAuth Keystore path. */
-    public static final String CONFIG_AUTH_OAUTH_KEYSTORE_PATH = "trellis.auth.oauth.keystore-path";
+    public static final String CONFIG_AUTH_OAUTH_KEYSTORE_PATH = "trellis.oauth.keystore-path";
     /** The configuration key controlling the OAuth Keystore credentials. */
-    public static final String CONFIG_AUTH_OAUTH_KEYSTORE_CREDENTIALS = "trellis.auth.oauth.keystore-credentials";
+    public static final String CONFIG_AUTH_OAUTH_KEYSTORE_CREDENTIALS = "trellis.oauth.keystore-credentials";
     /** The configuration key controlling the OAuth Keystore ids. */
-    public static final String CONFIG_AUTH_OAUTH_KEYSTORE_IDS = "trellis.auth.oauth.keystore-ids";
+    public static final String CONFIG_AUTH_OAUTH_KEYSTORE_IDS = "trellis.oauth.keystore-ids";
     /** The configuration key controlling the OAuth HMAC shared secret. */
-    public static final String CONFIG_AUTH_OAUTH_SHARED_SECRET = "trellis.auth.oauth.shared-secret";
+    public static final String CONFIG_AUTH_OAUTH_SHARED_SECRET = "trellis.oauth.shared-secret";
     /** The configuration key controlling the OAuth JWK URL. */
-    public static final String CONFIG_AUTH_OAUTH_JWK_URL = "trellis.auth.oauth.jwk";
+    public static final String CONFIG_AUTH_OAUTH_JWK_URL = "trellis.oauth.jwk";
     /** The authentication scheme used by this module. */
     public static final String SCHEME = "Bearer";
     /** The admin role. */

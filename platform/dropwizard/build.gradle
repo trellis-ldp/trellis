@@ -55,7 +55,7 @@ dependencies {
     implementation project(':trellis-jms')
     implementation project(':trellis-rdfa')
     implementation project(':trellis-kafka')
-    implementation project(':trellis-auth-oauth')
+    implementation project(':trellis-oauth')
     implementation project(':trellis-auth-basic')
 
     implementation "io.dropwizard:dropwizard-core:$dropwizardVersion"

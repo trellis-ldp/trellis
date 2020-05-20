@@ -13,7 +13,8 @@ dependencies {
 
     implementation project(':trellis-auth-basic')
     implementation project(':trellis-auth-jwt')
-    implementation project(':trellis-auth-oauth')
+    implementation project(':trellis-oauth')
+    implementation project(':trellis-webac')
 
     implementation project(':trellis-app')
     implementation project(':trellis-audit')
@@ -28,7 +29,6 @@ dependencies {
     implementation project(':trellis-rdfa')
     implementation project(':trellis-test')
     implementation project(':trellis-triplestore')
-    implementation project(':trellis-webac')
     implementation project(':trellis-webdav')
 }
 

@@ -244,12 +244,12 @@ public class OSGiTest {
 
     @Test
     public void testOAuthAuthInstallation() throws Exception {
-        assertFalse("trellis-auth-oauth already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-auth-oauth")));
-        featuresService.installFeature("trellis-auth-oauth");
+        assertFalse("trellis-oauth already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-oauth")));
+        featuresService.installFeature("trellis-oauth");
         checkTrellisBundlesAreActive();
-        assertTrue("trellis-auth-oauth not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-auth-oauth")));
+        assertTrue("trellis-oauth not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-oauth")));
     }
 
     @Test

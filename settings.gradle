@@ -28,9 +28,9 @@ include ':trellis-jms'
 include ':trellis-kafka'
 include ':trellis-reactive'
 
-include ':trellis-auth-oauth'
 include ':trellis-auth-basic'
 include ':trellis-auth-jwt'
+include ':trellis-oauth'
 include ':trellis-webac'
 
 include ':trellis-app'
@@ -66,9 +66,9 @@ project(':trellis-jms').projectDir = new File(rootDir, "notifications/jms")
 project(':trellis-kafka').projectDir = new File(rootDir, "notifications/kafka")
 project(':trellis-reactive').projectDir = new File(rootDir, "notifications/reactive")
 
-project(':trellis-auth-oauth').projectDir = new File(rootDir, "auth/oauth")
 project(':trellis-auth-basic').projectDir = new File(rootDir, "auth/basic")
 project(':trellis-auth-jwt').projectDir = new File(rootDir, "auth/jwt")
+project(':trellis-oauth').projectDir = new File(rootDir, "auth/oauth")
 project(':trellis-webac').projectDir = new File(rootDir, "auth/webac")
 
 project(':trellis-app').projectDir = new File(rootDir, "components/app")

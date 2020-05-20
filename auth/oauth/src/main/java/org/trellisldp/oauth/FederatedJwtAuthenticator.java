@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.auth.oauth;
+package org.trellisldp.oauth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
