@@ -16,8 +16,8 @@
 /**
  * Trellis Triplestore Application
  *
- * <p>This package provides a complete triplestore-based Trellis application.
+ * <p>This package provides a complete triplestore-based Trellis application using a dropwizard backend.
  *
  * @author acoburn
  */
-package org.trellisldp.app.triplestore;
+package org.trellisldp.dropwizard.triplestore;

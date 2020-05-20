@@ -7,11 +7,11 @@ plugins {
 description = "Trellis Triplestore Application"
 
 ext {
-    moduleName = 'org.trellisldp.app.triplestore'
+    moduleName = 'org.trellisldp.dropwizard.triplestore'
 }
 
 application {
-    mainClassName = 'org.trellisldp.app.triplestore.TrellisApplication'
+    mainClassName = 'org.trellisldp.dropwizard.triplestore.TrellisApplication'
     applicationName = 'trellis'
 }
 
