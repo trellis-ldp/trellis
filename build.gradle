@@ -313,6 +313,9 @@ subprojects { subproj ->
         ruleSetConfig = resources.text.fromFile(rootProject.file('buildtools/src/main/resources/pmd/pmd.xml'))
     }
 
+    // Enable PMD analysis on request (e.g. ./gradlew build -P pmd)
+    pmdMain.enabled = project.hasProperty("pmd")
+
     checkstyle {
         configFile = rootProject.file('buildtools/src/main/resources/checkstyle/checkstyle.xml')
         configProperties.checkstyleConfigDir = rootProject.file('buildtools/src/main/resources/checkstyle/')
