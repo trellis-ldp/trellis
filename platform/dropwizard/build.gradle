@@ -47,7 +47,7 @@ dependencies {
     implementation project(':trellis-dropwizard')
     implementation project(':trellis-vocabulary')
     implementation project(':trellis-file')
-    implementation project(':trellis-namespaces')
+    implementation project(':trellis-namespace')
     implementation project(':trellis-audit')
     implementation project(':trellis-event-jackson')
     implementation project(':trellis-webac')

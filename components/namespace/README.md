@@ -1,4 +1,4 @@
-# trellis-namespaces
+# trellis-namespace
 
 This module implements a simple namespace prefixing service, which reads from (and stores changes to) a simple JSON-based document.
 

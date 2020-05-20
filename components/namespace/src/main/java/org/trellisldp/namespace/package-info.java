@@ -13,18 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-module org.trellisldp.namespaces {
-    exports org.trellisldp.namespaces;
-
-    requires transitive org.trellisldp.api;
-    requires transitive org.trellisldp.vocabulary;
-
-    requires org.apache.commons.rdf.api;
-    requires jakarta.enterprise.cdi.api;
-    requires jakarta.inject;
-    requires microprofile.config.api;
-    requires org.slf4j;
-
-    provides org.trellisldp.api.NamespaceService
-        with org.trellisldp.namespaces.SimpleNamespaceService;
-}
+/**
+ * Trellis Namespace Service using an in-memory map of namespaces
+ *
+ * <p>This package provides a mechanism for associating prefixes to namespaces.
+ *
+ * @author acoburn
+ */
+package org.trellisldp.namespace;

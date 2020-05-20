@@ -6,7 +6,7 @@ plugins {
 description = 'Trellis Namespaces'
 
 ext {
-    moduleName = 'org.trellisldp.namespaces'
+    moduleName = 'org.trellisldp.namespace'
     testModules = ['org.apache.commons.rdf.simple', 'smallrye.config']
 }
 
@@ -25,5 +25,5 @@ dependencies {
 }
 
 test {
-    systemProperty 'trellis.namespaces.mapping', 'dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = '
+    systemProperty 'trellis.namespace.mapping', 'dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = '
 }

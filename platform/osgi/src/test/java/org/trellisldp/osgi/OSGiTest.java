@@ -182,13 +182,13 @@ public class OSGiTest {
     }
 
     @Test
-    public void testConstraintsInstallation() throws Exception {
-        assertFalse("trellis-constraint-rules already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-constraint-rules")));
-        featuresService.installFeature("trellis-constraint-rules");
+    public void testConstraintInstallation() throws Exception {
+        assertFalse("trellis-constraint already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-constraint")));
+        featuresService.installFeature("trellis-constraint");
         checkTrellisBundlesAreActive();
-        assertTrue("trellis-constraint-rules not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-constraint-rules")));
+        assertTrue("trellis-constraint not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-constraint")));
     }
 
     @Test
@@ -263,13 +263,13 @@ public class OSGiTest {
     }
 
     @Test
-    public void testNamespacesInstallation() throws Exception {
+    public void testNamespaceInstallation() throws Exception {
         assertFalse("trellis-namespace already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
-        featuresService.installFeature("trellis-namespaces");
+                featuresService.isInstalled(featuresService.getFeature("trellis-namespace")));
+        featuresService.installFeature("trellis-namespace");
         checkTrellisBundlesAreActive();
         assertTrue("trellis-namespace not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
+                featuresService.isInstalled(featuresService.getFeature("trellis-namespace")));
     }
 
     @Test

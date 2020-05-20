@@ -34,7 +34,7 @@ dependencies {
     implementation project(":trellis-http")
     implementation project(":trellis-jwt")
     implementation project(":trellis-io-jena")
-    implementation project(":trellis-namespaces")
+    implementation project(":trellis-namespace")
     implementation project(":trellis-rdfa")
     implementation project(":trellis-reactive")
     implementation project(":trellis-triplestore")
@@ -55,7 +55,7 @@ test {
     systemProperty 'trellis.file.binary-path', "$buildDir/data/binaries"
     systemProperty 'trellis.file.memento-path', "$buildDir/data/mementos"
     systemProperty 'trellis.triplestore.rdf-location', "$buildDir/data/rdf"
-    systemProperty 'trellis.namespaces.mapping', 'dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = '
+    systemProperty 'trellis.namespace.mapping', 'dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = '
     systemProperty 'mp.jwt.verify.publickey.location', 'https://www.trellisldp.org/tests/jwks.json'
     systemProperty 'trellis.http.weak-etag', 'true'
 }

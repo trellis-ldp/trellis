@@ -42,11 +42,11 @@ class FileNamespaceServiceTest {
     void testReadFromJson() {
         final URL res = FileNamespaceService.class.getResource(nsDoc);
         try {
-            System.setProperty(FileNamespaceService.CONFIG_NAMESPACES_PATH, res.getPath());
+            System.setProperty(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH, res.getPath());
             final NamespaceService svc = new FileNamespaceService();
             assertEquals(2, svc.getNamespaces().size(), "Namespace mapping count is incorrect!");
         } finally {
-            System.clearProperty(FileNamespaceService.CONFIG_NAMESPACES_PATH);
+            System.clearProperty(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH);
         }
     }
 
@@ -54,11 +54,11 @@ class FileNamespaceServiceTest {
     void testReadError() {
         final URL res = FileNamespaceService.class.getResource("/thisIsNot.json");
         try {
-            System.setProperty(FileNamespaceService.CONFIG_NAMESPACES_PATH, res.getPath());
+            System.setProperty(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH, res.getPath());
             assertThrows(UncheckedIOException.class, FileNamespaceService::new,
                     "Loaded namespaces from invalid file!");
         } finally {
-            System.clearProperty(FileNamespaceService.CONFIG_NAMESPACES_PATH);
+            System.clearProperty(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH);
         }
     }
 
@@ -93,7 +93,7 @@ class FileNamespaceServiceTest {
         final String filename = file.getParent() + "/" + randomFilename();
 
         try {
-            System.setProperty(FileNamespaceService.CONFIG_NAMESPACES_PATH, filename);
+            System.setProperty(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH, filename);
 
             final NamespaceService svc1 = new FileNamespaceService();
             assertEquals(15, svc1.getNamespaces().size(), "Incorrect namespace mapping count!");
@@ -107,7 +107,7 @@ class FileNamespaceServiceTest {
             assertFalse(svc2.setPrefix("jsonld", JSONLD.getNamespace()),
                     "unexpected response when trying to re-set jsonld mapping!");
         } finally {
-            System.getProperties().remove(FileNamespaceService.CONFIG_NAMESPACES_PATH);
+            System.getProperties().remove(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH);
         }
     }
 

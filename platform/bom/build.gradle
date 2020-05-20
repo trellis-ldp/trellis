@@ -25,7 +25,7 @@ dependencies {
     implementation project(':trellis-file')
     implementation project(':trellis-io-jena')
     implementation project(':trellis-jdbc')
-    implementation project(':trellis-namespaces')
+    implementation project(':trellis-namespace')
     implementation project(':trellis-rdfa')
     implementation project(':trellis-test')
     implementation project(':trellis-triplestore')

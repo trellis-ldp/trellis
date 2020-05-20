@@ -65,7 +65,7 @@ dependencies {
     testImplementation project(':trellis-jdbc')
     testImplementation project(':trellis-jms')
     testImplementation project(':trellis-kafka')
-    testImplementation project(':trellis-namespaces')
+    testImplementation project(':trellis-namespace')
     testImplementation project(':trellis-triplestore')
     testImplementation project(':trellis-webac')
     testImplementation project(':trellis-karaf')

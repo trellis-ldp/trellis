@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.namespaces;
+package org.trellisldp.namespace;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.namespaces;
+package org.trellisldp.namespace;
 
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
@@ -47,7 +47,7 @@ import org.trellisldp.vocabulary.XSD;
 @ApplicationScoped
 public class SimpleNamespaceService implements NamespaceService {
 
-    public static final String CONFIG_NAMESPACES_MAPPING = "trellis.namespaces.mapping";
+    public static final String CONFIG_NAMESPACE_MAPPING = "trellis.namespace.mapping";
 
     private final Map<String, String> namespaces = new HashMap<>();
 
@@ -65,7 +65,7 @@ public class SimpleNamespaceService implements NamespaceService {
         namespaces.put("xsd", XSD.getNamespace());
         namespaces.put("foaf", FOAF.getNamespace());
         namespaces.put("vcard", VCARD.getNamespace());
-        getConfig().getOptionalValue(CONFIG_NAMESPACES_MAPPING, String.class).map(SimpleNamespaceService::configToMap)
+        getConfig().getOptionalValue(CONFIG_NAMESPACE_MAPPING, String.class).map(SimpleNamespaceService::configToMap)
             .ifPresent(data -> data.forEach(namespaces::put));
     }
 
