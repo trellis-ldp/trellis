@@ -15,14 +15,9 @@
  */
 package org.trellisldp.openliberty;
 
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
-import static org.trellisldp.triplestore.TriplestoreResourceService.CONFIG_TRIPLESTORE_RDF_LOCATION;
-import static org.trellisldp.triplestore.TriplestoreResourceService.buildRDFConnection;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
-import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.api.*;
 import org.trellisldp.file.FileMementoService;
 
@@ -32,17 +27,9 @@ import org.trellisldp.file.FileMementoService;
 @ApplicationScoped
 public class TrellisServiceSupplier {
 
-    private RDFConnection rdfConnection = buildRDFConnection(getConfig()
-            .getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class).orElse(null));
-
     private EventService eventService = new NoopEventService();
 
     private MementoService mementoService = new FileMementoService();
-
-    @Produces
-    RDFConnection getRdfConnection() {
-        return rdfConnection;
-    }
 
     @Produces
     EventService getEventService() {
