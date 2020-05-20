@@ -7,7 +7,7 @@ plugins {
 description = 'Trellis OAuth'
 
 ext {
-    moduleName = 'org.trellisldp.auth.oauth'
+    moduleName = 'org.trellisldp.oauth'
     testModules = ['smallrye.config']
 }
 

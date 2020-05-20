@@ -42,11 +42,11 @@ import org.mockito.Mock;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.auth.oauth.FederatedJwtAuthenticator;
-import org.trellisldp.auth.oauth.JwksAuthenticator;
-import org.trellisldp.auth.oauth.JwtAuthenticator;
-import org.trellisldp.auth.oauth.NullAuthenticator;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
+import org.trellisldp.oauth.FederatedJwtAuthenticator;
+import org.trellisldp.oauth.JwksAuthenticator;
+import org.trellisldp.oauth.JwtAuthenticator;
+import org.trellisldp.oauth.NullAuthenticator;
 import org.trellisldp.vocabulary.Trellis;
 
 /**

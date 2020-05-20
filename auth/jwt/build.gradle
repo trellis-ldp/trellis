@@ -7,7 +7,7 @@ plugins {
 description = 'Trellis MicroProfile JWT-Auth'
 
 ext {
-    moduleName = 'org.trellisldp.auth.jwt'
+    moduleName = 'org.trellisldp.jwt'
 }
 
 dependencies {

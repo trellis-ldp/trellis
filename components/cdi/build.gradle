@@ -26,7 +26,7 @@ dependencies {
         exclude group: "org.jboss.spec.javax.el", module: "jboss-el-api_3.0_spec"
     }
 
-    testImplementation project(':trellis-constraint-rules')
+    testImplementation project(':trellis-constraint')
 }
 
 pitest {

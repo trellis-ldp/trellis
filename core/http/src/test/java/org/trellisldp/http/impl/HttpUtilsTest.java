@@ -60,7 +60,7 @@ import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.http.core.Prefer;
-import org.trellisldp.io.JenaIOService;
+import org.trellisldp.jena.JenaIOService;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.Trellis;
 

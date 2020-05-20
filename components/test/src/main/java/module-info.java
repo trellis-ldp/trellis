@@ -18,7 +18,7 @@ module org.trellisldp.test {
 
     requires transitive org.trellisldp.api;
     requires transitive org.trellisldp.http;
-    requires transitive org.trellisldp.io;
+    requires transitive org.trellisldp.jena;
     requires transitive org.trellisldp.vocabulary;
 
     requires com.fasterxml.jackson.core;

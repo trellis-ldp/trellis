@@ -76,7 +76,7 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.io.JenaIOService;
+import org.trellisldp.jena.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;

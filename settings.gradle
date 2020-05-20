@@ -28,23 +28,23 @@ include ':trellis-jms'
 include ':trellis-kafka'
 include ':trellis-reactive'
 
-include ':trellis-auth-oauth'
 include ':trellis-auth-basic'
-include ':trellis-auth-jwt'
+include ':trellis-jwt'
+include ':trellis-oauth'
+include ':trellis-webac'
 
 include ':trellis-app'
 include ':trellis-audit'
 include ':trellis-cache'
 include ':trellis-cdi'
-include ':trellis-constraint-rules'
+include ':trellis-constraint'
 include ':trellis-dropwizard'
 include ':trellis-file'
-include ':trellis-io-jena'
+include ':trellis-jena'
 include ':trellis-jdbc'
-include ':trellis-namespaces'
+include ':trellis-namespace'
 include ':trellis-rdfa'
 include ':trellis-triplestore'
-include ':trellis-webac'
 include ':trellis-webdav'
 
 include ':trellis-bom'
@@ -66,26 +66,25 @@ project(':trellis-jms').projectDir = new File(rootDir, "notifications/jms")
 project(':trellis-kafka').projectDir = new File(rootDir, "notifications/kafka")
 project(':trellis-reactive').projectDir = new File(rootDir, "notifications/reactive")
 
-project(':trellis-auth-oauth').projectDir = new File(rootDir, "auth/oauth")
 project(':trellis-auth-basic').projectDir = new File(rootDir, "auth/basic")
-project(':trellis-auth-jwt').projectDir = new File(rootDir, "auth/jwt")
+project(':trellis-jwt').projectDir = new File(rootDir, "auth/jwt")
+project(':trellis-oauth').projectDir = new File(rootDir, "auth/oauth")
+project(':trellis-webac').projectDir = new File(rootDir, "auth/webac")
 
 project(':trellis-app').projectDir = new File(rootDir, "components/app")
 project(':trellis-audit').projectDir = new File(rootDir, "components/audit")
 project(':trellis-cache').projectDir = new File(rootDir, "components/cache")
 project(':trellis-cdi').projectDir = new File(rootDir, "components/cdi")
-project(':trellis-constraint-rules').projectDir = new File(rootDir, "components/constraint-rules")
+project(':trellis-constraint').projectDir = new File(rootDir, "components/constraint")
 project(':trellis-dropwizard').projectDir = new File(rootDir, "components/dropwizard")
 project(':trellis-file').projectDir = new File(rootDir, "components/file")
-project(':trellis-io-jena').projectDir = new File(rootDir, "components/io-jena")
+project(':trellis-jena').projectDir = new File(rootDir, "components/jena")
 project(':trellis-jdbc').projectDir = new File(rootDir, "components/jdbc")
-project(':trellis-namespaces').projectDir = new File(rootDir, "components/namespaces")
+project(':trellis-namespace').projectDir = new File(rootDir, "components/namespace")
 project(':trellis-rdfa').projectDir = new File(rootDir, "components/rdfa")
 project(':trellis-test').projectDir = new File(rootDir, "components/test")
 project(':trellis-triplestore').projectDir = new File(rootDir, "components/triplestore")
-project(':trellis-webac').projectDir = new File(rootDir, "components/webac")
 project(':trellis-webdav').projectDir = new File(rootDir, "components/webdav")
-project(':trellis-rdfa').projectDir = new File(rootDir, "components/rdfa")
 
 project(':trellis-bom').projectDir = new File(rootDir, "platform/bom")
 project(':trellis-dropwizard-triplestore').projectDir = new File(rootDir, "platform/dropwizard")

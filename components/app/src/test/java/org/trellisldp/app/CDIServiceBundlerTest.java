@@ -31,8 +31,8 @@ import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.io.JenaIOService;
-import org.trellisldp.io.NoopProfileCache;
+import org.trellisldp.jena.JenaIOService;
+import org.trellisldp.jena.NoopProfileCache;
 import org.trellisldp.rdfa.DefaultRdfaWriterService;
 
 @ExtendWith(WeldJunit5Extension.class)

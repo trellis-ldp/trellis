@@ -7,7 +7,7 @@ description = 'Trellis HTTP'
 
 ext {
     moduleName = 'org.trellisldp.http'
-    testModules = ['org.trellisldp.io', 'org.trellisldp.audit', 'org.trellisldp.constraint', 'smallrye.config',
+    testModules = ['org.trellisldp.jena', 'org.trellisldp.audit', 'org.trellisldp.constraint', 'smallrye.config',
         'com.fasterxml.jackson.databind', 'org.apache.jena.commonsrdf', 'com.fasterxml.jackson.core']
 }
 
@@ -39,9 +39,9 @@ dependencies {
     testImplementation "org.glassfish.jersey.connectors:jersey-apache-connector:$jerseyVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation project(':trellis-audit')
-    testImplementation project(':trellis-constraint-rules')
+    testImplementation project(':trellis-constraint')
+    testImplementation project(':trellis-jena')
     testImplementation project(':trellis-event-jackson')
-    testImplementation project(':trellis-io-jena')
 
     testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
     testRuntimeOnly "ch.qos.logback:logback-classic:$logbackVersion"

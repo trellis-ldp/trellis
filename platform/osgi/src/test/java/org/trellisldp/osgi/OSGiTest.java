@@ -88,7 +88,7 @@ public class OSGiTest {
                         .version(springFeatureVersion).classifier("features").type("xml"), "spring"),
             features(maven().groupId("org.trellisldp").artifactId("trellis-karaf")
                         .type("xml").classifier("features").versionAsInProject(),
-                        "trellis-io-jena"),
+                        "trellis-jena"),
 
             editConfigurationFilePut("etc/org.ops4j.pax.url.mvn.cfg", "org.ops4j.pax.url.mvn.repositories",
                     "https://repo1.maven.org/maven2@id=central"),
@@ -100,8 +100,8 @@ public class OSGiTest {
 
     @Test
     public void testCoreInstallation() throws Exception {
-        assertTrue("trellis-io-jena not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-io-jena")));
+        assertTrue("trellis-jena not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-jena")));
         assertTrue("trellis-api not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-api")));
         assertTrue("trellis-vocabulary not installed!",
@@ -182,13 +182,13 @@ public class OSGiTest {
     }
 
     @Test
-    public void testConstraintsInstallation() throws Exception {
-        assertFalse("trellis-constraint-rules already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-constraint-rules")));
-        featuresService.installFeature("trellis-constraint-rules");
+    public void testConstraintInstallation() throws Exception {
+        assertFalse("trellis-constraint already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-constraint")));
+        featuresService.installFeature("trellis-constraint");
         checkTrellisBundlesAreActive();
-        assertTrue("trellis-constraint-rules not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-constraint-rules")));
+        assertTrue("trellis-constraint not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-constraint")));
     }
 
     @Test
@@ -234,22 +234,22 @@ public class OSGiTest {
 
     @Test
     public void testJwtAuthAuthInstallation() throws Exception {
-        assertFalse("trellis-auth-jwt already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-auth-jwt")));
-        featuresService.installFeature("trellis-auth-jwt");
+        assertFalse("trellis-jwt already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-jwt")));
+        featuresService.installFeature("trellis-jwt");
         checkTrellisBundlesAreActive();
-        assertTrue("trellis-auth-jwt not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-auth-jwt")));
+        assertTrue("trellis-jwt not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-jwt")));
     }
 
     @Test
     public void testOAuthAuthInstallation() throws Exception {
-        assertFalse("trellis-auth-oauth already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-auth-oauth")));
-        featuresService.installFeature("trellis-auth-oauth");
+        assertFalse("trellis-oauth already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-oauth")));
+        featuresService.installFeature("trellis-oauth");
         checkTrellisBundlesAreActive();
-        assertTrue("trellis-auth-oauth not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-auth-oauth")));
+        assertTrue("trellis-oauth not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-oauth")));
     }
 
     @Test
@@ -263,13 +263,13 @@ public class OSGiTest {
     }
 
     @Test
-    public void testNamespacesInstallation() throws Exception {
+    public void testNamespaceInstallation() throws Exception {
         assertFalse("trellis-namespace already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
-        featuresService.installFeature("trellis-namespaces");
+                featuresService.isInstalled(featuresService.getFeature("trellis-namespace")));
+        featuresService.installFeature("trellis-namespace");
         checkTrellisBundlesAreActive();
         assertTrue("trellis-namespace not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-namespaces")));
+                featuresService.isInstalled(featuresService.getFeature("trellis-namespace")));
     }
 
     @Test
