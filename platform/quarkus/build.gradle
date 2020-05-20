@@ -37,9 +37,20 @@ dependencies {
     implementation project(":trellis-namespace")
     implementation project(":trellis-rdfa")
     implementation project(":trellis-reactive")
-    implementation project(":trellis-triplestore")
     implementation project(":trellis-vocabulary")
     implementation project(":trellis-webac")
+
+    // Persistence store
+    if (project.hasProperty("triplestore")) {
+        implementation project(":trellis-triplestore")
+    } else {
+        implementation 'io.quarkus:quarkus-agroal'
+        implementation 'io.quarkus:quarkus-flyway'
+        implementation 'io.quarkus:quarkus-jdbc-postgresql'
+        implementation project(":trellis-jdbc")
+
+        runtimeOnly "org.yaml:snakeyaml:$snakeyamlVersion"
+    }
 
     runtimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
     runtimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
@@ -54,10 +65,17 @@ test {
     systemProperty 'com.arjuna.ats.arjuna.objectstore.objectStoreDir', "$buildDir/data/ObjectStore"
     systemProperty 'trellis.file.binary-path', "$buildDir/data/binaries"
     systemProperty 'trellis.file.memento-path', "$buildDir/data/mementos"
-    systemProperty 'trellis.triplestore.rdf-location', "$buildDir/data/rdf"
     systemProperty 'trellis.namespace.mapping', 'dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = '
     systemProperty 'mp.jwt.verify.publickey.location', 'https://www.trellisldp.org/tests/jwks.json'
     systemProperty 'trellis.http.weak-etag', 'true'
+
+    if (project.hasProperty("triplestore")) {
+        systemProperty 'trellis.triplestore.rdf-location', "$buildDir/data/rdf"
+    } else {
+        systemProperty 'com.arjuna.ats.arjuna.objectstore.objectStoreDir', "$buildDir/data/ObjectStore"
+        systemProperty 'quarkus.datasource.jdbc.url', 'jdbc:postgresql://localhost/postgres'
+        systemProperty 'quarkus.flyway.migrate-at-start', 'true'
+    }
 }
 
 sonarqube {

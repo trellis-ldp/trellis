@@ -22,6 +22,9 @@ stages:
   - test
   - deploy
 
+services:
+  - postgresql
+
 branches:
   only:
     - master
@@ -31,6 +34,9 @@ branches:
     - /^trellis-\d+\.\d+\.x$/
     # long-lived branches
     - /branch-.+/
+
+before_script:
+  - psql -c 'create database trellis;' -U postgres
 
 env:
   - JOB=check
@@ -48,7 +54,11 @@ jobs:
     - name: "Java 8"
       stage: test
       jdk: openjdk8
-      script: travis_retry ./gradlew check install jacocoRootReport --scan
+      env:
+        - QUARKUS_DATASOURCE_USERNAME=postgres
+        - QUARKUS_DATASOURCE_PASSWORD=postgres
+        - QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://localhost/trellis
+      script: travis_retry ./gradlew check install -Ptriplestore jacocoRootReport --scan
       after_success: ./gradlew coveralls sonarqube
 
     # deploy JDK 8 builds to Sonatype
