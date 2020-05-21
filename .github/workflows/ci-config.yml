@@ -83,7 +83,7 @@ jobs:
   windows:
     needs: [validation]
     runs-on: windows-latest
-    name: Java 11 Windows environment
+    name: Java 11 Windows (triplestore) environment
     steps:
     - uses: actions/checkout@v2.1.0
     - name: Set up JDK 11
@@ -105,7 +105,7 @@ jobs:
   quarkusTriplestore:
     needs: [validation]
     runs-on: ubuntu-latest
-    name: Java 11 (quarkus triplestore) environment
+    name: Java 11 Quarkus (triplestore) environment
 
     steps:
     - uses: actions/checkout@v2.1.0
@@ -120,7 +120,7 @@ jobs:
   quarkusPostgres:
     needs: [validation]
     runs-on: ubuntu-latest
-    name: Java 11 (quarkus postgres) environment
+    name: Java 11 Quarkus (postgres) environment
 
     services:
       postgres:
@@ -150,7 +150,7 @@ jobs:
   dropwizardTriplestore:
     needs: [validation]
     runs-on: ubuntu-latest
-    name: Java 11 (triplestore) environment
+    name: Java 11 Dropwizard (triplestore) environment
 
     steps:
     - uses: actions/checkout@v2.1.0
@@ -167,7 +167,7 @@ jobs:
   dropwizardPostgres:
     needs: [validation]
     runs-on: ubuntu-latest
-    name: Java 11 (postgres) environment
+    name: Java 11 Dropwizard (postgres) environment
 
     services:
       postgres:
