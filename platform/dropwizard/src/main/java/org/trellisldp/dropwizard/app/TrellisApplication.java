@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.dropwizard.triplestore;
+package org.trellisldp.dropwizard.app;
 
 import static org.trellisldp.app.AppUtils.printBanner;
 
+import io.dropwizard.db.DataSourceFactory;
+import io.dropwizard.migrations.MigrationsBundle;
+import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 import org.trellisldp.dropwizard.AbstractTrellisApplication;
@@ -48,6 +51,21 @@ public class TrellisApplication extends AbstractTrellisApplication<AppConfigurat
     protected void initialize(final AppConfiguration config, final Environment environment) {
         super.initialize(config, environment);
         this.serviceBundler = new TrellisServiceBundler(config, environment);
-        printBanner("Trellis Triplestore Application", "org/trellisldp/app/banner.txt");
+        printBanner("Trellis Application", "org/trellisldp/app/banner.txt");
+    }
+
+    @Override
+    public void initialize(final Bootstrap<AppConfiguration> bootstrap) {
+        super.initialize(bootstrap);
+        bootstrap.addBundle(new MigrationsBundle<AppConfiguration>() {
+            @Override
+            public DataSourceFactory getDataSourceFactory(final AppConfiguration config) {
+                return config.getDataSourceFactory();
+            }
+            @Override
+            public String getMigrationsFileName() {
+                return "migrations.yml";
+            }
+        });
     }
 }

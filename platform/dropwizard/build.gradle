@@ -4,14 +4,14 @@ plugins {
     id 'java-library'
 }
 
-description = "Trellis Triplestore Application"
+description = "Trellis Dropwizard Application"
 
 ext {
-    moduleName = 'org.trellisldp.dropwizard.triplestore'
+    moduleName = 'org.trellisldp.dropwizard.app'
 }
 
 application {
-    mainClassName = 'org.trellisldp.dropwizard.triplestore.TrellisApplication'
+    mainClassName = 'org.trellisldp.dropwizard.app.TrellisApplication'
     applicationName = 'trellis'
 }
 
@@ -36,6 +36,7 @@ dependencies {
     implementation "org.apache.jena:jena-commonsrdf:$jenaVersion"
     implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
     implementation "org.apache.jena:jena-tdb2:$jenaVersion"
+    implementation "org.apache.kafka:kafka-clients:$kafkaVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
     implementation project(':trellis-api')
@@ -48,6 +49,7 @@ dependencies {
     implementation project(':trellis-event-jackson')
     implementation project(':trellis-file')
     implementation project(':trellis-http')
+    implementation project(':trellis-jdbc')
     implementation project(':trellis-jena')
     implementation project(':trellis-jms')
     implementation project(':trellis-kafka')
@@ -58,11 +60,18 @@ dependencies {
     implementation project(':trellis-vocabulary')
     implementation project(':trellis-webac')
 
+    implementation "io.dropwizard:dropwizard-auth:$dropwizardVersion"
     implementation "io.dropwizard:dropwizard-core:$dropwizardVersion"
+    implementation "io.dropwizard:dropwizard-jdbi3:$dropwizardVersion"
     implementation "io.dropwizard:dropwizard-metrics:$dropwizardVersion"
     implementation "io.dropwizard:dropwizard-http2:$dropwizardVersion"
+    implementation "io.dropwizard:dropwizard-migrations:$dropwizardVersion"
 
+    runtimeOnly "com.h2database:h2:$h2Version"
     runtimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    runtimeOnly "org.mariadb.jdbc:mariadb-java-client:$mariadbVersion"
+    runtimeOnly "org.postgresql:postgresql:$postgresVersion"
+    runtimeOnly "org.yaml:snakeyaml:$snakeyamlVersion"
 
     testImplementation("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: "org.hamcrest", module: 'hamcrest-core'

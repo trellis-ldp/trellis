@@ -20,4 +20,4 @@
  *
  * @author acoburn
  */
-package org.trellisldp.dropwizard.triplestore;
+package org.trellisldp.dropwizard.app;

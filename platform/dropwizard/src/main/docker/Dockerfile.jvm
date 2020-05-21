@@ -4,7 +4,6 @@ LABEL maintainer="Aaron Coburn <acoburn@apache.org>"
 ADD build/distributions/trellis-*.tar /opt
 RUN mv /opt/trellis-* /opt/trellis
 COPY src/main/docker/command.sh /
-COPY src/main/docker/config.yml /opt/trellis/etc/
 RUN chmod +x /command.sh
 
 CMD ["/command.sh"]
