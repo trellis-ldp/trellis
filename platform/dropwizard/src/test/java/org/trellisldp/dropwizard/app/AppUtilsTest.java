@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.dropwizard.triplestore;
+package org.trellisldp.dropwizard.app;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;

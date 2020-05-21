@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.dropwizard.triplestore;
+package org.trellisldp.dropwizard.app;
 
-import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singleton;
@@ -25,7 +24,6 @@ import static org.awaitility.Awaitility.setDefaultPollInterval;
 import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
 import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 
@@ -59,7 +57,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.test.AbstractApplicationAuditTests;
@@ -71,31 +68,40 @@ import org.trellisldp.test.AbstractApplicationMementoTests;
 /**
  * Integration tests for Trellis.
  */
-@TestInstance(PER_CLASS)
-class TrellisApplicationTest implements MessageListener {
+abstract class AbstractApplicationTests implements MessageListener {
 
-    private static final Logger LOGGER = getLogger(TrellisApplicationTest.class);
+    private static final Logger LOGGER = getLogger(AbstractApplicationTests.class);
     private static final RDF rdf = RDFFactory.getInstance();
-    private static final BrokerService BROKER = new BrokerService();
 
-    private static final DropwizardTestSupport<AppConfiguration> APP = buildApplication();
+    static {
+        final BrokerService broker = new BrokerService();
+        broker.setPersistent(false);
+
+        try {
+            broker.start();
+        } catch (final Exception ex) {
+            LOGGER.error("Error starting message broker: {}", ex.getMessage());
+        }
+    }
+
     private static final String JWT_KEY
         = "EEPPbd/7llN/chRwY2UgbdcyjFdaGjlzaupd3AIyjcu8hMnmMCViWoPUBb5FphGLxBlUlT/G5WMx0WcDq/iNKA==";
 
     private final Set<Graph> MESSAGES = new CopyOnWriteArraySet<>();
 
+    private DropwizardTestSupport<AppConfiguration> APP;
     private Client CLIENT;
 
     private MessageConsumer consumer;
     private Connection connection;
 
+    abstract DropwizardTestSupport<AppConfiguration> getApp();
 
     @BeforeAll
     void setUp() throws Exception {
-        BROKER.setPersistent(false);
-        BROKER.start();
-
+        APP = getApp();
         APP.before();
+        APP.getApplication().run("db", "migrate", resourceFilePath("trellis-config.yml"));
         CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
         CLIENT.property(CONNECT_TIMEOUT, 10000);
         CLIENT.property(READ_TIMEOUT, 12000);
@@ -105,7 +111,6 @@ class TrellisApplicationTest implements MessageListener {
     @AfterAll
     void cleanup() throws Exception {
         APP.after();
-        BROKER.stop();
     }
 
     @BeforeEach
@@ -149,7 +154,7 @@ class TrellisApplicationTest implements MessageListener {
 
         @Override
         public Client getClient() {
-            return TrellisApplicationTest.this.CLIENT;
+            return AbstractApplicationTests.this.CLIENT;
         }
 
         @Override
@@ -164,7 +169,7 @@ class TrellisApplicationTest implements MessageListener {
 
         @Override
         public Client getClient() {
-            return TrellisApplicationTest.this.CLIENT;
+            return AbstractApplicationTests.this.CLIENT;
         }
 
         @Override
@@ -184,7 +189,7 @@ class TrellisApplicationTest implements MessageListener {
 
         @Override
         public Client getClient() {
-            return TrellisApplicationTest.this.CLIENT;
+            return AbstractApplicationTests.this.CLIENT;
         }
 
         @Override
@@ -199,12 +204,12 @@ class TrellisApplicationTest implements MessageListener {
 
         @BeforeEach
         public void before() {
-            TrellisApplicationTest.this.MESSAGES.clear();
+            AbstractApplicationTests.this.MESSAGES.clear();
         }
 
         @Override
         public Client getClient() {
-            return TrellisApplicationTest.this.CLIENT;
+            return AbstractApplicationTests.this.CLIENT;
         }
 
         @Override
@@ -214,7 +219,7 @@ class TrellisApplicationTest implements MessageListener {
 
         @Override
         public Set<Graph> getMessages() {
-            return TrellisApplicationTest.this.MESSAGES;
+            return AbstractApplicationTests.this.MESSAGES;
         }
 
         @Override
@@ -229,7 +234,7 @@ class TrellisApplicationTest implements MessageListener {
 
         @Override
         public Client getClient() {
-            return TrellisApplicationTest.this.CLIENT;
+            return AbstractApplicationTests.this.CLIENT;
         }
 
         @Override
@@ -256,17 +261,6 @@ class TrellisApplicationTest implements MessageListener {
         public String getJwtSecret() {
             return JWT_KEY;
         }
-    }
-
-    private static DropwizardTestSupport<AppConfiguration> buildApplication() {
-        return new DropwizardTestSupport<>(TrellisApplication.class,
-                resourceFilePath("trellis-config.yml"),
-                config("notifications.type", "JMS"),
-                config("notifications.connectionString", "vm://localhost"),
-                config("auth.basic.usersFile", resourceFilePath("users.auth")),
-                config("binaries", resourceFilePath("app-data") + "/binaries"),
-                config("mementos", resourceFilePath("app-data") + "/mementos"),
-                config("namespaces", resourceFilePath("app-data/namespaces.json")));
     }
 
     private Graph convertToGraph(final Message msg) {

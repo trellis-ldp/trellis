@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.dropwizard.triplestore;
+package org.trellisldp.dropwizard.app;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.dropwizard.db.DataSourceFactory;
+
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
@@ -39,6 +42,28 @@ class AppConfiguration extends TrellisConfiguration {
     private int length =  2;
 
     private String resourceLocation;
+
+    @Valid
+    @NotNull
+    private DataSourceFactory database = new DataSourceFactory();
+
+    /**
+     * Set the datasource factory.
+     * @param factory the factory
+     */
+    @JsonProperty("database")
+    public void setDataSourceFactory(final DataSourceFactory factory) {
+        this.database = factory;
+    }
+
+    /**
+     * Get the datasource factory.
+     * @return the datasource factory
+     */
+    @JsonProperty("database")
+    public DataSourceFactory getDataSourceFactory() {
+        return database;
+    }
 
     /**
      * Get the Memento configuration.

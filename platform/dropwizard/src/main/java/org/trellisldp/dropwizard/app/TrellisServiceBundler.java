@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.dropwizard.triplestore;
+package org.trellisldp.dropwizard.app;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.util.Collections.singletonList;
@@ -21,14 +21,18 @@ import static java.util.concurrent.TimeUnit.HOURS;
 
 import com.google.common.cache.Cache;
 
+import io.dropwizard.jdbi3.JdbiFactory;
 import io.dropwizard.setup.Environment;
 
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.jdbi.v3.core.Jdbi;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IOService;
+import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RDFaWriterService;
+import org.trellisldp.api.ResourceService;
 import org.trellisldp.app.BaseServiceBundler;
 import org.trellisldp.app.DefaultConstraintServices;
 import org.trellisldp.audit.DefaultAuditService;
@@ -38,6 +42,9 @@ import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
 import org.trellisldp.file.FileNamespaceService;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
+import org.trellisldp.jdbc.DBNamespaceService;
+import org.trellisldp.jdbc.DBResourceService;
+import org.trellisldp.jdbc.DBWrappedMementoService;
 import org.trellisldp.jena.JenaIOService;
 import org.trellisldp.rdfa.DefaultRdfaWriterService;
 import org.trellisldp.triplestore.TriplestoreResourceService;
@@ -57,31 +64,48 @@ public class TrellisServiceBundler extends BaseServiceBundler {
      * @param environment the dropwizard environment
      */
     public TrellisServiceBundler(final AppConfiguration config, final Environment environment) {
+        // Use a database connection
+        final Jdbi jdbi = new JdbiFactory().build(environment, config.getDataSourceFactory(), "trellis");
+
         auditService = new DefaultAuditService();
-        mementoService = new FileMementoService(config.getMementos(), config.getIsVersioningEnabled());
         timemapGenerator = new DefaultTimemapGenerator();
         constraintServices = new DefaultConstraintServices(singletonList(new LdpConstraintService()));
-        resourceService = buildResourceService(config, environment);
+        mementoService = buildMementoService(config, jdbi);
+        resourceService = buildResourceService(config, environment, jdbi);
         binaryService = buildBinaryService(config);
-        ioService = buildIoService(config);
+        ioService = buildIoService(config, jdbi);
         eventService = AppUtils.getNotificationService(config.getNotifications(), environment);
     }
 
-    private static TriplestoreResourceService buildResourceService(final AppConfiguration config,
-            final Environment environment) {
-        final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection(config.getResources());
+    static ResourceService buildResourceService(final AppConfiguration config,
+            final Environment environment, final Jdbi jdbi) {
+        if (useTriplestore(config)) {
+            // Use a triplestore
+            final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection(config.getResources());
 
-        // Health checks
-        environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
-        return new TriplestoreResourceService(rdfConnection);
+            // Health checks
+            environment.healthChecks().register("rdfconnection", new RDFConnectionHealthCheck(rdfConnection));
+            return new TriplestoreResourceService(rdfConnection);
+        }
+        return new DBResourceService(jdbi);
     }
 
-    private static IOService buildIoService(final AppConfiguration config) {
+    static MementoService buildMementoService(final AppConfiguration config, final Jdbi jdbi) {
+        final MementoService mementoService = new FileMementoService(config.getMementos(),
+                config.getIsVersioningEnabled());
+        if (useTriplestore(config)) {
+            return mementoService;
+        }
+        return new DBWrappedMementoService(jdbi, mementoService);
+    }
+
+    static IOService buildIoService(final AppConfiguration config, final Jdbi jdbi) {
         final long cacheSize = config.getJsonld().getCacheSize();
         final long hours = config.getJsonld().getCacheExpireHours();
         final Cache<String, String> cache = newBuilder().maximumSize(cacheSize).expireAfterAccess(hours, HOURS).build();
         final TrellisCache<String, String> profileCache = new TrellisCache<>(cache);
-        final NamespaceService namespaceService = new FileNamespaceService(config.getNamespaces());
+        final NamespaceService namespaceService = useTriplestore(config) ?
+            new FileNamespaceService(config.getNamespaces()) : new DBNamespaceService(jdbi);
         final RDFaWriterService htmlSerializer = new DefaultRdfaWriterService(namespaceService,
                 config.getAssets().getTemplate(), config.getAssets().getCss(), config.getAssets().getJs(),
                 config.getAssets().getIcon());
@@ -90,7 +114,11 @@ public class TrellisServiceBundler extends BaseServiceBundler {
                 config.getUseRelativeIris());
     }
 
-    private static BinaryService buildBinaryService(final AppConfiguration config) {
+    static boolean useTriplestore(final AppConfiguration config) {
+        return config.getResources() != null;
+    }
+
+    static BinaryService buildBinaryService(final AppConfiguration config) {
         return new FileBinaryService(new DefaultIdentifierService(), config.getBinaries(),
                 config.getBinaryHierarchyLevels(), config.getBinaryHierarchyLength());
     }

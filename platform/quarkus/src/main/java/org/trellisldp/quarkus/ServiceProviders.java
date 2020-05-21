@@ -15,6 +15,8 @@
  */
 package org.trellisldp.quarkus;
 
+import io.quarkus.arc.DefaultBean;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
@@ -27,6 +29,7 @@ class ServiceProducers {
     private MementoService mementoService = new FileMementoService();
 
     @Produces
+    @DefaultBean
     MementoService getMementoService() {
         return mementoService;
     }
