@@ -30,7 +30,7 @@ docker push $IMAGE
 ###############################
 # Quarkus-based database image
 ###############################
-IMAGE=trellisldp/trellis-database
+IMAGE=trellisldp/trellis-postgresql
 
 ../../gradlew assemble
 

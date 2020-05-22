@@ -37,10 +37,10 @@ Docker pull command
 docker pull trellisldp/trellis-triplestore
 ```
 
-Or, for the database persistence layer
+Or, for the PostgreSQL-based persistence layer
 
 ```bash
-docker pull trellisldp/trellis-database
+docker pull trellisldp/trellis-postgresql
 ```
 
 ## Building Trellis
