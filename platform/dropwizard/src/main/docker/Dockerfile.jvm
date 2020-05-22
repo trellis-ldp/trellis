@@ -1,4 +1,4 @@
-FROM openjdk:11-jre-alpine
+FROM openjdk:11-jre-slim
 LABEL maintainer="Aaron Coburn <acoburn@apache.org>"
 
 ADD build/distributions/trellis-*.tar /opt
