@@ -19,7 +19,7 @@ fi
 ###############################
 # Quarkus-based database image
 ###############################
-IMAGE=docker.pkg.github.com/trellis-ldp/trellis/trellis-database
+IMAGE=docker.pkg.github.com/trellis-ldp/trellis/trellis-postgresql
 
 # Publish releases only
 if [[ $VERSION != *SNAPSHOT* ]]; then
