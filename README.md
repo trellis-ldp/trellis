@@ -9,9 +9,8 @@ A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) appli
 ![Maven Central](https://img.shields.io/maven-central/v/org.trellisldp/trellis-api.svg)
 
 Trellis is a rock-solid, enterprise-ready linked data server.
-The quickest way to get started with Trellis is to either use
-a pre-built [docker container](https://hub.docker.com/r/trellisldp/trellis) or download the
-[latest release](https://www.trellisldp.org/download.html).
+The quickest way to get started with Trellis is to use
+a pre-built [docker container](https://hub.docker.com/r/trellisldp/trellis).
 
 Trellis is built on existing [Web standards](https://github.com/trellis-ldp/trellis/wiki/Web-Standards).
 It is modular, extensible and fast.
