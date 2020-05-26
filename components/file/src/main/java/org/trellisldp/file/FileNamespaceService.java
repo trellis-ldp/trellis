@@ -121,12 +121,13 @@ public class FileNamespaceService implements NamespaceService {
     }
 
     static void write(final String filePath, final Map<String, String> data) {
-        write(new File(filePath), data);
+        final File file = new File(filePath);
+        write(file, data, shouldCreateDirectories(file.getParentFile()));
     }
 
-    static void write(final File file, final Map<String, String> data) {
+    static void write(final File file, final Map<String, String> data, final boolean createDirs) {
         try {
-            if (shouldCreateDirectories(file.getParentFile())) {
+            if (createDirs) {
                 Files.createDirectories(file.getParentFile().toPath());
             }
             MAPPER.writerWithDefaultPrettyPrinter().writeValue(file, data);
