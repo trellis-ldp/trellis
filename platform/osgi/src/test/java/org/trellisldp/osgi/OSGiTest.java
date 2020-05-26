@@ -65,7 +65,6 @@ public class OSGiTest {
         final String sshPort = cm.getProperty("karaf.ssh.port");
         final String jenaVersion = cm.getProperty("jena.version");
         final String activemqVersion = cm.getProperty("activemq.version");
-        final String springFeatureVersion = cm.getProperty("spring.version");
 
         return new Option[] {
             karafDistributionConfiguration()
@@ -79,13 +78,12 @@ public class OSGiTest {
 
             features(maven().groupId("org.apache.karaf.features").artifactId("standard")
                         .versionAsInProject().classifier("features").type("xml"), "scr"),
+            features(maven().groupId("org.apache.karaf.features").artifactId("spring-legacy")
+                        .versionAsInProject().classifier("features").type("xml"), "spring"),
             features(maven().groupId("org.apache.activemq").artifactId("activemq-karaf")
                         .version(activemqVersion).classifier("features").type("xml")),
             features(maven().groupId("org.apache.jena").artifactId("jena-osgi-features")
                         .version(jenaVersion).classifier("features").type("xml")),
-            // TODO -- with a new version of ActiveMQ, it should be possible to user `versionAsInProject()`
-            features(maven().groupId("org.apache.karaf.features").artifactId("spring")
-                        .version(springFeatureVersion).classifier("features").type("xml"), "spring"),
             features(maven().groupId("org.trellisldp").artifactId("trellis-karaf")
                         .type("xml").classifier("features").versionAsInProject(),
                         "trellis-jena"),
