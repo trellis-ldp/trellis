@@ -16,6 +16,11 @@
 package org.trellisldp.app;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.junit.jupiter.api.Test;
 
@@ -35,5 +40,13 @@ class AppUtilsTest {
     @Test
     void testPrintBannerUnknownResource() {
         assertDoesNotThrow(() -> AppUtils.printBanner("Non-existent resource", "non-existent-resource.txt"));
+    }
+
+    @Test
+    void testResourceReadError() throws IOException {
+        final InputStream resource = Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream("org/trellisldp/app/banner.txt");
+        resource.close();
+        assertDoesNotThrow(() -> AppUtils.readResource(resource));
     }
 }
