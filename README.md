@@ -42,6 +42,12 @@ Or, for the PostgreSQL-based persistence layer
 docker pull trellisldp/trellis-postgresql
 ```
 
+Alternatively, for a more general-purpose container that supports various persistence layer types
+
+```bash
+docker pull trellisldp/trellis
+```
+
 ## Building Trellis
 
 In most cases, you won't need to compile Trellis. Released components are available on Maven Central,
