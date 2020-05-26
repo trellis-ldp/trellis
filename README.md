@@ -16,7 +16,7 @@ Trellis is built on existing [Web standards](https://github.com/trellis-ldp/trel
 It is modular, extensible and fast.
 
 * [Wiki](https://github.com/trellis-ldp/trellis/wiki)
-* [Configuration guide](https://github.com/trellis-ldp/trellis/wiki/Configuration-Guide)
+* [Configuration guide](https://github.com/trellis-ldp/trellis/wiki/App-Configuration-Guide)
 * [Mailing List](https://groups.google.com/group/trellis-ldp)
 * [API Documentation](https://www.trellisldp.org/docs/trellis/current/apidocs/) (JavaDocs)
 * [Website](https://www.trellisldp.org)
