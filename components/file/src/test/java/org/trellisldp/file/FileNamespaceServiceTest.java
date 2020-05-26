@@ -82,7 +82,7 @@ class FileNamespaceServiceTest {
         final File file = new File(getClass().getResource(nsDoc).getFile());
         final File nonexistent = new File(file.getParentFile(), "nonexistent3/dir/file.json");
         final Map<String, String> data = singletonMap("dcterms", "http://purl.org/dc/terms/");
-        assertDoesNotThrow(() -> FileNamespaceService.write(nonexistent, data));
+        assertDoesNotThrow(() -> FileNamespaceService.write(nonexistent, data, true));
     }
 
     @Test
@@ -99,7 +99,7 @@ class FileNamespaceServiceTest {
             throw new IOException("Expected exception.");
         });
         final Map<String, String> namespaces = emptyMap();
-        assertThrows(UncheckedIOException.class, () -> FileNamespaceService.write(mockFile, namespaces));
+        assertThrows(UncheckedIOException.class, () -> FileNamespaceService.write(mockFile, namespaces, false));
     }
 
     @Test
