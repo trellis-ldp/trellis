@@ -100,6 +100,8 @@ import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.XSD;
+import org.trellisldp.webdav.xml.DavProp;
+import org.trellisldp.webdav.xml.DavPropFind;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractWebDAVTest extends JerseyTest {
@@ -812,6 +814,15 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testNoargCtor() {
         assertDoesNotThrow(() -> new TrellisWebDAV());
+    }
+
+    @Test
+    void testGetProperties() {
+        final DavProp prop = new DavProp();
+        final DavPropFind propfind = new DavPropFind();
+        propfind.setProp(prop);
+
+        assertTrue(TrellisWebDAV.getProperties(propfind).isEmpty());
     }
 
     private static List<Link> getLinks(final Response res) {

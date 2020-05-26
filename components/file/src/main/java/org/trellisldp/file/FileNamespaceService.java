@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.enterprise.inject.Alternative;
@@ -104,15 +105,14 @@ public class FileNamespaceService implements NamespaceService {
         final Map<String, String> namespaces = new ConcurrentHashMap<>();
         if (file.exists()) {
             try {
-                final JsonNode jsonTree = MAPPER.readTree(new File(filePath));
-                if (jsonTree != null && jsonTree.isObject()) {
-                    jsonTree.fields().forEachRemaining(node -> {
-                        final JsonNode value = node.getValue();
-                        if (value.isTextual()) {
-                            namespaces.put(node.getKey(), value.textValue());
-                        }
-                    });
-                }
+                Optional.ofNullable(MAPPER.readTree(new File(filePath)))
+                    .filter(JsonNode::isObject).map(JsonNode::fields).ifPresent(fields ->
+                        fields.forEachRemaining(node -> {
+                            final JsonNode value = node.getValue();
+                            if (value.isTextual()) {
+                                namespaces.put(node.getKey(), value.textValue());
+                            }
+                        }));
             } catch (final IOException ex) {
                 throw new UncheckedIOException(ex);
             }
