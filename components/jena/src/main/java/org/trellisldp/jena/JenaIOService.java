@@ -98,13 +98,13 @@ import org.trellisldp.vocabulary.Trellis;
 public class JenaIOService implements IOService {
 
     /** The configuration key listing valid JSON-LD profile documents. */
-    public static final String CONFIG_IO_JSONLD_PROFILES = "trellis.io.jsonld-profiles";
+    public static final String CONFIG_IO_JSONLD_PROFILES = "trellis.jena.jsonld-profiles";
 
     /** The configuration key listing valid JSON-LD profile domains. */
-    public static final String CONFIG_IO_JSONLD_DOMAINS = "trellis.io.jsonld-domains";
+    public static final String CONFIG_IO_JSONLD_DOMAINS = "trellis.jena.jsonld-domains";
 
     /** The configuration key controling whether to use relative IRIs for Turtle serializations. */
-    public static final String CONFIG_IO_RELATIVE_IRIS = "trellis.io.relative-iris";
+    public static final String CONFIG_IO_RELATIVE_IRIS = "trellis.jena.relative-iris";
 
     private static final Logger LOGGER = getLogger(JenaIOService.class);
     private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(Stream.of(
