@@ -39,8 +39,6 @@ sonarqube {
 
 dependencies {
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
-    testImplementation "org.apache.commons:commons-compress:$commonsCompressVersion"
-    testImplementation "org.apache.karaf.features:standard:$karafVersion"
     testImplementation "org.apache.karaf.features:org.apache.karaf.features.core:$karafVersion"
     testImplementation "org.apache.jena:jena-osgi:$jenaVersion"
     testImplementation "org.ops4j.pax.exam:pax-exam:$paxExamVersion"
@@ -72,6 +70,7 @@ dependencies {
     testImplementation project(':trellis-vocabulary')
 
     testImplementation group: 'org.apache.karaf.features', name: 'standard', version: karafVersion, classifier:'features', ext: 'xml'
+    testImplementation group: 'org.apache.karaf.features', name: 'spring-legacy', version: karafVersion, classifier:'features', ext: 'xml'
 
     testRuntimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junitVersion}"
@@ -116,10 +115,8 @@ task generateDependsFile {
 
 test {
     systemProperty 'karaf.version', karafVersion
-    systemProperty 'karaf.commonsIo.version', commonsIoVersion
-    systemProperty 'jena.version', jenaOsgiVersion
+    systemProperty 'jena.version', jenaVersion
     systemProperty 'activemq.version', activeMqVersion
-    systemProperty 'spring.version', springFeatureVersion
 
     systemProperty 'karaf.ssh.port', randomPort()
     systemProperty 'karaf.rmiServer.port', randomPort()
