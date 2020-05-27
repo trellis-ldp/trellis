@@ -340,11 +340,11 @@ class TriplestoreResourceTest {
         assertNotEquals(res.getRevision(), res2.getRevision(), "Revisions not unequal");
     }
 
-    private static Stream<IRI> getChildIRIs() {
+    static Stream<IRI> getChildIRIs() {
         return Stream.of(child1, child2, child3, child4);
     }
 
-    private static Dataset buildLdpDataset(final IRI ldpType) {
+    static Dataset buildLdpDataset(final IRI ldpType) {
         final Dataset dataset = rdf.createDataset();
         dataset.add(identifier, identifier, type, SKOS.Concept);
         dataset.add(identifier, identifier, SKOS.prefLabel, rdf.createLiteral("resource"));
@@ -356,7 +356,7 @@ class TriplestoreResourceTest {
         return dataset;
     }
 
-    private static Stream<Executable> checkResource(final Resource res, final IRI identifier, final IRI ldpType,
+    static Stream<Executable> checkResource(final Resource res, final IRI identifier, final IRI ldpType,
             final boolean hasBinary, final boolean hasAcl, final boolean hasParent) {
         return Stream.of(
                 () -> assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!"),
@@ -378,7 +378,7 @@ class TriplestoreResourceTest {
                 () -> assertEquals(hasAcl, res.hasMetadata(Trellis.PreferAccessControl), "Unexpected ACL presence!"));
     }
 
-    private static Stream<Executable> checkLdpProperties(final Resource res, final IRI membershipResource,
+    static Stream<Executable> checkLdpProperties(final Resource res, final IRI membershipResource,
             final IRI hasMemberRelation, final IRI memberOfRelation, final IRI insertedContentRelation) {
         return Stream.of(
                 () -> assertEquals(membershipResource != null, res.getMembershipResource().isPresent(),
@@ -399,7 +399,7 @@ class TriplestoreResourceTest {
                                    "Incorrect ldp:insertedContentRelation!"));
     }
 
-    private static Stream<Executable> checkRdfStream(final Resource res, final long userManaged,
+    static Stream<Executable> checkRdfStream(final Resource res, final long userManaged,
             final long serverManaged, final long acl, final long audit, final long membership, final long containment) {
         final long total = userManaged + acl + audit + membership + containment + serverManaged;
         return Stream.of(

@@ -143,7 +143,7 @@ public class OAuthFilter implements ContainerRequestFilter {
         return null;
     }
 
-    private static Authenticator buildAuthenticator() {
+    static Authenticator buildAuthenticator() {
         final Config config = getConfig();
         final Authenticator jwksAuthenticator = OAuthUtils.buildAuthenticatorWithJwk(
                 config.getOptionalValue(CONFIG_AUTH_OAUTH_JWK_URL, String.class).orElse(null));
@@ -167,12 +167,12 @@ public class OAuthFilter implements ContainerRequestFilter {
         return new NullAuthenticator();
     }
 
-    private static Set<String> getConfiguredAdmins(final Config config) {
+    static Set<String> getConfiguredAdmins(final Config config) {
         final String admins = config.getOptionalValue(CONFIG_AUTH_ADMIN_USERS, String.class).orElse("");
         return stream(admins.split(",")).map(String::trim).collect(toSet());
     }
 
-    private static final class OAuthSecurityContext implements SecurityContext {
+    static final class OAuthSecurityContext implements SecurityContext {
         private final boolean secure;
         private final Principal principal;
         private final Set<String> admins;

@@ -146,7 +146,7 @@ class DefaultRdfaWriterServiceTest {
         assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));
     }
 
-    private static Stream<Executable> checkHtmlWithoutNamespaces(final String html) {
+    static Stream<Executable> checkHtmlWithoutNamespaces(final String html) {
         return of(
             () -> assertTrue(html.contains("<title>http://example.com/</title>"), "Title not in HTML!"),
             () -> assertTrue(html.contains("_:B"), "bnode value not in HTML!"),
@@ -164,7 +164,7 @@ class DefaultRdfaWriterServiceTest {
             () -> assertTrue(html.contains("<h1>http://example.com/</h1>"), "Default title not in output!"));
     }
 
-    private static Stream<Executable> checkHtmlFromTriples(final String html) {
+    static Stream<Executable> checkHtmlFromTriples(final String html) {
         return of(
                 () -> assertTrue(html.contains("<title>A title</title>"), "Title not in HTML!"),
                 () -> assertTrue(html.contains("_:B"), "BNode not in HTML output!"),
@@ -180,7 +180,7 @@ class DefaultRdfaWriterServiceTest {
                 () -> assertTrue(html.contains("<h1>A title</h1>"), "Title value not in HTML!"));
     }
 
-    private static Stream<Triple> getTriples() {
+    static Stream<Triple> getTriples() {
         final Node sub = createURI("trellis:data/resource");
         final Node bn = createBlankNode();
         return of(
@@ -194,7 +194,7 @@ class DefaultRdfaWriterServiceTest {
             .map(JenaCommonsRDF::fromJena);
     }
 
-    private static Stream<Triple> getTriples2() {
+    static Stream<Triple> getTriples2() {
         final Node sub = createURI("trellis:data/resource");
         final Node other = createURI("mailto:user@example.com");
         final Node bn = createBlankNode();
