@@ -49,7 +49,7 @@ class ResourceServiceTest {
     @Mock
     private RetrievalService<Resource> mockRetrievalService;
 
-    private static class MyRetrievalService implements RetrievalService<Resource> {
+    static class MyRetrievalService implements RetrievalService<Resource> {
         @Override
         public CompletionStage<Resource> get(final IRI id) {
             return completedFuture(mockResource);

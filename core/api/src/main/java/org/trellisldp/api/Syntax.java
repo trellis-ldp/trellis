@@ -34,7 +34,7 @@ public final class Syntax {
     public static final RDFSyntax LD_PATCH = new TrellisSyntax("LD-Patch", "Linked Data Patch Format", "text/ldpatch",
             ".ldp", "http://www.w3.org/ns/formats/LD_Patch", false);
 
-    private static class TrellisSyntax implements RDFSyntax {
+    static class TrellisSyntax implements RDFSyntax {
 
         private final String name;
         private final String title;

@@ -152,11 +152,11 @@ class DefaultEventSerializationServiceTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static <T extends Throwable> void sneakyThrow(final Throwable e) throws T {
+    static <T extends Throwable> void sneakyThrow(final Throwable e) throws T {
         throw (T) e;
     }
 
-    private static void sneakyJsonException() {
+    static void sneakyJsonException() {
         sneakyThrow(new JsonProcessingException("expected"){});
     }
 }

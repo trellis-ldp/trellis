@@ -85,8 +85,9 @@ import org.trellisldp.vocabulary.Trellis;
 class JenaIOServiceTest {
 
     private static final RDF rdf = RDFFactory.getInstance();
-    private IOService service, service2, service3;
     private static final String identifier = "http://example.com/resource";
+
+    private IOService service, service2, service3;
 
     @Mock
     private NamespaceService mockNamespaceService;
@@ -517,7 +518,7 @@ class JenaIOServiceTest {
                 "Missed namespace with different host!");
     }
 
-    private static Stream<Triple> getTriples() {
+    static Stream<Triple> getTriples() {
         final Node sub = createURI(identifier);
         return of(
                 create(sub, title.asNode(), createLiteral("A title")),
@@ -526,7 +527,7 @@ class JenaIOServiceTest {
             .map(JenaCommonsRDF::fromJena);
     }
 
-    private static Stream<Triple> getComplexTriples() {
+    static Stream<Triple> getComplexTriples() {
         final Node sub = createURI(identifier);
         final Node bn = createBlankNode();
         return of(
@@ -539,11 +540,11 @@ class JenaIOServiceTest {
 
     }
 
-    private static boolean validateGraph(final Graph graph) {
+    static boolean validateGraph(final Graph graph) {
         return getTriples().map(graph::contains).reduce(true, (acc, x) -> acc && x);
     }
 
-    private static Stream<Executable> checkExpandedSerialization(final String serialized, final Graph graph) {
+    static Stream<Executable> checkExpandedSerialization(final String serialized, final Graph graph) {
         return of(
                 () -> assertTrue(serialized.contains("\"http://purl.org/dc/terms/title\":[{\"@value\":\"A title\"}]"),
                     "no expanded dc:title property!"),
@@ -552,7 +553,7 @@ class JenaIOServiceTest {
                 () -> assertTrue(validateGraph(graph), "Not all triples present in output graph!"));
     }
 
-    private static Stream<Executable> checkCompactSerialization(final String serialized, final Graph graph) {
+    static Stream<Executable> checkCompactSerialization(final String serialized, final Graph graph) {
         return of(
                 () -> assertTrue(serialized.contains("\"title\":\"A title\""), "missing/invalid dc:title value!"),
                 () -> assertTrue(serialized.contains("\"@context\":"), "missing @context!"),
@@ -560,7 +561,7 @@ class JenaIOServiceTest {
                 () -> assertTrue(validateGraph(graph), "Not all triples present in output graph!"));
     }
 
-    private static Stream<Executable> checkFlattenedSerialization(final String serialized, final Graph graph) {
+    static Stream<Executable> checkFlattenedSerialization(final String serialized, final Graph graph) {
         return of(
                 () -> assertTrue(serialized.contains("\"title\":\"A title\""), "missing/invalid dc:title value!"),
                 () -> assertTrue(serialized.contains("\"@context\":"), "missing @context!"),

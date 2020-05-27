@@ -37,7 +37,7 @@ class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
 
     @PreMatching
     @Priority(500)
-    private static class TestAuthnFilter implements ContainerRequestFilter {
+    static class TestAuthnFilter implements ContainerRequestFilter {
         private final String principal;
         private final String userRole;
 

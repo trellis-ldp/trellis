@@ -126,7 +126,7 @@ class FileNamespaceServiceTest {
         }
     }
 
-    private static String randomFilename() {
+    static String randomFilename() {
         final SecureRandom random = new SecureRandom();
         final String filename = new BigInteger(50, random).toString(32);
         return filename + ".json";
