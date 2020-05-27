@@ -60,7 +60,7 @@ ext {
     liquibaseVersion = "3.8.0"
     mustacheVersion = "0.9.6"
     nettyVersion = "4.1.50.Final"
-    quarkusVersion = "1.4.2.Final"
+    quarkusVersion = "1.5.0.Final"
     rabbitMqVersion = "5.9.0"
     rxjavaVersion = "2.2.19"
 
