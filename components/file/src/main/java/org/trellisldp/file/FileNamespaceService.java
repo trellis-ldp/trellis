@@ -94,7 +94,8 @@ public class FileNamespaceService implements NamespaceService {
 
     private void init() {
         if (data.isEmpty()) {
-            data.putAll(read(getClass().getResource("/org/trellisldp/file/defaultNamespaces.json").getPath()));
+            data.putAll(read(Thread.currentThread().getContextClassLoader()
+                        .getResource("org/trellisldp/file/defaultNamespaces.json").getPath()));
             write(filePath, data);
         }
         data.forEach((k, v) -> dataRev.put(v, k));

@@ -32,4 +32,6 @@ module org.trellisldp.webac {
 
     uses org.trellisldp.api.ResourceService;
     uses org.trellisldp.api.IOService;
+
+    opens org.trellisldp.webac;
 }
