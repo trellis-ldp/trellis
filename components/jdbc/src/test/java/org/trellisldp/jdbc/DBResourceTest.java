@@ -106,7 +106,7 @@ class DBResourceTest {
 
             // Set up database migrations
             try (final Connection c = pg.getPostgresDatabase().getConnection()) {
-                final Liquibase liquibase = new Liquibase("migrations.yml",
+                final Liquibase liquibase = new Liquibase("org/trellisldp/jdbc/migrations.yml",
                         new ClassLoaderResourceAccessor(),
                         new JdbcConnection(c));
                 final Contexts ctx = null;

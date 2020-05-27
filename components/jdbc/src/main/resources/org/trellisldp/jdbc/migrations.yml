@@ -391,7 +391,7 @@ databaseChangeLog:
                     - column:
                         name: acl
                         type: BOOLEAN
-                file: initial_resource${csv}.csv
+                file: org/trellisldp/jdbc/initial_resource${csv}.csv
     - changeSet:
         id: 2
         author: acoburn
@@ -422,7 +422,7 @@ databaseChangeLog:
                     - column:
                         name: namespace
                         type: STRING
-                file: initial_namespaces.csv
+                file: org/trellisldp/jdbc/initial_namespaces.csv
     - changeSet:
         id: 3
         author: acoburn

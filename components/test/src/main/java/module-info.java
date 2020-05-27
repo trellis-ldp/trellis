@@ -35,4 +35,6 @@ module org.trellisldp.test {
     requires java.ws.rs;
     requires java.xml.bind;
     requires jakarta.inject;
+
+    opens org.trellisldp.test;
 }

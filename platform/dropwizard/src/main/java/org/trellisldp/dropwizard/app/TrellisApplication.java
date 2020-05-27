@@ -64,7 +64,7 @@ public class TrellisApplication extends AbstractTrellisApplication<AppConfigurat
             }
             @Override
             public String getMigrationsFileName() {
-                return "migrations.yml";
+                return "org/trellisldp/jdbc/migrations.yml";
             }
         });
     }

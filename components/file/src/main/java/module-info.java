@@ -32,6 +32,8 @@ module org.trellisldp.file {
     requires org.apache.commons.codec;
     requires org.apache.jena.core;
 
+    opens org.trellisldp.file;
+
     provides org.trellisldp.api.BinaryService
         with org.trellisldp.file.FileBinaryService;
     provides org.trellisldp.api.MementoService
