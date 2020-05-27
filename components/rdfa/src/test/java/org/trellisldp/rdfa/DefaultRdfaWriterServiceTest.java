@@ -107,7 +107,7 @@ class DefaultRdfaWriterServiceTest {
     @Test
     void testDefaultRdfaWriterService3() {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final RDFaWriterService service4 = new DefaultRdfaWriterService(mockNamespaceService, "/resource-test.mustache",
+        final RDFaWriterService service4 = new DefaultRdfaWriterService(mockNamespaceService, "resource-test.mustache",
                 "//www.trellisldp.org/assets/css/trellis.css", "", "//www.trellisldp.org/assets/img/trellis.png");
 
         service4.write(getTriples(), out, "http://example.com/");

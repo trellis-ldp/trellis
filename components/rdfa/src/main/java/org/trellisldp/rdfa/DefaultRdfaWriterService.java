@@ -135,10 +135,8 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
     }
 
     private Reader getReader(final String template) {
-        if (template.startsWith("/")) {
-            return new InputStreamReader(getClass().getResourceAsStream(template), UTF_8);
-        }
-        return new InputStreamReader(getClass().getResourceAsStream("/" + template), UTF_8);
+        return new InputStreamReader(Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(template), UTF_8);
     }
 
     /**
