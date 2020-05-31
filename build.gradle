@@ -560,6 +560,7 @@ configure(rootProject) {
             property "sonar.organization", "trellis-ldp"
             property "sonar.projectKey", "org.trellisldp:trellis"
             property "sonar.projectName", "Trellis Linked Data Server"
+            property "sonar.host.url", "https://sonarcloud.io"
             property "sonar.links.homepage", "https://www.trellisldp.org"
             property "sonar.links.issue", "https://github.com/trellis-ldp/trellis/issues"
             property "sonar.links.scm_dev", "scm:git:git@github.com:trellis-ldp/trellis.git"
