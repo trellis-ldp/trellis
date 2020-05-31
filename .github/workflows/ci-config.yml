@@ -207,7 +207,7 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Build with Gradle
-      run: ./gradlew check jacocoRootReport sonarqube -Dsonar.host.url=https://sonarcloud.io
+      run: ./gradlew check jacocoRootReport sonarqube
       env:
         QUARKUS_DATASOURCE_USERNAME: postgres
         QUARKUS_DATASOURCE_PASSWORD: postgres
