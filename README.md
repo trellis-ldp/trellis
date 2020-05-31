@@ -3,8 +3,7 @@
 A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) applications.
 
 ![Build Status](https://github.com/trellis-ldp/trellis/workflows/GitHub%20CI/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/trellis-ldp/trellis/badge.svg?branch=master)](https://coveralls.io/github/trellis-ldp/trellis?branch=master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/cd0f09e025ce4a9e9c00fd7b04fb66fb)](https://www.codacy.com/gh/trellis-ldp/trellis?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=trellis-ldp/trellis&amp;utm_campaign=Badge_Grade)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.trellisldp%3Atrellis&metric=coverage)](https://sonarcloud.io/dashboard?id=org.trellisldp%3Atrellis)
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/trellis-ldp/trellis.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/trellis-ldp/trellis/alerts/)
 ![Maven Central](https://img.shields.io/maven-central/v/org.trellisldp/trellis-api.svg)
 
