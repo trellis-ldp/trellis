@@ -46,7 +46,6 @@ jobs:
   fast_finish: true
 
   allow_failures:
-    - env: JOB=sonatype
     - env: JOB=docker
     - env: JOB=aws
 
@@ -61,15 +60,6 @@ jobs:
         - QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://localhost/trellis
       script: ./gradlew check install -Ptriplestore jacocoRootReport --scan
       after_success: ./gradlew coveralls sonarqube -Ptriplestore
-
-    # deploy JDK 8 builds to Sonatype
-    - name: "Publish to Sonatype"
-      stage: deploy
-      jdk: openjdk8
-      env: JOB=sonatype
-      if: branch = master AND type = push
-      # Only automate the publication of SNAPSHOTS
-      script: if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew publish ; fi
 
     # deploy to Docker hub
     - name: "Publish to Docker hub"
