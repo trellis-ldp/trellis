@@ -1,4 +1,4 @@
-name: GitHub CI
+name: GitHub CD
 
 on:
   push:
@@ -39,11 +39,11 @@ jobs:
         QUARKUS_DATASOURCE_PASSWORD: postgres
         QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost/trellis
 
-  docker:
+  dockerhub:
     needs: [build]
     runs-on: ubuntu-latest
 
-    name: Deploy docker container
+    name: Deploy docker container to DockerHub
     steps:
     - uses: actions/checkout@v2.1.0
     - name: Set up JDK 11
@@ -53,6 +53,23 @@ jobs:
 
     - name: Publish Docker Container
       run: |
-        docker login docker.pkg.github.com -u $GITHUB_ACTOR -p "${{ secrets.GITHUB_TOKEN }}"
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        ./buildtools/src/main/resources/docker/publishToDockerHub.sh
+
+  docker:
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    name: Deploy docker container to GitHub
+    steps:
+    - uses: actions/checkout@v2.1.0
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1.3.0
+      with:
+        java-version: 11
+
+    - name: Publish Docker Container
+      run: |
+        echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u $GITHUB_ACTOR --password-stdin
         ./buildtools/src/main/resources/docker/publishToGitHub.sh
 
