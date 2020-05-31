@@ -86,6 +86,10 @@ dependencies {
     testImplementation "org.apache.activemq:activemq-broker:$activeMqVersion"
 }
 
+sonarqube {
+    skipProject = true
+}
+
 jar {
     manifest {
         attributes('Automatic-Module-Name': moduleName)

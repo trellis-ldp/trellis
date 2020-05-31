@@ -1,29 +1,57 @@
+dist: xenial
+os: linux
 language: java
+
+addons:
+  sonarcloud:
+    organization: trellis-ldp
 
 branches:
   only:
+    - master
     # release tags
     - /^trellis-\d+\.\d+\.\d+$/
+    # maintenance branches
+    - /^trellis-\d+\.\d+\.x$/
+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -rf $HOME/.gradle/caches/*/plugin-resolution/
+  - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.bin
+  - rm -f  $HOME/.gradle/caches/*/fileHashes/fileHashes.lock
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+
+env:
+  - JOB=check
 
 jobs:
   allow_failures:
     - env: JOB=aws
 
   include:
+    # JDK 11
+    - name: "Java 11"
+      jdk: openjdk11
+      script: ./gradlew test jacocoRootReport coveralls sonarqube -x :trellis-quarkus:test -x :trellis-openliberty:test -x :trellis-dropwizard-app:test
+
     # deploy to AWS
     - name: "Publish JavaDocs"
       jdk: openjdk8
       env: JOB=aws
-      if: type = push
+      if: branch =~ /^trellis-\d+\.\d+\.\d+$/ AND type = push
       script: ./gradlew apidocs
       deploy:
           provider: s3
           access_key_id: $AWS_ACCESS_KEY
           secret_access_key: $AWS_SECRET_KEY
           bucket: $AWS_BUCKET
-          skip_cleanup: true
+          cleanup: true
           local_dir: docs/apidocs/$(./gradlew -q getVersion)
-          upload-dir: docs/trellis/$(./gradlew -q getVersion)/apidocs
+          upload_dir: docs/trellis/$(./gradlew -q getVersion)/apidocs
           default_text_charset: 'utf-8'
           on:
               all_branches: true
