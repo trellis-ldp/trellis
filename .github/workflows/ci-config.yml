@@ -19,13 +19,12 @@ jobs:
       - uses: gradle/wrapper-validation-action@v1.0.3
 
   build:
+    name: Java ${{ matrix.java }} environment
     needs: [validation]
     runs-on: ubuntu-latest
     strategy:
       matrix:
         java: [8, 11]
-
-    name: Java ${{ matrix.java }} environment
 
     services:
       postgres:
@@ -61,14 +60,15 @@ jobs:
         QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost/trellis
 
   security:
-    needs: [validation]
-    runs-on: ubuntu-latest
     name: Security analysis
+    needs: [validation]
+    # Only run security scans for push events
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v2.1.0
     - name: Run Snyk to check for vulnerabilities
-      # Only run security scans for push events
-      if: github.event_name == 'push'
       env:
         PROJECT_PATH: /project/trellis
         SNYK_ORG: ${{ secrets.SNYK_ORG }}
@@ -81,10 +81,12 @@ jobs:
           fi
 
   dockerhub:
+    name: Deploy docker container to DockerHub
     needs: [build]
     runs-on: ubuntu-latest
+    # Only run docker deploy on push events
+    if: github.event_name == 'push'
 
-    name: Deploy docker container to DockerHub
     steps:
     - uses: actions/checkout@v2.1.0
     - name: Set up JDK 11
@@ -93,16 +95,14 @@ jobs:
         java-version: 11
 
     - name: Publish Docker Container
-      # Only run docker deploy on push events
-      if: github.event_name == 'push'
       run: |
         echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
         ./buildtools/src/main/resources/docker/publishToDockerHub.sh
 
   windows:
+    name: Java 11 Windows (triplestore) environment
     needs: [validation]
     runs-on: windows-latest
-    name: Java 11 Windows (triplestore) environment
     steps:
     - uses: actions/checkout@v2.1.0
     - name: Set up JDK 11
@@ -122,9 +122,9 @@ jobs:
       run: ./gradlew.bat check -Ptriplestore
 
   quarkusTriplestore:
+    name: Java 11 Quarkus (triplestore) environment
     needs: [validation]
     runs-on: ubuntu-latest
-    name: Java 11 Quarkus (triplestore) environment
 
     steps:
     - uses: actions/checkout@v2.1.0
@@ -137,9 +137,9 @@ jobs:
       run: ./gradlew check -p platform/quarkus build -Ptriplestore
 
   quarkusPostgres:
+    name: Java 11 Quarkus (postgres) environment
     needs: [validation]
     runs-on: ubuntu-latest
-    name: Java 11 Quarkus (postgres) environment
 
     services:
       postgres:
@@ -167,9 +167,9 @@ jobs:
         QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost/trellis
 
   dropwizardTriplestore:
+    name: Java 11 Dropwizard (triplestore) environment
     needs: [validation]
     runs-on: ubuntu-latest
-    name: Java 11 Dropwizard (triplestore) environment
 
     steps:
     - uses: actions/checkout@v2.1.0
@@ -184,9 +184,9 @@ jobs:
           TRELLIS_TEST_DATABASE: false
 
   dropwizardPostgres:
+    name: Java 11 Dropwizard (postgres) environment
     needs: [validation]
     runs-on: ubuntu-latest
-    name: Java 11 Dropwizard (postgres) environment
 
     services:
       postgres:
@@ -256,9 +256,9 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   osgi:
+    name: Java 11 OSGi environment
     needs: [validation]
     runs-on: ubuntu-latest
-    name: Java 11 OSGi environment
     steps:
     - uses: actions/checkout@v2.1.0
     - name: Set up JDK 11
@@ -277,9 +277,9 @@ jobs:
       run: ./gradlew -p platform/osgi check -Posgi
 
   jpms:
+    name: Java 11 JPMS environment
     needs: [validation]
     runs-on: ubuntu-latest
-    name: Java 11 JPMS environment
     steps:
     - uses: actions/checkout@v2.1.0
     - name: Set up JDK 11
@@ -299,9 +299,11 @@ jobs:
 
   # Snapshot deployments
   sonatype:
+    name: Publish artifacts to Sonatype
     needs: [build]
     runs-on: ubuntu-latest
-    name: Publish artifacts to Sonatype
+    # Only publish on push events
+    if: github.event_name == 'push'
     steps:
     - uses: actions/checkout@v2.1.0
     - name: Set up JDK 8
@@ -309,8 +311,6 @@ jobs:
       with:
         java-version: 8
     - name: Publish to Sonatype
-      # Only publish on push events
-      if: github.event_name == 'push'
       run: if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew publish ; fi
       env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
