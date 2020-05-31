@@ -12,7 +12,7 @@ on:
 
 jobs:
   validation:
-    name: "Validation"
+    name: Validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2.1.0
@@ -53,35 +53,14 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Build with Gradle
-      run: ./gradlew check assemble javadoc
+      run: ./gradlew build javadoc
       env:
         QUARKUS_DATASOURCE_USERNAME: postgres
         QUARKUS_DATASOURCE_PASSWORD: postgres
         QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost/trellis
 
-  security:
-    name: Security analysis
-    needs: [validation]
-    # Only run security scans for push events
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2.1.0
-    - name: Run Snyk to check for vulnerabilities
-      env:
-        PROJECT_PATH: /project/trellis
-        SNYK_ORG: ${{ secrets.SNYK_ORG }}
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      # Only run security scans if integration is set up
-      run: |
-          if [ "$SNYK_ORG" != "" ]; then
-            # don't fail the build if snyk doesn't complete successfully
-            docker run --name snyk -e SNYK_TOKEN -e PROJECT_PATH -v "/home/runner/work/trellis":"/project" snyk/snyk-cli:gradle-5.4 "monitor --all-sub-projects --org=$SNYK_ORG" || true
-          fi
-
   windows:
-    name: Java 11 Windows (triplestore) environment
+    name: Windows (triplestore) environment
     needs: [validation]
     runs-on: windows-latest
     steps:
@@ -103,7 +82,7 @@ jobs:
       run: ./gradlew.bat check -Ptriplestore
 
   quarkusTriplestore:
-    name: Java 11 Quarkus (triplestore) environment
+    name: Quarkus (triplestore) environment
     needs: [validation]
     runs-on: ubuntu-latest
 
@@ -114,11 +93,11 @@ jobs:
       with:
         java-version: 11
 
-    - name: "Java 11 (Quarkus Triplestore)"
+    - name: Test the Quarkus app with a Triplestore
       run: ./gradlew check -p platform/quarkus build -Ptriplestore
 
   quarkusPostgres:
-    name: Java 11 Quarkus (postgres) environment
+    name: Quarkus (postgres) environment
     needs: [validation]
     runs-on: ubuntu-latest
 
@@ -140,7 +119,7 @@ jobs:
       with:
         java-version: 11
 
-    - name: "Java 11 (Quarkus Postgres)"
+    - name: Test the Quarkus app with PostgreSQL
       run: ./gradlew check -p platform/quarkus build
       env:
         QUARKUS_DATASOURCE_USERNAME: postgres
@@ -148,7 +127,7 @@ jobs:
         QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost/trellis
 
   dropwizardTriplestore:
-    name: Java 11 Dropwizard (triplestore) environment
+    name: Dropwizard (triplestore) environment
     needs: [validation]
     runs-on: ubuntu-latest
 
@@ -159,13 +138,13 @@ jobs:
       with:
         java-version: 11
 
-    - name: "Java 11 (Dropwizard Triplestore)"
+    - name: Test the Dropwizard app with a triplestore
       run: ./gradlew check -p platform/dropwizard build
       env:
           TRELLIS_TEST_DATABASE: false
 
   dropwizardPostgres:
-    name: Java 11 Dropwizard (postgres) environment
+    name: Dropwizard (postgres) environment
     needs: [validation]
     runs-on: ubuntu-latest
 
@@ -187,7 +166,7 @@ jobs:
       with:
         java-version: 11
 
-    - name: "Java 11 (Dropwizard Postgres)"
+    - name: Test the Dropwizard app with PostgreSQL
       run: ./gradlew check -p platform/dropwizard build
       env:
           TRELLIS_TEST_JDBC_DRIVER_CLASS: org.postgresql.Driver
@@ -197,10 +176,9 @@ jobs:
           TRELLIS_TEST_TRIPLESTORE: false
 
   analysis:
+    name: Static Analysis
     needs: [validation]
     runs-on: ubuntu-latest
-
-    name: Static Analysis
 
     services:
       postgres:
@@ -238,7 +216,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   osgi:
-    name: Java 11 OSGi environment
+    name: OSGi provisioning
     needs: [validation]
     runs-on: ubuntu-latest
     steps:
@@ -259,7 +237,7 @@ jobs:
       run: ./gradlew -p platform/osgi check -Posgi
 
   jpms:
-    name: Java 11 JPMS environment
+    name: JPMS environment
     needs: [validation]
     runs-on: ubuntu-latest
     steps:
@@ -278,42 +256,4 @@ jobs:
 
     - name: Build with Gradle
       run: ./gradlew check install -Pjpms -Ptriplestore
-
-  # Deployments
-  dockerhub:
-    name: Deploy docker container to DockerHub
-    needs: [build]
-    runs-on: ubuntu-latest
-    # Only run docker deploy on push events
-    if: github.event_name == 'push'
-
-    steps:
-    - uses: actions/checkout@v2.1.0
-    - name: Set up JDK 11
-      uses: actions/setup-java@v1.3.0
-      with:
-        java-version: 11
-
-    - name: Publish Docker Container
-      run: |
-        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-        ./buildtools/src/main/resources/docker/publishToDockerHub.sh
-
-  sonatype:
-    name: Deploy artifacts to Sonatype
-    needs: [build]
-    runs-on: ubuntu-latest
-    # Only publish on push events
-    if: github.event_name == 'push'
-    steps:
-    - uses: actions/checkout@v2.1.0
-    - name: Set up JDK 8
-      uses: actions/setup-java@v1.3.0
-      with:
-        java-version: 8
-    - name: Publish to Sonatype
-      run: if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew publish ; fi
-      env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
 
