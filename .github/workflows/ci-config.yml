@@ -282,7 +282,7 @@ jobs:
   sonatype:
     needs: [build]
     runs-on: ubuntu-latest
-    name: Java 8 environment
+    name: Publish artifacts to Sonatype
     steps:
     - uses: actions/checkout@v2.1.0
     - name: Set up JDK 8
