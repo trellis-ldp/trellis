@@ -36,8 +36,9 @@ jobs:
     # JDK 11
     - name: "Java 11"
       jdk: openjdk11
-      script: ./gradlew test jacocoRootReport sonarqube -x :trellis-quarkus:test -x :trellis-openliberty:test -x :trellis-dropwizard-app:test
-      after_success: ./gradlew coveralls
+      script: ./gradlew test jacocoRootReport coveralls sonarqube -x :trellis-quarkus:test -x :trellis-openliberty:test -x :trellis-dropwizard-app:test
+      after_success:
+          - curl -F 'json_file=@build/coveralls/report.json' 'https://coveralls.io/api/v1/jobs'
 
     # deploy to AWS
     - name: "Publish JavaDocs"

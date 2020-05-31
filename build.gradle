@@ -607,6 +607,8 @@ configure(rootProject) {
     coveralls {
         sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
         jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
+        saveAsFile = true
+        sendToCoveralls = false
     }
 
     buildScan {
