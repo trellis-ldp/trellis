@@ -117,14 +117,16 @@ ext {
 
     omitFromJacocoReporting = [
         'trellis-bom',
+        'trellis-dropwizard-app',
         'trellis-karaf',
         'trellis-openliberty',
         'trellis-osgi',
+        'trellis-quarkus',
         'trellis-test'
     ]
 
     omitFromMavenPublishing = [
-        'trellis-dropwizard-triplestore',
+        'trellis-dropwizard-app',
         'trellis-osgi',
         'trellis-quarkus',
         'trellis-openliberty'
