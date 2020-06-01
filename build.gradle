@@ -569,6 +569,7 @@ configure(rootProject) {
             // TODO when upgrading to Java11, adjust these values
             property "sonar.java.source", "1.8"
             property "sonar.java.target", "1.8"
+            property "sonar.modules", subprojects.findAll { !omitFromJacocoReporting.contains(it.name) }.collect { it.name }.join(',')
         }
     }
 
