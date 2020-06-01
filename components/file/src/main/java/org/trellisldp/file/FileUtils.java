@@ -28,7 +28,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.apache.jena.commonsrdf.JenaCommonsRDF.fromJena;
 import static org.apache.jena.riot.tokens.TokenizerFactory.makeTokenizerString;
 import static org.apache.jena.sparql.core.Quad.create;
@@ -55,6 +55,7 @@ import java.util.StringJoiner;
 import java.util.stream.Stream;
 import java.util.zip.CRC32;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -75,8 +76,14 @@ public final class FileUtils {
 
     /** The configuration key for controlling LDP type triples. */
     public static final String CONFIG_FILE_LDP_TYPE = "trellis.file.ldp-type";
+    /** The configuration key controlling the digest algorithm in use. */
+    public static final String CONFIG_FILE_DIGEST_ALGORITHM = "trellis.file.digest-algorithm";
+
     private static final Logger LOGGER = getLogger(FileUtils.class);
     private static final RDF rdf = RDFFactory.getInstance();
+    private static final String ALGORITHM = getConfig()
+        .getOptionalValue(CONFIG_FILE_DIGEST_ALGORITHM, String.class).orElse(SHA_256);
+
     private static final String SEP = " ";
 
     /**
@@ -103,7 +110,7 @@ public final class FileUtils {
         range(0, intermediate.length() / LENGTH).limit(MAX)
             .forEach(i -> joiner.add(intermediate.substring(i * LENGTH, (i + 1) * LENGTH)));
 
-        joiner.add(md5Hex(id));
+        joiner.add(new DigestUtils(ALGORITHM).digestAsHex(id));
         return new File(baseDirectory, joiner.toString());
     }
 
