@@ -17,6 +17,7 @@ package org.trellisldp.webac;
 
 import static java.util.Collections.unmodifiableSet;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.rdf.api.IRI;
@@ -40,8 +41,8 @@ public class AuthorizedModes {
      * Get the location of the effective ACL.
      * @return the location of the effective ACL
      */
-    public IRI getEffectiveAcl() {
-        return effectiveAcl;
+    public Optional<IRI> getEffectiveAcl() {
+        return Optional.ofNullable(effectiveAcl);
     }
 
     /**

@@ -49,6 +49,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
@@ -223,10 +224,16 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
                 final String path = req.getUriInfo().getPath();
                 res.getHeaders().add(LINK, fromUri(fromPath(path.startsWith(SLASH) ? path : SLASH + path)
                             .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(rel).build());
-                res.getHeaders().add(LINK, fromUri(fromPath(modes.getEffectiveAcl().getIRIString()
-                                .replace(TRELLIS_DATA_PREFIX, SLASH))
+                modes.getEffectiveAcl().map(IRI::getIRIString).ifPresent(acl -> {
+                    final boolean isContainer = res.getStringHeaders().getOrDefault(LINK, emptyList()).stream()
+                        .map(Link::valueOf).anyMatch(link ->
+                                link.getUri().toString().endsWith("Container") && link.getRels().contains(Link.TYPE));
+                    final String urlPath = acl.replace(TRELLIS_DATA_PREFIX, SLASH);
+                    final String modifiedUrlPath = urlPath.equals("/") || !isContainer ? urlPath : urlPath + "/";
+                    res.getHeaders().add(LINK, fromUri(fromPath(modifiedUrlPath)
                                 .queryParam(HttpConstants.EXT, HttpConstants.ACL).build())
                             .rel(Trellis.effectiveAcl.getIRIString()).build());
+                });
             }
         }
     }

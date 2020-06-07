@@ -490,8 +490,11 @@ class WebAcFilterTest {
     @Test
     void testFilterResponseWithControl() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, String> stringHeaders = new MultivaluedHashMap<>();
+        stringHeaders.putSingle("Link", "<http://www.w3.org/ns/ldp#BasicContainer>; rel=\"type\"");
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
+        when(mockResponseContext.getStringHeaders()).thenReturn(stringHeaders);
         when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
             .thenReturn(new AuthorizedModes(effectiveAcl, allModes));
 
@@ -530,8 +533,10 @@ class WebAcFilterTest {
     @Test
     void testFilterResponseBaseUrl() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, String> stringHeaders = new MultivaluedHashMap<>();
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
+        when(mockResponseContext.getStringHeaders()).thenReturn(stringHeaders);
         when(mockUriInfo.getPath()).thenReturn("/path");
         when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
             .thenReturn(new AuthorizedModes(effectiveAcl, allModes));
@@ -555,10 +560,12 @@ class WebAcFilterTest {
     void testFilterResponseWebac2() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         final MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, String> stringHeaders = new MultivaluedHashMap<>();
         params.add("ext", "foo");
         params.add("ext", "acl");
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
+        when(mockResponseContext.getStringHeaders()).thenReturn(stringHeaders);
         when(mockUriInfo.getQueryParameters()).thenReturn(params);
         when(mockUriInfo.getPath()).thenReturn("path/");
         when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
