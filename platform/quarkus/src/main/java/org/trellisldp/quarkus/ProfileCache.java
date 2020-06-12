@@ -17,35 +17,39 @@ package org.trellisldp.quarkus;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.util.concurrent.TimeUnit.HOURS;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
-import com.google.common.cache.Cache;
+import java.util.function.Function;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
-import org.eclipse.microprofile.config.Config;
-import org.trellisldp.api.CacheService.TrellisProfileCache;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.trellisldp.api.CacheService;
 import org.trellisldp.cache.TrellisCache;
 
 /** A JSON-LD context/profile cache. */
 @ApplicationScoped
-@TrellisProfileCache
-public class ProfileCache extends TrellisCache<String, String> {
+@CacheService.TrellisProfileCache
+class ProfileCache implements CacheService<String, String> {
 
-    /** A configuration key that sets the profile cache maximum size. */
-    public static final String CONFIG_QUARKUS_PROFILE_CACHE_SIZE = "trellis.quarkus.profile-cache-size";
+    CacheService<String, String> cache;
 
-    /** A configuration key that sets the profile cache expiry time (in hours). */
-    public static final String CONFIG_QUARKUS_PROFILE_CACHE_EXPIRE_HOURS = "trellis.quarkus.profile-cache-expire-hours";
+    @Inject
+    @ConfigProperty(name = "trellis.quarkus.profile-cache-size", defaultValue = "100")
+    int size;
 
-    /** Create a cache suitable for JSON-LD profile requests. */
-    public ProfileCache() {
-        super(buildCache(getConfig()));
+    @Inject
+    @ConfigProperty(name = "trellis.quarkus.profile-cache-expire-hours", defaultValue = "24")
+    int expire;
+
+    @PostConstruct
+    void initialize() {
+        cache = new TrellisCache<>(newBuilder().maximumSize(size).expireAfterWrite(expire, HOURS).build());
     }
 
-    private static Cache<String, String> buildCache(final Config config) {
-        final int size = config.getOptionalValue(CONFIG_QUARKUS_PROFILE_CACHE_SIZE, Integer.class).orElse(100);
-        final int expire = config.getOptionalValue(CONFIG_QUARKUS_PROFILE_CACHE_EXPIRE_HOURS, Integer.class).orElse(24);
-        return newBuilder().maximumSize(size).expireAfterWrite(expire, HOURS).build();
+    @Override
+    public String get(final String key, final Function<String, String> mapper) {
+        return cache.get(key, mapper);
     }
 }
