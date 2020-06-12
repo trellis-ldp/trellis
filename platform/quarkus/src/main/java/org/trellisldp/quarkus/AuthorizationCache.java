@@ -17,13 +17,15 @@ package org.trellisldp.quarkus;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
-import com.google.common.cache.Cache;
+import java.util.function.Function;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
-import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.trellisldp.api.CacheService;
 import org.trellisldp.cache.TrellisCache;
 import org.trellisldp.webac.AuthorizedModes;
 import org.trellisldp.webac.WebAcService.TrellisAuthorizationCache;
@@ -32,23 +34,25 @@ import org.trellisldp.webac.WebAcService.TrellisAuthorizationCache;
 /** An authz cache. */
 @ApplicationScoped
 @TrellisAuthorizationCache
-public class AuthorizationCache extends TrellisCache<String, AuthorizedModes> {
+class AuthorizationCache implements CacheService<String, AuthorizedModes> {
 
-    /** The configuration key for setting the maximum authZ cache size. */
-    public static final String CONFIG_QUARKUS_AUTHZ_CACHE_SIZE = "trellis.quarkus.authz-cache-size";
+    CacheService<String, AuthorizedModes> cache;
 
-    /** The configuration key for setting the authZ cache expiry. */
-    public static final String CONFIG_QUARKUS_AUTHZ_CACHE_EXPIRE_SECONDS = "trellis.quarkus.authz-cache-expire-seconds";
+    @Inject
+    @ConfigProperty(name = "trellis.quarkus.authz-cache-size", defaultValue = "1000")
+    int size;
 
-    /** Create a cache suitable for authorization data. */
-    public AuthorizationCache() {
-        super(buildCache(getConfig()));
+    @Inject
+    @ConfigProperty(name = "trellis.quarkus.authz-cache-expire-seconds", defaultValue = "60")
+    int expire;
+
+    @PostConstruct
+    void initialize() {
+        cache = new TrellisCache<>(newBuilder().maximumSize(size).expireAfterWrite(expire, SECONDS).build());
     }
 
-    private static Cache<String, AuthorizedModes> buildCache(final Config config) {
-        final int size = config.getOptionalValue(CONFIG_QUARKUS_AUTHZ_CACHE_SIZE, Integer.class).orElse(1000);
-        final int expire = config.getOptionalValue(CONFIG_QUARKUS_AUTHZ_CACHE_EXPIRE_SECONDS, Integer.class)
-            .orElse(60);
-        return newBuilder().maximumSize(size).expireAfterWrite(expire, SECONDS).build();
+    @Override
+    public AuthorizedModes get(final String key, final Function<String, AuthorizedModes> mapper) {
+        return cache.get(key, mapper);
     }
 }
