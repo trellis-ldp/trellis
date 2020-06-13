@@ -49,6 +49,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
@@ -223,12 +224,24 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
                 final String path = req.getUriInfo().getPath();
                 res.getHeaders().add(LINK, fromUri(fromPath(path.startsWith(SLASH) ? path : SLASH + path)
                             .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(rel).build());
-                res.getHeaders().add(LINK, fromUri(fromPath(modes.getEffectiveAcl().getIRIString()
-                                .replace(TRELLIS_DATA_PREFIX, SLASH))
+                modes.getEffectiveAcl().map(IRI::getIRIString).map(acl -> effectiveAclToUrlPath(acl, res))
+                    .ifPresent(urlPath -> res.getHeaders().add(LINK, fromUri(fromPath(urlPath)
                                 .queryParam(HttpConstants.EXT, HttpConstants.ACL).build())
-                            .rel(Trellis.effectiveAcl.getIRIString()).build());
+                            .rel(Trellis.effectiveAcl.getIRIString()).build()));
             }
         }
+    }
+
+    static String effectiveAclToUrlPath(final String internalPath, final ContainerResponseContext response) {
+        final boolean isContainer = response.getStringHeaders().getOrDefault(LINK, emptyList()).stream()
+            .map(Link::valueOf).anyMatch(link ->
+                    link.getUri().toString().endsWith("Container") && link.getRels().contains(Link.TYPE));
+        final String urlPath = internalPath.replace(TRELLIS_DATA_PREFIX, SLASH);
+        if (SLASH.equals(urlPath) || !isContainer) {
+            return urlPath;
+        }
+        return urlPath + SLASH;
+
     }
 
     protected void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {
