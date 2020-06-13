@@ -229,7 +229,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
                         .map(Link::valueOf).anyMatch(link ->
                                 link.getUri().toString().endsWith("Container") && link.getRels().contains(Link.TYPE));
                     final String urlPath = acl.replace(TRELLIS_DATA_PREFIX, SLASH);
-                    final String modifiedUrlPath = urlPath.equals("/") || !isContainer ? urlPath : urlPath + "/";
+                    final String modifiedUrlPath = SLASH.equals(urlPath) || !isContainer ? urlPath : urlPath + SLASH;
                     res.getHeaders().add(LINK, fromUri(fromPath(modifiedUrlPath)
                                 .queryParam(HttpConstants.EXT, HttpConstants.ACL).build())
                             .rel(Trellis.effectiveAcl.getIRIString()).build());

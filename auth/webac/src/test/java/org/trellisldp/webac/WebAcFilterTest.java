@@ -514,6 +514,37 @@ class WebAcFilterTest {
     }
 
     @Test
+    void testFilterResourceResponseWithControl() {
+        final IRI localEffectiveAcl = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, String> stringHeaders = new MultivaluedHashMap<>();
+        stringHeaders.putSingle("Link", "<http://www.w3.org/ns/ldp#RDFSource>; rel=\"type\"");
+        when(mockResponseContext.getStatusInfo()).thenReturn(OK);
+        when(mockResponseContext.getHeaders()).thenReturn(headers);
+        when(mockResponseContext.getStringHeaders()).thenReturn(stringHeaders);
+        when(mockUriInfo.getPath()).thenReturn("/resource");
+        when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
+            .thenReturn(new AuthorizedModes(localEffectiveAcl, allModes));
+
+        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+            .thenReturn(new AuthorizedModes(localEffectiveAcl, allModes));
+
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
+
+        assertTrue(headers.isEmpty());
+        filter.filter(mockContext, mockResponseContext);
+        assertFalse(headers.isEmpty());
+
+        final List<Object> links = headers.get("Link");
+        assertTrue(links.stream().map(Link.class::cast).anyMatch(link ->
+                    link.getRels().contains("acl") && "/resource?ext=acl".equals(link.getUri().toString())));
+        assertTrue(links.stream().map(Link.class::cast).anyMatch(link ->
+                    "/resource?ext=acl".equals(link.getUri().toString()) &&
+                    link.getRels().contains(Trellis.effectiveAcl.getIRIString())));
+    }
+
+    @Test
     void testFilterResponseDelete() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         when(mockContext.getMethod()).thenReturn(DELETE);
