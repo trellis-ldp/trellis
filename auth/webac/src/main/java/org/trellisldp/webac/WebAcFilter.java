@@ -224,24 +224,12 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
                 final String path = req.getUriInfo().getPath();
                 res.getHeaders().add(LINK, fromUri(fromPath(path.startsWith(SLASH) ? path : SLASH + path)
                             .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(rel).build());
-                modes.getEffectiveAcl().map(IRI::getIRIString).map(acl -> effectiveAclToUrlPath(acl, res))
+                modes.getEffectiveAcl().map(IRI::getIRIString).map(acl -> effectiveAclToUrlPath(acl, path, res))
                     .ifPresent(urlPath -> res.getHeaders().add(LINK, fromUri(fromPath(urlPath)
                                 .queryParam(HttpConstants.EXT, HttpConstants.ACL).build())
                             .rel(Trellis.effectiveAcl.getIRIString()).build()));
             }
         }
-    }
-
-    static String effectiveAclToUrlPath(final String internalPath, final ContainerResponseContext response) {
-        final boolean isContainer = response.getStringHeaders().getOrDefault(LINK, emptyList()).stream()
-            .map(Link::valueOf).anyMatch(link ->
-                    link.getUri().toString().endsWith("Container") && link.getRels().contains(Link.TYPE));
-        final String urlPath = internalPath.replace(TRELLIS_DATA_PREFIX, SLASH);
-        if (SLASH.equals(urlPath) || !isContainer) {
-            return urlPath;
-        }
-        return urlPath + SLASH;
-
     }
 
     protected void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {
@@ -324,5 +312,29 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         final String realmParam = realm.isEmpty() ? "" : " realm=\"" + realm + "\"";
         final String scopeParam = scope.isEmpty() ? "" : " scope=\"" + scope + "\"";
         return challenge + realmParam + scopeParam;
+    }
+
+    static String effectiveAclToUrlPath(final String effectiveAclPath, final String resourceAclPath,
+            final ContainerResponseContext response) {
+
+        final String effectivePath = normalizePath(effectiveAclPath);
+        final String resourcePath = normalizePath(resourceAclPath);
+        final boolean inherited = ! effectivePath.equals(resourcePath);
+        final boolean isContainer = inherited || response.getStringHeaders().getOrDefault(LINK, emptyList()).stream()
+            .map(Link::valueOf).anyMatch(link ->
+                    link.getUri().toString().endsWith("Container") && link.getRels().contains(Link.TYPE));
+        if (SLASH.equals(effectivePath) || !isContainer) {
+            return effectivePath;
+        }
+        return effectivePath + SLASH;
+    }
+
+    static String normalizePath(final String path) {
+        if (path.startsWith(TRELLIS_DATA_PREFIX)) {
+            return path.substring(TRELLIS_DATA_PREFIX.length() - 1);
+        } else if (path.startsWith(SLASH)) {
+            return path;
+        }
+        return SLASH + path;
     }
 }
