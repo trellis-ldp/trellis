@@ -41,6 +41,8 @@ dependencies {
 
     testImplementation project(":trellis-file")
     testImplementation project(":trellis-test")
+
+    testRuntimeOnly "org.postgresql:postgresql:$postgresVersion"
 }
 
 test {

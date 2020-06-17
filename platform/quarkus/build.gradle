@@ -54,6 +54,7 @@ dependencies {
 
     runtimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
     runtimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    runtimeOnly "org.postgresql:postgresql:$postgresVersion"
 
     testImplementation project(":trellis-test")
     testImplementation "io.quarkus:quarkus-junit5"
