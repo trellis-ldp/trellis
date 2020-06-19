@@ -72,6 +72,7 @@ import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.OA;
+import org.trellisldp.vocabulary.RDFS;
 import org.trellisldp.vocabulary.Trellis;
 
 import liquibase.Contexts;
@@ -253,6 +254,34 @@ class DBResourceTest {
                 assertEquals(0L, res.stream(Trellis.PreferUserManaged).count());
                 assertEquals(0L, res.stream(Trellis.PreferServerManaged).count());
             }).toCompletableFuture().join());
+    }
+
+    @Test
+    void testNonEmptyContainer() {
+        final IRI iri = rdf.createIRI("http://example.com/#foo");
+        final IRI container = rdf.createIRI(TRELLIS_DATA_PREFIX + idService.getSupplier().get());
+        final IRI child = rdf.createIRI(container.getIRIString() + "/" + idService.getSupplier().get());
+        final Dataset dataset = rdf.createDataset();
+        dataset.add(Trellis.PreferUserManaged, container, RDFS.label, rdf.createLiteral("A container"));
+        final Dataset childDataset = rdf.createDataset();
+        childDataset.add(Trellis.PreferUserManaged, child, FOAF.primaryTopic, iri);
+        assertDoesNotThrow(() -> allOf(
+                    svc.create(builder(container).interactionModel(LDP.BasicContainer).container(root).build(), dataset)
+                        .toCompletableFuture(),
+                    svc.create(builder(child).interactionModel(LDP.RDFSource).container(container).build(),
+                        childDataset).toCompletableFuture()).join());
+
+        svc.get(container).thenAccept(res -> {
+            assertEquals(1L, res.stream(LDP.PreferContainment).count());
+            assertEquals(of(rdf.createQuad(LDP.PreferContainment, rdf.createIRI(container.getIRIString() + "/"),
+                            LDP.contains, child)), res.stream(LDP.PreferContainment).findFirst());
+        }).toCompletableFuture().join();
+        assertThrows(CompletionException.class, svc.delete(builder(container).interactionModel(LDP.Resource)
+                .build()).toCompletableFuture()::join, "No exception with a non-empty container!");
+        assertDoesNotThrow(svc.delete(builder(child).interactionModel(LDP.Resource)
+                .build()).toCompletableFuture()::join, "Error deleting child resource");
+        assertDoesNotThrow(svc.delete(builder(container).interactionModel(LDP.Resource)
+                .build()).toCompletableFuture()::join, "Error deleting child resource");
     }
 
     @Test

@@ -70,6 +70,7 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.api.StorageConflictException;
 import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.vocabulary.LDP;
@@ -112,6 +113,7 @@ public class DBResourceService implements ResourceService {
     private static final Logger LOGGER = getLogger(DBResourceService.class);
     private static final RDF rdf = RDFFactory.getInstance();
     private static final String ACL_EXT = "acl";
+    private static final Set<IRI> CONTAINER_TYPES = unmodifiableSet(getContainerTypes());
 
     private final Supplier<String> supplier;
     private final Jdbi jdbi;
@@ -212,6 +214,8 @@ public class DBResourceService implements ResourceService {
                 final Instant time = now();
                 final Metadata md = Metadata.builder(metadata.getIdentifier()).interactionModel(LDP.Resource).build();
                 storeResource(md, dataset, time, OperationType.DELETE);
+            } catch (final TrellisRuntimeException ex) {
+                throw ex;
             } catch (final Exception ex) {
                 throw new TrellisRuntimeException("Error deleting resoruce: " + metadata.getIdentifier(), ex);
             }
@@ -402,7 +406,17 @@ public class DBResourceService implements ResourceService {
                 extensions.forEach((ext, graph) ->
                         dataset.getGraph(graph).filter(g -> !"acl".equals(ext)).ifPresent(g ->
                             updateExtension(handle, resourceId, ext, g)));
+                if (opType == OperationType.DELETE) {
+                    // Verify that the container really is empty
+                    final String query = "SELECT EXISTS(SELECT 1 FROM resource WHERE is_part_of = ?)";
+                    if (handle.select(query, metadata.getIdentifier().getIRIString())
+                            .map((rs, ctx) -> rs.getBoolean(1)).one()) {
+                        throw new StorageConflictException("Cannot delete non-empty containers");
+                    }
+                }
             });
+        } catch (final TrellisRuntimeException ex) {
+            throw ex;
         } catch (final Exception ex) {
             throw new TrellisRuntimeException("Could not update data for " + metadata.getIdentifier(), ex);
         }
@@ -445,5 +459,14 @@ public class DBResourceService implements ResourceService {
         } catch (final IOException ex) {
             throw new UncheckedIOException("Error writing extension data", ex);
         }
+    }
+
+    static Set<IRI> getContainerTypes() {
+        final Set<IRI> types = new HashSet<>();
+        types.add(LDP.Container);
+        types.add(LDP.BasicContainer);
+        types.add(LDP.DirectContainer);
+        types.add(LDP.IndirectContainer);
+        return types;
     }
 }
