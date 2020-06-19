@@ -67,6 +67,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
+import org.trellisldp.api.StorageConflictException;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisExtensions;
 import org.trellisldp.http.core.TrellisRequest;
@@ -443,7 +444,11 @@ public class TrellisHttpResource {
 
     private Response handleException(final Throwable err) {
         final Throwable cause = err.getCause();
-        if (cause instanceof ClientErrorException) {
+        if (cause instanceof StorageConflictException) {
+            LOGGER.debug("Storage conflict error: {}", err.getMessage());
+            LOGGER.trace("Storage conflict error: ", err);
+            return Response.status(Response.Status.CONFLICT).build();
+        } else if (cause instanceof ClientErrorException) {
             LOGGER.debug("Client error: {}", err.getMessage());
             LOGGER.trace("Client error: ", err);
         } else if (cause instanceof RedirectionException) {
