@@ -95,6 +95,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.Resource;
+import org.trellisldp.api.StorageConflictException;
 import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
@@ -2345,6 +2346,18 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
             assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), ERR_RESPONSE_CODE);
         }
     }
+
+    @Test
+    void testPatchConflict() {
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+            throw new StorageConflictException(EXPECTED_EXCEPTION);
+        }));
+        try (final Response res = target(RESOURCE_PATH).request()
+                .method(PATCH, entity("", APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(SC_CONFLICT, res.getStatus(), ERR_RESPONSE_CODE);
+        }
+    }
+
 
     /**
      * Some other method
