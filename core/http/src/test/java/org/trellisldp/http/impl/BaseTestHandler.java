@@ -92,7 +92,7 @@ import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.http.core.DefaultTimemapGenerator;
 import org.trellisldp.http.core.ServiceBundler;
@@ -218,7 +218,7 @@ class BaseTestHandler {
 
     static CompletionStage<Void> asyncException() {
         return runAsync(() -> {
-            throw new RuntimeTrellisException("Expected exception");
+            throw new TrellisRuntimeException("Expected exception");
         });
     }
 

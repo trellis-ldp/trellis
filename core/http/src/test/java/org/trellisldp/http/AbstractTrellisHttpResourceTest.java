@@ -95,7 +95,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -857,7 +857,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testGetException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException(EXPECTED_EXCEPTION);
+            throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().get()) {
             assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), ERR_RESPONSE_CODE);
@@ -1517,7 +1517,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testPostException() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException(EXPECTED_EXCEPTION);
+            throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().post(entity("", TEXT_TURTLE_TYPE))) {
             assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), ERR_RESPONSE_CODE);
@@ -1996,7 +1996,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPutException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException(EXPECTED_EXCEPTION);
+            throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().put(entity("", TEXT_TURTLE_TYPE))) {
             assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), ERR_RESPONSE_CODE);
@@ -2104,7 +2104,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testDeleteException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException(EXPECTED_EXCEPTION);
+            throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().delete()) {
             assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), ERR_RESPONSE_CODE);
@@ -2338,7 +2338,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPatchException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException(EXPECTED_EXCEPTION);
+            throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request()
                 .method(PATCH, entity("", APPLICATION_SPARQL_UPDATE))) {

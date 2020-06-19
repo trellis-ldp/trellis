@@ -61,7 +61,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.LDP;
@@ -385,7 +385,7 @@ public final class HttpUtils {
         try {
             dataset.close();
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error closing dataset", ex);
+            throw new TrellisRuntimeException("Error closing dataset", ex);
         }
     }
 

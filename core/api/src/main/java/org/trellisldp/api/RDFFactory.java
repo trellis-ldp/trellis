@@ -28,7 +28,7 @@ import org.apache.commons.rdf.api.RDF;
 public final class RDFFactory {
 
     private static final RDF rdf = findFirst(RDF.class)
-                    .orElseThrow(() -> new RuntimeTrellisException("No RDF Commons implementation available!"));
+                    .orElseThrow(() -> new TrellisRuntimeException("No RDF Commons implementation available!"));
 
     /**
      * Get the Commons RDF instance in use.

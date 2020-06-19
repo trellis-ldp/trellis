@@ -46,7 +46,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.http.core.TrellisRequest;
 
 /**
@@ -116,7 +116,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> runAsync(() -> {
-            throw new RuntimeTrellisException("Expected exception");
+            throw new TrellisRuntimeException("Expected exception");
         }));
 
         final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);

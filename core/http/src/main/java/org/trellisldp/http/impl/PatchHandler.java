@@ -66,7 +66,7 @@ import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisRequest;
@@ -207,7 +207,7 @@ public class PatchHandler extends MutatingLdpHandler {
             triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
                 || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error closing graph", ex);
+            throw new TrellisRuntimeException("Error closing graph", ex);
         }
 
         return triples;
@@ -227,7 +227,7 @@ public class PatchHandler extends MutatingLdpHandler {
         final List<Triple> triples;
         try {
             triples = updateGraph(syntax, graphName);
-        } catch (final RuntimeTrellisException ex) {
+        } catch (final TrellisRuntimeException ex) {
             throw new BadRequestException("Invalid RDF: " + ex.getMessage(), ex);
         }
 

@@ -27,7 +27,7 @@ import java.util.concurrent.ExecutionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 
 /**
  * @author acoburn
@@ -52,6 +52,6 @@ class TrellisCacheTest {
     @Test
     void testCacheException() {
         final TrellisCache<String, String> cache = new TrellisCache<>(mockCache);
-        assertThrows(RuntimeTrellisException.class, () -> cache.get("long", x -> x + "er"));
+        assertThrows(TrellisRuntimeException.class, () -> cache.get("long", x -> x + "er"));
     }
 }

@@ -76,7 +76,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.RDFaWriterService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
@@ -312,7 +312,7 @@ class JenaIOServiceTest {
     @Test
     void testMalformedInput() {
         final ByteArrayInputStream in = new ByteArrayInputStream("<> <ex:test> a Literal\" . ".getBytes(UTF_8));
-        assertThrows(RuntimeTrellisException.class, () ->
+        assertThrows(TrellisRuntimeException.class, () ->
                 service.read(in, TURTLE, null), "No exception on malformed input!");
     }
 
@@ -387,14 +387,14 @@ class JenaIOServiceTest {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
         assertEquals(3L, graph.size(), "Incorrect graph size!");
-        assertThrows(RuntimeTrellisException.class, () ->
+        assertThrows(TrellisRuntimeException.class, () ->
                 service.update(graph, "blah blah blah blah blah", SPARQL_UPDATE, null), "no exception on bad update!");
     }
 
     @Test
     void testReadError() throws IOException {
         doThrow(new IOException()).when(mockInputStream).read(any(byte[].class), anyInt(), anyInt());
-        assertThrows(RuntimeTrellisException.class, () -> service.read(mockInputStream, TURTLE, "context"),
+        assertThrows(TrellisRuntimeException.class, () -> service.read(mockInputStream, TURTLE, "context"),
                 "No read exception on bad input stream!");
     }
 
@@ -402,7 +402,7 @@ class JenaIOServiceTest {
     void testWriteError() throws IOException {
         doThrow(new IOException()).when(mockOutputStream).write(any(byte[].class), anyInt(), anyInt());
         final Stream<Triple> triples = getTriples();
-        assertThrows(RuntimeTrellisException.class, () -> service.write(triples, mockOutputStream, TURTLE,
+        assertThrows(TrellisRuntimeException.class, () -> service.write(triples, mockOutputStream, TURTLE,
                     identifier), "No write exception on bad input stream!");
     }
 
@@ -430,7 +430,7 @@ class JenaIOServiceTest {
         final Graph graph = rdf.createGraph();
         getTriples().forEach(graph::add);
         final String patch = "UpdateList <#> <http://example.org/vocab#preferredLanguages> 1..2 ( \"fr\" ) .";
-        assertThrows(RuntimeTrellisException.class, () -> service.update(graph, patch, LD_PATCH, null),
+        assertThrows(TrellisRuntimeException.class, () -> service.update(graph, patch, LD_PATCH, null),
                 "No exception thrown with invalid update syntax!");
     }
 
@@ -440,7 +440,7 @@ class JenaIOServiceTest {
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final Stream<Triple> triples = getTriples();
-        assertThrows(RuntimeTrellisException.class, () -> service.write(triples, out, mockSyntax,
+        assertThrows(TrellisRuntimeException.class, () -> service.write(triples, out, mockSyntax,
                     identifier), "No exception thrown with invalid write syntax!");
     }
 
@@ -450,7 +450,7 @@ class JenaIOServiceTest {
         final String output = "blah blah blah";
 
         final InputStream input = new ByteArrayInputStream(output.getBytes(UTF_8));
-        assertThrows(RuntimeTrellisException.class, () -> service.read(input, mockSyntax, null),
+        assertThrows(TrellisRuntimeException.class, () -> service.read(input, mockSyntax, null),
                 "No exception thrown with invalid read syntax!");
     }
 

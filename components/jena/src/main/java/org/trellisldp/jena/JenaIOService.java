@@ -86,7 +86,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.RDFaWriterService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
@@ -242,7 +242,7 @@ public class JenaIOService implements IOService {
                 writeHTML(triples, output, baseUrl);
             } else {
                 final Lang lang = JenaCommonsRDF.toJena(syntax).orElseThrow(() ->
-                        new RuntimeTrellisException("Invalid content type: " + syntax.mediaType()));
+                        new TrellisRuntimeException("Invalid content type: " + syntax.mediaType()));
 
                 final RDFFormat format = defaultSerialization(lang);
 
@@ -269,7 +269,7 @@ public class JenaIOService implements IOService {
                 }
             }
         } catch (final AtlasException ex) {
-            throw new RuntimeTrellisException(ex);
+            throw new TrellisRuntimeException(ex);
         }
     }
 
@@ -332,7 +332,7 @@ public class JenaIOService implements IOService {
         try {
             final org.apache.jena.graph.Graph graph = createDefaultGraph();
             final Lang lang = JenaCommonsRDF.toJena(syntax).orElseThrow(() ->
-                    new RuntimeTrellisException("Unsupported RDF Syntax: " + syntax.mediaType()));
+                    new TrellisRuntimeException("Unsupported RDF Syntax: " + syntax.mediaType()));
 
             RDFParser.source(input).lang(lang).base(base).parse(graph);
 
@@ -346,7 +346,7 @@ public class JenaIOService implements IOService {
             });
             return JenaCommonsRDF.fromJena(graph).stream().map(Triple.class::cast);
         } catch (final RiotException | AtlasException | IllegalArgumentException ex) {
-            throw new RuntimeTrellisException(ex);
+            throw new TrellisRuntimeException(ex);
         }
     }
 
@@ -356,14 +356,14 @@ public class JenaIOService implements IOService {
         requireNonNull(update, "The update command may not be null");
         requireNonNull(syntax, "The RDF syntax may not be null");
         if (!SPARQL_UPDATE.equals(syntax)) {
-            throw new RuntimeTrellisException("The syntax " + syntax + " is not supported for updates.");
+            throw new TrellisRuntimeException("The syntax " + syntax + " is not supported for updates.");
         }
 
         try {
             final org.apache.jena.graph.Graph g = JenaCommonsRDF.toJena(graph);
             execute(create(update, base), g);
         } catch (final UpdateException | QueryParseException ex) {
-            throw new RuntimeTrellisException(ex);
+            throw new TrellisRuntimeException(ex);
         }
     }
 

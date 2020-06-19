@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 import org.trellisldp.api.CacheService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 
 /**
  * A simple Guava-based cache service.
@@ -46,7 +46,7 @@ public class TrellisCache<K, V> implements CacheService<K, V> {
         try {
             return cache.get(key, () -> mapper.apply(key));
         } catch (final ExecutionException ex) {
-            throw new RuntimeTrellisException("Error fetching " + key + " from cache", ex);
+            throw new TrellisRuntimeException("Error fetching " + key + " from cache", ex);
         }
     }
 }

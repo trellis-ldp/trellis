@@ -19,45 +19,43 @@ package org.trellisldp.api;
  * Exception marker for all Trellis unchecked exceptions.
  *
  * @author acoburn
- * @deprecated Please use {@link TrellisRuntimeException}
  */
-@Deprecated
-public class RuntimeTrellisException extends RuntimeException {
+public class TrellisRuntimeException extends RuntimeException {
 
     private static final long serialVersionUID = 8046489554418284257L;
 
     /**
-     * Create a new RuntimeTrellisException.
+     * Create a new TrellisRuntimeException.
      */
-    public RuntimeTrellisException() {
+    public TrellisRuntimeException() {
         super();
     }
 
     /**
-     * Create a new RuntimeTrellisException with a custom message.
+     * Create a new TrellisRuntimeException with a custom message.
      *
      * @param message the message
      */
-    public RuntimeTrellisException(final String message) {
+    public TrellisRuntimeException(final String message) {
         super(message);
     }
 
     /**
-     * Create a new RuntimeTrellisException with a custom message and known cause.
+     * Create a new TrellisRuntimeException with a custom message and known cause.
      *
      * @param message the message
      * @param cause the cause
      */
-    public RuntimeTrellisException(final String message, final Throwable cause) {
+    public TrellisRuntimeException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
     /**
-     * Create a new RuntimeTrellisException with a known cause.
+     * Create a new TrellisRuntimeException with a known cause.
      *
      * @param cause the cause
      */
-    public RuntimeTrellisException(final Throwable cause) {
+    public TrellisRuntimeException(final Throwable cause) {
         super(cause);
     }
 }

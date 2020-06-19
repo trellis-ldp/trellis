@@ -35,7 +35,7 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.Test;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
 import org.trellisldp.vocabulary.LDP;
 
@@ -52,7 +52,7 @@ class TrellisApplicationTest {
         try {
             APP.before();
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error starting application", ex);
+            throw new TrellisRuntimeException("Error starting application", ex);
         }
         CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
         CLIENT.property(CONNECT_TIMEOUT, 10000);
