@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
 import org.trellisldp.oauth.FederatedJwtAuthenticator;
 import org.trellisldp.oauth.JwksAuthenticator;
@@ -105,9 +105,9 @@ class TrellisUtilsTest {
         config.getAuth().getWebac().setEnabled(true);
 
         final ResourceService mockRS = mock(ResourceService.class, inv -> {
-            throw new RuntimeTrellisException("expected");
+            throw new TrellisRuntimeException("expected");
         });
-        assertThrows(RuntimeTrellisException.class, () -> TrellisUtils.getWebacService(config, mockRS));
+        assertThrows(TrellisRuntimeException.class, () -> TrellisUtils.getWebacService(config, mockRS));
         config.getAuth().getWebac().setEnabled(false);
         assertNull(TrellisUtils.getWebacService(config, mockRS),
                 "WebAC config persists after disabling it!");

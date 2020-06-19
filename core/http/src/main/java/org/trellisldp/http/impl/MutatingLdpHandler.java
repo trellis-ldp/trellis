@@ -55,8 +55,8 @@ import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.http.core.HttpSession;
 import org.trellisldp.http.core.ServiceBundler;
@@ -184,7 +184,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 .forEachOrdered(dataset::add);
         } catch (final IOException ex) {
             throw new BadRequestException("Error handling input stream: " + ex.getMessage(), ex);
-        } catch (final RuntimeTrellisException ex) {
+        } catch (final TrellisRuntimeException ex) {
             throw new BadRequestException("Invalid RDF content: " + ex.getMessage(), ex);
         }
     }

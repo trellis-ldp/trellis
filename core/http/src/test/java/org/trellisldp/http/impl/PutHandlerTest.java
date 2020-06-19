@@ -53,7 +53,7 @@ import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.core.HttpConstants;
 import org.trellisldp.vocabulary.LDP;
@@ -348,7 +348,7 @@ class PutHandlerTest extends BaseTestHandler {
         when(mockBundler.getMementoService()).thenReturn(mockMementoService);
         doCallRealMethod().when(mockMementoService).put(any(ResourceService.class), any(IRI.class));
         when(mockMementoService.put(any())).thenAnswer(inv -> runAsync(() -> {
-            throw new RuntimeTrellisException("Expected error");
+            throw new TrellisRuntimeException("Expected error");
         }));
 
         final PutHandler handler = buildPutHandler(RESOURCE_SIMPLE, null);

@@ -22,26 +22,25 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
-@SuppressWarnings("deprecation")
-class RuntimeTrellisExceptionTest {
+class TrellisRuntimeExceptionTest {
 
     @Test
     void testException1() {
-        final RuntimeException ex = new RuntimeTrellisException();
+        final RuntimeException ex = new TrellisRuntimeException();
         assertNull(ex.getMessage(), "Message was not null");
     }
 
     @Test
     void testException2() {
         final String msg = "the cause";
-        final RuntimeException ex = new RuntimeTrellisException(msg);
+        final RuntimeException ex = new TrellisRuntimeException(msg);
         assertEquals(msg, ex.getMessage(), "Unexpected message");
     }
 
     @Test
     void testException3() {
         final Throwable cause = new Throwable("an error");
-        final RuntimeException ex = new RuntimeTrellisException(cause);
+        final RuntimeException ex = new TrellisRuntimeException(cause);
         assertEquals(cause, ex.getCause(), "Unexpected exception cause");
     }
 
@@ -49,7 +48,7 @@ class RuntimeTrellisExceptionTest {
     void testException4() {
         final Throwable cause = new Throwable("an error");
         final String msg = "The message";
-        final RuntimeException ex = new RuntimeTrellisException(msg, cause);
+        final RuntimeException ex = new TrellisRuntimeException(msg, cause);
         assertEquals(cause, ex.getCause(), "Unexpected exception cause");
         assertEquals(msg, ex.getMessage(), "Unexpected exception message");
     }

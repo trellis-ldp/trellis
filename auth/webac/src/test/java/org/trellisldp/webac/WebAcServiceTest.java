@@ -47,8 +47,8 @@ import org.trellisldp.api.CacheService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
@@ -163,7 +163,7 @@ class WebAcServiceTest {
     @Test
     void testInitializeError() {
         when(mockResourceService.get(any(IRI.class))).thenThrow(new RuntimeException("Expected"));
-        assertThrows(RuntimeTrellisException.class, testService::initialize);
+        assertThrows(TrellisRuntimeException.class, testService::initialize);
     }
 
     @Test
@@ -181,7 +181,7 @@ class WebAcServiceTest {
         when(mockGraph.stream()).thenAnswer(inv ->
                 Stream.of(rdf.createTriple(subject, RDFS.label, rdf.createLiteral("literal"))));
         when(mockGraph.stream(eq(subject), any(), any())).thenThrow(new RuntimeException("Expected"));
-        assertThrows(RuntimeTrellisException.class, () ->
+        assertThrows(TrellisRuntimeException.class, () ->
                 WebAcService.getAuthorizationFromGraph(resourceIRI, mockGraph));
     }
 
@@ -191,7 +191,7 @@ class WebAcServiceTest {
         when(mockResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
         when(mockResource.stream(eq(PreferAccessControl))).thenThrow(new RuntimeException("Expected"));
 
-        assertThrows(RuntimeTrellisException.class, () ->
+        assertThrows(TrellisRuntimeException.class, () ->
                 testService.getAuthorizedModes(resourceIRI, mockSession));
     }
 

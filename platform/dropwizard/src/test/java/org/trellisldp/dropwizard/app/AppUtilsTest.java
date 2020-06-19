@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.dropwizard.config.NotificationsConfiguration;
 import org.trellisldp.kafka.KafkaEventService;
 
@@ -114,7 +114,7 @@ class AppUtilsTest {
         c.setConnectionString("tcp://localhost:" + port);
         c.setEnabled(true);
         c.setType(NotificationsConfiguration.Type.JMS);
-        assertThrows(RuntimeTrellisException.class, () ->
+        assertThrows(TrellisRuntimeException.class, () ->
                 AppUtils.getNotificationService(c, mockEnv), "No exception when JMS client doesn't connect!");
     }
 

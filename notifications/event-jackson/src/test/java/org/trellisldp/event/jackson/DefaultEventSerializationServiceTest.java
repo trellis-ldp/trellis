@@ -42,7 +42,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.AS;
 
 /**
@@ -84,7 +84,7 @@ class DefaultEventSerializationServiceTest {
             return rdf.createIRI("info:event/12456");
         });
 
-        assertThrows(RuntimeTrellisException.class, () -> svc.serialize(mockEvent));
+        assertThrows(TrellisRuntimeException.class, () -> svc.serialize(mockEvent));
     }
 
     @Test

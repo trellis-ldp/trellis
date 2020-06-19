@@ -92,7 +92,7 @@ import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.jena.JenaIOService;
@@ -586,7 +586,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testMoveError() {
         when(mockResourceService.get(root)).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException("Expected");
+            throw new TrellisRuntimeException("Expected");
         }));
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
             .method("MOVE");

@@ -73,8 +73,8 @@ import org.trellisldp.api.NoopResourceService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
@@ -176,7 +176,7 @@ public class WebAcService {
                     return null;
                 }).toCompletableFuture().join();
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error initializing Trellis ACL", ex);
+            throw new TrellisRuntimeException("Error initializing Trellis ACL", ex);
         }
     }
 
@@ -307,7 +307,7 @@ public class WebAcService {
                 // If not inheriting, just return the relevant Authorizations
                 return new Authorizations(resource.getIdentifier(), authorizations.stream());
             } catch (final Exception ex) {
-                throw new RuntimeTrellisException("Error closing graph", ex);
+                throw new TrellisRuntimeException("Error closing graph", ex);
             }
         } else if (root.equals(resource.getIdentifier())) {
             return new Authorizations(root, defaultRootAuthorizations.stream());
@@ -323,7 +323,7 @@ public class WebAcService {
                 try (final Graph subGraph = graph.stream(subject, null, null).collect(toGraph())) {
                     return Authorization.from(subject, subGraph);
                 } catch (final Exception ex) {
-                    throw new RuntimeTrellisException("Error closing graph", ex);
+                    throw new TrellisRuntimeException("Error closing graph", ex);
                 }
             }).filter(auth -> auth.getAccessTo().contains(identifier)).collect(toList());
     }

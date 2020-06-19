@@ -70,7 +70,7 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.OA;
@@ -213,7 +213,7 @@ public class DBResourceService implements ResourceService {
                 final Metadata md = Metadata.builder(metadata.getIdentifier()).interactionModel(LDP.Resource).build();
                 storeResource(md, dataset, time, OperationType.DELETE);
             } catch (final Exception ex) {
-                throw new RuntimeTrellisException("Error deleting resoruce: " + metadata.getIdentifier(), ex);
+                throw new TrellisRuntimeException("Error deleting resoruce: " + metadata.getIdentifier(), ex);
             }
         });
     }
@@ -264,7 +264,7 @@ public class DBResourceService implements ResourceService {
                         }
                     }));
             } catch (final Exception ex) {
-                throw new RuntimeTrellisException("Error storing audit dataset for " + id, ex);
+                throw new TrellisRuntimeException("Error storing audit dataset for " + id, ex);
             }
         });
     }
@@ -285,7 +285,7 @@ public class DBResourceService implements ResourceService {
                 }
             });
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error updating modification date for " + identifier, ex);
+            throw new TrellisRuntimeException("Error updating modification date for " + identifier, ex);
         }
     }
 
@@ -404,7 +404,7 @@ public class DBResourceService implements ResourceService {
                             updateExtension(handle, resourceId, ext, g)));
             });
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Could not update data for " + metadata.getIdentifier(), ex);
+            throw new TrellisRuntimeException("Could not update data for " + metadata.getIdentifier(), ex);
         }
     }
 

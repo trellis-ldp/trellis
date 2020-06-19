@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.dropwizard.config.NotificationsConfiguration;
 import org.trellisldp.event.jackson.DefaultEventSerializationService;
 import org.trellisldp.jms.JmsEventService;
@@ -103,7 +103,7 @@ final class AppUtils {
                 try {
                     return buildJmsEventService(config, environment);
                 } catch (final JMSException ex) {
-                    throw new RuntimeTrellisException(ex);
+                    throw new TrellisRuntimeException(ex);
                 }
             }
         }

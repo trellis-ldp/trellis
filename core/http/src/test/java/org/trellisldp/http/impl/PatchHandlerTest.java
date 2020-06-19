@@ -60,7 +60,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.Metadata;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.LDP;
@@ -309,7 +309,7 @@ class PatchHandlerTest extends BaseTestHandler {
     void testError2() {
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
         when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
-        doThrow(RuntimeTrellisException.class).when(mockIoService)
+        doThrow(TrellisRuntimeException.class).when(mockIoService)
             .update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE), eq(baseUrl + RESOURCE_NAME));
 
         final PatchHandler patchHandler = new PatchHandler(mockTrellisRequest, insert, mockBundler, extensions,

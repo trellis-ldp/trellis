@@ -88,7 +88,7 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.FOAF;
@@ -162,7 +162,7 @@ public class TriplestoreResourceService implements ResourceService {
                 dataset.add(PreferServerManaged, metadata.getIdentifier(), type, LDP.Resource);
                 storeResource(metadata.getIdentifier(), dataset, eventTime, OperationType.DELETE);
             } catch (final Exception ex) {
-                throw new RuntimeTrellisException("Error deleting resource: " + metadata.getIdentifier(), ex);
+                throw new TrellisRuntimeException("Error deleting resource: " + metadata.getIdentifier(), ex);
             }
         });
     }
@@ -221,7 +221,7 @@ public class TriplestoreResourceService implements ResourceService {
         try {
             rdfConnection.update(buildUpdateRequest(identifier, time, dataset, type));
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Could not update data for " + identifier, ex);
+            throw new TrellisRuntimeException("Could not update data for " + identifier, ex);
         }
     }
 
@@ -410,7 +410,7 @@ public class TriplestoreResourceService implements ResourceService {
                         g.stream().forEach(t -> data.add(graphName, t.getSubject(), t.getPredicate(), t.getObject())));
                 executeWrite(rdfConnection, () -> rdfConnection.loadDataset(wrap(toJena(data))));
             } catch (final Exception ex) {
-                throw new RuntimeTrellisException("Error storing audit dataset for " + id, ex);
+                throw new TrellisRuntimeException("Error storing audit dataset for " + id, ex);
             }
         });
     }
@@ -422,7 +422,7 @@ public class TriplestoreResourceService implements ResourceService {
             try {
                 rdfConnection.update(buildUpdateModificationRequest(identifier, time));
             } catch (final Exception ex) {
-                throw new RuntimeTrellisException("Could not update data for " + identifier, ex);
+                throw new TrellisRuntimeException("Could not update data for " + identifier, ex);
             }
         });
     }

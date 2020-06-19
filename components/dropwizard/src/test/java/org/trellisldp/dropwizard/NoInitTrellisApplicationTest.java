@@ -24,7 +24,7 @@ import io.dropwizard.testing.DropwizardTestSupport;
 
 import javax.ws.rs.client.Client;
 
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
 
 /**
@@ -40,7 +40,7 @@ class NoInitTrellisApplicationTest extends TrellisApplicationTest {
         try {
             APP.before();
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error starting application", ex);
+            throw new TrellisRuntimeException("Error starting application", ex);
         }
         CLIENT = new JerseyClientBuilder(APP.getEnvironment()).build("test client 2");
         CLIENT.property(CONNECT_TIMEOUT, 10000);

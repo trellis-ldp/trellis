@@ -58,7 +58,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.jena.JenaIOService;
 import org.trellisldp.vocabulary.DC;
@@ -282,7 +282,7 @@ class HttpUtilsTest {
     @Test
     void testCloseDataset() throws Exception {
         doThrow(new IOException()).when(mockDataset).close();
-        assertThrows(RuntimeTrellisException.class, () -> HttpUtils.closeDataset(mockDataset));
+        assertThrows(TrellisRuntimeException.class, () -> HttpUtils.closeDataset(mockDataset));
     }
 
 }
