@@ -68,6 +68,7 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.StorageConflictException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisExtensions;
 import org.trellisldp.http.core.TrellisRequest;
@@ -166,10 +167,9 @@ public class TrellisHttpResource {
      *          initialize itself independently of this method. In either case, if the
      *          persistence backend has already been initialized with a root resource,
      *          this method will make no changes to the storage layer.
-     * @throws Exception if there was an error initializing the root resource
      */
     @PostConstruct
-    public void initialize() throws Exception {
+    public void initialize() {
         final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
         try (final Dataset dataset = rdf.createDataset()) {
             LOGGER.debug("Preparing to initialize Trellis at {}", root);
@@ -179,6 +179,8 @@ public class TrellisHttpResource {
                     LOGGER.debug("Error auto-initializing Trellis", err);
                     return null;
                 }).toCompletableFuture().join();
+        } catch (final Exception ex) {
+            throw new TrellisRuntimeException("Error initializing Trellis HTTP layer", ex);
         }
     }
 
