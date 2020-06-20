@@ -81,10 +81,9 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
      *
      * @param config the configuration
      * @param initialize true if the TrellisHttpResource object should be initialized; false otherwise
-     * @throws Exception if there was an error initializing the LDP component
      * @return the LDP resource matcher
      */
-    protected Object getLdpComponent(final T config, final boolean initialize) throws Exception {
+    protected Object getLdpComponent(final T config, final boolean initialize) {
         final TrellisHttpResource ldpResource = new TrellisHttpResource(getServiceBundler(),
                 singletonMap("acl", Trellis.PreferAccessControl), config.getBaseUrl());
         if (initialize) {

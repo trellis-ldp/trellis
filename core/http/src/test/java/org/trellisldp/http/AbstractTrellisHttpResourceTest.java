@@ -2390,6 +2390,13 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         }
     }
 
+    @Test
+    void testInitializeError() {
+        when(mockResourceService.get(any(IRI.class))).thenThrow(new RuntimeException("Expected"));
+        final TrellisHttpResource testService = new TrellisHttpResource(mockBundler);
+        assertThrows(TrellisRuntimeException.class, testService::initialize);
+    }
+
     static List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
         final List<String> links = res.getStringHeaders().get(LINK);
