@@ -92,8 +92,10 @@ class ResourceTest {
 
     @Test
     void testSingletons() {
-        assertEquals(MISSING_RESOURCE, MISSING_RESOURCE, "Missing resource singleton doesn't act like a singleton!");
-        assertEquals(DELETED_RESOURCE, DELETED_RESOURCE, "Deleted resource singleton doesn't act like a singleton!");
+        final Resource missing = MISSING_RESOURCE;
+        final Resource deleted = DELETED_RESOURCE;
+        assertEquals(MISSING_RESOURCE, missing, "Missing resource singleton doesn't act like a singleton!");
+        assertEquals(DELETED_RESOURCE, deleted, "Deleted resource singleton doesn't act like a singleton!");
         assertNotEquals(MISSING_RESOURCE, DELETED_RESOURCE, "Deleted and missing resources match each other!");
     }
 
