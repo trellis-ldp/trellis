@@ -77,7 +77,7 @@ ext {
     awaitilityVersion = "4.0.3"
     bouncycastleVersion = "1.65.01"
     commonsTextVersion = "1.8"
-    cxfVersion = "3.3.6"
+    cxfVersion = "3.3.7"
     glassfishJaxbVersion = "2.3.3"
     jerseyVersion = "2.31"
     junitVersion = "5.6.2"
