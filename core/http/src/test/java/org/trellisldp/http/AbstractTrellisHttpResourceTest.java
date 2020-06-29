@@ -2215,6 +2215,31 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
+    void testPatchContentTypeWithCharset() throws IOException {
+        try (final Response res = target(RESOURCE_PATH).request()
+                .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE + ";charset=utf-8"))) {
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
+        }
+    }
+
+    @Test
+    void testPatchUnsupportedWildcardContentType() throws IOException {
+        try (final Response res = target(RESOURCE_PATH).request()
+                .method(PATCH, entity(INSERT_TITLE, "*/sparql-update"))) {
+            assertEquals(SC_UNSUPPORTED_MEDIA_TYPE, res.getStatus(), ERR_RESPONSE_CODE);
+        }
+    }
+
+    @Test
+    void testPatchUnsupportedWildcardContentSubtype() throws IOException {
+        try (final Response res = target(RESOURCE_PATH).request()
+                .method(PATCH, entity(INSERT_TITLE, "application/*"))) {
+            assertEquals(SC_UNSUPPORTED_MEDIA_TYPE, res.getStatus(), ERR_RESPONSE_CODE);
+        }
+    }
+
+    @Test
     void testPatchExistingResponse() throws IOException {
         try (final Response res = target(RESOURCE_PATH).request().header(PREFER,
                     PREFER_PREFIX + LDP.PreferMinimalContainer.getIRIString() + "\"")

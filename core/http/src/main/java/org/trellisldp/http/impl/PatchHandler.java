@@ -52,6 +52,7 @@ import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.core.Link;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -108,7 +109,7 @@ public class PatchHandler extends MutatingLdpHandler {
 
         this.updateBody = updateBody;
         this.syntax = getServices().getIOService().supportedUpdateSyntaxes().stream()
-            .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst().orElse(null);
+            .filter(s -> supportsContentType(s, req.getContentType())).findFirst().orElse(null);
         this.defaultJsonLdProfile = defaultJsonLdProfile;
         this.preference = getPreference(req.getPrefer());
         this.supportsCreate = supportsCreate;
@@ -299,24 +300,33 @@ public class PatchHandler extends MutatingLdpHandler {
         return getDefaultProfile(outputSyntax, getIdentifier(), defaultJsonLdProfile);
     }
 
-    private static Stream<ConstraintViolation> handleConstraintViolation(final ConstraintService service,
+    static Stream<ConstraintViolation> handleConstraintViolation(final ConstraintService service,
             final IRI identifier, final Dataset dataset, final IRI graphName, final IRI interactionModel) {
         final IRI model = PreferUserManaged.equals(graphName) ? interactionModel : LDP.RDFSource;
         return dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
                 .flatMap(g -> service.constrainedBy(identifier, model, g));
     }
 
-    private static Stream<String> getLinkTypes(final IRI ldpType) {
+    static Stream<String> getLinkTypes(final IRI ldpType) {
         if (LDP.NonRDFSource.equals(ldpType)) {
             return ldpResourceTypes(LDP.RDFSource).map(IRI::getIRIString);
         }
         return ldpResourceTypes(ldpType).map(IRI::getIRIString);
     }
 
-    private static String getPreference(final Prefer prefer) {
+    static String getPreference(final Prefer prefer) {
         if (prefer != null) {
             return prefer.getPreference().filter(PREFER_REPRESENTATION::equals).orElse(null);
         }
         return null;
+    }
+
+    static boolean supportsContentType(final RDFSyntax syntax, final String contentType) {
+        if (contentType != null) {
+            final MediaType mediaType = MediaType.valueOf(contentType);
+            return mediaType.isCompatible(MediaType.valueOf(syntax.mediaType())) &&
+                !mediaType.isWildcardSubtype() && !mediaType.isWildcardType();
+        }
+        return false;
     }
 }
