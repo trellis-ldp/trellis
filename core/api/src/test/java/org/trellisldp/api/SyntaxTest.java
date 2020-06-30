@@ -36,6 +36,7 @@ class SyntaxTest {
         assertEquals(SPARQL_UPDATE.title(), SPARQL_UPDATE.toString(), "String version isn't the same as the title!");
         assertNotEquals(SPARQL_UPDATE, LD_PATCH, "SPARQL-Update equals LD-PATCH???");
         final RDFSyntax sparqlUpdate = SPARQL_UPDATE;
+        assertFalse(SPARQL_UPDATE.equals("SPARQL Update"), "non-Syntax comparison fails!");
         assertEquals(SPARQL_UPDATE, sparqlUpdate, "SPARQL-Update doesn't act like a singleton!");
         assertEquals(SPARQL_UPDATE.mediaType().hashCode(), SPARQL_UPDATE.hashCode(),
                 "SPARQL-Update has an unexpected hash code!");
