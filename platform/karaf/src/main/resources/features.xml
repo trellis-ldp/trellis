@@ -5,17 +5,14 @@
   <feature name="trellis-api" version="${project.version}">
     <details>Installs the Trellis API bundle</details>
 
+    <feature dependency="true">aries-proxy</feature>
+
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:jakarta.enterprise/jakarta.enterprise.cdi-api/${cdiApiVersion}</bundle>
     <bundle dependency="true">mvn:jakarta.el/jakarta.el-api/${elVersion}</bundle>
     <bundle dependency="true">mvn:jakarta.interceptor/jakarta.interceptor-api/${interceptorVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-analysis/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-util/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-api/${project.version}</bundle>
   </feature>
@@ -42,13 +39,10 @@
   <feature name="trellis-vocabulary" version="${project.version}">
     <details>Installs the Trellis Vocabulary bundle</details>
 
+    <feature dependency="true">aries-proxy</feature>
+
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-analysis/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-commons/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-tree/${asmVersion}</bundle>
-    <bundle dependency="true">mvn:org.ow2.asm/asm-util/${asmVersion}</bundle>
 
     <bundle>mvn:org.trellisldp/trellis-vocabulary/${project.version}</bundle>
   </feature>

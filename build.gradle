@@ -94,7 +94,6 @@ ext {
     pmdToolVersion = "6.24.0"
 
     // OSGi
-    asmVersion = "8.0.1"
     elVersion = "3.0.3"
     failureaccessVersion = "1.0.1"
     interceptorVersion = "1.2.5"
