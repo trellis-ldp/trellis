@@ -41,6 +41,7 @@ import static javax.ws.rs.core.Response.ok;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
+import static org.trellisldp.api.TrellisUtils.normalizePath;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
 import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
@@ -411,10 +412,10 @@ public class GetHandler extends BaseLdpHandler {
 
     private void handleTrailingSlashRedirection(final Resource resource) {
         if (getRequest().hasTrailingSlash() && !isContainer(resource.getInteractionModel())) {
-            throw new RedirectionException(303, create(getBaseUrl() + getRequest().getPath()));
+            throw new RedirectionException(303, create(getBaseUrl() + normalizePath(getRequest().getPath())));
         } else if (!getRequest().hasTrailingSlash() && !getRequest().getPath().isEmpty()
                 && isContainer(resource.getInteractionModel())) {
-            throw new RedirectionException(303, create(getBaseUrl() + getRequest().getPath() + "/"));
+            throw new RedirectionException(303, create(getBaseUrl() + normalizePath(getRequest().getPath()) + "/"));
         }
     }
 }

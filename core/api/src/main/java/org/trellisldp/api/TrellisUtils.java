@@ -115,9 +115,18 @@ public final class TrellisUtils {
     public static IRI buildTrellisIdentifier(final String path) {
         final String normalized = path.endsWith(SLASH) ? path.substring(0, path.length() - 1) : path;
         if (normalized.startsWith(SLASH)) {
-            return rdf.createIRI(TRELLIS_DATA_PREFIX + normalized.substring(1));
+            return rdf.createIRI(TRELLIS_DATA_PREFIX + normalizePath(normalized.substring(1)));
         }
-        return rdf.createIRI(TRELLIS_DATA_PREFIX + normalized);
+        return rdf.createIRI(TRELLIS_DATA_PREFIX + normalizePath(normalized));
+    }
+
+    /**
+     * Normalize a path component for a Trellis identifier.
+     * @param path the path
+     * @return the normalized path
+     */
+    public static String normalizePath(final String path) {
+        return path.replace(" ", "%20");
     }
 
     /**

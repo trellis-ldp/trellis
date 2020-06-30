@@ -28,7 +28,7 @@ import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.TrellisUtils.buildTrellisIdentifier;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_LDP_MODEL_MODIFICATIONS;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
@@ -96,7 +96,7 @@ public class PutHandler extends MutatingLdpHandler {
                     final Map<String, IRI> extensions, final boolean preconditionRequired,
                     final boolean createUncontained, final String baseUrl) {
         super(req, trellis, extensions, baseUrl, entity);
-        this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        this.internalId = buildTrellisIdentifier(req.getPath());
         this.rdfSyntax = getRdfSyntax(req.getContentType(), trellis.getIOService().supportedWriteSyntaxes());
         this.heuristicType = req.getContentType() != null && rdfSyntax == null ? LDP.NonRDFSource : LDP.RDFSource;
         this.preconditionRequired = preconditionRequired;

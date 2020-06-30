@@ -31,6 +31,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.*;
+import static org.trellisldp.api.TrellisUtils.normalizePath;
 import static org.trellisldp.http.core.HttpConstants.*;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
@@ -409,7 +410,8 @@ public final class HttpUtils {
      * @return an absolute URL
      */
     public static String buildResourceUrl(final TrellisRequest req, final String baseUrl) {
-        return fromUri(baseUrl).path(req.getPath() + (req.hasTrailingSlash() ? "/" : "")).build().toString();
+        return fromUri(baseUrl).path(normalizePath(req.getPath()) + (req.hasTrailingSlash() ? "/" : "")).build()
+            .toString();
     }
 
     private HttpUtils() {
