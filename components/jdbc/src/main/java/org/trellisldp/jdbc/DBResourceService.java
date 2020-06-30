@@ -208,17 +208,10 @@ public class DBResourceService implements ResourceService {
     @Override
     public CompletionStage<Void> delete(final Metadata metadata) {
         LOGGER.debug("Deleting: {}", metadata.getIdentifier());
-        return runAsync(() -> {
-            try (final Dataset dataset = rdf.createDataset()) {
-                final Instant time = now();
-                final Metadata md = Metadata.builder(metadata.getIdentifier()).interactionModel(LDP.Resource).build();
-                storeResource(md, dataset, time, OperationType.DELETE);
-            } catch (final TrellisRuntimeException ex) {
-                throw ex;
-            } catch (final Exception ex) {
-                throw new TrellisRuntimeException("Error deleting resoruce: " + metadata.getIdentifier(), ex);
-            }
-        });
+        final Dataset dataset = rdf.createDataset();
+        final Metadata md = Metadata.builder(metadata.getIdentifier()).interactionModel(LDP.Resource).build();
+        return runAsync(() -> storeResource(md, dataset, now(), OperationType.DELETE))
+            .whenComplete((a, b) -> DBUtils.closeDataset(dataset));
     }
 
     @Override
@@ -408,8 +401,8 @@ public class DBResourceService implements ResourceService {
                 if (opType == OperationType.DELETE) {
                     // Verify that the container really is empty
                     final String query = "SELECT EXISTS(SELECT 1 FROM resource WHERE is_part_of = ?)";
-                    if (handle.select(query, metadata.getIdentifier().getIRIString())
-                            .map((rs, ctx) -> rs.getBoolean(1)).one()) {
+                    if (Boolean.TRUE.equals(handle.select(query, metadata.getIdentifier().getIRIString())
+                            .map((rs, ctx) -> rs.getBoolean(1)).one())) {
                         throw new StorageConflictException("Cannot delete non-empty containers");
                     }
                 }

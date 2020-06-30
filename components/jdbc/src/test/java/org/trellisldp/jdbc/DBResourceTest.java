@@ -452,18 +452,6 @@ class DBResourceTest {
     }
 
     @Test
-    void testDeleteErrorCondition() {
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final Jdbi mockJdbi = mock(Jdbi.class);
-        doThrow(RuntimeException.class).when(mockJdbi).useTransaction(any());
-
-        final ResourceService svc2 = new DBResourceService(mockJdbi, 100, false, idService);
-        final CompletableFuture<Void> future = svc2.delete(builder(identifier).interactionModel(LDP.Resource)
-                .build()).toCompletableFuture();
-        assertThrows(CompletionException.class, future::join, "No exception with invalid connection!");
-    }
-
-    @Test
     void testCreateErrorCondition() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final CompletableFuture<Void> future = svc.create(builder(identifier)
