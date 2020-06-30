@@ -72,6 +72,7 @@ import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.OA;
+import org.trellisldp.vocabulary.RDFS;
 import org.trellisldp.vocabulary.Trellis;
 
 import liquibase.Contexts;
@@ -256,6 +257,34 @@ class DBResourceTest {
     }
 
     @Test
+    void testNonEmptyContainer() {
+        final IRI iri = rdf.createIRI("http://example.com/#foo");
+        final IRI container = rdf.createIRI(TRELLIS_DATA_PREFIX + idService.getSupplier().get());
+        final IRI child = rdf.createIRI(container.getIRIString() + "/" + idService.getSupplier().get());
+        final Dataset dataset = rdf.createDataset();
+        dataset.add(Trellis.PreferUserManaged, container, RDFS.label, rdf.createLiteral("A container"));
+        final Dataset childDataset = rdf.createDataset();
+        childDataset.add(Trellis.PreferUserManaged, child, FOAF.primaryTopic, iri);
+        assertDoesNotThrow(() -> allOf(
+                    svc.create(builder(container).interactionModel(LDP.BasicContainer).container(root).build(), dataset)
+                        .toCompletableFuture(),
+                    svc.create(builder(child).interactionModel(LDP.RDFSource).container(container).build(),
+                        childDataset).toCompletableFuture()).join());
+
+        svc.get(container).thenAccept(res -> {
+            assertEquals(1L, res.stream(LDP.PreferContainment).count());
+            assertEquals(of(rdf.createQuad(LDP.PreferContainment, rdf.createIRI(container.getIRIString() + "/"),
+                            LDP.contains, child)), res.stream(LDP.PreferContainment).findFirst());
+        }).toCompletableFuture().join();
+        assertThrows(CompletionException.class, svc.delete(builder(container).interactionModel(LDP.Resource)
+                .build()).toCompletableFuture()::join, "No exception with a non-empty container!");
+        assertDoesNotThrow(svc.delete(builder(child).interactionModel(LDP.Resource)
+                .build()).toCompletableFuture()::join, "Error deleting child resource");
+        assertDoesNotThrow(svc.delete(builder(container).interactionModel(LDP.Resource)
+                .build()).toCompletableFuture()::join, "Error deleting child resource");
+    }
+
+    @Test
     void testExtensionQuads() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "auth#acl");
         final Dataset dataset = rdf.createDataset();
@@ -420,18 +449,6 @@ class DBResourceTest {
         dataset.add(Trellis.PreferAudit, rdf.createBlankNode(), type, rdf.createLiteral("Invalid quad"));
         final CompletableFuture<Void> future = svc.add(identifier, dataset).toCompletableFuture();
         assertThrows(CompletionException.class, future::join);
-    }
-
-    @Test
-    void testDeleteErrorCondition() {
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final Jdbi mockJdbi = mock(Jdbi.class);
-        doThrow(RuntimeException.class).when(mockJdbi).useTransaction(any());
-
-        final ResourceService svc2 = new DBResourceService(mockJdbi, 100, false, idService);
-        final CompletableFuture<Void> future = svc2.delete(builder(identifier).interactionModel(LDP.Resource)
-                .build()).toCompletableFuture();
-        assertThrows(CompletionException.class, future::join, "No exception with invalid connection!");
     }
 
     @Test

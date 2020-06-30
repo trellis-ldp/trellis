@@ -22,12 +22,14 @@ import static java.util.ServiceLoader.load;
 import java.util.Iterator;
 import java.util.Optional;
 
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.RDFTerm;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.RDFFactory;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -37,7 +39,7 @@ final class DBUtils {
 
     private static final RDF rdf = RDFFactory.getInstance();
 
-    public static String getObjectValue(final RDFTerm term) {
+    static String getObjectValue(final RDFTerm term) {
         if (term instanceof IRI) {
             return ((IRI) term).getIRIString();
         } else if (term instanceof Literal) {
@@ -46,21 +48,21 @@ final class DBUtils {
         return null;
     }
 
-    public static String getObjectLang(final RDFTerm term) {
+    static String getObjectLang(final RDFTerm term) {
         if (term instanceof Literal) {
             return ((Literal) term).getLanguageTag().orElse(null);
         }
         return null;
     }
 
-    public static String getObjectDatatype(final RDFTerm term) {
+    static String getObjectDatatype(final RDFTerm term) {
         if (term instanceof Literal) {
             return ((Literal) term).getDatatype().getIRIString();
         }
         return null;
     }
 
-    public static BinaryMetadata getBinaryMetadata(final IRI ixnModel, final String location, final String format) {
+    static BinaryMetadata getBinaryMetadata(final IRI ixnModel, final String location, final String format) {
         if (LDP.NonRDFSource.equals(ixnModel) && location != null) {
             return BinaryMetadata.builder(rdf.createIRI(location)).mimeType(format).build();
         }
@@ -70,6 +72,14 @@ final class DBUtils {
     static <T> Optional<T> findFirst(final Class<T> service) {
         final Iterator<T> services = load(service).iterator();
         return services.hasNext() ? of(services.next()) : empty();
+    }
+
+    static void closeDataset(final Dataset dataset) {
+        try {
+            dataset.close();
+        } catch (final Exception ex) {
+            throw new TrellisRuntimeException("Error closing dataset", ex);
+        }
     }
 
     private DBUtils() {

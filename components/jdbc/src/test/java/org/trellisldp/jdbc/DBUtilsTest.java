@@ -17,14 +17,19 @@ package org.trellisldp.jdbc;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.condition.JRE.JAVA_8;
+import static org.mockito.Mockito.*;
 import static org.trellisldp.vocabulary.RDF.langString;
 
+import java.io.IOException;
+
+import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.trellisldp.api.RDFFactory;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.XSD;
 
@@ -75,6 +80,14 @@ class DBUtilsTest {
         assertNotNull(DBUtils.getBinaryMetadata(LDP.NonRDFSource, "file:///path/to/resource", "text/plain"));
         assertNull(DBUtils.getBinaryMetadata(LDP.RDFSource, "file:///path/to/resource", "text/plain"));
         assertNull(DBUtils.getBinaryMetadata(LDP.NonRDFSource, null, "text/plain"));
+    }
+
+    @Test
+    void testCloseDatasetError() throws Exception {
+        final Dataset mockDataset = mock(Dataset.class);
+        doThrow(IOException.class).when(mockDataset).close();
+
+        assertThrows(TrellisRuntimeException.class, () -> DBUtils.closeDataset(mockDataset));
     }
 
     @Test
