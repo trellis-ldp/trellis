@@ -5,6 +5,8 @@
   <feature name="trellis-api" version="${project.version}">
     <details>Installs the Trellis API bundle</details>
 
+    <feature dependency="true">aries-proxy</feature>
+
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:jakarta.enterprise/jakarta.enterprise.cdi-api/${cdiApiVersion}</bundle>
     <bundle dependency="true">mvn:jakarta.el/jakarta.el-api/${elVersion}</bundle>
@@ -36,6 +38,8 @@
 
   <feature name="trellis-vocabulary" version="${project.version}">
     <details>Installs the Trellis Vocabulary bundle</details>
+
+    <feature dependency="true">aries-proxy</feature>
 
     <bundle dependency="true">mvn:org.apache.commons/commons-rdf-api/${commonsRdfVersion}</bundle>
     <bundle dependency="true">mvn:org.apache.aries.spifly/org.apache.aries.spifly.dynamic.bundle/${spiflyVersion}</bundle>

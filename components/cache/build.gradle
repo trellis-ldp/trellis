@@ -18,8 +18,8 @@ dependencies {
 }
 
 pitest {
-    testPlugin = 'junit5'
     pitestVersion = pitestToolVersion
+    junit5PluginVersion = pitestJunitPluginVersion
     threads = 4
 }
 

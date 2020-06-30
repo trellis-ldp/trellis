@@ -32,7 +32,7 @@ dependencies {
     testImplementation "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
     testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
-    testImplementation "org.apache.jena:jena-commonsrdf:$commonsRdfVersion"
+    testImplementation "org.apache.jena:jena-commonsrdf:$jenaVersion"
     testImplementation "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
     testImplementation "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion"
     testImplementation "org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion"
