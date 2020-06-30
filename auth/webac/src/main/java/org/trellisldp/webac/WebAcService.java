@@ -218,6 +218,7 @@ public class WebAcService {
             return new AuthorizedModes(null, allModes);
         }
 
+        LOGGER.debug("Looking up ACL for agent [{}] on resource [{}]", session.getAgent(), identifier);
         final AuthorizedModes cachedModes = cache.get(generateCacheKey(identifier, session.getAgent()), k ->
                 getAuthz(identifier, session.getAgent()));
         return session.getDelegatedBy().map(delegate -> {
@@ -241,6 +242,10 @@ public class WebAcService {
 
     private AuthorizedModes getAuthz(final IRI identifier, final IRI agent) {
         final AuthorizedModes authModes = getModesFor(identifier, agent);
+
+        if (authModes.getAccessModes().isEmpty()) {
+            LOGGER.debug("Agent [{}] has no access to resource [{}]", agent, identifier);
+        }
         final Set<IRI> modes = new HashSet<>(authModes.getAccessModes());
         // consider membership resources, if relevant
         if (checkMembershipResources && hasWritableMode(modes)) {
