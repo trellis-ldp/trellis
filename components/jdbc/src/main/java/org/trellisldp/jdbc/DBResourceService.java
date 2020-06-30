@@ -206,15 +206,6 @@ public class DBResourceService implements ResourceService {
     }
 
     @Override
-    public CompletionStage<Void> delete(final Metadata metadata) {
-        LOGGER.debug("Deleting: {}", metadata.getIdentifier());
-        final Dataset dataset = rdf.createDataset();
-        final Metadata md = Metadata.builder(metadata.getIdentifier()).interactionModel(LDP.Resource).build();
-        return runAsync(() -> storeResource(md, dataset, now(), OperationType.DELETE))
-            .whenComplete((a, b) -> DBUtils.closeDataset(dataset));
-    }
-
-    @Override
     public CompletionStage<Void> replace(final Metadata metadata, final Dataset dataset) {
         LOGGER.debug("Updating: {}", metadata.getIdentifier());
         return runAsync(() -> storeResource(metadata, dataset, now(), OperationType.REPLACE));
@@ -268,6 +259,18 @@ public class DBResourceService implements ResourceService {
     @Override
     public Set<IRI> supportedInteractionModels() {
         return supportedIxnModels;
+    }
+
+    @Override
+    public CompletionStage<Void> delete(final Metadata metadata) {
+        LOGGER.debug("Deleting: {}", metadata.getIdentifier());
+        final Metadata md = Metadata.builder(metadata.getIdentifier()).interactionModel(LDP.Resource).build();
+        return delete(md, rdf.createDataset());
+    }
+
+    private CompletionStage<Void> delete(final Metadata metadata, final Dataset dataset) {
+        return runAsync(() -> storeResource(metadata, dataset, now(), OperationType.DELETE))
+            .whenComplete((a, b) -> DBUtils.closeDataset(dataset));
     }
 
     private void updateResourceModification(final IRI identifier, final Instant time) {
