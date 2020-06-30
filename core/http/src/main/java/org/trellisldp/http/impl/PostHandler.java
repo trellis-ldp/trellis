@@ -33,7 +33,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
+import static org.trellisldp.api.TrellisUtils.buildTrellisIdentifier;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
@@ -100,7 +100,7 @@ public class PostHandler extends MutatingLdpHandler {
         this.idPath = separator + id;
         this.contentType = req.getContentType();
         this.parentIdentifier = parentIdentifier;
-        this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath() + idPath);
+        this.internalId = buildTrellisIdentifier(req.getPath() + idPath);
         this.rdfSyntax = getRdfSyntax(contentType, trellis.getIOService().supportedWriteSyntaxes());
 
         // Add LDP type (ldp:Resource results in the defaultType)

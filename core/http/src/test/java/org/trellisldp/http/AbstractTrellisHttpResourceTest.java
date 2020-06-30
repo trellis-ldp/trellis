@@ -203,6 +203,15 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
+    void testGetResourceWithSpace() {
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request().get()) {
+            assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
+            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), ERR_CONTENT_TYPE + res.getMediaType());
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), ERR_CONTENT_TYPE + res.getMediaType());
+        }
+    }
+
+    @Test
     void testGetDefaultType2() {
         try (final Response res = target("resource").request().get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
@@ -881,6 +890,18 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
+    void testOptionsLDPRSWithSpace() {
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request().options()) {
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
+            assertAll(CHECK_ALLOWED_METHODS,
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
+        }
+    }
+
+    @Test
     void testOptionsLDPNR() {
         try (final Response res = target(BINARY_PATH).request().options()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
@@ -1043,6 +1064,22 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString(), ERR_LOCATION);
+            assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual(DESCRIBEDBY)), ERR_DESCRIBEDBY);
+            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
+        }
+    }
+
+    @Test
+    void testPostWithSpace() {
+        when(mockResourceWithSpace.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_WITH_SPACE_PATH + "/"
+                            + RANDOM_VALUE)),
+                    eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request()
+                .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
+            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(getBaseUrl() + RESOURCE_WITH_SPACE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString(),
+                    ERR_LOCATION);
             assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual(DESCRIBEDBY)), ERR_DESCRIBEDBY);
             assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
         }
@@ -1540,6 +1577,17 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
+    void testPutWithSpaces() {
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request()
+                .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
+            assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual(DESCRIBEDBY)), ERR_DESCRIBEDBY);
+            assertNull(res.getHeaderString(MEMENTO_DATETIME), ERR_MEMENTO_DATETIME);
+        }
+    }
+
+    @Test
     void testPutTypeWrongType() {
         try (final Response res = target(RESOURCE_PATH).request()
                 .header(LINK, "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"non-existent\"")
@@ -2016,6 +2064,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
+    void testDeleteWithSpaces() {
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request().delete()) {
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertNull(res.getHeaderString(MEMENTO_DATETIME), ERR_MEMENTO_DATETIME);
+        }
+    }
+
+    @Test
     void testDeleteNonexistent() {
         try (final Response res = target(NON_EXISTENT_PATH).request().delete()) {
             assertEquals(SC_NOT_FOUND, res.getStatus(), ERR_RESPONSE_CODE);
@@ -2134,6 +2190,16 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPatchExisting() {
         try (final Response res = target(RESOURCE_PATH).request()
+                .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
+            assertNull(res.getHeaderString(MEMENTO_DATETIME), ERR_MEMENTO_DATETIME);
+        }
+    }
+
+    @Test
+    void testPatchWithSpace() {
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request()
                 .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));

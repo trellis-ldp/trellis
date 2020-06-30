@@ -22,6 +22,7 @@ import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
 import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
+import static org.trellisldp.api.TrellisUtils.normalizePath;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
@@ -120,7 +121,7 @@ class BaseLdpHandler {
      * @return an identifier string
      */
     protected String getIdentifier() {
-        return getBaseUrl() + getRequest().getPath();
+        return getBaseUrl() + normalizePath(getRequest().getPath());
     }
 
     /**
