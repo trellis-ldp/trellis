@@ -66,6 +66,7 @@ class ReactiveEventServiceTest {
                                            InternalChannelRegistry.class,
                                            ConfiguredChannelFactory.class,
                                            TestCollector.class,
+                                           EventCollector.class,
                                            ReactiveEventService.class,
                                            DefaultEventSerializationService.class,
                                            ConfigProducer.class)
@@ -73,6 +74,9 @@ class ReactiveEventServiceTest {
 
     @Inject
     private TestCollector collector;
+
+    @Inject
+    private EventCollector events;
 
     @Inject
     private ReactiveEventService service;
@@ -91,12 +95,8 @@ class ReactiveEventServiceTest {
         when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
         when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
-    }
-
-    @Test
-    void testNoargCtor() {
-        final ReactiveEventService svc = new ReactiveEventService();
-        assertDoesNotThrow(() -> svc.emit(mockEvent));
+        events.clear();
+        collector.clear();
     }
 
     @Test
@@ -111,5 +111,11 @@ class ReactiveEventServiceTest {
         service.emit(mockEvent);
         await().atMost(5, SECONDS).until(() -> collector.getResults().size() == 4);
         assertEquals(4, collector.getResults().size(), "Incorrect number of messages!");
+    }
+
+    @Test
+    void testCdiEvent() {
+        service.emit(mockEvent);
+        await().atMost(5, SECONDS).until(() -> events.getResults().size() > 0);
     }
 }

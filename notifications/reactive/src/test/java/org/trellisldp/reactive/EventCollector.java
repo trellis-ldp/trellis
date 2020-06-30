@@ -19,24 +19,24 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.ObservesAsync;
 
-import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.trellisldp.api.Event;
 
 @ApplicationScoped
-public class TestCollector {
+public class EventCollector {
 
-    private final List<String> list = new CopyOnWriteArrayList<>();
+    private final List<Event> events = new CopyOnWriteArrayList<>();
 
-    @Incoming(ReactiveEventService.REACTIVE_DESTINATION)
-    public void sink(final String message) {
-        list.add(message);
+    public void sink(@ObservesAsync final Event event) {
+        events.add(event);
     }
 
-    public List<String> getResults() {
-        return list;
+    public List<Event> getResults() {
+        return events;
     }
 
     public void clear() {
-        list.clear();
+        events.clear();
     }
 }
