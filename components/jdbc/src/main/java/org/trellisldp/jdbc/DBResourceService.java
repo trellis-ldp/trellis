@@ -113,7 +113,6 @@ public class DBResourceService implements ResourceService {
     private static final Logger LOGGER = getLogger(DBResourceService.class);
     private static final RDF rdf = RDFFactory.getInstance();
     private static final String ACL_EXT = "acl";
-    private static final Set<IRI> CONTAINER_TYPES = unmodifiableSet(getContainerTypes());
 
     private final Supplier<String> supplier;
     private final Jdbi jdbi;
@@ -459,14 +458,5 @@ public class DBResourceService implements ResourceService {
         } catch (final IOException ex) {
             throw new UncheckedIOException("Error writing extension data", ex);
         }
-    }
-
-    static Set<IRI> getContainerTypes() {
-        final Set<IRI> types = new HashSet<>();
-        types.add(LDP.Container);
-        types.add(LDP.BasicContainer);
-        types.add(LDP.DirectContainer);
-        types.add(LDP.IndirectContainer);
-        return types;
     }
 }
