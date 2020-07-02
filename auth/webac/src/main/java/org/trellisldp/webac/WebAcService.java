@@ -96,6 +96,8 @@ public class WebAcService {
     public static final String CONFIG_WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership-check";
     /** The configuration key controlling the classpath location of the default root acl. */
     public static final String CONFIG_WEBAC_DEFAULT_ACL_LOCATION = "trellis.webac.default-acl-location";
+    /** The configuration key controlling whether the root ACL is initialized. */
+    public static final String CONFIG_WEBAC_INITIALIZE_ROOT_ACL = "trellis.webac.initialize-root-acl";
     /** The default classpath location of the default root acl. */
     public static final String DEFAULT_ACL_LOCATION = "org/trellisldp/webac/defaultAcl.ttl";
 
@@ -168,15 +170,18 @@ public class WebAcService {
      */
     @PostConstruct
     public void initialize() {
-        try (final Dataset dataset = generateDefaultRootAuthorizationsDataset(defaultAuthResourceLocation)) {
-            this.resourceService.get(root).thenCompose(res -> initialize(res, dataset))
-                .exceptionally(err -> {
-                    LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
-                    LOGGER.debug("Error auto-initializing Trellis", err);
-                    return null;
-                }).toCompletableFuture().join();
-        } catch (final Exception ex) {
-            throw new TrellisRuntimeException("Error initializing Trellis ACL", ex);
+        if (getConfig().getOptionalValue(CONFIG_WEBAC_INITIALIZE_ROOT_ACL, Boolean.class).orElse(Boolean.TRUE)) {
+            try (final Dataset dataset = generateDefaultRootAuthorizationsDataset(defaultAuthResourceLocation)) {
+                this.resourceService.get(root).thenCompose(res -> initialize(res, dataset))
+                    .exceptionally(err -> {
+                        LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info",
+                                err.getMessage());
+                        LOGGER.debug("Error auto-initializing Trellis", err);
+                        return null;
+                    }).toCompletableFuture().join();
+            } catch (final Exception ex) {
+                throw new TrellisRuntimeException("Error initializing Trellis ACL", ex);
+            }
         }
     }
 
