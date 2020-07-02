@@ -38,7 +38,7 @@ ext {
     microprofileReactiveMessagingVersion = "1.0"
 
     // Component dependencies
-    activeMqVersion = "5.15.13"
+    activeMqVersion = "5.16.0"
     dropwizardVersion = "2.0.10"
     guavaVersion = "29.0-jre"
     jacksonVersion = "2.11.1"
