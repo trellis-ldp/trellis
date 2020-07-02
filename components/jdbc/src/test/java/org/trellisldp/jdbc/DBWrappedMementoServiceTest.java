@@ -131,7 +131,6 @@ class DBWrappedMementoServiceTest {
 
     @Test
     void testNoOpMementoService() {
-        final String dir = DBWrappedMementoService.class.getResource("/mementos").getFile();
         final MementoService svc = new DBWrappedMementoService(pg.getPostgresDatabase(),
                 new NoopMementoService());
 
