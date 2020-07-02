@@ -88,12 +88,18 @@ public class DBWrappedMementoService implements MementoService {
 
     @Override
     public CompletionStage<Void> put(final Resource resource) {
+        if (svc instanceof NoopMementoService) {
+            return svc.put(resource);
+        }
         return svc.put(resource).thenAccept(future ->
                 putTime(resource.getIdentifier(), resource.getModified()));
     }
 
     @Override
     public CompletionStage<SortedSet<Instant>> mementos(final IRI identifier) {
+        if (svc instanceof NoopMementoService) {
+            return svc.mementos(identifier);
+        }
         return supplyAsync(() -> {
             final SortedSet<Instant> instants = new TreeSet<>();
             jdbi.useHandle(handle -> handle

@@ -44,6 +44,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.slf4j.Logger;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.file.FileMementoService;
@@ -127,6 +128,45 @@ class DBWrappedMementoServiceTest {
     void testNoArgCtor() {
         assertDoesNotThrow(() -> new DBWrappedMementoService());
     }
+
+    @Test
+    void testNoOpMementoService() {
+        final String dir = DBWrappedMementoService.class.getResource("/mementos").getFile();
+        final MementoService svc = new DBWrappedMementoService(pg.getPostgresDatabase(),
+                new NoopMementoService());
+
+        final Instant time = now();
+        final IRI identifier = rdf.createIRI("trellis:data/resource");
+
+        final Resource mockResource = mock(Resource.class);
+
+        when(mockResource.getIdentifier()).thenReturn(identifier);
+        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockResource.getModified()).thenReturn(time);
+        when(mockResource.getContainer()).thenReturn(of(root));
+        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
+                    rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Title"))));
+        when(mockResource.getBinaryMetadata()).thenReturn(empty());
+        when(mockResource.getMemberOfRelation()).thenReturn(empty());
+        when(mockResource.getMemberRelation()).thenReturn(empty());
+        when(mockResource.getMembershipResource()).thenReturn(empty());
+        when(mockResource.getInsertedContentRelation()).thenReturn(empty());
+
+        assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
+        assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
+
+        when(mockResource.getModified()).thenReturn(time.plusSeconds(2L));
+        assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
+
+        when(mockResource.getModified()).thenReturn(time.plusSeconds(4L));
+        assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
+
+        assertTrue(svc.mementos(identifier).toCompletableFuture().join().isEmpty());
+
+        assertEquals(Resource.SpecialResources.MISSING_RESOURCE,
+                svc.get(identifier, time).toCompletableFuture().join());
+    }
+
 
     @Test
     void testMementoUtils() {

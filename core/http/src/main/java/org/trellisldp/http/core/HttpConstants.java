@@ -82,6 +82,9 @@ public final class HttpConstants {
     /** Configuration key defining whether PUT-on-create generates contained or uncontained resources. */
     public static final String CONFIG_HTTP_PUT_UNCONTAINED = "trellis.http.put-uncontained";
 
+    /** Configuration key to purge binaries on delete. */
+    public static final String CONFIG_HTTP_PURGE_BINARY_ON_DELETE = "trelis.http.purge-binary-on-delete";
+
     /** Configuration key defining whether versions are created in the HTTP layer. */
     public static final String CONFIG_HTTP_VERSIONING = "trellis.http.versioning";
 
