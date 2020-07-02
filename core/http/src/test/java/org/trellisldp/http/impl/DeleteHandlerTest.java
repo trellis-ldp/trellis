@@ -23,6 +23,7 @@ import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PURGE_BINARY_ON_DELETE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
@@ -34,6 +35,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Metadata;
@@ -45,8 +47,25 @@ import org.trellisldp.vocabulary.LDP;
  */
 class DeleteHandlerTest extends BaseTestHandler {
 
+    @AfterEach
+    void cleanup() {
+        System.clearProperty(CONFIG_HTTP_PURGE_BINARY_ON_DELETE);
+    }
+
     @Test
     void testDelete() {
+        System.setProperty(CONFIG_HTTP_PURGE_BINARY_ON_DELETE, "true");
+        final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, null);
+        try (final Response res = handler.deleteResource(handler.initialize(mockParent, mockResource))
+                .toCompletableFuture().join().build()) {
+            assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
+        }
+    }
+
+    @Test
+    void testDeleteWithBinaryPurge() {
+        System.setProperty(CONFIG_HTTP_PURGE_BINARY_ON_DELETE, "true");
+        when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         final DeleteHandler handler = new DeleteHandler(mockTrellisRequest, mockBundler, extensions, null);
         try (final Response res = handler.deleteResource(handler.initialize(mockParent, mockResource))
                 .toCompletableFuture().join().build()) {

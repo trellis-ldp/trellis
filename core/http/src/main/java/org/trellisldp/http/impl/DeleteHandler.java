@@ -16,14 +16,17 @@
 package org.trellisldp.http.impl;
 
 import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.GONE;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.status;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
+import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PURGE_BINARY_ON_DELETE;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
@@ -55,6 +58,8 @@ import org.trellisldp.vocabulary.LDP;
 public class DeleteHandler extends MutatingLdpHandler {
 
     private static final Logger LOGGER = getLogger(DeleteHandler.class);
+    private final boolean purgeBinaries = getConfig()
+        .getOptionalValue(CONFIG_HTTP_PURGE_BINARY_ON_DELETE, Boolean.class).orElse(Boolean.FALSE);
 
     /**
      * Create a builder for an LDP DELETE response.
@@ -163,7 +168,15 @@ public class DeleteHandler extends MutatingLdpHandler {
 
         // delete the resource
         return allOf(
+            getBinaryPurgePromise().toCompletableFuture(),
             getServices().getResourceService().delete(Metadata.builder(getResource()).build()).toCompletableFuture(),
             getServices().getResourceService().add(getResource().getIdentifier(), immutable).toCompletableFuture());
+    }
+
+    private CompletionStage<Void> getBinaryPurgePromise() {
+        if (purgeBinaries && LDP.NonRDFSource.equals(getResource().getInteractionModel())) {
+            return getServices().getBinaryService().purgeContent(getResource().getIdentifier());
+        }
+        return completedFuture(null);
     }
 }

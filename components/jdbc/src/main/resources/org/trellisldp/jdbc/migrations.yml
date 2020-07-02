@@ -526,4 +526,24 @@ databaseChangeLog:
                 newColumnName: ext
                 columnDataType: VARCHAR(255)
                 remarks: Rename this to a non-reserved name.
+    - changeSet:
+        id: 6
+        author: acoburn
+        changes:
+            - createTable:
+                tableName: binary
+                remarks: This table can be used to store binary data for a resource.
+                columns:
+                    - column:
+                        name: resource_id
+                        type: BIGINT
+                        remarks: This value points to the relevant row in the resource table.
+                        constraints:
+                            nullable: false
+                    - column:
+                        name: data
+                        type: BLOB
+                        remarks: This holds the binary data itself.
+                        constraints:
+                            nullable: false
 
