@@ -116,8 +116,8 @@ public class JenaIOService implements IOService {
     private final NamespaceService nsService;
     private final CacheService<String, String> cache;
     private final RDFaWriterService htmlSerializer;
-    private final Set<String> whitelist;
-    private final Set<String> whitelistDomains;
+    private final Set<String> allowedContexts;
+    private final Set<String> allowedContextDomains;
     private final List<RDFSyntax> readable;
     private final List<RDFSyntax> writable;
     private final List<RDFSyntax> updatable;
@@ -175,16 +175,16 @@ public class JenaIOService implements IOService {
      * @param namespaceService the namespace service
      * @param htmlSerializer the HTML serializer service
      * @param cache a cache for custom JSON-LD profile resolution
-     * @param whitelist a whitelist of JSON-LD profiles
-     * @param whitelistDomains a whitelist of JSON-LD profile domains
+     * @param allowedContexts allowed JSON-LD profiles
+     * @param allowedContextDomains allowed domains for JSON-LD profiles
      * @param relativeIRIs whether to use relative IRIs for Turtle output
      */
     public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
-            final CacheService<String, String> cache, final String whitelist, final String whitelistDomains,
+            final CacheService<String, String> cache, final String allowedContexts, final String allowedContextDomains,
             final boolean relativeIRIs) {
-        this(namespaceService, htmlSerializer, cache, intoSet(whitelist), intoSet(whitelistDomains), relativeIRIs);
+        this(namespaceService, htmlSerializer, cache, intoSet(allowedContexts), intoSet(allowedContextDomains),
+                relativeIRIs);
     }
-
 
     /**
      * Create a serialization service.
@@ -192,18 +192,18 @@ public class JenaIOService implements IOService {
      * @param namespaceService the namespace service
      * @param htmlSerializer the HTML serializer service
      * @param cache a cache for custom JSON-LD profile resolution
-     * @param whitelist a whitelist of JSON-LD profiles
-     * @param whitelistDomains a whitelist of JSON-LD profile domains
+     * @param allowedContexts allowed JSON-LD profiles
+     * @param allowedContextDomains allowed domains for JSON-LD profiles
      * @param relativeIRIs whether to use relative IRIs for Turtle output
      */
     public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
-            final CacheService<String, String> cache, final Set<String> whitelist, final Set<String> whitelistDomains,
-            final boolean relativeIRIs) {
+            final CacheService<String, String> cache, final Set<String> allowedContexts,
+            final Set<String> allowedContextDomains, final boolean relativeIRIs) {
         this.nsService = requireNonNull(namespaceService, "The NamespaceService may not be null!");
         this.cache = requireNonNull(cache, "The CacheService may not be null!");
         this.htmlSerializer = htmlSerializer;
-        this.whitelist = whitelist;
-        this.whitelistDomains = whitelistDomains;
+        this.allowedContexts = allowedContexts;
+        this.allowedContextDomains = allowedContextDomains;
         this.relativeIRIs = relativeIRIs;
 
         final List<RDFSyntax> reads = new ArrayList<>(asList(TURTLE, RDFSyntax.JSONLD, NTRIPLES));
@@ -311,10 +311,10 @@ public class JenaIOService implements IOService {
         for (final IRI p : profiles) {
             final String profile = p.getIRIString();
             if (!profile.startsWith(getNamespace())) {
-                if (whitelist.contains(profile)) {
+                if (allowedContexts.contains(profile)) {
                     return profile;
                 }
-                for (final String domain : whitelistDomains) {
+                for (final String domain : allowedContextDomains) {
                     if (profile.startsWith(domain)) {
                         return profile;
                     }

@@ -16,6 +16,8 @@
 package org.trellisldp.dropwizard.config;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.dropwizard.configuration.YamlConfigurationFactory;
@@ -34,6 +36,7 @@ import org.junit.jupiter.api.Test;
 class TrellisConfigurationTest {
 
     @Test
+    @SuppressWarnings("deprecation")
     void testConfigurationGeneral1() throws Exception {
         final TrellisConfiguration config = new YamlConfigurationFactory<>(TrellisConfiguration.class,
                 Validators.newValidator(), Jackson.newMinimalObjectMapper(), "")
@@ -49,9 +52,16 @@ class TrellisConfigurationTest {
         // JSON-LD tests
         assertEquals(48L, config.getJsonld().getCacheExpireHours(), "Incorrect jsonld/cacheExpireHours");
         assertEquals(10L, config.getJsonld().getCacheSize(), "Incorrect jsonld/cacheSize");
+        assertTrue(config.getJsonld().getAllowedContextDomains().isEmpty(), "Incorrect allowed jsonld/contextDomains");
+        assertTrue(config.getJsonld().getAllowedContexts().contains("http://example.com/context.json"),
+                "Incorrect allowed jsonld/context value!");
         assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty(), "Incorrect jsonld/contextDomainWhitelist");
         assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.com/context.json"),
                 "Incorrect jsonld/contextWhitelist value!");
+        config.getJsonld().setContextDomainWhitelist(singleton("http://www.w3.org/"));
+        assertTrue(config.getJsonld().getAllowedContextDomains().contains("http://www.w3.org/"));
+        config.getJsonld().setContextWhitelist(emptySet());
+        assertTrue(config.getJsonld().getAllowedContexts().isEmpty());
 
         // Hub tests
         assertEquals("http://hub.example.com/", config.getHubUrl(), "Incorrect hubUrl");

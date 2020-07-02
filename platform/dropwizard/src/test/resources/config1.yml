@@ -80,8 +80,8 @@ notifications:
 jsonld:
     cacheSize: 10
     cacheExpireHours: 48
-    contextDomainWhitelist: []
-    contextWhitelist:
+    allowedContextDomains: []
+    allowedContexts:
         - "http://example.org/context.json"
 
 cors:

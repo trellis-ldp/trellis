@@ -113,6 +113,6 @@ useRelativeIris: ${TRELLIS_IO_RELATIVE_IRIS:-false}
 jsonld:
     cacheSize: ${TRELLIS_JSONLD_CACHE_SIZE:-100}
     cacheExpireHours: ${TRELLIS_JSONLD_CACHE_EXPIRE_HOURS:-24}
-    contextWhitelist: []
-    contextDomainWhitelist: []
+    allowedContexts: []
+    allowedContextDomains: []
 

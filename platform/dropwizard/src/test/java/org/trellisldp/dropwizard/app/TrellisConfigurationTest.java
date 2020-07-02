@@ -47,9 +47,10 @@ class TrellisConfigurationTest {
         assertEquals(10L, config.getJsonld().getCacheSize(), "Incorrect jsonld/cacheSize value!");
         assertEquals(48L, config.getJsonld().getCacheExpireHours(), "Incorrect jsonld/cacheExpireHours value!");
         assertFalse(config.getIsVersioningEnabled(), "Incorrect versioning value!");
-        assertTrue(config.getJsonld().getContextDomainWhitelist().isEmpty(), "Incorrect jsonld/contextDomainWhitelist");
-        assertTrue(config.getJsonld().getContextWhitelist().contains("http://example.org/context.json"),
-                "Incorrect jsonld/contextWhitelist value!");
+        assertTrue(config.getJsonld().getAllowedContextDomains().isEmpty(),
+                "Incorrect jsonld/allowedContextDomains value");
+        assertTrue(config.getJsonld().getAllowedContexts().contains("http://example.org/context.json"),
+                "Incorrect jsonld/allowedContexts value!");
         assertNull(config.getResources(), "Unexpected resources value!");
         assertEquals("http://hub.example.com/", config.getHubUrl(), "Incorrect hub value!");
         assertEquals(2, config.getBinaryHierarchyLevels(), "Incorrect binaryHierarchyLevels value!");

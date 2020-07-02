@@ -64,8 +64,8 @@ useRelativeIris: true
 jsonld:
     cacheSize: 10
     cacheExpireHours: 48
-    contextDomainWhitelist:
+    allowedContextDomains:
         - https://www.trellisldp.org/
-    contextWhitelist:
+    allowedContexts:
         - http://www.w3.org/ns/anno.jsonld
 
