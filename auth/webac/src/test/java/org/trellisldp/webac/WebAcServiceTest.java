@@ -39,6 +39,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -147,6 +148,11 @@ class WebAcServiceTest {
         when(mockSession.getDelegatedBy()).thenReturn(empty());
     }
 
+    @AfterEach
+    void cleanUp() {
+        System.clearProperty(WebAcService.CONFIG_WEBAC_INITIALIZE_ROOT_ACL);
+    }
+
     @Test
     void testDefaultResourceService() {
         assertDoesNotThrow(() -> new WebAcService());
@@ -169,6 +175,15 @@ class WebAcServiceTest {
     @Test
     void testDontInitialize() {
         when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
+
+        assertDoesNotThrow(() -> testService.initialize());
+        verify(mockRootResource, never()).stream(PreferUserManaged);
+    }
+
+    @Test
+    void testDontInitializeConfig() {
+        System.setProperty(WebAcService.CONFIG_WEBAC_INITIALIZE_ROOT_ACL, "false");
+        when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
 
         assertDoesNotThrow(() -> testService.initialize());
         verify(mockRootResource, never()).stream(PreferUserManaged);
