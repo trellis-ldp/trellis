@@ -36,7 +36,7 @@ public class WebIdSecurityContext implements SecurityContext {
      * Create a WebID-based security context.
      * @param delegate the security context delegate
      * @param principal the principal
-     * @param admins a whitelist of admin users
+     * @param admins a list of admin users
      */
     public WebIdSecurityContext(final SecurityContext delegate, final JsonWebToken principal,
             final Set<String> admins) {
