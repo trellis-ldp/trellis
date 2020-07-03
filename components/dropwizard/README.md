@@ -120,9 +120,9 @@ cache:
 
 ```yaml
 jsonld:
-    contextWhitelist:
+    allowedContexts:
         - "http://example.com/context.json"
-    contextDomainWhitelist:
+    allowedContextDomains:
         - "http://example.com/"
     cacheExpireHours: 24
     cacheSize: 100
@@ -130,8 +130,8 @@ jsonld:
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
-| contextWhitelist | an empty list | a user-supplied whitelist of valid JSON-LD profile values |
-| contextDomainWhitelist | an empty list | a user-supplied whitelist of domains for valid JSON-LD profile values |
+| allowedContexts | an empty list | a user-supplied list of valid JSON-LD profile values |
+| allowedContextDomains | an empty list | a user-supplied list of domains for valid JSON-LD profile values |
 | cacheExpireHours | 24 | The number of hours that a JSON-LD profile value will be stored in a cache. |
 | cacheSize | 100 | The number of entries stored in the JSON-LD profile cache. |
 

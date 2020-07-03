@@ -184,9 +184,9 @@ cache:
 
 ```yaml
 jsonld:
-    contextWhitelist:
+    allowedContexts:
         - "http://example.com/context.json"
-    contextDomainWhitelist:
+    allowedContextDomains:
         - "http://example.com/"
     cacheExpireHours: 24
     cacheSize: 100
@@ -194,15 +194,15 @@ jsonld:
 
 | Name | Default | Description |
 | ---- | ------- | ----------- |
-| contextWhitelist | an empty list | a user-supplied whitelist of valid JSON-LD profile values |
-| contextDomainWhitelist | an empty list | a user-supplied whitelist of domains for valid JSON-LD profile values |
+| allowedContexts | an empty list | a user-supplied list of valid JSON-LD profile values |
+| allowedContextDomains | an empty list | a user-supplied list of domains for valid JSON-LD profile values |
 | cacheExpireHours | 24 | The number of hours that a JSON-LD profile value will be stored in a cache. |
 | cacheSize | 100 | The number of entries stored in the JSON-LD profile cache. |
 
 ## Alternative HTML Representation
 The Trellis RDFa module includes a configurable HTMLSerializer.  It accepts the following optional asset configuration options.
 
-For example, to configure the HTML to produce a table, one can opt to use the `resource-table.mustache` template.  
+For example, to configure the HTML to produce a table, one can opt to use the `resource-table.mustache` template.
 With this tabular HTML, one could then add sorting and search filter functionality with a JS library.
 
 ```yaml
@@ -227,24 +227,9 @@ assets:
 ## HTTP/2
 
 Trellis supports the [HTTP/2 protocol](https://http2.github.io/faq/). For more information about how to enable HTTP/2 with Trellis,
-please refer to the [dropwizard documentation](http://www.dropwizard.io/1.2.0/docs/manual/configuration.html#http-2-over-tls).
-In particular, an `h2` connector type must be used, typically with a corresponding TLS configuration.
-
-#### HTTP/2 Java Implementation Notes:
-To use HTTP/2 over TLS with JRE 1.8 requires the [alpn-boot](https://mvnrepository.com/artifact/org.mortbay.jetty.alpn/alpn-boot/8.1.12.v20180117) library to be in the bootclasspath.
-
-If using the Linux distribution, you can set an environment variable:
-
-```bash
-JAVA_OPTS=-Xbootclasspath/p:/path/to/alpn-boot.jar
-```
-
-For JDK 9+, you can simply add a dependency like this to the `trellis-app-triplestore` build.gradle:
-
-```groovy
-jettyAlpnServerVersion = '9.4.8.v20171121'
-compile("org.eclipse.jetty:jetty-alpn-java-server:$jettyAlpnServerVersion")
-```
+please refer to the [dropwizard documentation](https://www.dropwizard.io/en/latest/manual/configuration.html#http-2-over-tls).
+In particular, an `h2` connector type must be used, typically with a corresponding TLS configuration. It is recommended that Java 11 be used
+when enabling HTTP/2 support.
 
 ## Metrics reporting
 
