@@ -120,6 +120,7 @@ jobs:
     name: Deploy released artifacts to Cloudsmith
     needs: [build]
     runs-on: ubuntu-latest
+    if: contains(github.ref, 'trellis')
 
     steps:
     - uses: actions/checkout@v2.1.0
@@ -137,7 +138,6 @@ jobs:
         pip install --upgrade cloudsmith-cli
 
     - name: Publish distributions to Cloudsmith
-      if: contains(github.ref, 'trellis')
       env:
           CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_TOKEN }}
       run: |
