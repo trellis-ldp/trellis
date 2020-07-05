@@ -142,10 +142,10 @@ jobs:
           CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_TOKEN }}
       run: |
           export VERSION=$(./gradlew -q getVersion)
-          /home/runner/.local/bin/cloudsmith push raw trellisldp/release \
+          /home/runner/.local/bin/cloudsmith push raw trellisldp/staging \
             --version="${VERSION}" \
             --name="Trellis" \
-            --summary="Trellis Release" \
-            --description="A release of the Trellis Linked Data Server" \
+            --summary="Trellis Linked Data Server" \
+            --description="Trellis Linked Data Server" \
             platform/dropwizard/build/distributions/trellis-${VERSION}.zip
 
