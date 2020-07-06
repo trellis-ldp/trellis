@@ -43,6 +43,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.slf4j.Logger;
+import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.http.core.ServiceBundler;
@@ -166,16 +167,20 @@ public class DeleteHandler extends MutatingLdpHandler {
             .map(skolemizeQuads(getServices().getResourceService(), getBaseUrl()))
             .forEachOrdered(immutable::add);
 
+
+        final CompletionStage<Void> binaryPromise = getBinaryPurgePromise();
+
         // delete the resource
         return allOf(
-            getBinaryPurgePromise().toCompletableFuture(),
+            binaryPromise.toCompletableFuture(),
             getServices().getResourceService().delete(Metadata.builder(getResource()).build()).toCompletableFuture(),
             getServices().getResourceService().add(getResource().getIdentifier(), immutable).toCompletableFuture());
     }
 
     private CompletionStage<Void> getBinaryPurgePromise() {
-        if (purgeBinaries && LDP.NonRDFSource.equals(getResource().getInteractionModel())) {
-            return getServices().getBinaryService().purgeContent(getResource().getIdentifier());
+        if (purgeBinaries) {
+            return getResource().getBinaryMetadata().map(BinaryMetadata::getIdentifier)
+                .map(getServices().getBinaryService()::purgeContent).orElseGet(() -> completedFuture(null));
         }
         return completedFuture(null);
     }

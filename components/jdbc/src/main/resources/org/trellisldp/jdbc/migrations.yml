@@ -535,10 +535,11 @@ databaseChangeLog:
                 remarks: This table can be used to store binary data for a resource.
                 columns:
                     - column:
-                        name: resource_id
-                        type: BIGINT
-                        remarks: This value points to the relevant row in the resource table.
+                        name: id
+                        type: VARCHAR(${id.length})
+                        remarks: This value is the unique identifier for the binary.
                         constraints:
+                            primaryKey: true
                             nullable: false
                     - column:
                         name: data
