@@ -531,20 +531,20 @@ databaseChangeLog:
         author: acoburn
         changes:
             - createTable:
-                tableName: binary
-                remarks: This table can be used to store binary data for a resource.
+                tableName: nonrdf
+                remarks: This table can be used to store non-RDF data for a resource.
                 columns:
                     - column:
                         name: id
                         type: VARCHAR(${id.length})
-                        remarks: This value is the unique identifier for the binary.
+                        remarks: This value is the unique identifier for the non-RDF resource.
                         constraints:
                             primaryKey: true
                             nullable: false
                     - column:
                         name: data
                         type: BLOB
-                        remarks: This holds the binary data itself.
+                        remarks: This holds the non-RDF data itself.
                         constraints:
                             nullable: false
 
