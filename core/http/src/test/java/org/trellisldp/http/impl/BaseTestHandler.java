@@ -238,6 +238,8 @@ class BaseTestHandler {
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.touch(any(IRI.class))).thenReturn(completedFuture(null));
+
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
     }
 
     private void setUpBinaryService() {

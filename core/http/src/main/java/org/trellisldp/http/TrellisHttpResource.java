@@ -21,7 +21,6 @@ import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.*;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.buildTrellisIdentifier;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.http.core.HttpConstants.*;
 
@@ -286,7 +285,7 @@ public class TrellisHttpResource {
                          content = @Content(mediaType = "application/sparql-update")) final String body) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = buildTrellisIdentifier(req.getPath());
+        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final PatchHandler patchHandler = new PatchHandler(req, body, trellis, extensions, supportsCreateOnPatch,
                 defaultJsonLdProfile, urlBase);
 
@@ -311,7 +310,7 @@ public class TrellisHttpResource {
             @Context final HttpHeaders headers, @Context final SecurityContext secContext) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = buildTrellisIdentifier(req.getPath());
+        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, extensions, urlBase);
 
         return getParent(identifier)
@@ -342,8 +341,8 @@ public class TrellisHttpResource {
         final String identifier = getIdentifier(req);
         final String separator = path.isEmpty() ? "" : "/";
 
-        final IRI parent = buildTrellisIdentifier(path);
-        final IRI child = buildTrellisIdentifier(path + separator + identifier);
+        final IRI parent = trellis.getResourceService().getResourceIdentifier(urlBase, path);
+        final IRI child = trellis.getResourceService().getResourceIdentifier(urlBase, path + separator + identifier);
         final PostHandler postHandler = new PostHandler(req, parent, identifier, body, trellis, extensions, urlBase);
 
         return trellis.getResourceService().get(parent)
@@ -370,7 +369,7 @@ public class TrellisHttpResource {
             @RequestBody(description = "The updated resource") final InputStream body) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = buildTrellisIdentifier(req.getPath());
+        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final PutHandler putHandler = new PutHandler(req, body, trellis, extensions, preconditionRequired,
                 createUncontained, urlBase);
 
@@ -393,7 +392,7 @@ public class TrellisHttpResource {
 
     private CompletionStage<ResponseBuilder> fetchResource(final TrellisRequest req) {
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = buildTrellisIdentifier(req.getPath());
+        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final GetConfiguration config = new GetConfiguration(req.getVersion() != null,
                 weakEtags, includeMementoDates, defaultJsonLdProfile, urlBase);
         final GetHandler getHandler = new GetHandler(req, trellis, extensions, config);
