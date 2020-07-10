@@ -28,6 +28,8 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
 
+import java.net.URI;
+
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
@@ -82,11 +84,13 @@ class TrellisWebDAVRequestFilterTest {
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
         when(mockContext.getMethod()).thenReturn(PUT);
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockContext.getHeaders()).thenReturn(mockHeaders);
         when(mockUriBuilder.path(any(String.class))).thenReturn(mockUriBuilder);
         when(mockUriInfo.getBaseUriBuilder()).thenReturn(mockUriBuilder);
+        when(mockUriInfo.getBaseUri()).thenReturn(URI.create("http://example.com/"));
         when(mockUriInfo.getPath()).thenReturn(PATH);
         when(mockUriInfo.getPathSegments()).thenReturn(singletonList(mockPathSegment));
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());

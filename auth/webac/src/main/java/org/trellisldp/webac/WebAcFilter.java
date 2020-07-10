@@ -31,7 +31,6 @@ import static javax.ws.rs.core.UriBuilder.fromPath;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.buildTrellisIdentifier;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
@@ -58,6 +57,7 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.trellisldp.api.RDFFactory;
+import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.http.core.HttpConstants;
 import org.trellisldp.http.core.HttpSession;
@@ -124,6 +124,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private static final String SLASH = "/";
     private static final RDF rdf = RDFFactory.getInstance();
 
+    private ResourceService resourceService;
     private WebAcService accessService;
     private List<String> challenges;
     private String baseUrl;
@@ -162,6 +163,15 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     }
 
     /**
+     * Set the resource service.
+     * @param resourceService the resource service
+     */
+    @Inject
+    public void setResourceService(final ResourceService resourceService) {
+        this.resourceService = requireNonNull(resourceService, "Resource service may not be null!");
+    }
+
+    /**
      * Set the challenges.
      * @param challenges the response challenges
      */
@@ -185,10 +195,12 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         }
 
         final String path = ctx.getUriInfo().getPath();
+        final String base = getBaseUrl(ctx, baseUrl);
         final Session s = buildSession(ctx, baseUrl);
         final String method = ctx.getMethod();
 
-        final AuthorizedModes modes = accessService.getAuthorizedModes(buildTrellisIdentifier(path), s);
+        final AuthorizedModes modes = accessService
+            .getAuthorizedModes(resourceService.getResourceIdentifier(base, path), s);
         ctx.setProperty(SESSION_WEBAC_MODES, modes);
 
         final Prefer prefer = Prefer.valueOf(ctx.getHeaderString(PREFER));

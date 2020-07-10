@@ -26,7 +26,6 @@ import static javax.ws.rs.core.Response.status;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.buildTrellisIdentifier;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
@@ -98,7 +97,8 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(final ContainerRequestContext ctx) {
-        final IRI identifier = buildTrellisIdentifier(ctx.getUriInfo().getPath());
+        final IRI identifier = services.getResourceService()
+            .getResourceIdentifier(getBaseUrl(baseUrl, ctx.getUriInfo()), ctx.getUriInfo().getPath());
         if (PUT.equals(ctx.getMethod()) && createUncontained) {
             final Resource res = services.getResourceService().get(identifier).toCompletableFuture().join();
             final List<PathSegment> segments = ctx.getUriInfo().getPathSegments();

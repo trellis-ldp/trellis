@@ -37,6 +37,7 @@ import java.util.List;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
+import org.trellisldp.api.ResourceService;
 import org.trellisldp.dropwizard.config.BasicAuthConfiguration;
 import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
@@ -155,6 +156,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                 @Override
                 protected void configure() {
                     bind(webac).to(WebAcService.class);
+                    bind(getServiceBundler().getResourceService()).to(ResourceService.class);
                 }
             });
         });

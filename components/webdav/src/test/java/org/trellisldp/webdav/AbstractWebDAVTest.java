@@ -876,6 +876,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockResourceService.touch(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.unskolemize(any(IRI.class))).thenCallRealMethod();
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
     }
 
     private void setUpResources() {
