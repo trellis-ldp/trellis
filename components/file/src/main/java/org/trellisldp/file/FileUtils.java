@@ -30,7 +30,7 @@ import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.apache.jena.commonsrdf.JenaCommonsRDF.fromJena;
-import static org.apache.jena.riot.tokens.TokenizerFactory.makeTokenizerString;
+import static org.apache.jena.riot.tokens.TokenizerText.fromString;
 import static org.apache.jena.sparql.core.Quad.create;
 import static org.apache.jena.sparql.core.Quad.defaultGraphIRI;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -121,7 +121,7 @@ public final class FileUtils {
      */
     public static Stream<Quad> parseQuad(final String line) {
         final List<Token> tokens = new ArrayList<>();
-        makeTokenizerString(line).forEachRemaining(tokens::add);
+        fromString(line).forEachRemaining(tokens::add);
 
         final List<Node> nodes = tokens.stream().filter(Token::isNode).map(Token::asNode).filter(Objects::nonNull)
             .collect(toList());
