@@ -19,7 +19,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,13 +27,15 @@ import java.io.InputStream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * @author acoburn
  */
+@ExtendWith(MockitoExtension.class)
 class BinaryServiceTest {
 
     private static final RDF rdf = RDFFactory.getInstance();
@@ -44,11 +45,6 @@ class BinaryServiceTest {
 
     @Mock
     private Binary mockBinary;
-
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
-    }
 
     @Test
     void testGetContent() throws IOException {

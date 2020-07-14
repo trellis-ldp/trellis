@@ -23,7 +23,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
 import io.smallrye.config.inject.ConfigProducer;
@@ -46,6 +45,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.*;
 import org.trellisldp.event.jackson.DefaultEventSerializationService;
 import org.trellisldp.vocabulary.AS;
@@ -53,6 +53,7 @@ import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
 @ExtendWith(WeldJunit5Extension.class)
+@ExtendWith(MockitoExtension.class)
 class ReactiveEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
@@ -86,8 +87,12 @@ class ReactiveEventServiceTest {
 
     @BeforeEach
     void setUp() {
-        initMocks(this);
+        events.clear();
+        collector.clear();
+    }
 
+    @Test
+    void testReactiveStream() {
         when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")));
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:test"));
@@ -95,12 +100,7 @@ class ReactiveEventServiceTest {
         when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
         when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
-        events.clear();
-        collector.clear();
-    }
 
-    @Test
-    void testReactiveStream() {
         service.emit(mockEvent);
         await().atMost(5, SECONDS).until(() -> collector.getResults().size() == 1);
         assertEquals(1, collector.getResults().size(), "Incorrect number of messages!");
@@ -115,6 +115,14 @@ class ReactiveEventServiceTest {
 
     @Test
     void testCdiEvent() {
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")));
+        when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
+        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:test"));
+        when(mockEvent.getCreated()).thenReturn(time);
+        when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
+        when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
+        when(mockEvent.getInbox()).thenReturn(empty());
+
         service.emit(mockEvent);
         await().atMost(5, SECONDS).until(() -> events.getResults().size() > 0);
     }

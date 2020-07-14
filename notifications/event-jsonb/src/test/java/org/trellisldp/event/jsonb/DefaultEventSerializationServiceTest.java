@@ -23,7 +23,6 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.vocabulary.AS.Create;
 import static org.trellisldp.vocabulary.LDP.Container;
 import static org.trellisldp.vocabulary.PROV.Activity;
@@ -37,9 +36,10 @@ import javax.json.bind.JsonbBuilder;
 
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.vocabulary.AS;
@@ -47,6 +47,7 @@ import org.trellisldp.vocabulary.AS;
 /**
  * @author acoburn
  */
+@ExtendWith(MockitoExtension.class)
 class DefaultEventSerializationServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
@@ -58,9 +59,8 @@ class DefaultEventSerializationServiceTest {
     @Mock
     private Event mockEvent;
 
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
+    @Test
+    void testSerialization() {
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("info:event/12345"));
         when(mockEvent.getTypes()).thenReturn(singleton(Create));
         when(mockEvent.getAgents()).thenReturn(singleton(rdf.createIRI("info:user/test")));
@@ -68,16 +68,19 @@ class DefaultEventSerializationServiceTest {
         when(mockEvent.getObjectTypes()).thenReturn(singleton(Container));
         when(mockEvent.getInbox()).thenReturn(of(rdf.createIRI("info:ldn/inbox")));
         when(mockEvent.getCreated()).thenReturn(time);
-    }
 
-    @Test
-    void testSerialization() {
         final String json = svc.serialize(mockEvent);
         assertTrue(json.contains("\"inbox\":\"info:ldn/inbox\""), "ldp:inbox not in serialization!");
     }
 
     @Test
     void testSerializationStructure() throws Exception {
+        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("info:event/12345"));
+        when(mockEvent.getAgents()).thenReturn(singleton(rdf.createIRI("info:user/test")));
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
+        when(mockEvent.getObjectTypes()).thenReturn(singleton(Container));
+        when(mockEvent.getInbox()).thenReturn(of(rdf.createIRI("info:ldn/inbox")));
+        when(mockEvent.getCreated()).thenReturn(time);
         when(mockEvent.getTypes()).thenReturn(asList(Create, Activity));
 
         final String json = svc.serialize(mockEvent);
@@ -109,6 +112,10 @@ class DefaultEventSerializationServiceTest {
 
     @Test
     void testSerializationStructureNoEmptyElements() throws Exception {
+        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("info:event/12345"));
+        when(mockEvent.getTypes()).thenReturn(singleton(Create));
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
+        when(mockEvent.getCreated()).thenReturn(time);
         when(mockEvent.getInbox()).thenReturn(empty());
         when(mockEvent.getAgents()).thenReturn(emptyList());
         when(mockEvent.getObjectTypes()).thenReturn(emptyList());

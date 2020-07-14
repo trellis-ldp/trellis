@@ -17,10 +17,8 @@ package org.trellisldp.api;
 
 import static java.time.Instant.now;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Stream.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.RDF.type;
 
@@ -30,12 +28,14 @@ import java.util.SortedSet;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.vocabulary.SKOS;
 import org.trellisldp.vocabulary.Trellis;
 
+@ExtendWith(MockitoExtension.class)
 class NoopMementoServiceTest {
 
     private static final MementoService testService = new NoopMementoService();
@@ -53,19 +53,12 @@ class NoopMementoServiceTest {
     @Mock
     private MementoService mockMementoService;
 
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
-        when(mockResource.getIdentifier()).thenReturn(identifier);
-        when(mockResource.getModified()).thenReturn(time);
-        when(mockResource.stream()).thenAnswer(inv -> of(quad));
+    @Test
+    void testPutDefaultMethod() {
         doCallRealMethod().when(mockMementoService).put(any(ResourceService.class), any(IRI.class));
         when(mockResourceService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockResource));
         when(mockMementoService.put(any(Resource.class))).thenReturn(completedFuture(null));
-    }
 
-    @Test
-    void testPutDefaultMethod() {
         mockMementoService.put(mockResourceService, identifier).toCompletableFuture().join();
         verify(mockResourceService).get(eq(identifier));
         verify(mockMementoService).put(eq(mockResource));

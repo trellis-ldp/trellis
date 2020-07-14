@@ -22,7 +22,6 @@ import static java.util.Optional.of;
 import static javax.jms.Session.AUTO_ACKNOWLEDGE;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
 import java.time.Instant;
@@ -42,7 +41,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.api.EventService;
@@ -54,6 +55,7 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
+@ExtendWith(MockitoExtension.class)
 class JmsEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
@@ -98,7 +100,11 @@ class JmsEventServiceTest {
 
     @BeforeEach
     void setUp() throws JMSException {
-        initMocks(this);
+
+    }
+
+    @Test
+    void testJms() throws JMSException {
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
         when(mockEvent.getCreated()).thenReturn(time);
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:jms:test"));
@@ -106,19 +112,12 @@ class JmsEventServiceTest {
         when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "a-resource")));
         when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
-
-        when(mockConnection.createSession(anyBoolean(), eq(AUTO_ACKNOWLEDGE))).thenReturn(mockSession);
         when(mockSession.createQueue(eq(queueName))).thenReturn(mockQueue);
-        when(mockSession.createTopic(eq(queueName))).thenReturn(mockTopic);
         when(mockSession.createTextMessage(anyString())).thenReturn(mockMessage);
         when(mockSession.createProducer(any(Queue.class))).thenReturn(mockProducer);
-        when(mockSession.createProducer(any(Topic.class))).thenReturn(mockTopicProducer);
-
+        when(mockConnection.createSession(anyBoolean(), eq(AUTO_ACKNOWLEDGE))).thenReturn(mockSession);
         doNothing().when(mockProducer).send(any(TextMessage.class));
-    }
 
-    @Test
-    void testJms() throws JMSException {
         final EventService svc = new JmsEventService(serializer, mockConnection);
         svc.emit(mockEvent);
 
@@ -127,6 +126,18 @@ class JmsEventServiceTest {
 
     @Test
     void testQueue() throws JMSException {
+        when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
+        when(mockEvent.getCreated()).thenReturn(time);
+        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:jms:test"));
+        when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "a-resource")));
+        when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
+        when(mockEvent.getInbox()).thenReturn(empty());
+        when(mockSession.createQueue(eq(queueName))).thenReturn(mockQueue);
+        when(mockSession.createTextMessage(anyString())).thenReturn(mockMessage);
+        when(mockSession.createProducer(any(Queue.class))).thenReturn(mockProducer);
+        doNothing().when(mockProducer).send(any(TextMessage.class));
+
         final EventService svc = new JmsEventService(serializer, mockSession, queueName, true);
         svc.emit(mockEvent);
 
@@ -136,6 +147,17 @@ class JmsEventServiceTest {
 
     @Test
     void testTopic() throws JMSException {
+        when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
+        when(mockEvent.getCreated()).thenReturn(time);
+        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:jms:test"));
+        when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "a-resource")));
+        when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
+        when(mockEvent.getInbox()).thenReturn(empty());
+        when(mockSession.createTopic(eq(queueName))).thenReturn(mockTopic);
+        when(mockSession.createTextMessage(anyString())).thenReturn(mockMessage);
+        when(mockSession.createProducer(any(Topic.class))).thenReturn(mockTopicProducer);
+
         final EventService svc = new JmsEventService(serializer, mockSession, queueName, false);
         svc.emit(mockEvent);
 
@@ -145,6 +167,17 @@ class JmsEventServiceTest {
 
     @Test
     void testError() throws JMSException {
+        when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
+        when(mockEvent.getCreated()).thenReturn(time);
+        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:jms:test"));
+        when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "a-resource")));
+        when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
+        when(mockEvent.getInbox()).thenReturn(empty());
+        when(mockSession.createQueue(eq(queueName))).thenReturn(mockQueue);
+        when(mockSession.createTextMessage(anyString())).thenReturn(mockMessage);
+        when(mockSession.createProducer(any(Queue.class))).thenReturn(mockProducer);
+
         doThrow(JMSException.class).when(mockProducer).send(eq(mockMessage));
 
         final EventService svc = new JmsEventService(serializer, mockSession, queueName);

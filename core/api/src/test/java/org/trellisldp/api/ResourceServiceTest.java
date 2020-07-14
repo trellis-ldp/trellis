@@ -18,7 +18,6 @@ package org.trellisldp.api;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.concurrent.CompletionStage;
 
@@ -27,14 +26,16 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.vocabulary.LDP;
 
 /**
  * @author acoburn
  */
+@ExtendWith(MockitoExtension.class)
 class ResourceServiceTest {
 
     private static final RDF rdf = RDFFactory.getInstance();
@@ -56,18 +57,6 @@ class ResourceServiceTest {
         }
     }
 
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
-        doCallRealMethod().when(mockResourceService).skolemize(any());
-        doCallRealMethod().when(mockResourceService).unskolemize(any());
-        doCallRealMethod().when(mockResourceService).toInternal(any(), any());
-        doCallRealMethod().when(mockResourceService).toExternal(any(), any());
-        doCallRealMethod().when(mockResourceService).create(any(), any());
-
-        when(mockRetrievalService.get(eq(existing))).thenAnswer(inv -> completedFuture(mockResource));
-    }
-
     @Test
     void testRetrievalService2() {
         final RetrievalService<Resource> svc = new MyRetrievalService();
@@ -77,6 +66,7 @@ class ResourceServiceTest {
 
     @Test
     void testRetrievalService() {
+        when(mockRetrievalService.get(eq(existing))).thenAnswer(inv -> completedFuture(mockResource));
         assertEquals(mockResource, mockRetrievalService.get(existing).toCompletableFuture().join(),
                 "Incorrect resource found by retrieval service!");
     }
@@ -88,6 +78,7 @@ class ResourceServiceTest {
 
         try (final Dataset dataset = rdf.createDataset()) {
             when(mockResourceService.replace(eq(metadata), eq(dataset))).thenReturn(completedFuture(null));
+            doCallRealMethod().when(mockResourceService).create(any(), any());
 
             assertDoesNotThrow(() -> mockResourceService.create(metadata, dataset).toCompletableFuture().join());
             verify(mockResourceService).replace(eq(metadata), eq(dataset));
@@ -99,6 +90,9 @@ class ResourceServiceTest {
         final BlankNode bnode = rdf.createBlankNode("testing");
         final IRI iri = rdf.createIRI("trellis:bnode/testing");
         final IRI resource = rdf.createIRI("trellis:data/resource");
+
+        doCallRealMethod().when(mockResourceService).skolemize(any());
+        doCallRealMethod().when(mockResourceService).unskolemize(any());
 
         assertTrue(mockResourceService.skolemize(bnode) instanceof IRI, "Blank node not skolemized into IRI!");
         assertTrue(((IRI) mockResourceService.skolemize(bnode)).getIRIString().startsWith("trellis:bnode/"),
@@ -116,6 +110,9 @@ class ResourceServiceTest {
 
     @Test
     void testInternalExternal() {
+        doCallRealMethod().when(mockResourceService).toInternal(any(), any());
+        doCallRealMethod().when(mockResourceService).toExternal(any(), any());
+
         final String baseUrl = "http://example.com/";
         final IRI external = rdf.createIRI(baseUrl + "resource");
         final IRI internal = rdf.createIRI("trellis:data/resource");

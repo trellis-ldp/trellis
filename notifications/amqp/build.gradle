@@ -28,6 +28,7 @@ dependencies {
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation project(':trellis-event-jackson')
     testImplementation project(':trellis-vocabulary')
 
