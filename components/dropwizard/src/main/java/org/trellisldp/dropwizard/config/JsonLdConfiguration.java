@@ -41,50 +41,6 @@ public class JsonLdConfiguration {
     /**
      * Get the list of allowed custom JSON-LD profiles.
      * @return the json-ld profile allow list
-     * @deprecated Please use {@link #getAllowedContexts}
-     */
-    @JsonProperty
-    @Deprecated
-    public Set<String> getContextWhitelist() {
-        return getAllowedContexts();
-    }
-
-    /**
-     * Set the list of allowed custom JSON-LD profiles.
-     * @param allowed the allowed json-ld profiles
-     * @deprecated Please use {@link #setAllowedContexts}
-     */
-    @JsonProperty
-    @Deprecated
-    public void setContextWhitelist(final Set<String> allowed) {
-        setAllowedContexts(allowed);
-    }
-
-    /**
-     * Get the allowed domains for custom JSON-LD profiles.
-     * @return the json-ld profile domain list
-     * @deprecated Please use {@link #getAllowedContextDomains}
-     */
-    @JsonProperty
-    @Deprecated
-    public Set<String> getContextDomainWhitelist() {
-        return getAllowedContextDomains();
-    }
-
-    /**
-     * Set the allowed domains for custom JSON-LD profiles.
-     * @param allowedDomains the json-ld domain profile witelist
-     * @deprecated Please use {@link #setAllowedContextDomains}
-     */
-    @JsonProperty
-    @Deprecated
-    public void setContextDomainWhitelist(final Set<String> allowedDomains) {
-        setAllowedContextDomains(allowedDomains);
-    }
-
-    /**
-     * Get the list of allowed custom JSON-LD profiles.
-     * @return the json-ld profile allow list
      */
     @JsonProperty
     public Set<String> getAllowedContexts() {
