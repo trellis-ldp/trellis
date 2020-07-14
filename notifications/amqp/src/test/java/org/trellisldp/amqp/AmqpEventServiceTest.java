@@ -21,7 +21,6 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
@@ -38,9 +37,10 @@ import org.apache.qpid.server.SystemLauncher;
 import org.apache.qpid.server.model.SystemConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.api.EventService;
@@ -52,6 +52,7 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
+@ExtendWith(MockitoExtension.class)
 class AmqpEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
@@ -83,9 +84,8 @@ class AmqpEventServiceTest {
         broker.shutdown();
     }
 
-    @BeforeEach
-    void setUp() throws IOException {
-        initMocks(this);
+    @Test
+    void testAmqp() throws IOException {
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
         when(mockEvent.getCreated()).thenReturn(time);
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:amqp:test"));
@@ -95,10 +95,7 @@ class AmqpEventServiceTest {
         when(mockEvent.getInbox()).thenReturn(empty());
         doNothing().when(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
                 any(BasicProperties.class), any(byte[].class));
-    }
 
-    @Test
-    void testAmqp() throws IOException {
         final EventService svc = new AmqpEventService(serializer, mockChannel, exchangeName, queueName);
         svc.emit(mockEvent);
 
@@ -108,6 +105,16 @@ class AmqpEventServiceTest {
 
     @Test
     void testAmqpConfiguration() throws IOException {
+        when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
+        when(mockEvent.getCreated()).thenReturn(time);
+        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:amqp:test"));
+        when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")));
+        when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
+        when(mockEvent.getInbox()).thenReturn(empty());
+        doNothing().when(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
+                any(BasicProperties.class), any(byte[].class));
+
         final EventService svc = new AmqpEventService(serializer, mockChannel);
         svc.emit(mockEvent);
 
@@ -117,6 +124,14 @@ class AmqpEventServiceTest {
 
     @Test
     void testError() throws IOException {
+        when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
+        when(mockEvent.getCreated()).thenReturn(time);
+        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:amqp:test"));
+        when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")));
+        when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
+        when(mockEvent.getInbox()).thenReturn(empty());
+
         doThrow(IOException.class).when(mockChannel).basicPublish(eq(exchangeName), eq(queueName),
                 anyBoolean(), anyBoolean(), any(BasicProperties.class), any(byte[].class));
 

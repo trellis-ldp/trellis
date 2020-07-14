@@ -17,7 +17,6 @@ package org.trellisldp.dropwizard.app;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
@@ -26,9 +25,10 @@ import java.net.ServerSocket;
 import java.util.Properties;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.TrellisRuntimeException;
@@ -38,6 +38,7 @@ import org.trellisldp.kafka.KafkaEventService;
 /**
  * @author acoburn
  */
+@ExtendWith(MockitoExtension.class)
 class AppUtilsTest {
 
     @Mock
@@ -46,11 +47,6 @@ class AppUtilsTest {
     @Mock
     private LifecycleEnvironment mockLifecycle;
 
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
-        when(mockEnv.lifecycle()).thenReturn(mockLifecycle);
-    }
 
     @Test
     void testEventServiceNone() {
@@ -79,6 +75,8 @@ class AppUtilsTest {
 
     @Test
     void testEventServiceKafka() {
+        when(mockEnv.lifecycle()).thenReturn(mockLifecycle);
+
         final NotificationsConfiguration c = new NotificationsConfiguration();
         c.set("batch.size", "1000");
         c.set("retries", "10");
@@ -109,6 +107,8 @@ class AppUtilsTest {
 
     @Test
     void testEventServiceJms() throws Exception {
+        when(mockEnv.lifecycle()).thenReturn(mockLifecycle);
+
         final NotificationsConfiguration c = new NotificationsConfiguration();
         final int port = new ServerSocket(0).getLocalPort();
         c.setConnectionString("tcp://localhost:" + port);

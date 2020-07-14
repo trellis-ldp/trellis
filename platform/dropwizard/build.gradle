@@ -80,6 +80,7 @@ dependencies {
     testImplementation "org.hamcrest:hamcrest:$hamcrestVersion"
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation project(':trellis-test')
     testImplementation "io.dropwizard:dropwizard-client:$dropwizardVersion"
     testImplementation "io.dropwizard:dropwizard-testing:$dropwizardVersion"

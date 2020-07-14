@@ -20,22 +20,23 @@ import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
  */
+@ExtendWith(MockitoExtension.class)
 class ResourceTest {
 
     private static final RDF rdf = RDFFactory.getInstance();
@@ -45,27 +46,21 @@ class ResourceTest {
     @Mock
     private Resource mockResource;
 
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
+    @Test
+    void testResource() {
+        doCallRealMethod().when(mockResource).stream(any(IRI.class));
+        doCallRealMethod().when(mockResource).stream(anyCollection());
         doCallRealMethod().when(mockResource).getMembershipResource();
         doCallRealMethod().when(mockResource).getMemberRelation();
         doCallRealMethod().when(mockResource).getMemberOfRelation();
-        doCallRealMethod().when(mockResource).getInsertedContentRelation();
-        doCallRealMethod().when(mockResource).getRevision();
-        doCallRealMethod().when(mockResource).stream(any(IRI.class));
-        doCallRealMethod().when(mockResource).stream(anyCollection());
-        doCallRealMethod().when(mockResource).getBinaryMetadata();
+        doCallRealMethod().when(mockResource).getExtraLinkRelations();
         doCallRealMethod().when(mockResource).hasMetadata(any(IRI.class));
         doCallRealMethod().when(mockResource).getMetadataGraphNames();
-        doCallRealMethod().when(mockResource).getExtraLinkRelations();
-        doCallRealMethod().when(mockResource).dataset();
-
+        doCallRealMethod().when(mockResource).getBinaryMetadata();
+        doCallRealMethod().when(mockResource).getRevision();
+        doCallRealMethod().when(mockResource).getInsertedContentRelation();
         when(mockResource.stream()).thenAnswer((x) -> empty());
-    }
 
-    @Test
-    void testResource() {
         assertEquals(0L, mockResource.stream(prefer).count(), "Resource stream has extra triples!");
         assertEquals(0L, mockResource.stream(singleton(prefer)).count(), "Resource stream has extra triples!");
         assertNotNull(mockResource.getRevision(), "Resource revision should not be null!");
@@ -81,6 +76,10 @@ class ResourceTest {
     @Test
     void testResourceWithQuads() {
         final IRI subject = rdf.createIRI("ex:subject");
+
+        doCallRealMethod().when(mockResource).stream(any(IRI.class));
+        doCallRealMethod().when(mockResource).stream(anyCollection());
+        doCallRealMethod().when(mockResource).dataset();
         when(mockResource.stream()).thenAnswer((x) -> of(
                     rdf.createQuad(prefer, subject, DC.title, rdf.createLiteral("A title")),
                     rdf.createQuad(PreferUserManaged, subject, DC.title, rdf.createLiteral("Other title"))));
