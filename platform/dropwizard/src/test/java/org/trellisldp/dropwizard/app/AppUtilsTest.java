@@ -21,7 +21,6 @@ import static org.mockito.Mockito.when;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.setup.Environment;
 
-import java.net.ServerSocket;
 import java.util.Properties;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -31,7 +30,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.NoopEventService;
-import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.dropwizard.config.NotificationsConfiguration;
 import org.trellisldp.kafka.KafkaEventService;
 
@@ -103,19 +101,6 @@ class AppUtilsTest {
         assertEquals("org.apache.kafka.common.serialization.StringSerializer", p.getProperty("key.serializer"),
                 "Incorrect serializer class property!");
         assertEquals("localhost:9092", p.getProperty("bootstrap.servers"), "Incorrect bootstrap.servers property!");
-    }
-
-    @Test
-    void testEventServiceJms() throws Exception {
-        when(mockEnv.lifecycle()).thenReturn(mockLifecycle);
-
-        final NotificationsConfiguration c = new NotificationsConfiguration();
-        final int port = new ServerSocket(0).getLocalPort();
-        c.setConnectionString("tcp://localhost:" + port);
-        c.setEnabled(true);
-        c.setType(NotificationsConfiguration.Type.JMS);
-        assertThrows(TrellisRuntimeException.class, () ->
-                AppUtils.getNotificationService(c, mockEnv), "No exception when JMS client doesn't connect!");
     }
 
     @Test
