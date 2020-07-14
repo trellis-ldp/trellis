@@ -52,7 +52,8 @@ public interface BinaryService extends RetrievalService<Binary> {
     /**
      * Get a new identifier.
      *
+     * @param identifier the associated resource identifier
      * @return a new identifier
      */
-    String generateIdentifier();
+    String generateIdentifier(IRI identifier);
 }

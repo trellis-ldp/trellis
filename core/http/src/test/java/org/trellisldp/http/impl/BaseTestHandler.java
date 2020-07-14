@@ -245,7 +245,7 @@ class BaseTestHandler {
                         .thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent())
                         .thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
-        when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
+        when(mockBinaryService.generateIdentifier(any(IRI.class))).thenReturn("file:///" + randomUUID());
         when(mockBinaryService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
