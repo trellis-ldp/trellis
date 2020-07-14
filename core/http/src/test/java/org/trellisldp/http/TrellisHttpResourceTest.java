@@ -23,7 +23,7 @@ import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.http.core.HttpConstants.ACL;
@@ -74,7 +74,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     @Override
     protected Application configure() {
 
-        initMocks(this);
+        openMocks(this);
 
         System.setProperty(WebSubHeaderFilter.CONFIG_HTTP_WEB_SUB_HUB, HUB);
 

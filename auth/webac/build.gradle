@@ -32,6 +32,7 @@ dependencies {
     testImplementation "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
     testImplementation "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation project(':trellis-triplestore')
 }
 
