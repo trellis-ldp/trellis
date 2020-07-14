@@ -269,7 +269,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
             return completedFuture(null);
         });
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
-        when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
+        when(mockBinaryService.generateIdentifier(any(IRI.class))).thenReturn(RANDOM_VALUE);
     }
 
     private void setUpResources() {

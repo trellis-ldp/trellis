@@ -844,7 +844,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     private void setUpBinaryService() {
-        when(mockBinaryService.generateIdentifier()).thenReturn("file://some/binary/location");
+        when(mockBinaryService.generateIdentifier(any(IRI.class))).thenReturn("file://some/binary/location");
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
             .thenAnswer(inv -> {
                 readLines((InputStream) inv.getArguments()[1], UTF_8);

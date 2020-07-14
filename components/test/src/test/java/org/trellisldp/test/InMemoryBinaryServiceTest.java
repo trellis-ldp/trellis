@@ -38,7 +38,7 @@ class InMemoryBinaryServiceTest {
 
     @Test
     void storeAndRetrieve() throws IOException {
-        final String uuid = testService.generateIdentifier();
+        final String uuid = testService.generateIdentifier(rdfFactory.createIRI("https://example.com/resource"));
         final IRI id = rdfFactory.createIRI(uuid);
         final BinaryMetadata metadata = BinaryMetadata.builder(id).mimeType("mime/type").build();
         final byte[] answer = new byte[] { 1, 2, 3 };
@@ -54,7 +54,7 @@ class InMemoryBinaryServiceTest {
 
     @Test
     void storeAndRetrievePart() throws IOException {
-        final String uuid = testService.generateIdentifier();
+        final String uuid = testService.generateIdentifier(rdfFactory.createIRI("https://example.com/resource"));
         final IRI id = rdfFactory.createIRI(uuid);
         final BinaryMetadata metadata = BinaryMetadata.builder(id).mimeType("mime/type").build();
         final byte[] fullAnswer = new byte[] { 1, 2, 3 };

@@ -236,7 +236,7 @@ public class PutHandler extends MutatingLdpHandler {
             LOGGER.trace("Successfully checked for bad digest value");
             final String mimeType = getRequest().getContentType() != null ? getRequest().getContentType()
                 : APPLICATION_OCTET_STREAM;
-            final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
+            final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier(internalId));
 
             // Persist the content
             final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
