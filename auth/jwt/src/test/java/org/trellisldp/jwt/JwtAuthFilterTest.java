@@ -17,7 +17,6 @@ package org.trellisldp.jwt;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import io.smallrye.jwt.auth.cdi.PrincipalProducer;
 import io.smallrye.jwt.auth.principal.DefaultJWTCallerPrincipal;
@@ -32,16 +31,17 @@ import org.jboss.weld.junit5.WeldInitiator;
 import org.jboss.weld.junit5.WeldJunit5Extension;
 import org.jboss.weld.junit5.WeldSetup;
 import org.jose4j.jwt.JwtClaims;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 /**
  * @author acoburn
  */
 @ExtendWith(WeldJunit5Extension.class)
+@ExtendWith(MockitoExtension.class)
 class JwtAuthFilterTest {
 
     @WeldSetup
@@ -56,11 +56,6 @@ class JwtAuthFilterTest {
 
     @Captor
     private ArgumentCaptor<SecurityContext> securityArgument;
-
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
-    }
 
     @Test
     void testJwtAuthFilter() {

@@ -32,6 +32,7 @@ dependencies {
     testImplementation "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
     testImplementation "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
 }
 
 pitest {

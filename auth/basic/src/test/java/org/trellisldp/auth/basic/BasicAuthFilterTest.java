@@ -21,7 +21,6 @@ import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.SecurityContext.BASIC_AUTH;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.util.Base64;
@@ -30,12 +29,14 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.SecurityContext;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class BasicAuthFilterTest {
 
     @Mock
@@ -47,18 +48,13 @@ class BasicAuthFilterTest {
     @Captor
     private ArgumentCaptor<SecurityContext> securityArgument;
 
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
-        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
-    }
-
     @Test
     void testCredentials() {
         final BasicAuthFilter filter = new BasicAuthFilter();
         filter.setFile(getAuthFile());
         final String webid = "https://people.apache.org/~acoburn/#i";
         final String token = encodeCredentials("acoburn", "secret");
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("BASIC " + token);
         filter.filter(mockContext);
         verify(mockContext).setSecurityContext(securityArgument.capture());
@@ -77,6 +73,7 @@ class BasicAuthFilterTest {
         filter.setChallenge("Basic realm=\"trellis\"");
         filter.setAdmins(singleton(webid));
         final String token = encodeCredentials("acoburn", "secret");
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("BASIC " + token);
         filter.filter(mockContext);
         verify(mockContext).setSecurityContext(securityArgument.capture());
@@ -91,6 +88,7 @@ class BasicAuthFilterTest {
     void testNoHeader() {
         final BasicAuthFilter filter = new BasicAuthFilter();
         filter.setFile(getAuthFile());
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn(null);
         filter.filter(mockContext);
         verify(mockContext, never()).setSecurityContext(securityArgument.capture());
@@ -100,6 +98,7 @@ class BasicAuthFilterTest {
     void testOtherCredentials() {
         final BasicAuthFilter filter = new BasicAuthFilter();
         filter.setFile(getAuthFile());
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockContext.getHeaderString(AUTHORIZATION))
             .thenReturn("Basic " + encodeCredentials("user", "password"));
         filter.filter(mockContext);
@@ -118,6 +117,7 @@ class BasicAuthFilterTest {
         filter.setFile(getAuthFile());
         final String webid = "https://people.apache.org/~acoburn/#i";
         final String token = encodeCredentials("acoburn", "secret");
+        when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         when(mockContext.getHeaderString(AUTHORIZATION)).thenReturn("BASIC " + token);
         filter.filter(mockContext);
         verify(mockContext).setSecurityContext(securityArgument.capture());

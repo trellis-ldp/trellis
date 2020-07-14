@@ -15,7 +15,7 @@
  */
 package org.trellisldp.http;
 
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import javax.ws.rs.core.Application;
 
@@ -30,7 +30,7 @@ class TrellisHttpResourceUserTest extends AbstractTrellisHttpResourceTest {
     protected Application configure() {
 
         // Junit runner doesn't seem to work very well with JerseyTest
-        initMocks(this);
+        openMocks(this);
 
         System.setProperty(WebSubHeaderFilter.CONFIG_HTTP_WEB_SUB_HUB, HUB);
 

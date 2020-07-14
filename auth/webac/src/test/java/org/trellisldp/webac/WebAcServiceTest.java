@@ -22,7 +22,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
@@ -118,7 +118,7 @@ class WebAcServiceTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     void setUp() {
-        initMocks(this);
+        openMocks(this);
 
         testService = new WebAcService(mockResourceService, new WebAcService.NoopAuthorizationCache());
 
