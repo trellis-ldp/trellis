@@ -15,7 +15,7 @@
  */
 package org.trellisldp.webdav;
 
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 
 import javax.ws.rs.core.Application;
@@ -32,7 +32,7 @@ class WebDAVTest extends AbstractWebDAVTest {
     @Override
     protected Application configure() {
 
-        initMocks(this);
+        openMocks(this);
 
         final ResourceConfig config = new ResourceConfig();
 

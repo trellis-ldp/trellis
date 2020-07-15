@@ -15,6 +15,7 @@ dependencies {
     api "com.google.guava:guava:$guavaVersion"
 
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
 }
 
 pitest {

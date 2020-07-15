@@ -27,7 +27,6 @@ import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.setDefaultPollInterval;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Metadata.builder;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -50,10 +49,11 @@ import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionLocal;
 import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.apache.jena.update.UpdateRequest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
@@ -70,6 +70,7 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * Test the TriplestoreResourceService class.
  */
+@ExtendWith(MockitoExtension.class)
 class TriplestoreResourceServiceTest {
 
     private static final RDF rdf = RDFFactory.getInstance();
@@ -86,11 +87,6 @@ class TriplestoreResourceServiceTest {
 
     @Mock
     private RDFConnection mockRdfConnection;
-
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
-    }
 
     @Test
     void testIdentifierService() {
