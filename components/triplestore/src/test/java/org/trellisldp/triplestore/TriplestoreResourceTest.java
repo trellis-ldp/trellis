@@ -29,7 +29,6 @@ import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
@@ -42,10 +41,11 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
@@ -62,6 +62,7 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * Test the TriplestoreResource class.
  */
+@ExtendWith(MockitoExtension.class)
 class TriplestoreResourceTest {
 
     private static final RDF rdf = RDFFactory.getInstance();
@@ -86,14 +87,6 @@ class TriplestoreResourceTest {
 
     @Mock
     private Session mockSession;
-
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
-        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
-        when(mockSession.getCreated()).thenReturn(created);
-        when(mockSession.getDelegatedBy()).thenReturn(empty());
-    }
 
     @Test
     void testEmptyResource() {
@@ -127,6 +120,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithAuditQuads() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(empty());
+
         final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
@@ -142,6 +139,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithAuditQuads2() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(empty());
+
         final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
@@ -157,6 +158,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithAclQuads() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(empty());
+
         final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         dataset.add(aclId, aclSubject, ACL.mode, ACL.Read);
         dataset.add(aclId, aclSubject, ACL.agentClass, FOAF.Agent);
@@ -175,6 +180,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithExtensionQuads() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(empty());
+
         final IRI fooId = rdf.createIRI(identifier.getIRIString() + "?ext=foo");
         final Map<String, IRI> ext = new HashMap<>();
         ext.put("acl", Trellis.PreferAccessControl);
@@ -212,6 +221,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testBinaryResource() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(empty());
+
         final String mimeType = "image/jpeg";
         final IRI binaryIdentifier = rdf.createIRI("file:///binary");
         final Dataset dataset = buildLdpDataset(LDP.NonRDFSource);

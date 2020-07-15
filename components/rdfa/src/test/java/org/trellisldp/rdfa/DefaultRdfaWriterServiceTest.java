@@ -23,7 +23,6 @@ import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.graph.Triple.create;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,8 +41,10 @@ import org.apache.jena.vocabulary.DCTypes;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.RDFaWriterService;
@@ -51,7 +52,10 @@ import org.trellisldp.api.RDFaWriterService;
 /**
  * @author acoburn
  */
+@ExtendWith(MockitoExtension.class)
 class DefaultRdfaWriterServiceTest {
+
+    private final Map<String, String> namespaces = new HashMap<>();
 
     @Mock
     private NamespaceService mockNamespaceService;
@@ -63,12 +67,9 @@ class DefaultRdfaWriterServiceTest {
 
     @BeforeEach
     void setUp() {
-        initMocks(this);
-        final Map<String, String> namespaces = new HashMap<>();
         namespaces.put("dc", DCTerms.NS);
         namespaces.put("rdf", RDF.uri);
         namespaces.put("dcmitype", "http://purl.org/dc/dcmitype/");
-        when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
 
         service = new DefaultRdfaWriterService(mockNamespaceService);
 
@@ -92,6 +93,8 @@ class DefaultRdfaWriterServiceTest {
 
     @Test
     void testDefaultRdfaWriterService() {
+        when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
+
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, null);
         assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
@@ -99,6 +102,8 @@ class DefaultRdfaWriterServiceTest {
 
     @Test
     void testDefaultRdfaWriterService2() {
+        when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
+
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         service.write(getTriples(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
@@ -106,6 +111,8 @@ class DefaultRdfaWriterServiceTest {
 
     @Test
     void testDefaultRdfaWriterService3() {
+        when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
+
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final RDFaWriterService service4 = new DefaultRdfaWriterService(mockNamespaceService, "resource-test.mustache",
                 "//www.trellisldp.org/assets/css/trellis.css", "", "//www.trellisldp.org/assets/img/trellis.png");
@@ -116,6 +123,8 @@ class DefaultRdfaWriterServiceTest {
 
     @Test
     void testDefaultRdfaWriterService4() throws Exception {
+        when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
+
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final RDFaWriterService service4 = new DefaultRdfaWriterService(mockNamespaceService, path,

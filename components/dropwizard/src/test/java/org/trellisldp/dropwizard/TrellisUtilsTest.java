@@ -23,22 +23,21 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import io.dropwizard.configuration.YamlConfigurationFactory;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
-import io.dropwizard.setup.Environment;
 
 import java.io.File;
 import java.util.List;
 
 import javax.ws.rs.container.ContainerRequestFilter;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.TrellisRuntimeException;
@@ -52,10 +51,8 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
+@ExtendWith(MockitoExtension.class)
 class TrellisUtilsTest {
-
-    @Mock
-    private Environment mockEnv;
 
     @Mock
     private LifecycleEnvironment mockLifecycle;
@@ -65,12 +62,6 @@ class TrellisUtilsTest {
 
     @Mock
     private Resource mockResource;
-
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
-        when(mockEnv.lifecycle()).thenReturn(mockLifecycle);
-    }
 
     @Test
     void testGetCORSConfig() throws Exception {

@@ -18,30 +18,25 @@ package org.trellisldp.cache;
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.google.common.cache.Cache;
 
 import java.util.concurrent.ExecutionException;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.TrellisRuntimeException;
 
 /**
  * @author acoburn
  */
+@ExtendWith(MockitoExtension.class)
 class TrellisCacheTest {
 
     @Mock
     private Cache<String, String> mockCache;
-
-    @BeforeEach
-    void setUp() throws ExecutionException {
-        initMocks(this);
-        when(mockCache.get(any(), any())).thenThrow(ExecutionException.class);
-    }
 
     @Test
     void testCache() {
@@ -50,7 +45,8 @@ class TrellisCacheTest {
     }
 
     @Test
-    void testCacheException() {
+    void testCacheException() throws Exception {
+        when(mockCache.get(any(), any())).thenThrow(ExecutionException.class);
         final TrellisCache<String, String> cache = new TrellisCache<>(mockCache);
         assertThrows(TrellisRuntimeException.class, () -> cache.get("long", x -> x + "er"));
     }

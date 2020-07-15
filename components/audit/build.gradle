@@ -17,6 +17,7 @@ dependencies {
     implementation project(':trellis-vocabulary')
 
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"
 }
 

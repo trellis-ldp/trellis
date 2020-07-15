@@ -23,6 +23,7 @@ dependencies {
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
 }
 

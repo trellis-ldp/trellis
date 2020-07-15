@@ -15,7 +15,7 @@
  */
 package org.trellisldp.webdav;
 
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.security.Principal;
 
@@ -75,7 +75,7 @@ class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
     @Override
     public Application configure() {
 
-        initMocks(this);
+        openMocks(this);
 
         final ResourceConfig config = new ResourceConfig();
 

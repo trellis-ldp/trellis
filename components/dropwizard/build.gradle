@@ -39,6 +39,7 @@ dependencies {
     }
     testImplementation "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation project(':trellis-app')
     testImplementation project(':trellis-constraint')
     testImplementation project(':trellis-file')
