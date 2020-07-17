@@ -12,7 +12,7 @@ ext {
     // Core dependencies
     commonsCodecVersion = "1.14"
     commonsIoVersion = "2.7"
-    commonsLangVersion = "3.10"
+    commonsLangVersion = "3.11"
     commonsRdfVersion = "0.5.0"
     slf4jVersion = "1.7.30"
 
