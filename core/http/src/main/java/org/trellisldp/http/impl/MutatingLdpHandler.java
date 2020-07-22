@@ -249,8 +249,11 @@ class MutatingLdpHandler extends BaseLdpHandler {
         }
     }
 
-    protected CompletionStage<Void> persistContent(final BinaryMetadata metadata) {
-        return getServices().getBinaryService().setContent(metadata, entity);
+    protected CompletionStage<Void> persistBinaryContent(final BinaryMetadata metadata) {
+        if (metadata != null) {
+            return getServices().getBinaryService().setContent(metadata, entity);
+        }
+        return completedFuture(null);
     }
 
     protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final Dataset mutable) {

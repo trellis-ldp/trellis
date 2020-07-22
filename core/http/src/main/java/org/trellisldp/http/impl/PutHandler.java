@@ -16,7 +16,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
@@ -229,7 +228,7 @@ public class PutHandler extends MutatingLdpHandler {
             final Dataset immutable, final ResponseBuilder builder, final IRI ldpType) {
 
         final Metadata.Builder metadata;
-        final CompletionStage<Void> persistPromise;
+        final BinaryMetadata binary;
 
         // Add user-supplied data
         if (LDP.NonRDFSource.equals(ldpType) && rdfSyntax == null) {
@@ -238,10 +237,8 @@ public class PutHandler extends MutatingLdpHandler {
                 : APPLICATION_OCTET_STREAM;
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier(internalId));
 
-            // Persist the content
-            final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
+            binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
                             .hints(getRequest().getHeaders()).build();
-            persistPromise = persistContent(binary);
 
             metadata = metadataBuilder(internalId, ldpType, mutable).binary(binary);
             builder.link(getIdentifier() + "?ext=description", "describedby");
@@ -258,7 +255,7 @@ public class PutHandler extends MutatingLdpHandler {
             if (getResource() != null) {
                 getResource().getBinaryMetadata().ifPresent(metadata::binary);
             }
-            persistPromise = completedFuture(null);
+            binary = null;
         }
 
         if (getResource() != null) {
@@ -281,7 +278,8 @@ public class PutHandler extends MutatingLdpHandler {
             });
         LOGGER.trace("Persisting mutable data for {} with data: {}", internalId, mutable);
 
-        return persistPromise.thenCompose(future -> createOrReplace(metadata.build(), mutable, immutable))
+        return createOrReplace(metadata.build(), mutable, immutable)
+            .thenCompose(future -> persistBinaryContent(binary))
             .thenCompose(future -> handleUpdateEvent(ldpType))
             .thenApply(future -> decorateResponse(builder));
     }

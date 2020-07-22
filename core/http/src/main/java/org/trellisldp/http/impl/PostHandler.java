@@ -16,7 +16,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
@@ -184,6 +183,7 @@ public class PostHandler extends MutatingLdpHandler {
 
         final CompletionStage<Void> persistPromise;
         final Metadata.Builder metadata;
+        final BinaryMetadata binary;
 
         // Add user-supplied data
         if (ldpType.equals(LDP.NonRDFSource)) {
@@ -191,9 +191,8 @@ public class PostHandler extends MutatingLdpHandler {
             final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier(internalId));
 
             // Persist the content
-            final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
+            binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
                             .hints(getRequest().getHeaders()).build();
-            persistPromise = persistContent(binary);
 
             metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier).binary(binary);
             builder.link(getIdentifier() + "?ext=description", "describedby");
@@ -205,13 +204,14 @@ public class PostHandler extends MutatingLdpHandler {
             mutable.getGraph(PreferUserManaged).ifPresent(graph -> checkConstraint(graph, ldpType, s));
 
             metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier);
-            persistPromise = completedFuture(null);
+            binary = null;
         }
 
         getAuditQuadData().forEachOrdered(immutable::add);
 
         LOGGER.info("Creating resource");
-        return persistPromise.thenCompose(future -> handleResourceCreation(metadata.build(), mutable, immutable))
+        return handleResourceCreation(metadata.build(), mutable, immutable)
+            .thenCompose(future -> persistBinaryContent(binary))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {
                 ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, Link.TYPE));
