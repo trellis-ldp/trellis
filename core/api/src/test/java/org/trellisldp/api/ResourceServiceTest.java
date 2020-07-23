@@ -86,6 +86,17 @@ class ResourceServiceTest {
     }
 
     @Test
+    void testDefaultResourceIdentifier() {
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
+
+        final String path = "path/to/resource";
+        final String baseUrl = "https://example.com/";
+        assertEquals(rdf.createIRI(TrellisUtils.TRELLIS_DATA_PREFIX + path),
+                mockResourceService.getResourceIdentifier(baseUrl, path),
+                "Trellis resource identifier is incorrect!");
+    }
+
+    @Test
     void testSkolemization() {
         final BlankNode bnode = rdf.createBlankNode("testing");
         final IRI iri = rdf.createIRI("trellis:bnode/testing");

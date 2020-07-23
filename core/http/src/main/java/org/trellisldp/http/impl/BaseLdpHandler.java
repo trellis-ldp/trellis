@@ -184,7 +184,7 @@ class BaseLdpHandler {
         return new EntityTag(sha256Hex(res.getRevision()), weakEtag);
     }
 
-    private static String getRequestBaseUrl(final TrellisRequest req, final String baseUrl) {
+    static String getRequestBaseUrl(final TrellisRequest req, final String baseUrl) {
         final String base = baseUrl != null ? baseUrl : req.getBaseUrl();
         if (base.endsWith("/")) {
             return base;

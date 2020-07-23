@@ -27,7 +27,6 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.buildTrellisIdentifier;
 import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
@@ -113,7 +112,8 @@ public class PatchHandler extends MutatingLdpHandler {
         this.defaultJsonLdProfile = defaultJsonLdProfile;
         this.preference = getPreference(req.getPrefer());
         this.supportsCreate = supportsCreate;
-        this.internalId = buildTrellisIdentifier(req.getPath());
+        this.internalId = trellis.getResourceService()
+            .getResourceIdentifier(getRequestBaseUrl(req, baseUrl), req.getPath());
     }
 
     /**

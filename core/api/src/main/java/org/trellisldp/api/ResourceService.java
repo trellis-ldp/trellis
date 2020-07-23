@@ -155,6 +155,18 @@ public interface ResourceService extends RetrievalService<Resource> {
     }
 
     /**
+     * Get a resource identifier from a request URL.
+     *
+     * @implSpec the default implementation of this method removes the base URL from the internal identifier.
+     * @param path the request path
+     * @param baseUrl the request base URL
+     * @return the Trellis resource identifier
+     */
+    default IRI getResourceIdentifier(final String baseUrl, final String path) {
+        return TrellisUtils.buildTrellisIdentifier(path);
+    }
+
+    /**
      * Update the modification date of the provided resource.
      *
      * @apiNote In general, when this method is called, it can be expected that the target resource
