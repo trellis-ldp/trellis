@@ -181,8 +181,7 @@ public class PostHandler extends MutatingLdpHandler {
     private CompletionStage<ResponseBuilder> handleResourceCreation(final Dataset mutable,
             final Dataset immutable, final ResponseBuilder builder) {
 
-        final CompletionStage<Void> persistPromise;
-        final Metadata.Builder metadata;
+        final Metadata metadata;
         final BinaryMetadata binary;
 
         // Add user-supplied data
@@ -194,7 +193,7 @@ public class PostHandler extends MutatingLdpHandler {
             binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
                             .hints(getRequest().getHeaders()).build();
 
-            metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier).binary(binary);
+            metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier).binary(binary).build();
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             final RDFSyntax s = rdfSyntax != null ? rdfSyntax : TURTLE;
@@ -203,14 +202,14 @@ public class PostHandler extends MutatingLdpHandler {
             // Check for any constraints
             mutable.getGraph(PreferUserManaged).ifPresent(graph -> checkConstraint(graph, ldpType, s));
 
-            metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier);
+            metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier).build();
             binary = null;
         }
 
         getAuditQuadData().forEachOrdered(immutable::add);
 
         LOGGER.info("Creating resource");
-        return handleResourceCreation(metadata.build(), mutable, immutable)
+        return handleResourceCreation(metadata, mutable, immutable)
             .thenCompose(future -> persistBinaryContent(binary))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {
