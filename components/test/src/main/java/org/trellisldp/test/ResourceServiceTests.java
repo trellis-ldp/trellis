@@ -545,7 +545,9 @@ public interface ResourceServiceTests {
     default Stream<Executable> checkResource(final Resource res, final IRI identifier, final IRI ldpType,
             final Instant time, final Dataset dataset) {
         return Stream.of(
-                () -> assertEquals(ldpType, res.getInteractionModel(), "Check the interaction model"),
+                () -> assertTrue(LDP.Container.equals(ldpType) ? LDP.BasicContainer.equals(res.getInteractionModel()) ||
+                                 LDP.Container.equals(res.getInteractionModel()) :
+                                 res.getInteractionModel().equals(ldpType), "Check the interaction model"),
                 () -> assertEquals(identifier, res.getIdentifier(), "Check the identifier"),
                 () -> assertFalse(res.getModified().isBefore(time), "Check the modification time (1)"),
                 () -> assertFalse(res.getModified().isAfter(now()), "Check the modification time (2)"),
