@@ -33,7 +33,7 @@ jobs:
     - env: JOB=aws
 
   include:
-    # JDK 11
+    # JDK 8
     - name: "Java 8"
       jdk: openjdk8
       script: ./gradlew test jacocoRootReport coveralls sonarqube -x :trellis-quarkus:test -x :trellis-openliberty:test -x :trellis-dropwizard-app:test
@@ -49,7 +49,7 @@ jobs:
           access_key_id: $AWS_ACCESS_KEY
           secret_access_key: $AWS_SECRET_KEY
           bucket: $AWS_BUCKET
-          cleanup: true
+          skip_cleanup: true
           local_dir: docs/apidocs/$(./gradlew -q getVersion)
           upload_dir: docs/trellis/$(./gradlew -q getVersion)/apidocs
           default_text_charset: 'utf-8'
