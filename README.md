@@ -24,7 +24,7 @@ All source code is open source and licensed as Apache 2. Contributions are alway
 ## Docker Containers
 
 Docker containers for Trellis are published on [Docker Hub](https://hub.docker.com/u/trellisldp).
-Container environments are published with every commit to `master` and are available for all stable
+Container environments are published with every commit to the `main` branch and are available for all stable
 releases. More details are available on the
 [Trellis Wiki](https://github.com/trellis-ldp/trellis/wiki/Dockerized-Trellis).
 

@@ -8,7 +8,7 @@ addons:
 
 branches:
   only:
-    - master
+    - main
     # release tags
     - /^trellis-\d+\.\d+\.\d+$/
     # maintenance branches
