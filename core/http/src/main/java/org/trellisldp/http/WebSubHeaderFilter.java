@@ -34,6 +34,7 @@ import javax.ws.rs.ext.Provider;
  * @see <a href="https://www.w3.org/TR/websub/">WebSub</a>
  */
 @Provider
+@Trellis
 public class WebSubHeaderFilter implements ContainerResponseFilter {
 
     /** The configuration key controlling the location of a web-sub-hub. */

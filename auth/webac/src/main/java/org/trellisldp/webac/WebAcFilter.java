@@ -35,6 +35,9 @@ import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.HttpConstants.PREFER;
 import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.core.TrellisRequest.buildBaseUrl;
+import static org.trellisldp.vocabulary.Trellis.AnonymousAgent;
+import static org.trellisldp.vocabulary.Trellis.PreferAudit;
+import static org.trellisldp.vocabulary.Trellis.effectiveAcl;
 
 import java.util.HashSet;
 import java.util.List;
@@ -59,11 +62,11 @@ import org.slf4j.Logger;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
+import org.trellisldp.http.Trellis;
 import org.trellisldp.http.core.HttpConstants;
 import org.trellisldp.http.core.HttpSession;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.ACL;
-import org.trellisldp.vocabulary.Trellis;
 
 /**
  * A {@link ContainerRequestFilter} that implements WebAC-based authorization.
@@ -74,6 +77,7 @@ import org.trellisldp.vocabulary.Trellis;
  */
 @Provider
 @Priority(AUTHORIZATION)
+@Trellis
 public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     /**
@@ -239,7 +243,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
                 modes.getEffectiveAcl().map(IRI::getIRIString).map(acl -> effectiveAclToUrlPath(acl, path, res))
                     .ifPresent(urlPath -> res.getHeaders().add(LINK, fromUri(fromPath(urlPath)
                                 .queryParam(HttpConstants.EXT, HttpConstants.ACL).build())
-                            .rel(Trellis.effectiveAcl.getIRIString()).build()));
+                            .rel(effectiveAcl.getIRIString()).build()));
             }
         }
     }
@@ -247,7 +251,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     protected void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Append) && !modes.contains(ACL.Write)) {
             LOGGER.warn("User: {} cannot Append to {}", session.getAgent(), path);
-            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
+            if (AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }
@@ -259,7 +263,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     protected void verifyCanControl(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Control)) {
             LOGGER.warn("User: {} cannot Control {}", session.getAgent(), path);
-            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
+            if (AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }
@@ -271,7 +275,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     protected void verifyCanWrite(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Write)) {
             LOGGER.warn("User: {} cannot Write to {}", session.getAgent(), path);
-            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
+            if (AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }
@@ -283,7 +287,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     protected void verifyCanRead(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Read)) {
             LOGGER.warn("User: {} cannot Read from {}", session.getAgent(), path);
-            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
+            if (AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }
@@ -293,7 +297,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     }
 
     static boolean reqAudit(final Prefer prefer) {
-        return prefer != null && prefer.getInclude().contains(Trellis.PreferAudit.getIRIString());
+        return prefer != null && prefer.getInclude().contains(PreferAudit.getIRIString());
     }
 
     static boolean reqRepresentation(final Prefer prefer) {

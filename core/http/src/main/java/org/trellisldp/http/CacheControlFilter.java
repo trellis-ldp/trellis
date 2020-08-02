@@ -36,6 +36,7 @@ import org.eclipse.microprofile.config.Config;
  * @author acoburn
  */
 @Provider
+@Trellis
 public class CacheControlFilter implements ContainerResponseFilter {
 
     /** The configuration key for setting a cache-control max-age header. */

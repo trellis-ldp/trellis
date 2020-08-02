@@ -52,6 +52,7 @@ import org.trellisldp.http.core.Version;
 
 @Provider
 @Priority(AUTHORIZATION - 20)
+@Trellis
 public class TrellisHttpFilter implements ContainerRequestFilter {
 
     private List<String> mutatingMethods;

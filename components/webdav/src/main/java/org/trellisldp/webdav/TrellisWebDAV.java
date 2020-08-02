@@ -46,6 +46,7 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
 import static org.trellisldp.http.core.TrellisExtensions.buildExtensionMapFromConfig;
+import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import static org.trellisldp.webdav.Depth.DEPTH.INFINITY;
 import static org.trellisldp.webdav.Depth.DEPTH.ONE;
 import static org.trellisldp.webdav.Depth.DEPTH.ZERO;
@@ -103,6 +104,7 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.Session;
+import org.trellisldp.http.Trellis;
 import org.trellisldp.http.core.HttpSession;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.SimpleEvent;
@@ -110,7 +112,6 @@ import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
-import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.webdav.xml.DavMultiStatus;
 import org.trellisldp.webdav.xml.DavProp;
 import org.trellisldp.webdav.xml.DavPropFind;
@@ -128,6 +129,7 @@ import org.w3c.dom.Node;
  */
 @ApplicationScoped
 @Path("{path: .*}")
+@Trellis
 public class TrellisWebDAV {
 
     private static final String SUCCESS = "HTTP/1.1 200 OK";
@@ -315,11 +317,11 @@ public class TrellisWebDAV {
                 Node node = el.getFirstChild();
                 while (node != null) {
                     if (Node.TEXT_NODE == node.getNodeType() && !isBlank(node.getNodeValue())) {
-                        builder.accept(rdf.createQuad(Trellis.PreferUserManaged, identifier,
+                        builder.accept(rdf.createQuad(PreferUserManaged, identifier,
                                     predicate, rdf.createLiteral(node.getNodeValue())));
                     } else if (Node.ELEMENT_NODE == node.getNodeType()
                             && node.getNamespaceURI() != null) {
-                        builder.accept(rdf.createQuad(Trellis.PreferUserManaged, identifier,
+                        builder.accept(rdf.createQuad(PreferUserManaged, identifier,
                                     predicate,
                                     rdf.createIRI(node.getNamespaceURI() + node.getLocalName())));
                     }
@@ -391,12 +393,12 @@ public class TrellisWebDAV {
                 stream.forEach(dataset::add);
             }
             // Filter out any removable properties
-            try (final Stream<Quad> stream = resource.stream(Trellis.PreferUserManaged)) {
+            try (final Stream<Quad> stream = resource.stream(PreferUserManaged)) {
                 stream.forEach(quad -> {
                     if (removeProperties.contains(quad.getPredicate())) {
                         modifiedProperties.add(quad.getPredicate());
                     } else {
-                        dataset.add(rdf.createQuad(Trellis.PreferUserManaged, identifier, quad.getPredicate(),
+                        dataset.add(rdf.createQuad(PreferUserManaged, identifier, quad.getPredicate(),
                                     quad.getObject()));
                     }
                 });
@@ -608,7 +610,7 @@ public class TrellisWebDAV {
         allProperties.add(getContentTypeElement(doc, res, propname));
         allProperties.add(getLastModifiedElement(doc, res, propname));
 
-        try (final Stream<Quad> stream = res.stream(Trellis.PreferUserManaged)) {
+        try (final Stream<Quad> stream = res.stream(PreferUserManaged)) {
             final List<Element> elements = stream
                 .filter(t -> allproperties || properties.contains(t.getPredicate()))
                 .map(quadToElement(doc, propname)).filter(Objects::nonNull).collect(toList());
