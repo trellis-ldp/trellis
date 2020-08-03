@@ -99,6 +99,12 @@ class HttpUtilsTest {
     }
 
     @Test
+    void testGetBinarySynax() {
+        assertNull(HttpUtils.getSyntax(ioService, asList(MediaType.TEXT_HTML_TYPE, MediaType.WILDCARD_TYPE),
+                    "image/png"), "Incorrect binary syntax");
+    }
+
+    @Test
     void testGetSyntaxFallback() {
         final List<MediaType> types = asList(APPLICATION_JSON_TYPE, TEXT_XML_TYPE,
                 new MediaType("text", "turtle"));
