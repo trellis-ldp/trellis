@@ -192,11 +192,15 @@ public final class HttpUtils {
         if (acceptableTypes.isEmpty()) {
             return mimeType != null ? null : TURTLE;
         }
-        final MediaType mt = mimeType != null ? MediaType.valueOf(mimeType) : null;
-        for (final MediaType type : acceptableTypes) {
-            if (type.isCompatible(mt)) {
-                return null;
+        if (mimeType != null) {
+            final MediaType mt = MediaType.valueOf(mimeType);
+            for (final MediaType type : acceptableTypes) {
+                if (type.isCompatible(mt)) {
+                    return null;
+                }
             }
+        }
+        for (final MediaType type : acceptableTypes) {
             final RDFSyntax syntax = ioService.supportedReadSyntaxes().stream()
                 .filter(s -> MediaType.valueOf(s.mediaType()).isCompatible(type))
                 .findFirst().orElse(null);
