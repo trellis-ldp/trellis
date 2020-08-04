@@ -46,13 +46,14 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
 import org.trellisldp.http.core.AcceptDatetime;
+import org.trellisldp.http.core.LdpResource;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.http.core.Range;
 import org.trellisldp.http.core.Version;
 
 @Provider
 @Priority(AUTHORIZATION - 20)
-@Trellis
+@LdpResource
 public class TrellisHttpFilter implements ContainerRequestFilter {
 
     private List<String> mutatingMethods;

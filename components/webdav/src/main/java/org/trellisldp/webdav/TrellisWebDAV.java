@@ -104,8 +104,8 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.Session;
-import org.trellisldp.http.Trellis;
 import org.trellisldp.http.core.HttpSession;
+import org.trellisldp.http.core.LdpResource;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.SimpleEvent;
 import org.trellisldp.http.core.TrellisRequest;
@@ -129,7 +129,7 @@ import org.w3c.dom.Node;
  */
 @ApplicationScoped
 @Path("{path: .*}")
-@Trellis
+@LdpResource
 public class TrellisWebDAV {
 
     private static final String SUCCESS = "HTTP/1.1 200 OK";

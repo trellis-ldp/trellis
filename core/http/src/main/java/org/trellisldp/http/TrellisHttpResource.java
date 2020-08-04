@@ -69,6 +69,7 @@ import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.StorageConflictException;
 import org.trellisldp.api.TrellisRuntimeException;
+import org.trellisldp.http.core.LdpResource;
 import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.http.core.TrellisExtensions;
 import org.trellisldp.http.core.TrellisRequest;
@@ -89,6 +90,7 @@ import org.trellisldp.vocabulary.LDP;
  */
 @ApplicationScoped
 @Path("{path: .*}")
+@LdpResource
 @Trellis
 public class TrellisHttpResource {
 

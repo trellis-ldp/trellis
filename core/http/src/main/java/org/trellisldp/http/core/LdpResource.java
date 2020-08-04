@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.http;
+package org.trellisldp.http.core;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
@@ -25,12 +25,9 @@ import java.lang.annotation.Target;
 import javax.ws.rs.NameBinding;
 
 /**
- * A name binding for Trellis resources.
- *
- * @deprecated Please use the LdpResource annotation
+ * A name binding for Trellis LDP resources.
  */
 @Target({ TYPE, METHOD })
 @Retention(value = RUNTIME)
 @NameBinding
-@Deprecated
-public @interface Trellis { }
+public @interface LdpResource { }
