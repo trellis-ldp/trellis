@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
+@SuppressWarnings("deprecation")
 class RangeTest {
 
     @Test

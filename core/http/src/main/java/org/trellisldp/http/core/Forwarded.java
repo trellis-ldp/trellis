@@ -31,7 +31,9 @@ import org.slf4j.Logger;
  * A class representing an HTTP Forwarded header.
  *
  * @author acoburn
+ * @deprecated  Please use the corresponding class from trellis-common
  */
+@Deprecated
 public class Forwarded {
 
     private static final Logger LOGGER = getLogger(Forwarded.class);

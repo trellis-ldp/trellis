@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.core.Link;
 
 import org.apache.commons.rdf.api.IRI;
@@ -42,8 +41,9 @@ import org.trellisldp.vocabulary.XSD;
 
 /**
  * A default TimemapGenerator.
+ * @deprecated Please the corresponding class from trellis-common
  */
-@ApplicationScoped
+@Deprecated
 public class DefaultTimemapGenerator implements TimemapGenerator {
 
     private static final String TIME_IRI_PREFIX = "http://reference.data.gov.uk/id/gregorian-instant/";

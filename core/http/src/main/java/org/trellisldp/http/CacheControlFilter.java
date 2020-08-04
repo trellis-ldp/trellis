@@ -28,7 +28,7 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.ext.Provider;
 
 import org.eclipse.microprofile.config.Config;
-import org.trellisldp.http.core.LdpResource;
+import org.trellisldp.common.LdpResource;
 
 /**
  * A {@link ContainerResponseFilter} that adds Cache-Control headers to all

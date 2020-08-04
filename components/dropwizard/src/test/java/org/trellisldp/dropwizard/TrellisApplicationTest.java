@@ -23,8 +23,8 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT;
 import static org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
-import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import io.dropwizard.Application;
 import io.dropwizard.client.JerseyClientBuilder;

@@ -19,6 +19,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
 import org.trellisldp.api.*;
+import org.trellisldp.common.DefaultTimemapGenerator;
+import org.trellisldp.common.TimemapGenerator;
 import org.trellisldp.file.FileMementoService;
 
 /**
@@ -31,6 +33,8 @@ public class TrellisServiceSupplier {
 
     private MementoService mementoService = new FileMementoService();
 
+    private TimemapGenerator timemapGenerator = new DefaultTimemapGenerator();
+
     @Produces
     EventService getEventService() {
         return eventService;
@@ -39,5 +43,10 @@ public class TrellisServiceSupplier {
     @Produces
     MementoService getMementoService() {
         return mementoService;
+    }
+
+    @Produces
+    TimemapGenerator getTimemapGenerator() {
+        return timemapGenerator;
     }
 }

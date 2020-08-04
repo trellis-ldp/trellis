@@ -20,6 +20,7 @@ dependencies {
     api "org.eclipse.microprofile.metrics:microprofile-metrics-api:$microprofileMetricsVersion"
     api "org.eclipse.microprofile.openapi:microprofile-openapi-api:$microprofileOpenapiVersion"
     api project(':trellis-api')
+    api project(':trellis-common')
 
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "commons-io:commons-io:$commonsIoVersion"
@@ -54,8 +55,6 @@ if (project.sourceCompatibility.isJava11Compatible()) {
             jvmArgs += [
                 '--add-opens', "$moduleName/org.trellisldp.http.impl=org.junit.platform.commons",
                 '--add-opens', "$moduleName/org.trellisldp.http.impl=org.mockito",
-                '--add-opens', "$moduleName/org.trellisldp.http.core=org.junit.platform.commons",
-                '--add-opens', "$moduleName/org.trellisldp.http.core=org.mockito",
                 '--add-opens', "java.base/java.net=jersey.client",
             ]
         }

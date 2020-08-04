@@ -31,7 +31,9 @@ import org.slf4j.Logger;
  * @author acoburn
  *
  * @see <a href="https://tools.ietf.org/html/rfc5023">RFC 5023</a>
+ * @deprecated Please use the corresponding class in trellis-common
  */
+@Deprecated
 public class Slug {
 
     private static final Logger LOGGER = getLogger(Slug.class);

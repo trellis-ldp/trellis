@@ -17,9 +17,9 @@ module org.trellisldp.webdav {
     exports org.trellisldp.webdav;
     exports org.trellisldp.webdav.xml;
 
-    requires transitive org.trellisldp.api;
-    requires transitive org.trellisldp.vocabulary;
-    requires transitive org.trellisldp.http;
+    requires org.trellisldp.api;
+    requires org.trellisldp.vocabulary;
+    requires org.trellisldp.common;
 
     requires org.apache.commons.rdf.api;
     requires org.apache.commons.lang3;

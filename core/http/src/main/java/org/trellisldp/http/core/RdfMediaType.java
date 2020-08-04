@@ -21,7 +21,9 @@ import javax.ws.rs.core.MediaType;
  * RDF-based {@link MediaType} definitions.
  *
  * @author acoburn
+ * @deprecated Please use the corresponding class in trellis-common
  */
+@Deprecated
 public final class RdfMediaType {
 
     private static final String APPLICATION = "application";

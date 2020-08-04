@@ -15,7 +15,7 @@ ext {
 dependencies {
     api "jakarta.enterprise:jakarta.enterprise.cdi-api:$cdiApiVersion"
     api project(':trellis-api')
-    api project(':trellis-http')
+    api project(':trellis-common')
     api project(':trellis-vocabulary')
 
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
@@ -50,7 +50,7 @@ if (project.sourceCompatibility.isJava11Compatible()) {
         doFirst {
             jvmArgs += [
                 '--add-opens', "org.trellisldp.api/org.trellisldp.api=weld.core.impl",
-                '--add-opens', "org.trellisldp.http/org.trellisldp.http.core=weld.core.impl",
+                '--add-opens', "org.trellisldp.common/org.trellisldp.common=weld.core.impl",
                 '--add-opens', "org.trellisldp.constraint/org.trellisldp.constraint=weld.core.impl",
                 '--add-opens', "org.trellisldp.file/org.trellisldp.file=weld.core.impl",
                 '--add-opens', "org.trellisldp.jena/org.trellisldp.jena=weld.core.impl"

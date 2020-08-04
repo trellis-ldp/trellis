@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.http.core.HttpConstants.PRECONDITION_REQUIRED;
+import static org.trellisldp.common.HttpConstants.PRECONDITION_REQUIRED;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.io.IOException;
@@ -59,7 +59,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.TrellisRuntimeException;
-import org.trellisldp.http.core.Prefer;
+import org.trellisldp.common.Prefer;
 import org.trellisldp.jena.JenaIOService;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.Trellis;

@@ -28,7 +28,9 @@ import org.slf4j.Logger;
  * A class representing an HTTP Accept-Datetime header.
  *
  * @author acoburn
+ * @deprecated Please use the corresponding class in trellis-common.
  */
+@Deprecated
 public class AcceptDatetime {
 
     private static final Logger LOGGER = getLogger(AcceptDatetime.class);

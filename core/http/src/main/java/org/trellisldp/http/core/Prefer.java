@@ -38,7 +38,9 @@ import java.util.Set;
  *
  * @see <a href="https://tools.ietf.org/html/rfc7240">RFC 7240</a> and
  * <a href="https://www.iana.org/assignments/http-parameters/http-parameters.xhtml#preferences">IANA values</a>
+ * @deprecated Please use the corresponding class from trellis-common
  */
+@Deprecated
 public class Prefer {
 
     public static final String PREFER_REPRESENTATION = "representation";

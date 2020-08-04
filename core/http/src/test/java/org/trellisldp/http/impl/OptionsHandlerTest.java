@@ -29,11 +29,11 @@ import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.trellisldp.http.core.HttpConstants.*;
-import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON;
-import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES;
-import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.common.HttpConstants.*;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_LD_JSON;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_N_TRIPLES;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_SPARQL_UPDATE;
+import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE;
 
 import javax.ws.rs.core.Response;
 

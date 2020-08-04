@@ -37,6 +37,7 @@ import org.trellisldp.vocabulary.SKOS;
 /**
  * @author acoburn
  */
+@SuppressWarnings("deprecation")
 class SimpleEventTest {
 
     private static final RDF rdf = RDFFactory.getInstance();

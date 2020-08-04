@@ -31,7 +31,9 @@ import org.apache.commons.rdf.api.IRI;
  * A collection of constant values used by the Trellis HTTP layer.
  *
  * @author acoburn
+ * @deprecated Please use the corresponding class from trellis-common
  */
+@Deprecated
 public final class HttpConstants {
 
     /** The name of the HTTP request header used for Memento datetime negotiation. */

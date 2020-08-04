@@ -24,7 +24,9 @@ import org.apache.commons.rdf.api.Triple;
 
 /**
  * A service to generate a stream of Triples from a list of mementos.
+ * @deprecated Please use the corresponding interface from trellis-common
  */
+@Deprecated
 public interface TimemapGenerator {
 
     /**

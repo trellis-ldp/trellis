@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.common.HttpConstants.ACL;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 
 import java.net.URI;
@@ -47,7 +47,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.TrellisRuntimeException;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.common.TrellisRequest;
 
 /**
  * @author acoburn

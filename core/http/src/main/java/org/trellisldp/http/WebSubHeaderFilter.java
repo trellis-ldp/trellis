@@ -27,7 +27,7 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 
-import org.trellisldp.http.core.LdpResource;
+import org.trellisldp.common.LdpResource;
 
 /**
  * A {@link ContainerResponseFilter} that adds WebSub headers to all

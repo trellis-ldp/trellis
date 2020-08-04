@@ -37,14 +37,14 @@ import static javax.ws.rs.core.Response.Status.FOUND;
 import static javax.ws.rs.core.Response.ok;
 import static javax.ws.rs.core.Response.status;
 import static javax.ws.rs.core.UriBuilder.fromUri;
-import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
-import static org.trellisldp.http.core.HttpConstants.DATETIME;
-import static org.trellisldp.http.core.HttpConstants.FROM;
-import static org.trellisldp.http.core.HttpConstants.MEMENTO;
-import static org.trellisldp.http.core.HttpConstants.ORIGINAL;
-import static org.trellisldp.http.core.HttpConstants.TIMEGATE;
-import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
-import static org.trellisldp.http.core.HttpConstants.UNTIL;
+import static org.trellisldp.common.HttpConstants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.common.HttpConstants.DATETIME;
+import static org.trellisldp.common.HttpConstants.FROM;
+import static org.trellisldp.common.HttpConstants.MEMENTO;
+import static org.trellisldp.common.HttpConstants.ORIGINAL;
+import static org.trellisldp.common.HttpConstants.TIMEGATE;
+import static org.trellisldp.common.HttpConstants.TIMEMAP;
+import static org.trellisldp.common.HttpConstants.UNTIL;
 import static org.trellisldp.http.impl.HttpUtils.getProfile;
 import static org.trellisldp.http.impl.HttpUtils.getSyntax;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
@@ -64,8 +64,8 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.TrellisRequest;
 
 /**
  * @author acoburn

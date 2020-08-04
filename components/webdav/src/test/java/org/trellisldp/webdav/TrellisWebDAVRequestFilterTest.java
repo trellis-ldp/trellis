@@ -26,7 +26,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.http.core.HttpConstants.SLUG;
+import static org.trellisldp.common.HttpConstants.SLUG;
 
 import java.net.URI;
 
@@ -44,7 +44,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.http.core.ServiceBundler;
+import org.trellisldp.common.ServiceBundler;
 
 class TrellisWebDAVRequestFilterTest {
 

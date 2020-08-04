@@ -33,7 +33,9 @@ import org.trellisldp.api.RDFFactory;
 
 /**
  * A simple Event implementation.
+ * @deprecated Please use the corresponding class from trellis-common
  */
+@Deprecated
 public class SimpleEvent implements Event {
 
     private static final RDF rdf = RDFFactory.getInstance();
