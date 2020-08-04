@@ -38,7 +38,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 
 import org.slf4j.Logger;
-import org.trellisldp.http.Trellis;
+import org.trellisldp.http.core.LdpResource;
 
 /**
  * A {@link ContainerResponseFilter} that adds CORS-related headers to HTTP responses.
@@ -49,7 +49,7 @@ import org.trellisldp.http.Trellis;
  * @author acoburn
  */
 @Provider
-@Trellis
+@LdpResource
 public class CrossOriginResourceSharingFilter implements ContainerResponseFilter {
 
     private static final Logger LOGGER = getLogger(CrossOriginResourceSharingFilter.class);

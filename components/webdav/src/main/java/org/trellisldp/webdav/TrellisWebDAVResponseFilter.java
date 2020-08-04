@@ -22,10 +22,10 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 
-import org.trellisldp.http.Trellis;
+import org.trellisldp.http.core.LdpResource;
 
 @Provider
-@Trellis
+@LdpResource
 public class TrellisWebDAVResponseFilter implements ContainerResponseFilter {
 
     @Override

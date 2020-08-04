@@ -62,9 +62,9 @@ import org.slf4j.Logger;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
-import org.trellisldp.http.Trellis;
 import org.trellisldp.http.core.HttpConstants;
 import org.trellisldp.http.core.HttpSession;
+import org.trellisldp.http.core.LdpResource;
 import org.trellisldp.http.core.Prefer;
 import org.trellisldp.vocabulary.ACL;
 
@@ -77,7 +77,7 @@ import org.trellisldp.vocabulary.ACL;
  */
 @Provider
 @Priority(AUTHORIZATION)
-@Trellis
+@LdpResource
 public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     /**
