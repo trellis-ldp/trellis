@@ -91,7 +91,7 @@ jobs:
           ${{ runner.os }}-gradle-
 
     - name: Build with Gradle
-      run: ./gradlew build javadoc jacocoRootReport sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=trellis-ldp -x :trellis-quarkus:test -x :trellis-openliberty:test -x :trellis-dropwizard-app:test
+      run: ./gradlew build javadoc jacocoRootReport sonarqube -P jpms -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=trellis-ldp -x :trellis-quarkus:test -x :trellis-openliberty:test -x :trellis-dropwizard-app:test
       env:
         QUARKUS_DATASOURCE_USERNAME: postgres
         QUARKUS_DATASOURCE_PASSWORD: postgres
