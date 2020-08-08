@@ -502,7 +502,7 @@ subprojects { subproj ->
     }
 
     sonarqube {
-        skipProject = JavaVersion.current().isJava10Compatible()
+        skipProject = ! JavaVersion.current().isJava11()
     }
 
     afterReleaseBuild.dependsOn docs

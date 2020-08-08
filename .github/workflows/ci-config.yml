@@ -59,6 +59,44 @@ jobs:
         QUARKUS_DATASOURCE_PASSWORD: postgres
         QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost/trellis
 
+  sonar:
+    name: Sonar verification
+    needs: [validation]
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:10.8
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: trellis
+        ports:
+        - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v2.1.0
+    - name: Set up JDK 11
+      uses: actions/setup-java@v1.3.0
+      with:
+        java-version: 11
+
+    - name: Cache
+      uses: actions/cache@v1.1.2
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Build with Gradle
+      run: ./gradlew build javadoc jacocoRootReport coveralls sonarqube -x :trellis-quarkus:test -x :trellis-openliberty:test -x :trellis-dropwizard-app:test
+      env:
+        QUARKUS_DATASOURCE_USERNAME: postgres
+        QUARKUS_DATASOURCE_PASSWORD: postgres
+        QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost/trellis
+
   windows:
     name: Windows (triplestore) environment
     needs: [validation]
