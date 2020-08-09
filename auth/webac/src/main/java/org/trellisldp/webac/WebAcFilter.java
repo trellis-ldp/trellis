@@ -203,8 +203,8 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         final Session s = buildSession(ctx, baseUrl);
         final String method = ctx.getMethod();
 
-        final AuthorizedModes modes = accessService
-            .getAuthorizedModes(resourceService.getResourceIdentifier(base, path), s);
+        final IRI resourceIdentifier = resourceService.getResourceIdentifier(base, path);
+        final AuthorizedModes modes = accessService.getAuthorizedModes(resourceIdentifier, s);
         ctx.setProperty(SESSION_WEBAC_MODES, modes);
 
         final Prefer prefer = Prefer.valueOf(ctx.getHeaderString(PREFER));
@@ -212,17 +212,17 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         // Control-level access
         if (ctx.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
                 .contains(HttpConstants.ACL) || reqAudit(prefer)) {
-            verifyCanControl(modes.getAccessModes(), s, path);
+            verifyCanControl(modes.getAccessModes(), s, resourceIdentifier.getIRIString());
         // Everything else
         } else {
             if (readable.contains(method) || reqRepresentation(prefer)) {
-                verifyCanRead(modes.getAccessModes(), s, path);
+                verifyCanRead(modes.getAccessModes(), s, resourceIdentifier.getIRIString());
             }
             if (writable.contains(method)) {
-                verifyCanWrite(modes.getAccessModes(), s, path);
+                verifyCanWrite(modes.getAccessModes(), s, resourceIdentifier.getIRIString());
             }
             if (appendable.contains(method)) {
-                verifyCanAppend(modes.getAccessModes(), s, path);
+                verifyCanAppend(modes.getAccessModes(), s, resourceIdentifier.getIRIString());
             }
         }
     }
