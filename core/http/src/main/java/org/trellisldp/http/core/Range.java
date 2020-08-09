@@ -80,7 +80,7 @@ public class Range {
         if (range != null && range.startsWith("bytes=")) {
             final String[] parts = range.substring("bytes=".length()).split("-");
             // Since this value may be logged, make sure it won't break existing log patterns
-            final String cleaned = range.replaceAll("[\n|\r|\t]", "_");
+            final String cleaned = range.replaceAll("[\n\r\t]", "_");
             if (parts.length == 2) {
                 try {
                     final int[] ints = new int[2];
