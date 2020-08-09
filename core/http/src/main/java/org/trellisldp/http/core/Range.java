@@ -91,7 +91,7 @@ public class Range {
                     }
                     LOGGER.warn("Ignoring range request: {}", cleaned);
                 } catch (final NumberFormatException ex) {
-                    LOGGER.warn("Invalid Range request ({}): {}", cleaned);
+                    LOGGER.warn("Invalid Range request ({}): {}", cleaned, ex.getMessage());
                 }
             } else {
                 LOGGER.warn("Only simple range requests are supported! {}", cleaned);
