@@ -79,6 +79,8 @@ public class Range {
     private static int[] parse(final String range) {
         if (range != null && range.startsWith("bytes=")) {
             final String[] parts = range.substring("bytes=".length()).split("-");
+            // Since this value may be logged, make sure it won't break existing log patterns
+            final String cleaned = range.replaceAll("[\n|\r|\t]", "_");
             if (parts.length == 2) {
                 try {
                     final int[] ints = new int[2];
@@ -87,19 +89,14 @@ public class Range {
                     if (ints[1] > ints[0]) {
                         return ints;
                     }
-                    LOGGER.warn("Ignoring range request: {}", cleanRangeValue(range));
+                    LOGGER.warn("Ignoring range request: {}", cleaned);
                 } catch (final NumberFormatException ex) {
-                    LOGGER.warn("Invalid Range request ({}): {}", cleanRangeValue(range), ex.getMessage());
+                    LOGGER.warn("Invalid Range request ({}): {}", cleaned);
                 }
             } else {
-                LOGGER.warn("Only simple range requests are supported! {}", cleanRangeValue(range));
+                LOGGER.warn("Only simple range requests are supported! {}", cleaned);
             }
         }
         return new int[0];
-    }
-
-    private static String cleanRangeValue(final String range) {
-        // Since this value will be logged, make sure it won't break log patterns
-        return range.replaceAll("[\n|\r|\t]", "_");
     }
 }
