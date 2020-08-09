@@ -87,14 +87,19 @@ public class Range {
                     if (ints[1] > ints[0]) {
                         return ints;
                     }
-                    LOGGER.warn("Ignoring range request: {}", range);
+                    LOGGER.warn("Ignoring range request: {}", cleanRangeValue(range));
                 } catch (final NumberFormatException ex) {
-                    LOGGER.warn("Invalid Range request ({}): {}", range, ex.getMessage());
+                    LOGGER.warn("Invalid Range request ({}): {}", cleanRangeValue(range), ex.getMessage());
                 }
             } else {
-                LOGGER.warn("Only simple range requests are supported! {}", range);
+                LOGGER.warn("Only simple range requests are supported! {}", cleanRangeValue(range));
             }
         }
         return new int[0];
+    }
+
+    private static String cleanRangeValue(final String range) {
+        // Since this value will be logged, make sure it won't break log patterns
+        return range.replaceAll("[\n|\r|\t]", "_");
     }
 }
