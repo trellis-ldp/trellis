@@ -1,7 +1,18 @@
+// OpenLiberty requires using the legacy plugin management mechanism
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'io.openliberty.tools:liberty-gradle-plugin:3.0'
+    }
+}
+
 plugins {
     id "war"
-    id "net.wasdev.wlp.gradle.plugins.Liberty"
 }
+
+apply plugin: 'liberty'
 
 ext {
     appName = "trellis"
@@ -66,7 +77,7 @@ dependencies {
 liberty {
     server {
         name = "${appName}"
-        configFile = file("src/main/liberty/config/server.xml")
+        serverXmlFile = file("src/main/liberty/config/server.xml")
         bootstrapProperties = ['default.http.port': testServerHttpPort,
                                'default.https.port': testServerHttpsPort,
                                'trellis.triplestore.rdf-location': 'data/resources',
@@ -74,7 +85,6 @@ liberty {
                                'trellis.file.binary-path': 'data/binary',
                                'app.context.root': warContext]
         packageLiberty {
-            archive = "$buildDir/${appName}.zip"
             include = "usr"
         }
     }
