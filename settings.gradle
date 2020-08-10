@@ -6,7 +6,6 @@ pluginManagement {
     plugins {
         id 'biz.aQute.bnd.builder' version "4.1.0"
         id 'info.solidsoft.pitest' version "1.5.1"
-        id 'io.quarkus' version "1.7.0.Final"
     }
 }
 
