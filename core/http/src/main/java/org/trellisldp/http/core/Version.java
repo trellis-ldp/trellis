@@ -27,7 +27,9 @@ import org.slf4j.Logger;
  * A class representing a version URI parameter.
  *
  * @author acoburn
+ * @deprecated Please use the corresponding class from trellis-common.
  */
+@Deprecated
 public class Version {
 
     private static final Logger LOGGER = getLogger(Version.class);

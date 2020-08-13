@@ -32,7 +32,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.*;
 import static org.trellisldp.api.TrellisUtils.normalizePath;
-import static org.trellisldp.http.core.HttpConstants.*;
+import static org.trellisldp.common.HttpConstants.*;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.time.DateTimeException;
@@ -63,8 +63,8 @@ import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.TrellisRuntimeException;
-import org.trellisldp.http.core.Prefer;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.common.Prefer;
+import org.trellisldp.common.TrellisRequest;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 

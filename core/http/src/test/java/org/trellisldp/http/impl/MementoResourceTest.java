@@ -23,11 +23,11 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Link.fromUri;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.http.core.HttpConstants.DATETIME;
-import static org.trellisldp.http.core.HttpConstants.FROM;
-import static org.trellisldp.http.core.HttpConstants.MEMENTO;
-import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
-import static org.trellisldp.http.core.HttpConstants.UNTIL;
+import static org.trellisldp.common.HttpConstants.DATETIME;
+import static org.trellisldp.common.HttpConstants.FROM;
+import static org.trellisldp.common.HttpConstants.MEMENTO;
+import static org.trellisldp.common.HttpConstants.TIMEMAP;
+import static org.trellisldp.common.HttpConstants.UNTIL;
 
 import java.time.Instant;
 import java.util.List;

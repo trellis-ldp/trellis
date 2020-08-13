@@ -30,7 +30,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.io.IOException;
@@ -55,7 +55,7 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.audit.DefaultAuditService;
-import org.trellisldp.http.core.HttpConstants;
+import org.trellisldp.common.HttpConstants;
 import org.trellisldp.vocabulary.LDP;
 
 /**

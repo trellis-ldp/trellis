@@ -35,7 +35,7 @@ dependencies {
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation project(':trellis-api')
     implementation project(':trellis-jena')
-    implementation project(':trellis-http')
+    implementation project(':trellis-common')
     implementation project(':trellis-vocabulary')
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"

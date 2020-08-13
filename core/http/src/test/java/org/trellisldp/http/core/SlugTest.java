@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 /**
  * @author acoburn
  */
+@SuppressWarnings("deprecation")
 class SlugTest {
 
     private static final String SLUG_VALUE = "slugValue";

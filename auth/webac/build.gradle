@@ -18,7 +18,7 @@ dependencies {
     api "org.apache.commons:commons-rdf-api:$commonsRdfVersion"
     api "org.eclipse.microprofile.metrics:microprofile-metrics-api:$microprofileMetricsVersion"
     api project(':trellis-api')
-    api project(':trellis-http')
+    api project(':trellis-common')
 
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
     implementation "org.apache.jena:jena-arq:$jenaVersion"

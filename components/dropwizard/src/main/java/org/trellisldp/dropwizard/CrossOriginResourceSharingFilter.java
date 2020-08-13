@@ -38,7 +38,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 
 import org.slf4j.Logger;
-import org.trellisldp.http.core.LdpResource;
+import org.trellisldp.common.LdpResource;
 
 /**
  * A {@link ContainerResponseFilter} that adds CORS-related headers to HTTP responses.

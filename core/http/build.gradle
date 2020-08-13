@@ -20,6 +20,7 @@ dependencies {
     api "org.eclipse.microprofile.metrics:microprofile-metrics-api:$microprofileMetricsVersion"
     api "org.eclipse.microprofile.openapi:microprofile-openapi-api:$microprofileOpenapiVersion"
     api project(':trellis-api')
+    api project(':trellis-common')
 
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "commons-io:commons-io:$commonsIoVersion"

@@ -47,8 +47,8 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.common.HttpConstants.ACL;
+import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -93,10 +93,10 @@ import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.TrellisRuntimeException;
+import org.trellisldp.common.DefaultTimemapGenerator;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.TrellisRequest;
 import org.trellisldp.constraint.LdpConstraintService;
-import org.trellisldp.http.core.DefaultTimemapGenerator;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 

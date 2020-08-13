@@ -8,7 +8,7 @@ description = 'Trellis WebDAV'
 
 ext {
     moduleName = 'org.trellisldp.webdav'
-    testModules = ['org.trellisldp.jena', 'org.trellisldp.audit', 'smallrye.config']
+    testModules = ['org.trellisldp.jena', 'org.trellisldp.http', 'org.trellisldp.audit', 'smallrye.config']
 }
 
 dependencies {
@@ -25,7 +25,7 @@ dependencies {
     implementation "org.apache.jena:jena-arq:$jenaVersion"
     implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
-    implementation project(':trellis-http')
+    implementation project(':trellis-common')
     implementation project(':trellis-vocabulary')
 
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
@@ -35,6 +35,7 @@ dependencies {
     testImplementation "org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion"
     testImplementation "org.glassfish.jersey.connectors:jersey-apache-connector:$jerseyVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation project(':trellis-http')
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint')
     testImplementation project(':trellis-jena')

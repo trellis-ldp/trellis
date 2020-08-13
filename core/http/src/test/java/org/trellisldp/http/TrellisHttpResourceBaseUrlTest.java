@@ -17,7 +17,7 @@ package org.trellisldp.http;
 
 import static java.util.Collections.singletonMap;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.common.HttpConstants.ACL;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 
 import javax.ws.rs.core.Application;

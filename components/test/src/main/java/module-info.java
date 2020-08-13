@@ -16,10 +16,10 @@
 module org.trellisldp.test {
     exports org.trellisldp.test;
 
-    requires transitive org.trellisldp.api;
-    requires transitive org.trellisldp.http;
-    requires transitive org.trellisldp.jena;
-    requires transitive org.trellisldp.vocabulary;
+    requires org.trellisldp.api;
+    requires org.trellisldp.common;
+    requires org.trellisldp.jena;
+    requires org.trellisldp.vocabulary;
 
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;

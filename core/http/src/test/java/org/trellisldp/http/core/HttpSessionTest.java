@@ -36,6 +36,7 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * @author acoburn
  */
+@SuppressWarnings("deprecation")
 class HttpSessionTest {
 
     private static final RDF rdf = RDFFactory.getInstance();

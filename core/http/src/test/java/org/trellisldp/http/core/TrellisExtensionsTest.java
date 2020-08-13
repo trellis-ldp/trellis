@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.vocabulary.Trellis;
 
+@SuppressWarnings("deprecation")
 class TrellisExtensionsTest {
 
     @Test

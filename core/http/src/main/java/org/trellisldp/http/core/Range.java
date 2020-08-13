@@ -24,7 +24,9 @@ import org.slf4j.Logger;
  * A class representing an HTTP Range header.
  *
  * @author acoburn
+ * @deprecated Please use the corresponding class from trellis-common
  */
+@Deprecated
 public class Range {
 
     private static final Logger LOGGER = getLogger(Range.class);

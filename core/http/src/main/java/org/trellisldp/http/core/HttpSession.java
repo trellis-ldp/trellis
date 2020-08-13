@@ -34,7 +34,9 @@ import org.trellisldp.vocabulary.Trellis;
 
 /**
  * @author acoburn
+ * @deprecated Please use the corresponding class from trellis-common
  */
+@Deprecated
 public class HttpSession implements Session {
 
     /** The admin role. */

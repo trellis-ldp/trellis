@@ -26,8 +26,10 @@ import javax.ws.rs.NameBinding;
 
 /**
  * A name binding for Trellis LDP resources.
+ * @deprecated Please use the corresponding class from trellis-common
  */
 @Target({ TYPE, METHOD })
 @Retention(value = RUNTIME)
 @NameBinding
+@Deprecated
 public @interface LdpResource { }

@@ -22,9 +22,9 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PURGE_BINARY_ON_DELETE;
-import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.common.HttpConstants.ACL;
+import static org.trellisldp.common.HttpConstants.CONFIG_HTTP_PURGE_BINARY_ON_DELETE;
+import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
 import java.util.concurrent.CompletionException;

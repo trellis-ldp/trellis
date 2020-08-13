@@ -28,6 +28,10 @@ import org.apache.commons.rdf.api.RDF;
 import org.eclipse.microprofile.config.Config;
 import org.trellisldp.api.RDFFactory;
 
+/**
+ * @deprecated Please use the corresponding class from trellis-common
+ */
+@Deprecated
 public final class TrellisExtensions {
 
     private static final RDF rdf = RDFFactory.getInstance();

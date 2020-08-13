@@ -38,7 +38,9 @@ import javax.ws.rs.core.UriInfo;
  * A class representing an HTTP request with various LDP-related headers and query parameters.
  *
  * @author acoburn
+ * @deprecated Please use the corresponding class from trellis-common.
  */
+@Deprecated
 public class TrellisRequest {
 
     private final boolean trailingSlash;

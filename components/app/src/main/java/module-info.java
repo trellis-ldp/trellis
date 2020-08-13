@@ -16,9 +16,9 @@
 module org.trellisldp.app {
     exports org.trellisldp.app;
 
-    requires transitive org.trellisldp.api;
-    requires transitive org.trellisldp.http;
-    requires transitive org.trellisldp.vocabulary;
+    requires org.trellisldp.api;
+    requires org.trellisldp.common;
+    requires org.trellisldp.vocabulary;
 
     requires jakarta.inject;
     requires jakarta.enterprise.cdi.api;

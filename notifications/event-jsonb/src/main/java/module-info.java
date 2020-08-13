@@ -16,8 +16,8 @@
 module org.trellisldp.event.jsonb {
     exports org.trellisldp.event.jsonb;
 
-    requires transitive org.trellisldp.api;
-    requires transitive org.trellisldp.vocabulary;
+    requires org.trellisldp.api;
+    requires org.trellisldp.vocabulary;
 
     requires jakarta.enterprise.cdi.api;
     requires java.json.bind;

@@ -26,7 +26,9 @@ import org.trellisldp.api.ResourceService;
 /**
  * The ServiceBundler interface collects all the services required for a full
  * Trellis application.
+ * @deprecated Please use the corresponding class from trellis-common
  */
+@Deprecated
 public interface ServiceBundler {
 
     /**
