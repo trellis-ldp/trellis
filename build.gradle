@@ -179,7 +179,7 @@ allprojects { subproj ->
         tagTemplate = '$name-$version'
         git {
             /* Note: for maintenance branches, change this to the appropriate branch name. */
-            requireBranch = 'main'
+            requireBranch = 'trellis-0.14.x'
             signTag = true
         }
     }
