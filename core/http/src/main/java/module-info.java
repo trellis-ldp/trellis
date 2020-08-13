@@ -15,7 +15,6 @@
  */
 module org.trellisldp.http {
     exports org.trellisldp.http;
-    exports org.trellisldp.http.core;
 
     requires org.trellisldp.api;
     requires org.trellisldp.common;
