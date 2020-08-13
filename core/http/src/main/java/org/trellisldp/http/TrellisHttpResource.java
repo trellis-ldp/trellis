@@ -91,7 +91,6 @@ import org.trellisldp.vocabulary.LDP;
 @ApplicationScoped
 @Path("{path: .*}")
 @LdpResource
-@Trellis
 public class TrellisHttpResource {
 
     private static final Logger LOGGER = getLogger(TrellisHttpResource.class);
