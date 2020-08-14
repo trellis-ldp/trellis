@@ -129,7 +129,7 @@ public class OAuthFilter implements ContainerRequestFilter {
         } catch (final SecurityException ex) {
             LOGGER.debug("Invalid signature, ignoring JWT token: {}", ex.getMessage());
         } catch (final JwtException ex) {
-            LOGGER.warn("Problem reading JWT value: {}", ex.getMessage());
+            LOGGER.debug("Problem reading JWT value: {}", ex.getMessage());
         }
         return null;
     }

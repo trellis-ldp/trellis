@@ -61,7 +61,7 @@ public class Version {
         try {
             return ofEpochSecond(parseLong(version.trim()));
         } catch (final NumberFormatException ex) {
-            LOGGER.warn("Unable to parse version string '{}': {}", version, ex.getMessage());
+            LOGGER.debug("Unable to parse version string '{}': {}", version, ex.getMessage());
         }
         return null;
     }

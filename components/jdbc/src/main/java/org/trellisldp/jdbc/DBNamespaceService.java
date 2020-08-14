@@ -86,7 +86,7 @@ public class DBNamespaceService implements NamespaceService {
                     handle.execute("INSERT INTO namespaces (prefix, namespace) VALUES (?, ?)", prefix, namespace));
                 return true;
             } catch (final StatementException ex) {
-                LOGGER.warn("Could not save prefix {} with namespace {}: {}", prefix, namespace, ex.getMessage());
+                LOGGER.debug("Could not save prefix {} with namespace {}: {}", prefix, namespace, ex.getMessage());
             }
         }
         return false;

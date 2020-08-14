@@ -67,7 +67,7 @@ public class Credentials {
                 return new Credentials(parts[0], parts[1]);
             }
         } catch (final IllegalArgumentException ex) {
-            LOGGER.warn("Invalid credentials provided: {}", ex.getMessage());
+            LOGGER.debug("Invalid credentials provided: {}", ex.getMessage());
         }
         return null;
     }

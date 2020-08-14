@@ -82,7 +82,7 @@ public class FileNamespaceService implements NamespaceService {
         requireNonNull(namespace, "The namespce value may not be null!");
 
         if (dataRev.containsKey(namespace)) {
-            LOGGER.warn("A prefix already exists for the namespace: {}", namespace);
+            LOGGER.debug("A prefix already exists for the namespace: {}", namespace);
             return false;
         }
 
