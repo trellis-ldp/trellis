@@ -74,7 +74,7 @@ public class Slug {
         try {
             return DECODER.decode(value);
         } catch (final DecoderException ex) {
-            LOGGER.warn("Error decoding slug value, ignoring header: {}", ex.getMessage());
+            LOGGER.debug("Error decoding slug value, ignoring header: {}", ex.getMessage());
         }
         return null;
     }
