@@ -131,7 +131,7 @@ public final class FileUtils {
         } else if (nodes.size() == 4) {
             return of(fromJena(create(nodes.get(3), nodes.get(0), nodes.get(1), nodes.get(2))));
         } else {
-            LOGGER.warn("Skipping invalid data value: {}", line);
+            LOGGER.debug("Skipping invalid data value: {}", line);
             return empty();
         }
     }

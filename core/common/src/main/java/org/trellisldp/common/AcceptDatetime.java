@@ -78,7 +78,7 @@ public class AcceptDatetime {
         try {
             return parse(datetime.trim(), RFC_1123_DATE_TIME).toInstant();
         } catch (final DateTimeException ex) {
-            LOGGER.warn("Invalid date supplied ({}): {}", datetime, ex.getMessage());
+            LOGGER.debug("Invalid date supplied ({}): {}", datetime, ex.getMessage());
         }
         return null;
     }

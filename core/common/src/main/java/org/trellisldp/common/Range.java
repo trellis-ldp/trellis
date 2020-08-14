@@ -88,7 +88,7 @@ public class Range {
                         return ints;
                     }
                 } catch (final NumberFormatException ex) {
-                    LOGGER.warn("Invalid Range request: {}", ex.getMessage());
+                    LOGGER.debug("Invalid Range request: {}", ex.getMessage());
                 }
             }
         }

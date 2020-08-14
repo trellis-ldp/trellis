@@ -99,7 +99,7 @@ public class Forwarded {
             try {
                 return OptionalInt.of(Integer.parseInt(port));
             } catch (final NumberFormatException ex) {
-                LOGGER.warn("Could not parse port number: {}", ex.getMessage());
+                LOGGER.debug("Could not parse port number: {}", ex.getMessage());
             }
         }
         return OptionalInt.empty();

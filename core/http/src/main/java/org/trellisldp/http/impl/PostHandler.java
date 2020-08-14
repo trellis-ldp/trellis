@@ -208,7 +208,6 @@ public class PostHandler extends MutatingLdpHandler {
 
         getAuditQuadData().forEachOrdered(immutable::add);
 
-        LOGGER.info("Creating resource");
         return handleResourceCreation(metadata, mutable, immutable)
             .thenCompose(future -> persistBinaryContent(binary))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))

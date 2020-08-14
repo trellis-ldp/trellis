@@ -139,7 +139,7 @@ public class PatchHandler extends MutatingLdpHandler {
                 .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE).build());
         } else if (syntax == null) {
             // Get the incoming syntax and check that the underlying I/O service supports it
-            LOGGER.warn("Content-Type: {} not supported", getRequest().getContentType());
+            LOGGER.debug("Content-Type: {} not supported", getRequest().getContentType());
             throw new NotSupportedException();
         }
         // Check the cache headers
