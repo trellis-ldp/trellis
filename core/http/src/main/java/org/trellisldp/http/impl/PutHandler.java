@@ -303,8 +303,7 @@ public class PutHandler extends MutatingLdpHandler {
     }
 
     private CompletionStage<Void> handleUpdateEvent(final IRI ldpType) {
-        return emitEvent(getInternalId(), getResource() == null ? AS.Create : AS.Update,
-                getExtensionGraphName() != null ? LDP.RDFSource : ldpType);
+        return emitEvent(getInternalId(), getResource() == null ? AS.Create : AS.Update, ldpType);
     }
 
     private IRI effectiveLdpType(final IRI ldpType) {
