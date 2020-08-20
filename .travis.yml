@@ -33,9 +33,9 @@ jobs:
     - env: JOB=aws
 
   include:
-    # JDK 8
-    - name: "Java 8"
-      jdk: openjdk8
+    # JDK 11
+    - name: "Java 11"
+      jdk: openjdk11
       script: ./gradlew test jacocoRootReport coveralls -x :trellis-quarkus:test -x :trellis-openliberty:test -x :trellis-dropwizard-app:test
 
     # deploy to AWS
