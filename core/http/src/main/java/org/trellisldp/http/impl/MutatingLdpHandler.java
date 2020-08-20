@@ -198,8 +198,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
      */
     protected CompletionStage<Void> emitEvent(final IRI identifier, final IRI activityType, final IRI resourceType) {
         // Always notify about updates for the resource in question
+        final IRI eventResourceType = getExtensionGraphName() != null ? LDP.RDFSource : resourceType;
         getServices().getEventService().emit(new SimpleEvent(getUrl(identifier, resourceType), getSession().getAgent(),
-                    asList(PROV.Activity, activityType), ldpResourceTypes(resourceType).collect(toList())));
+                    asList(PROV.Activity, activityType), ldpResourceTypes(eventResourceType).collect(toList())));
 
         // Further notifications are only relevant for non-extension resources
         if (getExtensionGraphName() == null) {
