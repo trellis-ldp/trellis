@@ -83,7 +83,7 @@ public final class TrellisUtils {
         if (identifier.getIRIString().equals(TRELLIS_DATA_PREFIX)) {
             return empty();
         }
-        final String path = identifier.getIRIString().substring(TRELLIS_DATA_PREFIX.length());
+        final String path = normalizeIdentifier(identifier.getIRIString().substring(TRELLIS_DATA_PREFIX.length()));
         final int index = Math.max(path.lastIndexOf('/'), 0);
         return of(rdf.createIRI(TRELLIS_DATA_PREFIX + path.substring(0, index)));
     }
@@ -95,16 +95,29 @@ public final class TrellisUtils {
      */
     public static IRI normalizeIdentifier(final IRI identifier) {
         final String iri = identifier.getIRIString();
-        if (iri.contains("#")) {
-            final String normalized = iri.split("#")[0];
-            if (normalized.endsWith(SLASH)) {
-                return rdf.createIRI(normalized.substring(0, normalized.length() - 1));
-            }
-            return rdf.createIRI(normalized);
-        } else if (iri.endsWith(SLASH) && !TRELLIS_DATA_PREFIX.equals(iri)) {
-            return rdf.createIRI(iri.substring(0, iri.length() - 1));
+        if (iri.contains("#") || iri.contains("?") || iri.endsWith(SLASH)) {
+            return rdf.createIRI(normalizeIdentifier(iri));
         }
         return identifier;
+    }
+
+    private static String normalizeIdentifier(final String identifier) {
+        return removeTrailingSlash(removeQueryParams(removeFragment(identifier)));
+    }
+
+    private static String removeFragment(final String iri) {
+        return iri.split("#")[0];
+    }
+
+    private static String removeQueryParams(final String iri) {
+        return iri.split("\\?")[0];
+    }
+
+    private static String removeTrailingSlash(final String iri) {
+        if (iri.endsWith(SLASH) && !TRELLIS_DATA_PREFIX.equals(iri)) {
+            return iri.substring(0, iri.length() - 1);
+        }
+        return iri;
     }
 
     /**
