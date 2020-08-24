@@ -57,7 +57,7 @@ ext {
     // Databases
     h2Version = "1.4.200"
     mariadbVersion = "2.6.2"
-    postgresVersion = "42.2.15"
+    postgresVersion = "42.2.16"
 
     // Transitive dependencies
     snakeyamlVersion = "1.26"
