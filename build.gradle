@@ -261,7 +261,6 @@ subprojects { subproj ->
             javadoc {
                 failOnError = false
                 inputs.property("moduleName", moduleName)
-                options.setModulePath(new ArrayList(classpath.getFiles()))
             }
         }
     }
