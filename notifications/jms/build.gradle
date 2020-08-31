@@ -36,10 +36,6 @@ dependencies {
         exclude group: "com.fasterxml.jackson.core", module: "jackson-databind"
         exclude group: "org.apache.activemq", module: "activemq-client"
     }
-
-    if (!project.sourceCompatibility.isJava11Compatible()) {
-        testImplementation "org.apache.activemq:activemq-broker:$activeMqVersion"
-    }
 }
 
 pitest {
@@ -48,21 +44,19 @@ pitest {
     threads = 4
 }
 
-if (project.sourceCompatibility.isJava11Compatible()) {
-    compileTestJava {
-        doFirst {
-            options.compilerArgs += [
-                '--patch-module', "activemq.client=" + files(configurations.activemq).asPath,
-            ]
-        }
+compileTestJava {
+    doFirst {
+        options.compilerArgs += [
+            '--patch-module', "activemq.client=" + files(configurations.activemq).asPath,
+        ]
     }
+}
 
-    test {
-        inputs.property("moduleName", moduleName)
-        doFirst {
-            jvmArgs += [
-                '--patch-module', "activemq.client=" + files(configurations.activemq).asPath,
-            ]
-        }
+test {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        jvmArgs += [
+            '--patch-module', "activemq.client=" + files(configurations.activemq).asPath,
+        ]
     }
 }

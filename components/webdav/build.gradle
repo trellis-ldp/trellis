@@ -52,19 +52,14 @@ pitest {
     threads = 4
 }
 
-if (project.sourceCompatibility.isJava11Compatible()) {
-    test {
-        inputs.property("moduleName", moduleName)
-        doFirst {
-            jvmArgs += [
-                '--add-opens', "java.base/java.net=jersey.client",
-                '--add-opens', "$moduleName/org.trellisldp.webdav.impl=org.junit.platform.commons",
-                '--add-opens', "$moduleName/org.trellisldp.webdav.impl=org.mockito",
-            ]
-        }
-    }
-}
-
 test {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        jvmArgs += [
+            '--add-opens', "java.base/java.net=jersey.client",
+            '--add-opens', "$moduleName/org.trellisldp.webdav.impl=org.junit.platform.commons",
+            '--add-opens', "$moduleName/org.trellisldp.webdav.impl=org.mockito",
+        ]
+    }
     mustRunAfter(':trellis-http:test')
 }

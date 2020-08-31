@@ -33,10 +33,6 @@ dependencies {
     testImplementation project(':trellis-vocabulary')
 
     qpid "org.apache.qpid:qpid-broker:$qpidVersion"
-
-    if (!project.sourceCompatibility.isJava11Compatible()) {
-        testImplementation("org.apache.qpid:qpid-broker:$qpidVersion")
-    }
 }
 
 pitest {
@@ -58,31 +54,27 @@ configurations.all {
     }
 }
 
+compileTestJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs += [
+            '--add-reads', "$moduleName=ALL-UNNAMED",
+        ]
+        classpath = files(configurations.qpid)
+    }
+}
+
 test {
     def port = Integer.toString(new ServerSocket(0).getLocalPort())
     systemProperty 'qpid.amqp.port', port
     systemProperty 'derby.stream.error.file', "$buildDir/derby.log"
     systemProperty 'trellis.amqp.uri', "amqp://guest:guest@localhost:${port}/testing"
-}
+    inputs.property("moduleName", moduleName)
 
-if (project.sourceCompatibility.isJava11Compatible()) {
-    compileTestJava {
-        inputs.property("moduleName", moduleName)
-        doFirst {
-            options.compilerArgs += [
-                '--add-reads', "$moduleName=ALL-UNNAMED",
-            ]
-            classpath = files(configurations.qpid)
-        }
-    }
-
-    test {
-        inputs.property("moduleName", moduleName)
-        doFirst {
-            jvmArgs += [
-                '--add-reads', "$moduleName=ALL-UNNAMED",
-            ]
-            classpath = files(configurations.qpid)
-        }
+    doFirst {
+        jvmArgs += [
+            '--add-reads', "$moduleName=ALL-UNNAMED",
+        ]
+        classpath = files(configurations.qpid)
     }
 }

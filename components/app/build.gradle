@@ -44,17 +44,15 @@ pitest {
     threads = 4
 }
 
-if (project.sourceCompatibility.isJava11Compatible()) {
-    test {
-        inputs.property("moduleName", moduleName)
-        doFirst {
-            jvmArgs += [
-                '--add-opens', "org.trellisldp.api/org.trellisldp.api=weld.core.impl",
-                '--add-opens', "org.trellisldp.common/org.trellisldp.common=weld.core.impl",
-                '--add-opens', "org.trellisldp.constraint/org.trellisldp.constraint=weld.core.impl",
-                '--add-opens', "org.trellisldp.file/org.trellisldp.file=weld.core.impl",
-                '--add-opens', "org.trellisldp.jena/org.trellisldp.jena=weld.core.impl"
-            ]
-        }
+test {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        jvmArgs += [
+            '--add-opens', "org.trellisldp.api/org.trellisldp.api=weld.core.impl",
+            '--add-opens', "org.trellisldp.common/org.trellisldp.common=weld.core.impl",
+            '--add-opens', "org.trellisldp.constraint/org.trellisldp.constraint=weld.core.impl",
+            '--add-opens', "org.trellisldp.file/org.trellisldp.file=weld.core.impl",
+            '--add-opens', "org.trellisldp.jena/org.trellisldp.jena=weld.core.impl"
+        ]
     }
 }
