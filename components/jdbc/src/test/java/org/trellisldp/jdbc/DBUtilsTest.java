@@ -16,7 +16,6 @@
 package org.trellisldp.jdbc;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.vocabulary.RDF.langString;
 
@@ -27,7 +26,6 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledOnJre;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.LDP;
@@ -88,12 +86,5 @@ class DBUtilsTest {
         doThrow(IOException.class).when(mockDataset).close();
 
         assertThrows(TrellisRuntimeException.class, () -> DBUtils.closeDataset(mockDataset));
-    }
-
-    @Test
-    @EnabledOnJre(JAVA_8)
-    void testFindFirst() {
-        assertTrue(DBUtils.findFirst(RDF.class).isPresent());
-        assertFalse(DBUtils.findFirst(LDP.class).isPresent());
     }
 }
