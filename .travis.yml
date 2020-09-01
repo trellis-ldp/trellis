@@ -2,17 +2,10 @@ dist: xenial
 os: linux
 language: java
 
-addons:
-  sonarcloud:
-    organization: trellis-ldp
-
 branches:
   only:
-    - main
     # release tags
     - /^trellis-\d+\.\d+\.\d+$/
-    # maintenance branches
-    - /^trellis-\d+\.\d+\.x$/
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -33,16 +26,11 @@ jobs:
     - env: JOB=aws
 
   include:
-    # JDK 8
-    #- name: "Java 8"
-      #jdk: openjdk8
-      #script: ./gradlew test jacocoRootReport coveralls -x :trellis-quarkus:test -x :trellis-openliberty:test -x :trellis-dropwizard-app:test
-
     # deploy to AWS
     - name: "Publish JavaDocs"
       jdk: openjdk11
       env: JOB=aws
-      if: branch =~ /^trellis-\d+\.\d+\.\d+$/ AND type = push
+      if: type = push
       script: ./gradlew apidocs
       deploy:
           provider: s3
