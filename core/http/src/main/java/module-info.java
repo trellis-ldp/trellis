@@ -21,7 +21,6 @@ module org.trellisldp.http {
     requires org.trellisldp.vocabulary;
 
     requires org.apache.commons.codec;
-    requires org.apache.commons.io;
     requires org.apache.commons.rdf.api;
     requires org.slf4j;
 

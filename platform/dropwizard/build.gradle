@@ -6,10 +6,6 @@ plugins {
 
 description = "Trellis Dropwizard Application"
 
-ext {
-    moduleName = 'org.trellisldp.dropwizard.app'
-}
-
 application {
     mainClassName = 'org.trellisldp.dropwizard.app.TrellisApplication'
     applicationName = 'trellis'
@@ -93,7 +89,7 @@ sonarqube {
 
 jar {
     manifest {
-        attributes('Automatic-Module-Name': moduleName)
+        attributes('Automatic-Module-Name': 'org.trellisldp.dropwizard.app')
     }
 }
 
@@ -121,8 +117,6 @@ gradle.taskGraph.whenReady({ graph ->
 })
 
 java {
-    // because this isn't built as a JPMS module
-    if (project.hasProperty("jpms") && JavaVersion.current().isJava11Compatible()) {
-        disableAutoTargetJvm()
-    }
+    // Because dropwizard doesn't properly support Java modularity
+    disableAutoTargetJvm()
 }

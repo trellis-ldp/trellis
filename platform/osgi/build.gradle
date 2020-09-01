@@ -9,9 +9,8 @@ repositories {
     }
 }
 
-ext {
-    moduleName = 'org.trellisldp.osgi'
-}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 def static randomPort() {
     try {
@@ -48,6 +47,7 @@ dependencies {
     testImplementation "org.osgi:org.osgi.compendium:$osgiCompendiumVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
 
+    testImplementation "jakarta.inject:jakarta.inject-api:$injectApiVersion"
     testImplementation project(':trellis-api')
     testImplementation project(':trellis-amqp')
     testImplementation project(':trellis-app')
@@ -68,9 +68,6 @@ dependencies {
     testImplementation project(':trellis-webac')
     testImplementation project(':trellis-karaf')
     testImplementation project(':trellis-vocabulary')
-
-    testImplementation group: 'org.apache.karaf.features', name: 'standard', version: karafVersion, classifier:'features', ext: 'xml'
-    testImplementation group: 'org.apache.karaf.features', name: 'spring-legacy', version: karafVersion, classifier:'features', ext: 'xml'
 
     testRuntimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junitVersion}"
@@ -134,9 +131,6 @@ rootProject.childProjects.findAll { n, p -> p != project }.each { n, p ->
 }
 
 java {
-    // because this isn't built as a JPMS module
-    if (project.hasProperty("jpms") && JavaVersion.current().isJava11Compatible()) {
-        disableAutoTargetJvm()
-    }
+    disableAutoTargetJvm()
 }
 

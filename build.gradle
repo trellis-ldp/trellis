@@ -185,10 +185,9 @@ allprojects { subproj ->
     }
 
     configurations.all {
-        if (JavaVersion.current().isJava11Compatible() && subproj.hasProperty("jpms")) {
-            exclude group: 'commons-logging', module: 'commons-logging'
-            exclude group: 'com.google.code.findbugs', module: 'jsr305'
-        }
+        exclude group: 'commons-logging', module: 'commons-logging'
+        exclude group: 'com.google.code.findbugs', module: 'jsr305'
+
         resolutionStrategy {
             // use managed version until jackson-dataformat-yaml updates dependency
             force "org.yaml:snakeyaml:$snakeyamlVersion"
@@ -213,15 +212,12 @@ allprojects { subproj ->
 
 subprojects { subproj ->
 
-    def jpms = JavaVersion.current().isJava11Compatible() && subproj.hasProperty("jpms") &&
-            sourceSets.main.allJava.getFiles().stream().map { file -> file.getName() }
-                    .anyMatch { file -> file == "module-info.java"}
-
-    sourceCompatibility = jpms ? 11 : 8
-    targetCompatibility = jpms ? 11 : 8
+    sourceCompatibility = 11
+    targetCompatibility = 11
 
     afterEvaluate {
-        if (jpms) {
+        if (subproj.ext.has('moduleName')) {
+            def moduleName = subproj.ext.get('moduleName')
             compileJava {
                 inputs.property("moduleName", moduleName)
                 doFirst {
@@ -263,17 +259,8 @@ subprojects { subproj ->
             }
 
             javadoc {
-                options.addStringOption('-module-path', classpath.asPath)
-            }
-        }
-    }
-
-    sourceSets {
-        main {
-            java {
-                if (!jpms) {
-                    exclude '**/module-info.java'
-                }
+                failOnError = false
+                inputs.property("moduleName", moduleName)
             }
         }
     }
@@ -462,31 +449,35 @@ subprojects { subproj ->
         source sourceSets.main.allJava
         classpath = files(sourceSets.main.compileClasspath)
         destinationDir = new File(projectDir, "docs/${version}")
+        options.addBooleanOption('html5', true)
         options {
             tags = ["apiNote:a:API Note:",
                     "implSpec:a:Implementation Requirements:",
                     "implNote:a:Implementation Note:"]
-            links "https://docs.oracle.com/javase/8/docs/api/"
-            links 'https://javaee.github.io/javaee-spec/javadocs/'
+            links "https://docs.oracle.com/en/java/javase/11/docs/api/"
+            links 'https://jakarta.ee/specifications/platform/8/apidocs/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
             links 'https://commons.apache.org/proper/commons-codec/apidocs/'
             links 'https://activemq.apache.org/maven/apidocs/'
             links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
             links 'https://kafka.apache.org/20/javadoc/'
         }
-
-        if (JavaVersion.current().isJava11Compatible()) {
-            options.addBooleanOption('html5', true)
-        }
     }
 
     javadoc {
-        options.tags = ["apiNote:a:API Note:",
+        failOnError = false
+        options.addBooleanOption('html5', true)
+        options {
+            tags = ["apiNote:a:API Note:",
                 "implSpec:a:Implementation Requirements:",
                 "implNote:a:Implementation Note:"]
-
-        if (JavaVersion.current().isJava11Compatible()) {
-            options.addBooleanOption('html5', true)
+            links "https://docs.oracle.com/en/java/javase/11/docs/api/"
+            links 'https://jakarta.ee/specifications/platform/8/apidocs/'
+            links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
+            links 'https://commons.apache.org/proper/commons-codec/apidocs/'
+            links 'https://activemq.apache.org/maven/apidocs/'
+            links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
+            links 'https://kafka.apache.org/20/javadoc/'
         }
     }
 
@@ -509,20 +500,21 @@ subprojects { subproj ->
 
 configure(rootProject) {
 
-    task apidocs(type: Javadoc, dependsOn: getTasksByName('docs', true)) {
+    task apidocs(type: Javadoc) {
         failOnError false
         outputs.upToDateWhen { false }
         destinationDir = new File(projectDir, "docs/apidocs/${project.version}")
         title = "Trellis Linked Data Server Documentation"
         exclude '**/impl/*'
         exclude '**/*Tests.java'
+        exclude '**/module-info.java'
         options {
             tags = ["apiNote:a:API Note:",
                     "implSpec:a:Implementation Requirements:",
                     "implNote:a:Implementation Note:"]
             memberLevel = JavadocMemberLevel.PUBLIC
-            links "https://docs.oracle.com/javase/8/docs/api/"
-            links 'https://javaee.github.io/javaee-spec/javadocs/'
+            links "https://docs.oracle.com/en/java/javase/11/docs/api/"
+            links 'https://jakarta.ee/specifications/platform/8/apidocs/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
             links 'https://commons.apache.org/proper/commons-codec/apidocs/'
             links 'https://activemq.apache.org/maven/apidocs/'
@@ -530,12 +522,10 @@ configure(rootProject) {
             links 'https://kafka.apache.org/20/javadoc/'
         }
 
-        if (JavaVersion.current().isJava9Compatible()) {
-            options.addBooleanOption('html5', true)
-        }
-
         source subprojects.collect { project -> project.sourceSets.main.allJava }
         classpath = files(subprojects.collect { project -> project.sourceSets.main.compileClasspath })
+
+        options.addBooleanOption('html5', true)
     }
 
     sonarqube {

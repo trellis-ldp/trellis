@@ -41,18 +41,15 @@ dependencies {
 
 test {
     systemProperty 'smallrye-messaging-strict-binding', 'true'
-}
 
-if (project.sourceCompatibility.isJava11Compatible()) {
-    test {
-        inputs.property("moduleName", moduleName)
-        doFirst {
-            jvmArgs += [
-                '--add-opens', "$moduleName/$moduleName=weld.junit5",
-                '--add-opens', "$moduleName/$moduleName=weld.core.impl",
-                '--add-opens', "org.trellisldp.event.jackson/org.trellisldp.event.jackson=weld.core.impl",
-            ]
-        }
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        jvmArgs += [
+            '--add-opens', "$moduleName/$moduleName=weld.junit5",
+            '--add-opens', "$moduleName/$moduleName=weld.core.impl",
+            '--add-opens', 'org.trellisldp.event.jackson/org.trellisldp.event.jackson=weld.core.impl',
+            '--add-opens', 'java.base/java.lang=weld.core.impl',
+        ]
     }
 }
 

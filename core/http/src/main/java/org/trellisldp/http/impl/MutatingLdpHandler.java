@@ -43,7 +43,6 @@ import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
@@ -174,7 +173,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param dataset the dataset
      */
     protected void readEntityIntoDataset(final IRI graphName, final RDFSyntax syntax, final Dataset dataset) {
-        try (final InputStream in = new ByteArrayInputStream(IOUtils.toByteArray(entity))) {
+        try (final InputStream in = new ByteArrayInputStream(entity.readAllBytes())) {
             getServices().getIOService().read(in, syntax, getIdentifier())
                 .map(skolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                 .filter(triple -> !RDF.type.equals(triple.getPredicate())

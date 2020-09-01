@@ -82,7 +82,6 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
@@ -365,9 +364,8 @@ public class GetHandler extends BaseLdpHandler {
                         .thenApply(builder::entity);
     }
 
-    // TODO -- with JDK 9 use InputStream::transferTo instead of IOUtils::copy
     private static void copy(final InputStream from, final OutputStream to) throws IOException {
-        IOUtils.copy(from, to);
+        from.transferTo(to);
         from.close();
     }
 

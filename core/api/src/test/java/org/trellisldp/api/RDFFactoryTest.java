@@ -16,11 +16,9 @@
 package org.trellisldp.api;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.condition.JRE.JAVA_8;
 
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledOnJre;
 
 class RDFFactoryTest {
 
@@ -29,12 +27,5 @@ class RDFFactoryTest {
     @Test
     void testGetInstance() {
         assertNotNull(rdf, "RDF instance is null!");
-    }
-
-    @Test
-    @EnabledOnJre(JAVA_8)
-    void testGetService() {
-        assertTrue(RDFFactory.findFirst(RDF.class).isPresent());
-        assertFalse(RDFFactory.findFirst(String.class).isPresent());
     }
 }

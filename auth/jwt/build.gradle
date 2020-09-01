@@ -43,14 +43,13 @@ pitest {
     threads = 4
 }
 
-if (project.sourceCompatibility.isJava11Compatible()) {
-    test {
-        inputs.property("moduleName", moduleName)
-        doFirst {
-            jvmArgs += [
-                '--add-opens', "$moduleName/$moduleName=weld.junit5",
-                '--add-opens', "$moduleName/$moduleName=weld.core.impl",
-            ]
-        }
+test {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        jvmArgs += [
+            '--add-opens', "$moduleName/$moduleName=weld.junit5",
+            '--add-opens', "$moduleName/$moduleName=weld.core.impl",
+            '--add-opens', 'java.base/java.lang=weld.core.impl',
+        ]
     }
 }

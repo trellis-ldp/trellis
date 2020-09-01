@@ -17,6 +17,7 @@ package org.trellisldp.jdbc;
 
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Objects.requireNonNull;
+import static java.util.ServiceLoader.load;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -59,7 +60,7 @@ public class DBWrappedMementoService implements MementoService {
      */
     @Inject
     public DBWrappedMementoService(final DataSource ds) {
-        this(ds, DBUtils.findFirst(MementoService.class).orElseGet(NoopMementoService::new));
+        this(ds, load(MementoService.class).findFirst().orElseGet(NoopMementoService::new));
     }
 
     /**
