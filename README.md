@@ -51,7 +51,7 @@ docker pull trellisldp/trellis
 In most cases, you won't need to compile Trellis. Released components are available on Maven Central,
 and the deployable application can be [downloaded](https://www.trellisldp.org/download.html) directly
 from the Trellis website. However, if you want to build the latest snapshot, you will need, at the very least,
-to have Java 8+ available. The software can be built with [Gradle](https://gradle.org) using this command:
+to have Java 11+ available. The software can be built with [Gradle](https://gradle.org) using this command:
 
 ```bash
 ./gradlew install
