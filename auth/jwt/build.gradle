@@ -49,6 +49,7 @@ test {
         jvmArgs += [
             '--add-opens', "$moduleName/$moduleName=weld.junit5",
             '--add-opens', "$moduleName/$moduleName=weld.core.impl",
+            '--add-opens', 'java.base/java.lang=weld.core.impl',
         ]
     }
 }

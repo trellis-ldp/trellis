@@ -52,7 +52,8 @@ test {
             '--add-opens', "org.trellisldp.common/org.trellisldp.common=weld.core.impl",
             '--add-opens', "org.trellisldp.constraint/org.trellisldp.constraint=weld.core.impl",
             '--add-opens', "org.trellisldp.file/org.trellisldp.file=weld.core.impl",
-            '--add-opens', "org.trellisldp.jena/org.trellisldp.jena=weld.core.impl"
+            '--add-opens', "org.trellisldp.jena/org.trellisldp.jena=weld.core.impl",
+            '--add-opens', "java.base/java.lang=weld.core.impl",
         ]
     }
 }
