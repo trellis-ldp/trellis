@@ -215,9 +215,16 @@ subprojects { subproj ->
     sourceCompatibility = 11
     targetCompatibility = 11
 
+    plugins.withType(JavaPlugin).configureEach {
+        java {
+            modularity.inferModulePath = true
+        }
+    }
+
     afterEvaluate {
         if (subproj.ext.has('moduleName')) {
             def moduleName = subproj.ext.get('moduleName')
+
             compileJava {
                 inputs.property("moduleName", moduleName)
                 doFirst {
@@ -261,6 +268,9 @@ subprojects { subproj ->
             javadoc {
                 failOnError = false
                 inputs.property("moduleName", moduleName)
+                doFirst {
+                    options.setModulePath(classpath.collect { f -> file(f) })
+                }
             }
         }
     }
