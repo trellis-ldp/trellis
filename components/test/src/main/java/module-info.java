@@ -36,5 +36,8 @@ module org.trellisldp.test {
     requires java.xml.bind;
     requires jakarta.inject;
 
+    requires awaitility;
+    requires jjwt.api;
+
     opens org.trellisldp.test;
 }

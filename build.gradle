@@ -1,7 +1,6 @@
 plugins {
     id 'com.github.ben-manes.versions' version "0.29.0"
     id 'com.github.hierynomus.license' version "0.15.0"
-    id 'com.github.kt3k.coveralls' version "2.10.2"
     id 'net.researchgate.release' version "2.8.1"
     id 'org.gradle.test-retry' version "1.1.9"
     id 'org.owasp.dependencycheck' version "5.3.2.1"
@@ -215,9 +214,16 @@ subprojects { subproj ->
     sourceCompatibility = 11
     targetCompatibility = 11
 
+    plugins.withType(JavaPlugin).configureEach {
+        java {
+            modularity.inferModulePath = true
+        }
+    }
+
     afterEvaluate {
         if (subproj.ext.has('moduleName')) {
             def moduleName = subproj.ext.get('moduleName')
+
             compileJava {
                 inputs.property("moduleName", moduleName)
                 doFirst {
@@ -261,6 +267,9 @@ subprojects { subproj ->
             javadoc {
                 failOnError = false
                 inputs.property("moduleName", moduleName)
+                doFirst {
+                    options.setModulePath(classpath.collect { f -> file(f) })
+                }
             }
         }
     }
@@ -576,18 +585,9 @@ configure(rootProject) {
         }
     }
 
-    coveralls {
-        sourceDirs = subprojects.sourceSets.main.allSource.srcDirs.flatten()
-        jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/jacocoRootReport.xml"
-    }
-
     buildScan {
         termsOfServiceUrl = 'https://gradle.com/terms-of-service'
         termsOfServiceAgree = 'yes'
-    }
-
-    tasks.coveralls {
-        dependsOn 'jacocoRootReport'
     }
 
     task getVersion {
