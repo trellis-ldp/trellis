@@ -714,7 +714,7 @@ class WebAcServiceTest {
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.mode, ACL.Read),
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.agentGroup, groupIRI2),
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.accessTo, childIRI),
-                rdf.createQuad(PreferAccessControl, authIRI2, ACL.default_, childIRI),
+                rdf.createQuad(PreferAccessControl, authIRI3, ACL.default_, childIRI),
 
                 rdf.createQuad(PreferAccessControl, authIRI4, ACL.agentGroup, groupIRI2),
                 rdf.createQuad(PreferAccessControl, authIRI4, type, ACL.Authorization)));
@@ -906,7 +906,6 @@ class WebAcServiceTest {
                 rdf.createQuad(PreferAccessControl, authIRI1, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI1, ACL.mode, ACL.Read),
                 rdf.createQuad(PreferAccessControl, authIRI1, ACL.agent, addisonIRI),
-                rdf.createQuad(PreferAccessControl, authIRI1, ACL.accessTo, childIRI),
                 rdf.createQuad(PreferAccessControl, authIRI1, ACL.default_, childIRI),
 
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Read),
