@@ -9,7 +9,7 @@ plugins {
 
 ext {
     // Core dependencies
-    commonsCodecVersion = "1.14"
+    commonsCodecVersion = "1.15"
     commonsIoVersion = "2.7"
     commonsLangVersion = "3.11"
     commonsRdfVersion = "0.5.0"
