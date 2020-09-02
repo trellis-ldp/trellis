@@ -9,9 +9,6 @@ repositories {
     }
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
 def static randomPort() {
     try {
         ServerSocket server = new ServerSocket()
@@ -129,8 +126,3 @@ rootProject.childProjects.findAll { n, p -> p != project }.each { n, p ->
         tasks.test.dependsOn p.tasks.install
     }
 }
-
-java {
-    disableAutoTargetJvm()
-}
-
