@@ -315,7 +315,8 @@ public class WebAcService {
                             authorizations.stream().filter(getInheritedAuth(resource.getIdentifier())));
                 }
                 // If not inheriting, just return the relevant Authorizations
-                return new Authorizations(resource.getIdentifier(), authorizations.stream());
+                return new Authorizations(resource.getIdentifier(), authorizations.stream()
+                        .filter(auth -> auth.getAccessTo().contains(resource.getIdentifier())));
             } catch (final Exception ex) {
                 throw new TrellisRuntimeException("Error closing graph", ex);
             }
@@ -335,7 +336,9 @@ public class WebAcService {
                 } catch (final Exception ex) {
                     throw new TrellisRuntimeException("Error closing graph", ex);
                 }
-            }).filter(auth -> auth.getAccessTo().contains(identifier)).collect(toList());
+            })
+        .filter(auth -> auth.getAccessTo().contains(identifier) || auth.getDefault().contains(identifier))
+        .collect(toList());
     }
 
     static class Authorizations {
