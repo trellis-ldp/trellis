@@ -17,7 +17,6 @@ package org.trellisldp.test;
 
 import static java.time.Instant.now;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.unmodifiableSet;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.vocabulary.LDP.PreferContainment;
@@ -30,7 +29,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
@@ -73,16 +71,8 @@ public class InMemoryResourceService implements ResourceService {
 
     private final Map<IRI, Dataset> auditData = new ConcurrentHashMap<>();
 
-    private static final Set<IRI> SUPPORTED_IXN_MODELS;
-
-    static {
-        final Set<IRI> models = new CopyOnWriteArraySet<>();
-        models.add(LDP.RDFSource);
-        models.add(LDP.NonRDFSource);
-        models.add(LDP.Container);
-        models.add(LDP.BasicContainer);
-        SUPPORTED_IXN_MODELS = unmodifiableSet(models);
-    }
+    private static final Set<IRI> SUPPORTED_IXN_MODELS = Set.of(LDP.RDFSource, LDP.NonRDFSource,
+            LDP.Container, LDP.BasicContainer);
 
     @Override
     public CompletionStage<? extends Resource> get(final IRI identifier) {

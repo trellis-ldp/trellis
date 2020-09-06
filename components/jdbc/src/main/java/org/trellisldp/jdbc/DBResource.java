@@ -73,16 +73,8 @@ public class DBResource implements Resource {
     private static final String MEMBERSHIP_RESOURCE = "ldp_membership_resource";
     private static final String HAS_MEMBER_RELATION = "ldp_has_member_relation";
     private static final String IS_MEMBER_OF_RELATION = "ldp_is_member_of_relation";
-    private static final Set<IRI> containerTypes;
-
-    static {
-        final Set<IRI> types = new HashSet<>();
-        types.add(LDP.Container);
-        types.add(LDP.BasicContainer);
-        types.add(LDP.DirectContainer);
-        types.add(LDP.IndirectContainer);
-        containerTypes = unmodifiableSet(types);
-    }
+    private static final Set<IRI> containerTypes = Set.of(LDP.Container, LDP.BasicContainer, LDP.DirectContainer,
+            LDP.IndirectContainer);
 
     private final IRI identifier;
     private final Jdbi jdbi;

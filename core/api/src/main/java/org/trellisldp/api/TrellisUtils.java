@@ -15,13 +15,11 @@
  */
 package org.trellisldp.api;
 
-import static java.util.Collections.unmodifiableSet;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.stream.Collector.Characteristics.IDENTITY_FINISH;
 import static java.util.stream.Collector.Characteristics.UNORDERED;
 
-import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -190,7 +188,7 @@ public final class TrellisUtils {
 
         @Override
         public Set<Characteristics> characteristics() {
-            return unmodifiableSet(EnumSet.of(UNORDERED, IDENTITY_FINISH));
+            return Set.of(UNORDERED, IDENTITY_FINISH);
         }
     }
 
