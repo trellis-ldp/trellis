@@ -52,7 +52,8 @@ import org.trellisldp.vocabulary.Trellis;
 public class FileResource implements Resource {
 
     private static final Logger LOGGER = getLogger(FileResource.class);
-    private static final Set<IRI> IGNORE = ignoreMetadataGraphs();
+    private static final Set<IRI> IGNORE = Set.of(Trellis.PreferUserManaged,
+            Trellis.PreferServerManaged, LDP.PreferContainment, LDP.PreferMembership);
 
     private final File file;
     private final IRI identifier;
@@ -148,15 +149,6 @@ public class FileResource implements Resource {
     private Optional<String> asLiteral(final IRI predicate) {
         return ofNullable(data.get(predicate)).filter(Literal.class::isInstance).map(Literal.class::cast)
             .map(Literal::getLexicalForm);
-    }
-
-    static Set<IRI> ignoreMetadataGraphs() {
-        final Set<IRI> ignore = new HashSet<>();
-        ignore.add(Trellis.PreferUserManaged);
-        ignore.add(Trellis.PreferServerManaged);
-        ignore.add(LDP.PreferContainment);
-        ignore.add(LDP.PreferMembership);
-        return unmodifiableSet(ignore);
     }
 
     static Stream<Quad> fetchContent(final IRI identifier, final File file) {

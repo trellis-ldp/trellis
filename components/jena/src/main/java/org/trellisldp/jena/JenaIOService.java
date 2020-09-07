@@ -18,11 +18,8 @@ package org.trellisldp.jena;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
-import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
-import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
@@ -50,7 +47,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.stream.Stream;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -107,11 +103,10 @@ public class JenaIOService implements IOService {
     public static final String CONFIG_IO_RELATIVE_IRIS = "trellis.jena.relative-iris";
 
     private static final Logger LOGGER = getLogger(JenaIOService.class);
-    private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(Stream.of(
-                new SimpleEntry<>(compacted, JSONLD_COMPACT_FLAT),
-                new SimpleEntry<>(flattened, JSONLD_FLATTEN_FLAT),
-                new SimpleEntry<>(expanded, JSONLD_EXPAND_FLAT))
-            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+    private static final Map<IRI, RDFFormat> JSONLD_FORMATS = Map.of(
+                compacted, JSONLD_COMPACT_FLAT,
+                flattened, JSONLD_FLATTEN_FLAT,
+                expanded, JSONLD_EXPAND_FLAT);
 
     private final NamespaceService nsService;
     private final CacheService<String, String> cache;
@@ -211,8 +206,8 @@ public class JenaIOService implements IOService {
             reads.add(RDFA);
         }
         this.readable = unmodifiableList(reads);
-        this.updatable = unmodifiableList(singletonList(SPARQL_UPDATE));
-        this.writable = unmodifiableList(asList(TURTLE, RDFSyntax.JSONLD, NTRIPLES));
+        this.updatable = List.of(SPARQL_UPDATE);
+        this.writable = List.of(TURTLE, RDFSyntax.JSONLD, NTRIPLES);
     }
 
     @Override

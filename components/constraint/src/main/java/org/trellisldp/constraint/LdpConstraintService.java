@@ -16,16 +16,12 @@
 package org.trellisldp.constraint;
 
 import static java.util.Collections.singleton;
-import static java.util.Collections.unmodifiableList;
-import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -74,30 +70,20 @@ public class LdpConstraintService implements ConstraintService {
     private static final Set<IRI> propertiesWithInDomainRange = singleton(LDP.membershipResource);
 
     // Properties that need to be used with objects that are IRIs
-    private static final List<IRI> propertiesWithUriRange = unmodifiableList(
-                    Arrays.asList(LDP.membershipResource, LDP.hasMemberRelation, LDP.isMemberOfRelation, LDP.inbox,
-                                    LDP.insertedContentRelation, OA.annotationService));
+    private static final Set<IRI> propertiesWithUriRange = Set.of(LDP.membershipResource, LDP.hasMemberRelation,
+            LDP.isMemberOfRelation, LDP.inbox, LDP.insertedContentRelation, OA.annotationService);
 
     // Properties that cannot be used as dynamic Membership properties
-    private static final List<IRI> restrictedMemberProperties = unmodifiableList(Arrays.asList(ACL.accessControl,
-                    LDP.contains, type, LDP.membershipResource, LDP.hasMemberRelation, LDP.inbox,
-                    LDP.insertedContentRelation, OA.annotationService));
+    private static final Set<IRI> restrictedMemberProperties = Set.of(ACL.accessControl, LDP.contains, LDP.inbox,
+            LDP.membershipResource, LDP.hasMemberRelation, LDP.insertedContentRelation, type, OA.annotationService);
 
-    private static final Map<IRI, Predicate<Triple>> typeMap;
-
-    static {
-
-        final Map<IRI, Predicate<Triple>> typeMapElements = new HashMap<>();
-
-        typeMapElements.put(LDP.BasicContainer, LdpConstraintService::basicConstraints);
-        typeMapElements.put(LDP.Container, LdpConstraintService::basicConstraints);
-        typeMapElements.put(LDP.DirectContainer, LdpConstraintService::memberContainerConstraints);
-        typeMapElements.put(LDP.IndirectContainer, LdpConstraintService::memberContainerConstraints);
-        typeMapElements.put(LDP.NonRDFSource, LdpConstraintService::basicConstraints);
-        typeMapElements.put(LDP.RDFSource, LdpConstraintService::basicConstraints);
-
-        typeMap = unmodifiableMap(typeMapElements);
-    }
+    private static final Map<IRI, Predicate<Triple>> typeMap = Map.of(
+            LDP.BasicContainer, LdpConstraintService::basicConstraints,
+            LDP.Container, LdpConstraintService::basicConstraints,
+            LDP.DirectContainer, LdpConstraintService::memberContainerConstraints,
+            LDP.IndirectContainer, LdpConstraintService::memberContainerConstraints,
+            LDP.NonRDFSource, LdpConstraintService::basicConstraints,
+            LDP.RDFSource, LdpConstraintService::basicConstraints);
 
     // Identify those predicates that are prohibited in the given ixn model
     private static boolean memberContainerConstraints(final Triple triple) {

@@ -71,16 +71,8 @@ public class TriplestoreResource implements Resource {
 
     private static final Logger LOGGER = getLogger(TriplestoreResource.class);
     private static final RDF rdf = RDFFactory.getInstance();
-    private static final Set<IRI> containerTypes;
-
-    static {
-        final Set<IRI> types = new HashSet<>();
-        types.add(LDP.Container);
-        types.add(LDP.BasicContainer);
-        types.add(LDP.DirectContainer);
-        types.add(LDP.IndirectContainer);
-        containerTypes = unmodifiableSet(types);
-    }
+    private static final Set<IRI> containerTypes = Set.of(LDP.Container, LDP.BasicContainer, LDP.DirectContainer,
+            LDP.IndirectContainer);
 
     private final IRI identifier;
     private final RDFConnection rdfConnection;

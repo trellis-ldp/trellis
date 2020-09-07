@@ -15,14 +15,11 @@
  */
 package org.trellisldp.common;
 
-import static java.util.Collections.addAll;
-import static java.util.Collections.unmodifiableSet;
 import static org.trellisldp.vocabulary.LDP.PreferContainment;
 import static org.trellisldp.vocabulary.LDP.PreferMembership;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.rdf.api.IRI;
@@ -133,15 +130,9 @@ public final class HttpConstants {
     /** The Memento link parameter indicating the ending range of a TimeMap. */
     public static final String UNTIL = "until";
 
-    private static final Set<IRI> DEFAULT_REPRESENTATION_ELEMENTS = new HashSet<>();
-
-    static {
-        addAll(DEFAULT_REPRESENTATION_ELEMENTS, PreferContainment, PreferMembership, PreferUserManaged,
-                PreferServerManaged);
-    }
-
     /** The implied or default set of IRIs used with a Prefer header. */
-    public static final Set<IRI> DEFAULT_REPRESENTATION = unmodifiableSet(DEFAULT_REPRESENTATION_ELEMENTS);
+    public static final Set<IRI> DEFAULT_REPRESENTATION = Set.of(PreferContainment, PreferMembership,
+            PreferUserManaged, PreferServerManaged);
 
     private HttpConstants() {
         // prevent instantiation

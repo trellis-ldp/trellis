@@ -75,7 +75,8 @@ import org.trellisldp.vocabulary.Trellis;
 class MutatingLdpHandler extends BaseLdpHandler {
 
     private static final Logger LOGGER = getLogger(MutatingLdpHandler.class);
-    private static final Set<IRI> IGNORE = buildIgnoredGraphNames();
+    private static final Set<IRI> IGNORE = Set.of(LDP.PreferContainment, LDP.PreferMembership,
+            Trellis.PreferServerManaged, Trellis.PreferUserManaged);
 
     private final Session session;
     private final InputStream entity;

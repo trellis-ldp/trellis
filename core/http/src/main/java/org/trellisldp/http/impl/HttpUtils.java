@@ -19,7 +19,6 @@ import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Arrays.stream;
-import static java.util.Collections.unmodifiableSet;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
@@ -77,14 +76,7 @@ public final class HttpUtils {
 
     private static final Logger LOGGER = getLogger(HttpUtils.class);
     private static final RDF rdf = RDFFactory.getInstance();
-    private static final Set<IRI> ignoredPreferences;
-
-    static {
-        final Set<IRI> ignore = new HashSet<>();
-        ignore.add(Trellis.PreferUserManaged);
-        ignore.add(Trellis.PreferServerManaged);
-        ignoredPreferences = unmodifiableSet(ignore);
-    }
+    private static final Set<IRI> ignoredPreferences = Set.of(Trellis.PreferUserManaged, Trellis.PreferServerManaged);
 
     /**
      * Get all of the LDP resource (super) types for the given LDP interaction model.
@@ -392,19 +384,6 @@ public final class HttpUtils {
         } catch (final Exception ex) {
             throw new TrellisRuntimeException("Error closing dataset", ex);
         }
-    }
-
-    /**
-     * Build a set of non-metadata graph names.
-     * @return a set of graph names
-     */
-    public static Set<IRI> buildIgnoredGraphNames() {
-        final Set<IRI> graphs = new HashSet<>();
-        graphs.add(LDP.PreferContainment);
-        graphs.add(LDP.PreferMembership);
-        graphs.add(Trellis.PreferServerManaged);
-        graphs.add(Trellis.PreferUserManaged);
-        return unmodifiableSet(graphs);
     }
 
     /**

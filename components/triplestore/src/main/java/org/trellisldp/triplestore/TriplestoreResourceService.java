@@ -21,7 +21,6 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.synchronizedList;
-import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toMap;
@@ -50,7 +49,6 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -114,10 +112,11 @@ public class TriplestoreResourceService implements ResourceService {
     private static final String ACL_EXT = "acl";
     private static final RDF rdf = RDFFactory.getInstance();
 
+    private final Set<IRI> supportedIxnModels = Set.of(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
+            LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
     private final Supplier<String> supplier;
     private final RDFConnection rdfConnection;
     private final boolean includeLdpType;
-    private final Set<IRI> supportedIxnModels;
     private final Map<String, IRI> extensions;
 
     /**
@@ -147,8 +146,6 @@ public class TriplestoreResourceService implements ResourceService {
             .orElse(Boolean.TRUE);
         this.rdfConnection = requireNonNull(rdfConnection, "RDFConnection may not be null!");
         this.supplier = requireNonNull(identifierService, "IdentifierService may not be null!").getSupplier();
-        this.supportedIxnModels = unmodifiableSet(new HashSet<>(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource,
-                LDP.Container, LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer)));
         this.extensions = buildExtensionMap();
     }
 
