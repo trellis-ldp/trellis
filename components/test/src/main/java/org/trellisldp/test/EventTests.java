@@ -25,9 +25,12 @@ import static javax.ws.rs.core.Link.TYPE;
 import static javax.ws.rs.core.Link.fromUri;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.trellisldp.http.core.HttpConstants.SLUG;
+import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE;
+import static org.trellisldp.test.AuthCommonTests.EXT_ACL;
 import static org.trellisldp.test.TestUtils.buildJwt;
 import static org.trellisldp.test.TestUtils.checkEventGraph;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
@@ -50,6 +53,8 @@ import org.trellisldp.vocabulary.Trellis;
  * @author acoburn
  */
 public interface EventTests extends CommonTests {
+
+    String CHILD_RESOURCE_FILE = "/childResource.ttl";
 
     /**
      * Get the JWT secret.
@@ -167,7 +172,8 @@ public interface EventTests extends CommonTests {
         setUp();
         return of(this::testReceiveCreateMessage, this::testReceiveChildMessage, this::testReceiveDeleteMessage,
                 this::testReceiveCreateMessageDC, this::testReceiveDeleteMessageDC, this::testReceiveCreateMessageIC,
-                this::testReceiveReplaceMessageIC, this::testReceiveDeleteMessageIC);
+                this::testReceiveReplaceMessageIC, this::testReceiveDeleteMessageIC, this::testReceiveCreateMessageACL,
+                this::testReceiveUpdateMessageACL, this::testReceiveDeleteMessageACL);
     }
 
     /**
@@ -270,7 +276,7 @@ public interface EventTests extends CommonTests {
         // POST an LDP-RS
         try (final Response res = target(getIndirectContainerLocation()).request()
                 .header(AUTHORIZATION, buildJwt(agent, getJwtSecret()))
-                .post(entity(getResourceAsString("/childResource.ttl"), TEXT_TURTLE))) {
+                .post(entity(getResourceAsString(CHILD_RESOURCE_FILE), TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful POST in an LDP-IC");
             assertAll("Check the LDP-IC parent", checkResourceParentLdpIC(res.getLocation().toString(),
                         agent, AS.Create, LDP.RDFSource, LDP.Container));
@@ -283,7 +289,7 @@ public interface EventTests extends CommonTests {
     default void testReceiveReplaceMessageIC() {
         final String resource;
         final String agent = "http://example.com/parker#i";
-        final String childContent = getResourceAsString("/childResource.ttl");
+        final String childContent = getResourceAsString(CHILD_RESOURCE_FILE);
 
         // POST an LDP-RS
         try (final Response res = target(getIndirectContainerLocation()).request()
@@ -315,7 +321,7 @@ public interface EventTests extends CommonTests {
     default void testReceiveDeleteMessageIC() {
         final String resource;
         final String agent = "http://example.com/addison#i";
-        final String childContent = getResourceAsString("/childResource.ttl");
+        final String childContent = getResourceAsString(CHILD_RESOURCE_FILE);
 
         // POST an LDP-RS
         try (final Response res = target(getIndirectContainerLocation()).request()
@@ -335,6 +341,134 @@ public interface EventTests extends CommonTests {
             assertAll("Check the LDP-IC parent resource",
                     checkResourceParentLdpIC(resource, agent2, AS.Delete, LDP.RDFSource, LDP.Container));
         }
+    }
+
+
+    default void testReceiveCreateMessageACL() {
+
+        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString(), getJwtSecret());
+
+        final String resourceContent = getResourceAsString(CHILD_RESOURCE_FILE);
+
+        // POST an LDP-RS
+        try (final Response res = target().request()
+            .header(LINK, fromUri(LDP.RDFSource.getIRIString()).rel(TYPE).build())
+            .header(SLUG, generateRandomValue(getClass().getSimpleName()))
+            .header(AUTHORIZATION, jwt).post(entity(resourceContent, TEXT_TURTLE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(),
+                "Verify a successful LDP-RS POST response for ACL Test");
+            setContainerLocation(res.getLocation().toString());
+        }
+
+        // Add an ACL for this resource, with no permissions
+        final String rootAcl = simpleNoPermissionsACL();
+
+        // Add an ACL for the resource
+        try (final Response res = target(getContainerLocation() + EXT_ACL).request()
+            .header(AUTHORIZATION, jwt)
+            .method(AuthCommonTests.PATCH, entity(rootAcl, APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(),
+                "Check response for ACL was created");
+        }
+
+        await().atMost(15, SECONDS).until(() -> getMessages().stream()
+            .anyMatch(checkEventGraph(getContainerLocation() + EXT_ACL,
+                Trellis.AdministratorAgent, AS.Update, LDP.RDFSource)));
+    }
+
+    default void testReceiveUpdateMessageACL() {
+
+        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString(), getJwtSecret());
+
+        final String resourceContent = getResourceAsString(CHILD_RESOURCE_FILE);
+
+        // POST an LDP-RS
+        try (final Response res = target().request()
+            .header(LINK, fromUri(LDP.RDFSource.getIRIString()).rel(TYPE).build())
+            .header(SLUG, generateRandomValue(getClass().getSimpleName()))
+            .header(AUTHORIZATION, jwt).post(entity(resourceContent, TEXT_TURTLE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(),
+                "Verify a successful LDP-RS POST response for ACL Test");
+            setContainerLocation(res.getLocation().toString());
+        }
+
+        // Add an ACL for this resource, with no permissions
+        final String acl = simpleNoPermissionsACL();
+
+        // Add an ACL for the resource
+        try (final Response res = target(getContainerLocation() + EXT_ACL).request()
+            .header(AUTHORIZATION, jwt)
+            .method(AuthCommonTests.PATCH, entity(acl, APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(),
+                "Check response for ACL");
+        }
+
+        // Update the ACL for this resource, with read and write permissions
+        final String readWriteAcl = "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
+            + "PREFIX acl: <http://www.w3.org/ns/auth/acl#>\n\n"
+            + "INSERT DATA { [ acl:accessTo <" + getContainerLocation()
+            + ">; acl:agentClass foaf:Agent; \n"
+            + "    acl:default <" + getContainerLocation() + ">;\n"
+            + "    acl:mode acl:Read, acl:Write]}";
+
+        // Add an ACL for the resource
+        try (final Response resUpdateACL = target(getContainerLocation() + EXT_ACL).request()
+            .header(AUTHORIZATION, jwt)
+            .method(AuthCommonTests.PATCH, entity(readWriteAcl, APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(SUCCESSFUL, resUpdateACL.getStatusInfo().getFamily(),
+                "Check response for ACL was updated");
+        }
+
+        await().atMost(15, SECONDS).until(() -> getMessages().stream()
+            .anyMatch(checkEventGraph(getContainerLocation() + EXT_ACL,
+                Trellis.AdministratorAgent, AS.Update, LDP.RDFSource)));
+    }
+
+    default void testReceiveDeleteMessageACL() {
+
+        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString(), getJwtSecret());
+
+        final String resourceContent = getResourceAsString(CHILD_RESOURCE_FILE);
+
+        // POST an LDP-RS
+        try (final Response res = target().request()
+            .header(LINK, fromUri(LDP.RDFSource.getIRIString()).rel(TYPE).build())
+            .header(SLUG, generateRandomValue(getClass().getSimpleName()))
+            .header(AUTHORIZATION, jwt).post(entity(resourceContent, TEXT_TURTLE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(),
+                "Verify a successful LDP-RS POST response for ACL Test");
+            setContainerLocation(res.getLocation().toString());
+        }
+
+        // Add an ACL for this resource, with no permissions
+        final String acl = simpleNoPermissionsACL();
+
+        // Add an ACL for the resource
+        try (final Response res = target(getContainerLocation() + EXT_ACL).request()
+            .header(AUTHORIZATION, jwt)
+            .method(AuthCommonTests.PATCH, entity(acl, APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(),
+                "Check response for ACL was deleted");
+        }
+
+        // Add an ACL for the resource
+        try (final Response resUpdateACL = target(getContainerLocation() + EXT_ACL).request()
+            .header(AUTHORIZATION, jwt).delete()) {
+            assertEquals(SUCCESSFUL, resUpdateACL.getStatusInfo().getFamily(),
+                "Check response for ACL was deleted.");
+        }
+
+        await().atMost(15, SECONDS).until(() -> getMessages().stream()
+            .anyMatch(checkEventGraph(getContainerLocation() + EXT_ACL,
+                Trellis.AdministratorAgent, AS.Delete, LDP.RDFSource)));
+    }
+
+    default String simpleNoPermissionsACL() {
+        return "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n"
+            + "PREFIX acl: <http://www.w3.org/ns/auth/acl#>\n\n"
+            + "INSERT DATA { [ acl:accessTo <" + getContainerLocation()
+            + ">; acl:agentClass foaf:Agent; \n"
+            + "    acl:default <" + getContainerLocation() + ">]}";
     }
 
     /**
