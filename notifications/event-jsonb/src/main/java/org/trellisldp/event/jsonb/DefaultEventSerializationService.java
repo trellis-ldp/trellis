@@ -31,7 +31,7 @@ import org.trellisldp.api.EventSerializationService;
 @ApplicationScoped
 public class DefaultEventSerializationService implements EventSerializationService {
 
-    private static Jsonb jsonb = JsonbBuilder.create();
+    private static final Jsonb jsonb = JsonbBuilder.create();
 
     @Override
     public String serialize(final Event event) {

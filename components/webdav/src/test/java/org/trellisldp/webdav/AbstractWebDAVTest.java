@@ -49,7 +49,7 @@ import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
+import static org.trellisldp.common.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.vocabulary.RDF.type;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
@@ -92,14 +92,16 @@ import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.audit.DefaultAuditService;
-import org.trellisldp.http.core.ServiceBundler;
+import org.trellisldp.common.ServiceBundler;
 import org.trellisldp.jena.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.XSD;
+import org.trellisldp.webdav.xml.DavProp;
+import org.trellisldp.webdav.xml.DavPropFind;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 abstract class AbstractWebDAVTest extends JerseyTest {
@@ -584,7 +586,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testMoveError() {
         when(mockResourceService.get(root)).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException("Expected");
+            throw new TrellisRuntimeException("Expected");
         }));
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
             .method("MOVE");
@@ -814,6 +816,15 @@ abstract class AbstractWebDAVTest extends JerseyTest {
         assertDoesNotThrow(() -> new TrellisWebDAV());
     }
 
+    @Test
+    void testGetProperties() {
+        final DavProp prop = new DavProp();
+        final DavPropFind propfind = new DavPropFind();
+        propfind.setProp(prop);
+
+        assertTrue(TrellisWebDAV.getProperties(propfind).isEmpty());
+    }
+
     private static List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
         final List<String> links = res.getStringHeaders().get(LINK);
@@ -833,7 +844,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     }
 
     private void setUpBinaryService() {
-        when(mockBinaryService.generateIdentifier()).thenReturn("file://some/binary/location");
+        when(mockBinaryService.generateIdentifier(any(IRI.class))).thenReturn("file://some/binary/location");
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))
             .thenAnswer(inv -> {
                 readLines((InputStream) inv.getArguments()[1], UTF_8);
@@ -865,6 +876,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockResourceService.touch(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockResourceService.unskolemize(any(Literal.class))).then(returnsFirstArg());
         when(mockResourceService.unskolemize(any(IRI.class))).thenCallRealMethod();
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
     }
 
     private void setUpResources() {

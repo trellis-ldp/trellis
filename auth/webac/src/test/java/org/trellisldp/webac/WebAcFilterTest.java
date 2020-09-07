@@ -24,9 +24,8 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.http.core.HttpConstants.PREFER;
+import static org.trellisldp.common.HttpConstants.PREFER;
 
 import java.security.Principal;
 import java.util.HashSet;
@@ -47,13 +46,15 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.RDFFactory;
+import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.Trellis;
@@ -62,6 +63,7 @@ import org.trellisldp.vocabulary.Trellis;
  * @author acoburn
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(MockitoExtension.class)
 class WebAcFilterTest {
 
     private static final Set<IRI> allModes = new HashSet<>();
@@ -79,6 +81,9 @@ class WebAcFilterTest {
 
     @Mock
     private WebAcService mockWebAcService;
+
+    @Mock
+    private ResourceService mockResourceService;
 
     @Mock
     private ContainerRequestContext mockContext;
@@ -115,40 +120,45 @@ class WebAcFilterTest {
         System.clearProperty(WebAcFilter.CONFIG_WEBAC_APPENDABLE_METHODS);
     }
 
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
+    @Test
+    void testFilterUnknownMethod() {
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, allModes));
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockContext.getMethod()).thenReturn("FOO");
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
-        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
-        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
-        when(mockPrincipal.getName()).thenReturn(webid);
-    }
-
-    @Test
-    void testFilterUnknownMethod() {
-        when(mockContext.getMethod()).thenReturn("FOO");
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Exception thrown with unknown method!");
     }
 
     @Test
     void testFilterRead() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockContext.getMethod()).thenReturn("GET");
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockUriInfo.getPath()).thenReturn("");
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
@@ -169,13 +179,23 @@ class WebAcFilterTest {
     @Test
     void testFilterReadSlashPath() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockContext.getMethod()).thenReturn("GET");
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockUriInfo.getPath()).thenReturn("container/");
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
-        when(mockUriInfo.getPath()).thenReturn("container/");
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
@@ -191,12 +211,23 @@ class WebAcFilterTest {
     @Test
     void testFilterCustomRead() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockContext.getMethod()).thenReturn("READ");
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockUriInfo.getPath()).thenReturn("");
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
@@ -212,12 +243,24 @@ class WebAcFilterTest {
     @Test
     void testFilterWrite() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
+
         when(mockContext.getMethod()).thenReturn("PUT");
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Write);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Write ability!");
 
@@ -233,13 +276,22 @@ class WebAcFilterTest {
     @Test
     void testFilterWriteWithPreferRead() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+
         when(mockContext.getMethod()).thenReturn("PUT");
         when(mockContext.getHeaderString(eq(PREFER))).thenReturn("return=representation");
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Write);
 
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
@@ -252,13 +304,21 @@ class WebAcFilterTest {
     @Test
     void testFilterWriteWithPreferMinimal() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockContext.getMethod()).thenReturn("PUT");
         when(mockContext.getHeaderString(eq(PREFER))).thenReturn("return=minimal");
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockUriInfo.getPath()).thenReturn("");
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Write);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Write ability!");
 
@@ -269,12 +329,24 @@ class WebAcFilterTest {
     @Test
     void testFilterCustomWrite() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
+
         when(mockContext.getMethod()).thenReturn("WRITE");
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Write);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Write ability!");
 
@@ -290,12 +362,24 @@ class WebAcFilterTest {
     @Test
     void testFilterAppend() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
+
         when(mockContext.getMethod()).thenReturn("POST");
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Append);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Append ability!");
 
@@ -317,12 +401,24 @@ class WebAcFilterTest {
     @Test
     void testFilterCustomAppend() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
+
         when(mockContext.getMethod()).thenReturn("APPEND");
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Append);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Append ability!");
 
@@ -344,12 +440,24 @@ class WebAcFilterTest {
     @Test
     void testFilterControl() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
+
         when(mockContext.getMethod()).thenReturn("GET");
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
@@ -371,12 +479,24 @@ class WebAcFilterTest {
     @Test
     void testFilterControl2() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
+
         when(mockContext.getMethod()).thenReturn("GET");
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
@@ -397,18 +517,31 @@ class WebAcFilterTest {
     @Test
     void testFilterControlWithPrefer() {
         final Set<IRI> modes = new HashSet<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
+
         when(mockContext.getMethod()).thenReturn("GET");
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
         when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
         when(mockContext.getHeaderString(eq(PREFER)))
             .thenReturn("return=representation; include=\"" + Trellis.PreferAudit.getIRIString() + "\"");
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No exception thrown when not authorized!");
@@ -424,12 +557,19 @@ class WebAcFilterTest {
 
     @Test
     void testFilterChallenges() {
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+
         when(mockContext.getMethod()).thenReturn("POST");
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, emptySet()));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
         filter.setChallenges(asList("Foo realm=\"my-realm\" scope=\"my-scope\"",
                     "Bar realm=\"my-realm\" scope=\"my-scope\""));
         filter.setBaseUrl("http://example.com/");
@@ -444,11 +584,12 @@ class WebAcFilterTest {
     @Test
     void testFilterResponseNoSessionModes() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
-        when(mockResponseContext.getHeaders()).thenReturn(headers);
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -458,13 +599,14 @@ class WebAcFilterTest {
     @Test
     void testFilterResponseNoAuthorizationModes() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
-        when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
             .thenReturn(new Object());
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -474,13 +616,14 @@ class WebAcFilterTest {
     @Test
     void testFilterResponseNoControl() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
-        when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
             .thenReturn(new AuthorizedModes(effectiveAcl, singleton(ACL.Read)));
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -490,13 +633,22 @@ class WebAcFilterTest {
     @Test
     void testFilterResponseWithControl() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, String> stringHeaders = new MultivaluedHashMap<>();
+        stringHeaders.putSingle("Link", "<http://www.w3.org/ns/ldp#BasicContainer>; rel=\"type\"");
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
+        when(mockResponseContext.getStringHeaders()).thenReturn(stringHeaders);
         when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
             .thenReturn(new AuthorizedModes(effectiveAcl, allModes));
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -511,16 +663,113 @@ class WebAcFilterTest {
     }
 
     @Test
-    void testFilterResponseDelete() {
+    void testFilterResponseWithControl2() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
-        when(mockContext.getMethod()).thenReturn(DELETE);
+        final MultivaluedMap<String, String> stringHeaders = new MultivaluedHashMap<>();
+        stringHeaders.putSingle("Link", "<http://www.w3.org/ns/ldp#BasicContainer>; rel=\"blah\"");
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
+        when(mockResponseContext.getStringHeaders()).thenReturn(stringHeaders);
         when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
             .thenReturn(new AuthorizedModes(effectiveAcl, allModes));
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
+
+        assertTrue(headers.isEmpty());
+        filter.filter(mockContext, mockResponseContext);
+        assertFalse(headers.isEmpty());
+
+        final List<Object> links = headers.get("Link");
+        assertTrue(links.stream().map(Link.class::cast).anyMatch(link ->
+                    link.getRels().contains("acl") && "/?ext=acl".equals(link.getUri().toString())));
+        assertTrue(links.stream().map(Link.class::cast).anyMatch(link ->
+                    "/?ext=acl".equals(link.getUri().toString()) &&
+                    link.getRels().contains(Trellis.effectiveAcl.getIRIString())));
+    }
+
+    @Test
+    void testFilterResourceResponseWithControl() {
+        final IRI localEffectiveAcl = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
+        final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, String> stringHeaders = new MultivaluedHashMap<>();
+        stringHeaders.putSingle("Link", "<http://www.w3.org/ns/ldp#RDFSource>; rel=\"type\"");
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+
+        when(mockResponseContext.getStatusInfo()).thenReturn(OK);
+        when(mockResponseContext.getHeaders()).thenReturn(headers);
+        when(mockResponseContext.getStringHeaders()).thenReturn(stringHeaders);
+        when(mockUriInfo.getPath()).thenReturn("/resource");
+
+        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+            .thenReturn(new AuthorizedModes(localEffectiveAcl, allModes));
+
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
+
+        assertTrue(headers.isEmpty());
+        filter.filter(mockContext, mockResponseContext);
+        assertFalse(headers.isEmpty());
+
+        final List<Object> links = headers.get("Link");
+        assertTrue(links.stream().map(Link.class::cast).anyMatch(link ->
+                    link.getRels().contains("acl") && "/resource?ext=acl".equals(link.getUri().toString())));
+        assertTrue(links.stream().map(Link.class::cast).anyMatch(link ->
+                    "/resource?ext=acl".equals(link.getUri().toString()) &&
+                    link.getRels().contains(Trellis.effectiveAcl.getIRIString())));
+    }
+
+    @Test
+    void testFilterContainerResponseWithControl() {
+        final IRI localEffectiveAcl = rdf.createIRI(TRELLIS_DATA_PREFIX + "container");
+        final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, String> stringHeaders = new MultivaluedHashMap<>();
+        stringHeaders.putSingle("Link", "<http://www.w3.org/ns/ldp#BasicContainer>; rel=\"type\"");
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockUriInfo.getPath()).thenReturn("/container/");
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockResponseContext.getStatusInfo()).thenReturn(OK);
+        when(mockResponseContext.getHeaders()).thenReturn(headers);
+        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+            .thenReturn(new AuthorizedModes(localEffectiveAcl, allModes));
+
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
+
+        assertTrue(headers.isEmpty());
+        filter.filter(mockContext, mockResponseContext);
+        assertFalse(headers.isEmpty());
+
+        final List<Object> links = headers.get("Link");
+        assertTrue(links.stream().map(Link.class::cast).anyMatch(link ->
+                    link.getRels().contains("acl") && "/container/?ext=acl".equals(link.getUri().toString())));
+        assertTrue(links.stream().map(Link.class::cast).anyMatch(link ->
+                    "/container/?ext=acl".equals(link.getUri().toString()) &&
+                    link.getRels().contains(Trellis.effectiveAcl.getIRIString())));
+    }
+
+    @Test
+    void testFilterResponseDelete() {
+        final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        when(mockResponseContext.getStatusInfo()).thenReturn(OK);
+        when(mockContext.getMethod()).thenReturn(DELETE);
+        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+            .thenReturn(new AuthorizedModes(effectiveAcl, allModes));
+
+        final WebAcFilter filter = new WebAcFilter();
+        filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -530,6 +779,12 @@ class WebAcFilterTest {
     @Test
     void testFilterResponseBaseUrl() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, String> stringHeaders = new MultivaluedHashMap<>();
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockUriInfo.getPath()).thenReturn("");
+
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockUriInfo.getPath()).thenReturn("/path");
@@ -538,6 +793,7 @@ class WebAcFilterTest {
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -555,8 +811,13 @@ class WebAcFilterTest {
     void testFilterResponseWebac2() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         final MultivaluedMap<String, String> params = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, String> stringHeaders = new MultivaluedHashMap<>();
         params.add("ext", "foo");
         params.add("ext", "acl");
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
+        when(mockUriInfo.getPath()).thenReturn("");
+
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockUriInfo.getQueryParameters()).thenReturn(params);
@@ -566,6 +827,7 @@ class WebAcFilterTest {
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -583,11 +845,12 @@ class WebAcFilterTest {
     @Test
     void testFilterResponseForbidden() {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
+
         when(mockResponseContext.getStatusInfo()).thenReturn(FORBIDDEN);
-        when(mockResponseContext.getHeaders()).thenReturn(headers);
 
         final WebAcFilter filter = new WebAcFilter();
         filter.setAccessService(mockWebAcService);
+        filter.setResourceService(mockResourceService);
 
         assertTrue(headers.isEmpty());
         filter.filter(mockContext, mockResponseContext);
@@ -601,6 +864,10 @@ class WebAcFilterTest {
 
     @Test
     void testSessionBuilder() {
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
+
         when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         final String baseUrl = "https://example.com/";
         final Session session = WebAcFilter.buildSession(mockContext, baseUrl);
@@ -609,6 +876,10 @@ class WebAcFilterTest {
 
     @Test
     void testSessionBuilderNoSlash() {
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
+
         when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         final String baseUrl = "https://example.com";
         final Session session = WebAcFilter.buildSession(mockContext, baseUrl);
@@ -617,6 +888,12 @@ class WebAcFilterTest {
 
     @Test
     void testSessionBuilderNoBaseUrl() {
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
+        when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
+        when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
+        when(mockPrincipal.getName()).thenReturn(webid);
         when(mockContext.getSecurityContext()).thenReturn(mockSecurityContext);
         final Session session = WebAcFilter.buildSession(mockContext, null);
         assertEquals(webid, session.getAgent().getIRIString());
@@ -624,16 +901,13 @@ class WebAcFilterTest {
 
     @Test
     void testWebAcChecksCanBeDisabled() {
-        when(mockContext.getMethod()).thenReturn("GET");
-
         final Set<IRI> modes = new HashSet<>();
-        when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
-            .thenReturn(new AuthorizedModes(effectiveAcl, modes));
 
         try {
             System.setProperty(WebAcFilter.CONFIG_WEBAC_ENABED, "false");
             final WebAcFilter filter = new WebAcFilter();
             filter.setAccessService(mockWebAcService);
+            filter.setResourceService(mockResourceService);
 
             assertDoesNotThrow(() -> filter.filter(mockContext),
                     "No exception thrown when WebAC is disabled!");

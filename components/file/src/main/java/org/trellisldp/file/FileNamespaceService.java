@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.enterprise.inject.Alternative;
@@ -81,7 +82,7 @@ public class FileNamespaceService implements NamespaceService {
         requireNonNull(namespace, "The namespce value may not be null!");
 
         if (dataRev.containsKey(namespace)) {
-            LOGGER.warn("A prefix already exists for the namespace: {}", namespace);
+            LOGGER.debug("A prefix already exists for the namespace: {}", namespace);
             return false;
         }
 
@@ -93,7 +94,8 @@ public class FileNamespaceService implements NamespaceService {
 
     private void init() {
         if (data.isEmpty()) {
-            data.putAll(read(getClass().getResource("/org/trellisldp/file/defaultNamespaces.json").getPath()));
+            data.putAll(read(Thread.currentThread().getContextClassLoader()
+                        .getResource("org/trellisldp/file/defaultNamespaces.json").getPath()));
             write(filePath, data);
         }
         data.forEach((k, v) -> dataRev.put(v, k));
@@ -104,15 +106,14 @@ public class FileNamespaceService implements NamespaceService {
         final Map<String, String> namespaces = new ConcurrentHashMap<>();
         if (file.exists()) {
             try {
-                final JsonNode jsonTree = MAPPER.readTree(new File(filePath));
-                if (jsonTree != null && jsonTree.isObject()) {
-                    jsonTree.fields().forEachRemaining(node -> {
-                        final JsonNode value = node.getValue();
-                        if (value.isTextual()) {
-                            namespaces.put(node.getKey(), value.textValue());
-                        }
-                    });
-                }
+                Optional.ofNullable(MAPPER.readTree(new File(filePath)))
+                    .filter(JsonNode::isObject).map(JsonNode::fields).ifPresent(fields ->
+                        fields.forEachRemaining(node -> {
+                            final JsonNode value = node.getValue();
+                            if (value.isTextual()) {
+                                namespaces.put(node.getKey(), value.textValue());
+                            }
+                        }));
             } catch (final IOException ex) {
                 throw new UncheckedIOException(ex);
             }
@@ -121,12 +122,13 @@ public class FileNamespaceService implements NamespaceService {
     }
 
     static void write(final String filePath, final Map<String, String> data) {
-        write(new File(filePath), data);
+        final File file = new File(filePath);
+        write(file, data, shouldCreateDirectories(file.getParentFile()));
     }
 
-    static void write(final File file, final Map<String, String> data) {
+    static void write(final File file, final Map<String, String> data, final boolean createDirs) {
         try {
-            if (shouldCreateDirectories(file.getParentFile())) {
+            if (createDirs) {
                 Files.createDirectories(file.getParentFile().toPath());
             }
             MAPPER.writerWithDefaultPrettyPrinter().writeValue(file, data);

@@ -27,6 +27,8 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 
+import org.trellisldp.common.LdpResource;
+
 /**
  * A {@link ContainerResponseFilter} that adds WebSub headers to all
  * {@code GET} responses.
@@ -34,6 +36,7 @@ import javax.ws.rs.ext.Provider;
  * @see <a href="https://www.w3.org/TR/websub/">WebSub</a>
  */
 @Provider
+@LdpResource
 public class WebSubHeaderFilter implements ContainerResponseFilter {
 
     /** The configuration key controlling the location of a web-sub-hub. */

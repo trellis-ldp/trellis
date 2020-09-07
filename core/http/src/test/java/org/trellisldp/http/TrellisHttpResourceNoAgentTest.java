@@ -16,8 +16,8 @@
 package org.trellisldp.http;
 
 import static java.util.Collections.singletonMap;
-import static org.mockito.MockitoAnnotations.initMocks;
-import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.mockito.MockitoAnnotations.openMocks;
+import static org.trellisldp.common.HttpConstants.ACL;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 
 import javax.ws.rs.core.Application;
@@ -38,7 +38,7 @@ class TrellisHttpResourceNoAgentTest extends AbstractTrellisHttpResourceTest {
     protected Application configure() {
 
         // Junit runner doesn't seem to work very well with JerseyTest
-        initMocks(this);
+        openMocks(this);
 
         System.setProperty(WebSubHeaderFilter.CONFIG_HTTP_WEB_SUB_HUB, HUB);
 

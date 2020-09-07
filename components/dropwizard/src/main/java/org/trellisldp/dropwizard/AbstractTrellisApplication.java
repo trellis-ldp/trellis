@@ -37,6 +37,8 @@ import java.util.List;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.slf4j.Logger;
+import org.trellisldp.api.ResourceService;
+import org.trellisldp.common.ServiceBundler;
 import org.trellisldp.dropwizard.config.BasicAuthConfiguration;
 import org.trellisldp.dropwizard.config.JwtAuthConfiguration;
 import org.trellisldp.dropwizard.config.TrellisConfiguration;
@@ -44,7 +46,6 @@ import org.trellisldp.http.CacheControlFilter;
 import org.trellisldp.http.TrellisHttpFilter;
 import org.trellisldp.http.TrellisHttpResource;
 import org.trellisldp.http.WebSubHeaderFilter;
-import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.vocabulary.Trellis;
 import org.trellisldp.webac.WebAcFilter;
 import org.trellisldp.webac.WebAcService;
@@ -81,10 +82,9 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
      *
      * @param config the configuration
      * @param initialize true if the TrellisHttpResource object should be initialized; false otherwise
-     * @throws Exception if there was an error initializing the LDP component
      * @return the LDP resource matcher
      */
-    protected Object getLdpComponent(final T config, final boolean initialize) throws Exception {
+    protected Object getLdpComponent(final T config, final boolean initialize) {
         final TrellisHttpResource ldpResource = new TrellisHttpResource(getServiceBundler(),
                 singletonMap("acl", Trellis.PreferAccessControl), config.getBaseUrl());
         if (initialize) {
@@ -156,6 +156,7 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                 @Override
                 protected void configure() {
                     bind(webac).to(WebAcService.class);
+                    bind(getServiceBundler().getResourceService()).to(ResourceService.class);
                 }
             });
         });

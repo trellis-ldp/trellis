@@ -20,10 +20,10 @@ import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
-import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON_TYPE;
-import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
-import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.common.HttpConstants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_LD_JSON_TYPE;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_N_TRIPLES_TYPE;
+import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 

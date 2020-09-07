@@ -29,7 +29,7 @@ module org.trellisldp.rdfa {
 
     uses org.trellisldp.api.NamespaceService;
 
-    opens org.trellisldp.rdfa to com.github.mustachejava;
+    opens org.trellisldp.rdfa;
 
     provides org.trellisldp.api.RDFaWriterService
         with org.trellisldp.rdfa.DefaultRdfaWriterService;

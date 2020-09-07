@@ -9,10 +9,6 @@ repositories {
     }
 }
 
-ext {
-    moduleName = 'org.trellisldp.osgi'
-}
-
 def static randomPort() {
     try {
         ServerSocket server = new ServerSocket()
@@ -39,8 +35,6 @@ sonarqube {
 
 dependencies {
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
-    testImplementation "org.apache.commons:commons-compress:$commonsCompressVersion"
-    testImplementation "org.apache.karaf.features:standard:$karafVersion"
     testImplementation "org.apache.karaf.features:org.apache.karaf.features.core:$karafVersion"
     testImplementation "org.apache.jena:jena-osgi:$jenaVersion"
     testImplementation "org.ops4j.pax.exam:pax-exam:$paxExamVersion"
@@ -50,6 +44,7 @@ dependencies {
     testImplementation "org.osgi:org.osgi.compendium:$osgiCompendiumVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
 
+    testImplementation "jakarta.inject:jakarta.inject-api:$injectApiVersion"
     testImplementation project(':trellis-api')
     testImplementation project(':trellis-amqp')
     testImplementation project(':trellis-app')
@@ -70,8 +65,6 @@ dependencies {
     testImplementation project(':trellis-webac')
     testImplementation project(':trellis-karaf')
     testImplementation project(':trellis-vocabulary')
-
-    testImplementation group: 'org.apache.karaf.features', name: 'standard', version: karafVersion, classifier:'features', ext: 'xml'
 
     testRuntimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junitVersion}"
@@ -116,10 +109,8 @@ task generateDependsFile {
 
 test {
     systemProperty 'karaf.version', karafVersion
-    systemProperty 'karaf.commonsIo.version', commonsIoVersion
-    systemProperty 'jena.version', jenaOsgiVersion
+    systemProperty 'jena.version', jenaVersion
     systemProperty 'activemq.version', activeMqVersion
-    systemProperty 'spring.version', springFeatureVersion
 
     systemProperty 'karaf.ssh.port', randomPort()
     systemProperty 'karaf.rmiServer.port', randomPort()
@@ -135,11 +126,3 @@ rootProject.childProjects.findAll { n, p -> p != project }.each { n, p ->
         tasks.test.dependsOn p.tasks.install
     }
 }
-
-java {
-    // because this isn't built as a JPMS module
-    if (project.hasProperty("jpms") && JavaVersion.current().isJava11Compatible()) {
-        disableAutoTargetJvm()
-    }
-}
-

@@ -16,8 +16,8 @@
 module org.trellisldp.event.jackson {
     exports org.trellisldp.event.jackson;
 
-    requires transitive org.trellisldp.api;
-    requires transitive org.trellisldp.vocabulary;
+    requires org.trellisldp.api;
+    requires org.trellisldp.vocabulary;
 
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;

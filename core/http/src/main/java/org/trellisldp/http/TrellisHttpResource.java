@@ -22,7 +22,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.*;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
-import static org.trellisldp.http.core.HttpConstants.*;
+import static org.trellisldp.common.HttpConstants.*;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -67,9 +67,12 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.TrellisExtensions;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.api.StorageConflictException;
+import org.trellisldp.api.TrellisRuntimeException;
+import org.trellisldp.common.LdpResource;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.TrellisExtensions;
+import org.trellisldp.common.TrellisRequest;
 import org.trellisldp.http.impl.DeleteHandler;
 import org.trellisldp.http.impl.GetConfiguration;
 import org.trellisldp.http.impl.GetHandler;
@@ -87,6 +90,7 @@ import org.trellisldp.vocabulary.LDP;
  */
 @ApplicationScoped
 @Path("{path: .*}")
+@LdpResource
 public class TrellisHttpResource {
 
     private static final Logger LOGGER = getLogger(TrellisHttpResource.class);
@@ -165,10 +169,9 @@ public class TrellisHttpResource {
      *          initialize itself independently of this method. In either case, if the
      *          persistence backend has already been initialized with a root resource,
      *          this method will make no changes to the storage layer.
-     * @throws Exception if there was an error initializing the root resource
      */
     @PostConstruct
-    public void initialize() throws Exception {
+    public void initialize() {
         final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
         try (final Dataset dataset = rdf.createDataset()) {
             LOGGER.debug("Preparing to initialize Trellis at {}", root);
@@ -178,6 +181,8 @@ public class TrellisHttpResource {
                     LOGGER.debug("Error auto-initializing Trellis", err);
                     return null;
                 }).toCompletableFuture().join();
+        } catch (final Exception ex) {
+            throw new TrellisRuntimeException("Error initializing Trellis HTTP layer", ex);
         }
     }
 
@@ -282,7 +287,7 @@ public class TrellisHttpResource {
                          content = @Content(mediaType = "application/sparql-update")) final String body) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final PatchHandler patchHandler = new PatchHandler(req, body, trellis, extensions, supportsCreateOnPatch,
                 defaultJsonLdProfile, urlBase);
 
@@ -307,7 +312,7 @@ public class TrellisHttpResource {
             @Context final HttpHeaders headers, @Context final SecurityContext secContext) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, extensions, urlBase);
 
         return getParent(identifier)
@@ -338,8 +343,8 @@ public class TrellisHttpResource {
         final String identifier = getIdentifier(req);
         final String separator = path.isEmpty() ? "" : "/";
 
-        final IRI parent = rdf.createIRI(TRELLIS_DATA_PREFIX + path);
-        final IRI child = rdf.createIRI(TRELLIS_DATA_PREFIX + path + separator + identifier);
+        final IRI parent = trellis.getResourceService().getResourceIdentifier(urlBase, path);
+        final IRI child = trellis.getResourceService().getResourceIdentifier(urlBase, path + separator + identifier);
         final PostHandler postHandler = new PostHandler(req, parent, identifier, body, trellis, extensions, urlBase);
 
         return trellis.getResourceService().get(parent)
@@ -366,7 +371,7 @@ public class TrellisHttpResource {
             @RequestBody(description = "The updated resource") final InputStream body) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final PutHandler putHandler = new PutHandler(req, body, trellis, extensions, preconditionRequired,
                 createUncontained, urlBase);
 
@@ -389,7 +394,7 @@ public class TrellisHttpResource {
 
     private CompletionStage<ResponseBuilder> fetchResource(final TrellisRequest req) {
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final GetConfiguration config = new GetConfiguration(req.getVersion() != null,
                 weakEtags, includeMementoDates, defaultJsonLdProfile, urlBase);
         final GetHandler getHandler = new GetHandler(req, trellis, extensions, config);
@@ -443,7 +448,11 @@ public class TrellisHttpResource {
 
     private Response handleException(final Throwable err) {
         final Throwable cause = err.getCause();
-        if (cause instanceof ClientErrorException) {
+        if (cause instanceof StorageConflictException) {
+            LOGGER.debug("Storage conflict error: {}", err.getMessage());
+            LOGGER.trace("Storage conflict error: ", err);
+            return Response.status(Response.Status.CONFLICT).build();
+        } else if (cause instanceof ClientErrorException) {
             LOGGER.debug("Client error: {}", err.getMessage());
             LOGGER.trace("Client error: ", err);
         } else if (cause instanceof RedirectionException) {

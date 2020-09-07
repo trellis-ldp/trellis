@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.api.Syntax.LD_PATCH;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 
+import org.apache.commons.rdf.api.RDFSyntax;
 import org.junit.jupiter.api.Test;
 
 class SyntaxTest {
@@ -34,8 +35,9 @@ class SyntaxTest {
         assertFalse(SPARQL_UPDATE.supportsDataset(), "SPARQL-Update shouldn't be supporting datasets!");
         assertEquals(SPARQL_UPDATE.title(), SPARQL_UPDATE.toString(), "String version isn't the same as the title!");
         assertNotEquals(SPARQL_UPDATE, LD_PATCH, "SPARQL-Update equals LD-PATCH???");
-        assertNotEquals(SPARQL_UPDATE, "blah blah", "SPARQL-Update equals blah blah???");
-        assertEquals(SPARQL_UPDATE, SPARQL_UPDATE, "SPARQL-Update doesn't act like a singleton!");
+        final RDFSyntax sparqlUpdate = SPARQL_UPDATE;
+        assertNotEquals(SPARQL_UPDATE, "SPARQL Update", "non-Syntax comparison fails!");
+        assertEquals(SPARQL_UPDATE, sparqlUpdate, "SPARQL-Update doesn't act like a singleton!");
         assertEquals(SPARQL_UPDATE.mediaType().hashCode(), SPARQL_UPDATE.hashCode(),
                 "SPARQL-Update has an unexpected hash code!");
     }
@@ -51,8 +53,8 @@ class SyntaxTest {
         assertFalse(LD_PATCH.supportsDataset(), "LD-Patch shouldn't be supporting datasets!");
         assertEquals(LD_PATCH.title(), LD_PATCH.toString(), "LD-Patch string version isn't the same as the title");
         assertNotEquals(LD_PATCH, SPARQL_UPDATE, "LD-Patch matches SPARQL-Update???");
-        assertNotEquals(LD_PATCH, "blah blah", "LD-Patch matches 'blah blah'???");
-        assertEquals(LD_PATCH, LD_PATCH, "LD-Patch doesn't act like a singleton!");
+        final RDFSyntax ldPatch = LD_PATCH;
+        assertEquals(LD_PATCH, ldPatch, "LD-Patch doesn't act like a singleton!");
         assertEquals(LD_PATCH.mediaType().hashCode(), LD_PATCH.hashCode(), "LD-Patch has unexpected hash code!");
     }
 }

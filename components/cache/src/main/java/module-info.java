@@ -16,7 +16,7 @@
 module org.trellisldp.cache {
     exports org.trellisldp.cache;
 
-    requires transitive org.trellisldp.api;
+    requires org.trellisldp.api;
 
     requires com.google.common;
 }

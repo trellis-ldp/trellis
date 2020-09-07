@@ -42,10 +42,10 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.SimpleEvent;
+import org.trellisldp.api.TrellisRuntimeException;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.SimpleEvent;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
@@ -95,7 +95,7 @@ public final class WebDAVUtils {
         try {
             dataset.close();
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error closing dataset", ex);
+            throw new TrellisRuntimeException("Error closing dataset", ex);
         }
     }
 

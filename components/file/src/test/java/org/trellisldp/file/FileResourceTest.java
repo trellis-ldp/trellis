@@ -54,11 +54,12 @@ class FileResourceTest {
         assertFalse(res.getInsertedContentRelation().isPresent(), "Unexpected ldp:insertedContentRelation value!");
         assertFalse(res.getBinaryMetadata().isPresent(), "Unexpected binary present!");
         assertFalse(res.hasMetadata(Trellis.PreferAccessControl), "Unexpected ACL present!");
+        assertTrue(res.hasMetadata(rdf.createIRI("http://example.com/ns/Extensions")), "Missing extension metadata");
         assertFalse(res.getContainer().isPresent(), "Unexpected parent resource!");
         assertEquals(3L, res.stream(LDP.PreferContainment).count(), "Incorrect containment count!");
         assertEquals(3L, res.stream(Trellis.PreferUserManaged).count(), "Incorrect user triple count!");
         assertEquals(1L, res.stream(Trellis.PreferServerManaged).count(), "Incorrect server managed count!");
-        assertEquals(7L, res.stream().count(), "Incorrect total triple count!");
+        assertEquals(8L, res.stream().count(), "Incorrect total triple count!");
     }
 
     @Test

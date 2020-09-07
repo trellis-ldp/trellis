@@ -22,11 +22,13 @@ import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.http.core.HttpConstants.SLUG;
+import static org.trellisldp.common.HttpConstants.SLUG;
+
+import java.net.URI;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -42,7 +44,7 @@ import org.mockito.Mock;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.http.core.ServiceBundler;
+import org.trellisldp.common.ServiceBundler;
 
 class TrellisWebDAVRequestFilterTest {
 
@@ -77,16 +79,18 @@ class TrellisWebDAVRequestFilterTest {
 
     @BeforeEach
     void setUp() {
-        initMocks(this);
+        openMocks(this);
 
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
         when(mockContext.getMethod()).thenReturn(PUT);
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockContext.getHeaders()).thenReturn(mockHeaders);
         when(mockUriBuilder.path(any(String.class))).thenReturn(mockUriBuilder);
         when(mockUriInfo.getBaseUriBuilder()).thenReturn(mockUriBuilder);
+        when(mockUriInfo.getBaseUri()).thenReturn(URI.create("http://example.com/"));
         when(mockUriInfo.getPath()).thenReturn(PATH);
         when(mockUriInfo.getPathSegments()).thenReturn(singletonList(mockPathSegment));
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());

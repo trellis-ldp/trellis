@@ -25,7 +25,7 @@ import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.status;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_VERSIONING;
+import static org.trellisldp.common.HttpConstants.CONFIG_HTTP_VERSIONING;
 import static org.trellisldp.http.impl.HttpUtils.*;
 
 import java.io.ByteArrayInputStream;
@@ -43,7 +43,6 @@ import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
@@ -55,13 +54,13 @@ import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.api.TrellisUtils;
-import org.trellisldp.http.core.HttpSession;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.SimpleEvent;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.common.HttpSession;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.SimpleEvent;
+import org.trellisldp.common.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
@@ -174,7 +173,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param dataset the dataset
      */
     protected void readEntityIntoDataset(final IRI graphName, final RDFSyntax syntax, final Dataset dataset) {
-        try (final InputStream in = new ByteArrayInputStream(IOUtils.toByteArray(entity))) {
+        try (final InputStream in = new ByteArrayInputStream(entity.readAllBytes())) {
             getServices().getIOService().read(in, syntax, getIdentifier())
                 .map(skolemizeTriples(getServices().getResourceService(), getBaseUrl()))
                 .filter(triple -> !RDF.type.equals(triple.getPredicate())
@@ -184,7 +183,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 .forEachOrdered(dataset::add);
         } catch (final IOException ex) {
             throw new BadRequestException("Error handling input stream: " + ex.getMessage(), ex);
-        } catch (final RuntimeTrellisException ex) {
+        } catch (final TrellisRuntimeException ex) {
             throw new BadRequestException("Invalid RDF content: " + ex.getMessage(), ex);
         }
     }
@@ -198,8 +197,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
      */
     protected CompletionStage<Void> emitEvent(final IRI identifier, final IRI activityType, final IRI resourceType) {
         // Always notify about updates for the resource in question
+        final IRI eventResourceType = getExtensionGraphName() != null ? LDP.RDFSource : resourceType;
         getServices().getEventService().emit(new SimpleEvent(getUrl(identifier, resourceType), getSession().getAgent(),
-                    asList(PROV.Activity, activityType), ldpResourceTypes(resourceType).collect(toList())));
+                    asList(PROV.Activity, activityType), ldpResourceTypes(eventResourceType).collect(toList())));
 
         // Further notifications are only relevant for non-extension resources
         if (getExtensionGraphName() == null) {
@@ -249,8 +249,11 @@ class MutatingLdpHandler extends BaseLdpHandler {
         }
     }
 
-    protected CompletionStage<Void> persistContent(final BinaryMetadata metadata) {
-        return getServices().getBinaryService().setContent(metadata, entity);
+    protected CompletionStage<Void> persistBinaryContent(final BinaryMetadata metadata) {
+        if (metadata != null) {
+            return getServices().getBinaryService().setContent(metadata, entity);
+        }
+        return completedFuture(null);
     }
 
     protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final Dataset mutable) {

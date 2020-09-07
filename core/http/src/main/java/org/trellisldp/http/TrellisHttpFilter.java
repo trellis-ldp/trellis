@@ -28,8 +28,8 @@ import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.METHOD_NOT_ALLOWED;
 import static javax.ws.rs.core.Response.status;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
-import static org.trellisldp.http.core.HttpConstants.*;
-import static org.trellisldp.http.core.TrellisExtensions.buildExtensionMapFromConfig;
+import static org.trellisldp.common.HttpConstants.*;
+import static org.trellisldp.common.TrellisExtensions.buildExtensionMapFromConfig;
 import static org.trellisldp.vocabulary.LDP.PreferContainment;
 import static org.trellisldp.vocabulary.LDP.PreferMembership;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
@@ -45,13 +45,15 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
-import org.trellisldp.http.core.AcceptDatetime;
-import org.trellisldp.http.core.Prefer;
-import org.trellisldp.http.core.Range;
-import org.trellisldp.http.core.Version;
+import org.trellisldp.common.AcceptDatetime;
+import org.trellisldp.common.LdpResource;
+import org.trellisldp.common.Prefer;
+import org.trellisldp.common.Range;
+import org.trellisldp.common.Version;
 
 @Provider
 @Priority(AUTHORIZATION - 20)
+@LdpResource
 public class TrellisHttpFilter implements ContainerRequestFilter {
 
     private List<String> mutatingMethods;

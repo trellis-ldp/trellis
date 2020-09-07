@@ -19,6 +19,23 @@ hubUrl: http://hub.example.com/
 
 namespaces: /tmp/trellisData/namespaces.json
 
+# Database
+database:
+  driverClass: org.h2.Driver
+  user: trellis
+  password:
+  url: jdbc:h2:/tmp/trellisData/database
+  properties:
+    charSet: UTF-8
+  maxWaitForConnection: 1s
+  validationQuery: "SELECT 1"
+  validationQueryTimeout: 3s
+  minSize: 8
+  maxSize: 32
+  checkConnectionWhileIdle: false
+  evictionInterval: 10s
+  minIdleTime: 1 minute
+
 auth:
     webac:
         enabled: true
@@ -63,8 +80,8 @@ notifications:
 jsonld:
     cacheSize: 10
     cacheExpireHours: 48
-    contextDomainWhitelist: []
-    contextWhitelist:
+    allowedContextDomains: []
+    allowedContexts:
         - "http://example.org/context.json"
 
 cors:

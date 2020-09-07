@@ -20,12 +20,11 @@ import static java.time.Instant.now;
 import static java.time.ZoneOffset.UTC;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static javax.ws.rs.core.HttpHeaders.VARY;
-import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
-import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
+import static org.trellisldp.common.HttpConstants.ACCEPT_DATETIME;
+import static org.trellisldp.common.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.test.TestUtils.getLinks;
 
 import java.time.Instant;
@@ -51,7 +50,6 @@ public interface MementoTimeGateTests extends MementoCommonTests {
                 this::testOriginalLinkHeader,
                 this::testTimeGateRedirect,
                 this::testTimeGateRedirected,
-                this::testBadTimeGateRequest,
                 this::testTimeGateRequestPrecedingMemento);
     }
 
@@ -119,16 +117,6 @@ public interface MementoTimeGateTests extends MementoCommonTests {
         try (final Response res = target(location).request().header(ACCEPT_DATETIME, date).head()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a valid response");
             assertNotNull(res.getHeaderString(MEMENTO_DATETIME), "Check for a Memento-Datetime header");
-        }
-    }
-
-    /**
-     * Test bad timegate request.
-     */
-    default void testBadTimeGateRequest() {
-        try (final Response res = target(getResourceLocation()).request()
-                .header(ACCEPT_DATETIME, "unparseable date string").get()) {
-            assertEquals(CLIENT_ERROR, res.getStatusInfo().getFamily(), "Check for an error response");
         }
     }
 

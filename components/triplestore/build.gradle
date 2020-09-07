@@ -30,6 +30,7 @@ dependencies {
         exclude group: 'io.smallrye', module: 'smallrye-health-extension-api'
     }
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-test')
     testImplementation("org.awaitility:awaitility:$awaitilityVersion") {

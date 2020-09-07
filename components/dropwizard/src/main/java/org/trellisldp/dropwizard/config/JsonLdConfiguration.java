@@ -29,49 +29,49 @@ import javax.validation.constraints.NotNull;
 public class JsonLdConfiguration {
 
     @NotNull
-    private Set<String> whitelist = emptySet();
+    private Set<String> allowed = emptySet();
 
     @NotNull
-    private Set<String> whitelistDomains = emptySet();
+    private Set<String> allowedDomains = emptySet();
 
     private long profileCacheSize = 100L;
 
     private long profileCacheExpireHours = 24L;
 
     /**
-     * Get the whitelist of custom JSON-LD profiles.
-     * @return the json-ld profile whitelist
+     * Get the list of allowed custom JSON-LD profiles.
+     * @return the json-ld profile allow list
      */
     @JsonProperty
-    public Set<String> getContextWhitelist() {
-        return whitelist;
+    public Set<String> getAllowedContexts() {
+        return allowed;
     }
 
     /**
-     * Set the whitelist of custom JSON-LD profiles.
-     * @param whitelist the json-ld profile witelist
+     * Set the list of allowed custom JSON-LD profiles.
+     * @param allowed the allowed json-ld profiles
      */
     @JsonProperty
-    public void setContextWhitelist(final Set<String> whitelist) {
-        this.whitelist = whitelist;
+    public void setAllowedContexts(final Set<String> allowed) {
+        this.allowed = allowed;
     }
 
     /**
-     * Get the domain whitelist of custom JSON-LD profiles.
-     * @return the json-ld profile domain whitelist
+     * Get the allowed domains for custom JSON-LD profiles.
+     * @return the json-ld profile domain list
      */
     @JsonProperty
-    public Set<String> getContextDomainWhitelist() {
-        return whitelistDomains;
+    public Set<String> getAllowedContextDomains() {
+        return allowedDomains;
     }
 
     /**
-     * Set the domain whitelist of custom JSON-LD profiles.
-     * @param whitelistDomains the json-ld domain profile witelist
+     * Set the allowed domains for custom JSON-LD profiles.
+     * @param allowedDomains the json-ld domain profile witelist
      */
     @JsonProperty
-    public void setContextDomainWhitelist(final Set<String> whitelistDomains) {
-        this.whitelistDomains = whitelistDomains;
+    public void setAllowedContextDomains(final Set<String> allowedDomains) {
+        this.allowedDomains = allowedDomains;
     }
 
     /**

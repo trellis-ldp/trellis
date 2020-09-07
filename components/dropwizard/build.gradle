@@ -4,9 +4,8 @@ plugins {
 
 description = "Trellis Dropwizard"
 
-ext {
-    moduleName = 'org.trellisldp.dropwizard'
-}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 dependencies {
     api "io.dropwizard:dropwizard-core:$dropwizardVersion"
@@ -39,6 +38,7 @@ dependencies {
     }
     testImplementation "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation project(':trellis-app')
     testImplementation project(':trellis-constraint')
     testImplementation project(':trellis-file')
@@ -53,13 +53,11 @@ dependencies {
 
 jar {
     manifest {
-        attributes('Automatic-Module-Name': moduleName)
+        attributes('Automatic-Module-Name': "org.trellisldp.dropwizard")
     }
 }
 
 java {
-    // because this isn't built as a JPMS module
-    if (project.hasProperty("jpms") && JavaVersion.current().isJava11Compatible()) {
-        disableAutoTargetJvm()
-    }
+    // Because dropwizard doesn't properly support Java modularity
+    disableAutoTargetJvm()
 }

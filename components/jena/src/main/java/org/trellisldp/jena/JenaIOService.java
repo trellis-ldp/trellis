@@ -86,7 +86,7 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.RDFaWriterService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.Trellis;
 
 /**
@@ -98,13 +98,13 @@ import org.trellisldp.vocabulary.Trellis;
 public class JenaIOService implements IOService {
 
     /** The configuration key listing valid JSON-LD profile documents. */
-    public static final String CONFIG_IO_JSONLD_PROFILES = "trellis.io.jsonld-profiles";
+    public static final String CONFIG_IO_JSONLD_PROFILES = "trellis.jena.jsonld-profiles";
 
     /** The configuration key listing valid JSON-LD profile domains. */
-    public static final String CONFIG_IO_JSONLD_DOMAINS = "trellis.io.jsonld-domains";
+    public static final String CONFIG_IO_JSONLD_DOMAINS = "trellis.jena.jsonld-domains";
 
     /** The configuration key controling whether to use relative IRIs for Turtle serializations. */
-    public static final String CONFIG_IO_RELATIVE_IRIS = "trellis.io.relative-iris";
+    public static final String CONFIG_IO_RELATIVE_IRIS = "trellis.jena.relative-iris";
 
     private static final Logger LOGGER = getLogger(JenaIOService.class);
     private static final Map<IRI, RDFFormat> JSONLD_FORMATS = unmodifiableMap(Stream.of(
@@ -116,8 +116,8 @@ public class JenaIOService implements IOService {
     private final NamespaceService nsService;
     private final CacheService<String, String> cache;
     private final RDFaWriterService htmlSerializer;
-    private final Set<String> whitelist;
-    private final Set<String> whitelistDomains;
+    private final Set<String> allowedContexts;
+    private final Set<String> allowedContextDomains;
     private final List<RDFSyntax> readable;
     private final List<RDFSyntax> writable;
     private final List<RDFSyntax> updatable;
@@ -175,16 +175,16 @@ public class JenaIOService implements IOService {
      * @param namespaceService the namespace service
      * @param htmlSerializer the HTML serializer service
      * @param cache a cache for custom JSON-LD profile resolution
-     * @param whitelist a whitelist of JSON-LD profiles
-     * @param whitelistDomains a whitelist of JSON-LD profile domains
+     * @param allowedContexts allowed JSON-LD profiles
+     * @param allowedContextDomains allowed domains for JSON-LD profiles
      * @param relativeIRIs whether to use relative IRIs for Turtle output
      */
     public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
-            final CacheService<String, String> cache, final String whitelist, final String whitelistDomains,
+            final CacheService<String, String> cache, final String allowedContexts, final String allowedContextDomains,
             final boolean relativeIRIs) {
-        this(namespaceService, htmlSerializer, cache, intoSet(whitelist), intoSet(whitelistDomains), relativeIRIs);
+        this(namespaceService, htmlSerializer, cache, intoSet(allowedContexts), intoSet(allowedContextDomains),
+                relativeIRIs);
     }
-
 
     /**
      * Create a serialization service.
@@ -192,18 +192,18 @@ public class JenaIOService implements IOService {
      * @param namespaceService the namespace service
      * @param htmlSerializer the HTML serializer service
      * @param cache a cache for custom JSON-LD profile resolution
-     * @param whitelist a whitelist of JSON-LD profiles
-     * @param whitelistDomains a whitelist of JSON-LD profile domains
+     * @param allowedContexts allowed JSON-LD profiles
+     * @param allowedContextDomains allowed domains for JSON-LD profiles
      * @param relativeIRIs whether to use relative IRIs for Turtle output
      */
     public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
-            final CacheService<String, String> cache, final Set<String> whitelist, final Set<String> whitelistDomains,
-            final boolean relativeIRIs) {
+            final CacheService<String, String> cache, final Set<String> allowedContexts,
+            final Set<String> allowedContextDomains, final boolean relativeIRIs) {
         this.nsService = requireNonNull(namespaceService, "The NamespaceService may not be null!");
         this.cache = requireNonNull(cache, "The CacheService may not be null!");
         this.htmlSerializer = htmlSerializer;
-        this.whitelist = whitelist;
-        this.whitelistDomains = whitelistDomains;
+        this.allowedContexts = allowedContexts;
+        this.allowedContextDomains = allowedContextDomains;
         this.relativeIRIs = relativeIRIs;
 
         final List<RDFSyntax> reads = new ArrayList<>(asList(TURTLE, RDFSyntax.JSONLD, NTRIPLES));
@@ -242,7 +242,7 @@ public class JenaIOService implements IOService {
                 writeHTML(triples, output, baseUrl);
             } else {
                 final Lang lang = JenaCommonsRDF.toJena(syntax).orElseThrow(() ->
-                        new RuntimeTrellisException("Invalid content type: " + syntax.mediaType()));
+                        new TrellisRuntimeException("Invalid content type: " + syntax.mediaType()));
 
                 final RDFFormat format = defaultSerialization(lang);
 
@@ -269,7 +269,7 @@ public class JenaIOService implements IOService {
                 }
             }
         } catch (final AtlasException ex) {
-            throw new RuntimeTrellisException(ex);
+            throw new TrellisRuntimeException(ex);
         }
     }
 
@@ -311,10 +311,10 @@ public class JenaIOService implements IOService {
         for (final IRI p : profiles) {
             final String profile = p.getIRIString();
             if (!profile.startsWith(getNamespace())) {
-                if (whitelist.contains(profile)) {
+                if (allowedContexts.contains(profile)) {
                     return profile;
                 }
-                for (final String domain : whitelistDomains) {
+                for (final String domain : allowedContextDomains) {
                     if (profile.startsWith(domain)) {
                         return profile;
                     }
@@ -332,7 +332,7 @@ public class JenaIOService implements IOService {
         try {
             final org.apache.jena.graph.Graph graph = createDefaultGraph();
             final Lang lang = JenaCommonsRDF.toJena(syntax).orElseThrow(() ->
-                    new RuntimeTrellisException("Unsupported RDF Syntax: " + syntax.mediaType()));
+                    new TrellisRuntimeException("Unsupported RDF Syntax: " + syntax.mediaType()));
 
             RDFParser.source(input).lang(lang).base(base).parse(graph);
 
@@ -346,7 +346,7 @@ public class JenaIOService implements IOService {
             });
             return JenaCommonsRDF.fromJena(graph).stream().map(Triple.class::cast);
         } catch (final RiotException | AtlasException | IllegalArgumentException ex) {
-            throw new RuntimeTrellisException(ex);
+            throw new TrellisRuntimeException(ex);
         }
     }
 
@@ -356,14 +356,14 @@ public class JenaIOService implements IOService {
         requireNonNull(update, "The update command may not be null");
         requireNonNull(syntax, "The RDF syntax may not be null");
         if (!SPARQL_UPDATE.equals(syntax)) {
-            throw new RuntimeTrellisException("The syntax " + syntax + " is not supported for updates.");
+            throw new TrellisRuntimeException("The syntax " + syntax + " is not supported for updates.");
         }
 
         try {
             final org.apache.jena.graph.Graph g = JenaCommonsRDF.toJena(graph);
             execute(create(update, base), g);
         } catch (final UpdateException | QueryParseException ex) {
-            throw new RuntimeTrellisException(ex);
+            throw new TrellisRuntimeException(ex);
         }
     }
 

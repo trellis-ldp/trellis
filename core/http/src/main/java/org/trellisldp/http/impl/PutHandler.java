@@ -16,7 +16,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
@@ -28,9 +27,8 @@ import static javax.ws.rs.core.Response.status;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_LDP_MODEL_MODIFICATIONS;
+import static org.trellisldp.common.HttpConstants.CONFIG_HTTP_LDP_MODEL_MODIFICATIONS;
 import static org.trellisldp.http.impl.HttpUtils.checkRequiredPreconditions;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.exists;
@@ -60,8 +58,8 @@ import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 
@@ -96,7 +94,8 @@ public class PutHandler extends MutatingLdpHandler {
                     final Map<String, IRI> extensions, final boolean preconditionRequired,
                     final boolean createUncontained, final String baseUrl) {
         super(req, trellis, extensions, baseUrl, entity);
-        this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        this.internalId = trellis.getResourceService()
+            .getResourceIdentifier(getRequestBaseUrl(req, baseUrl), req.getPath());
         this.rdfSyntax = getRdfSyntax(req.getContentType(), trellis.getIOService().supportedWriteSyntaxes());
         this.heuristicType = req.getContentType() != null && rdfSyntax == null ? LDP.NonRDFSource : LDP.RDFSource;
         this.preconditionRequired = preconditionRequired;
@@ -229,19 +228,17 @@ public class PutHandler extends MutatingLdpHandler {
             final Dataset immutable, final ResponseBuilder builder, final IRI ldpType) {
 
         final Metadata.Builder metadata;
-        final CompletionStage<Void> persistPromise;
+        final BinaryMetadata binary;
 
         // Add user-supplied data
         if (LDP.NonRDFSource.equals(ldpType) && rdfSyntax == null) {
             LOGGER.trace("Successfully checked for bad digest value");
             final String mimeType = getRequest().getContentType() != null ? getRequest().getContentType()
                 : APPLICATION_OCTET_STREAM;
-            final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
+            final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier(internalId));
 
-            // Persist the content
-            final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
+            binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
                             .hints(getRequest().getHeaders()).build();
-            persistPromise = persistContent(binary);
 
             metadata = metadataBuilder(internalId, ldpType, mutable).binary(binary);
             builder.link(getIdentifier() + "?ext=description", "describedby");
@@ -258,7 +255,7 @@ public class PutHandler extends MutatingLdpHandler {
             if (getResource() != null) {
                 getResource().getBinaryMetadata().ifPresent(metadata::binary);
             }
-            persistPromise = completedFuture(null);
+            binary = null;
         }
 
         if (getResource() != null) {
@@ -281,7 +278,8 @@ public class PutHandler extends MutatingLdpHandler {
             });
         LOGGER.trace("Persisting mutable data for {} with data: {}", internalId, mutable);
 
-        return persistPromise.thenCompose(future -> createOrReplace(metadata.build(), mutable, immutable))
+        return createOrReplace(metadata.build(), mutable, immutable)
+            .thenCompose(future -> persistBinaryContent(binary))
             .thenCompose(future -> handleUpdateEvent(ldpType))
             .thenApply(future -> decorateResponse(builder));
     }
@@ -305,8 +303,7 @@ public class PutHandler extends MutatingLdpHandler {
     }
 
     private CompletionStage<Void> handleUpdateEvent(final IRI ldpType) {
-        return emitEvent(getInternalId(), getResource() == null ? AS.Create : AS.Update,
-                getExtensionGraphName() != null ? LDP.RDFSource : ldpType);
+        return emitEvent(getInternalId(), getResource() == null ? AS.Create : AS.Update, ldpType);
     }
 
     private IRI effectiveLdpType(final IRI ldpType) {

@@ -15,13 +15,12 @@
  */
 module org.trellisldp.http {
     exports org.trellisldp.http;
-    exports org.trellisldp.http.core;
 
-    requires transitive org.trellisldp.api;
-    requires transitive org.trellisldp.vocabulary;
+    requires org.trellisldp.api;
+    requires org.trellisldp.common;
+    requires org.trellisldp.vocabulary;
 
     requires org.apache.commons.codec;
-    requires org.apache.commons.io;
     requires org.apache.commons.rdf.api;
     requires org.slf4j;
 

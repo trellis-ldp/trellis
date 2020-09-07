@@ -27,10 +27,10 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.http.core.HttpConstants.PRECONDITION_REQUIRED;
+import static org.trellisldp.common.HttpConstants.PRECONDITION_REQUIRED;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.io.IOException;
@@ -58,8 +58,8 @@ import org.mockito.Mock;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.http.core.Prefer;
+import org.trellisldp.api.TrellisRuntimeException;
+import org.trellisldp.common.Prefer;
 import org.trellisldp.jena.JenaIOService;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.Trellis;
@@ -81,7 +81,7 @@ class HttpUtilsTest {
 
     @BeforeEach
     void setUp() {
-        initMocks(this);
+        openMocks(this);
     }
 
     @Test
@@ -96,6 +96,12 @@ class HttpUtilsTest {
     void testGetSyntaxEmpty() {
         assertNull(HttpUtils.getSyntax(ioService, emptyList(), "some/type"), "Syntax not rejected!");
         assertEquals(TURTLE, HttpUtils.getSyntax(ioService, emptyList(), null), "Turtle not default syntax!");
+    }
+
+    @Test
+    void testGetBinarySynax() {
+        assertNull(HttpUtils.getSyntax(ioService, asList(MediaType.TEXT_HTML_TYPE, MediaType.WILDCARD_TYPE),
+                    "image/png"), "Incorrect binary syntax");
     }
 
     @Test
@@ -282,7 +288,7 @@ class HttpUtilsTest {
     @Test
     void testCloseDataset() throws Exception {
         doThrow(new IOException()).when(mockDataset).close();
-        assertThrows(RuntimeTrellisException.class, () -> HttpUtils.closeDataset(mockDataset));
+        assertThrows(TrellisRuntimeException.class, () -> HttpUtils.closeDataset(mockDataset));
     }
 
 }

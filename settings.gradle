@@ -5,9 +5,7 @@ pluginManagement {
     }
     plugins {
         id 'biz.aQute.bnd.builder' version "4.1.0"
-        id 'info.solidsoft.pitest' version "1.4.9"
-        id 'io.quarkus' version "1.4.2.Final"
-        id "net.wasdev.wlp.gradle.plugins.Liberty" version "2.7"
+        id 'info.solidsoft.pitest' version "1.5.1"
     }
 }
 
@@ -19,6 +17,7 @@ rootProject.name = 'trellis'
 
 include ':trellis-api'
 include ':trellis-http'
+include ':trellis-common'
 include ':trellis-vocabulary'
 
 include ':trellis-amqp'
@@ -48,7 +47,7 @@ include ':trellis-triplestore'
 include ':trellis-webdav'
 
 include ':trellis-bom'
-include ':trellis-dropwizard-triplestore'
+include ':trellis-dropwizard-app'
 include ':trellis-karaf'
 include ':trellis-openliberty'
 include ':trellis-osgi'
@@ -57,6 +56,7 @@ include ':trellis-test'
 
 project(':trellis-api').projectDir = new File(rootDir, "core/api")
 project(':trellis-http').projectDir = new File(rootDir, "core/http")
+project(':trellis-common').projectDir = new File(rootDir, "core/common")
 project(':trellis-vocabulary').projectDir = new File(rootDir, "core/vocabulary")
 
 project(':trellis-amqp').projectDir = new File(rootDir, "notifications/amqp")
@@ -87,7 +87,7 @@ project(':trellis-triplestore').projectDir = new File(rootDir, "components/tripl
 project(':trellis-webdav').projectDir = new File(rootDir, "components/webdav")
 
 project(':trellis-bom').projectDir = new File(rootDir, "platform/bom")
-project(':trellis-dropwizard-triplestore').projectDir = new File(rootDir, "platform/dropwizard")
+project(':trellis-dropwizard-app').projectDir = new File(rootDir, "platform/dropwizard")
 project(':trellis-karaf').projectDir = new File(rootDir, "platform/karaf")
 project(':trellis-openliberty').projectDir = new File(rootDir, "platform/openliberty")
 project(':trellis-osgi').projectDir = new File(rootDir, "platform/osgi")

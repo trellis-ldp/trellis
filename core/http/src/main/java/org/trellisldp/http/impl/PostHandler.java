@@ -16,7 +16,6 @@
 package org.trellisldp.http.impl;
 
 import static java.net.URI.create;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
@@ -33,7 +32,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.ldpResourceTypes;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
@@ -60,8 +58,8 @@ import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 
@@ -100,7 +98,8 @@ public class PostHandler extends MutatingLdpHandler {
         this.idPath = separator + id;
         this.contentType = req.getContentType();
         this.parentIdentifier = parentIdentifier;
-        this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath() + idPath);
+        this.internalId = trellis.getResourceService()
+            .getResourceIdentifier(getRequestBaseUrl(req, baseUrl), req.getPath() + idPath);
         this.rdfSyntax = getRdfSyntax(contentType, trellis.getIOService().supportedWriteSyntaxes());
 
         // Add LDP type (ldp:Resource results in the defaultType)
@@ -182,20 +181,19 @@ public class PostHandler extends MutatingLdpHandler {
     private CompletionStage<ResponseBuilder> handleResourceCreation(final Dataset mutable,
             final Dataset immutable, final ResponseBuilder builder) {
 
-        final CompletionStage<Void> persistPromise;
-        final Metadata.Builder metadata;
+        final Metadata metadata;
+        final BinaryMetadata binary;
 
         // Add user-supplied data
         if (ldpType.equals(LDP.NonRDFSource)) {
             final String mimeType = contentType != null ? contentType : APPLICATION_OCTET_STREAM;
-            final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier());
+            final IRI binaryLocation = rdf.createIRI(getServices().getBinaryService().generateIdentifier(internalId));
 
             // Persist the content
-            final BinaryMetadata binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
+            binary = BinaryMetadata.builder(binaryLocation).mimeType(mimeType)
                             .hints(getRequest().getHeaders()).build();
-            persistPromise = persistContent(binary);
 
-            metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier).binary(binary);
+            metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier).binary(binary).build();
             builder.link(getIdentifier() + "?ext=description", "describedby");
         } else {
             final RDFSyntax s = rdfSyntax != null ? rdfSyntax : TURTLE;
@@ -204,14 +202,14 @@ public class PostHandler extends MutatingLdpHandler {
             // Check for any constraints
             mutable.getGraph(PreferUserManaged).ifPresent(graph -> checkConstraint(graph, ldpType, s));
 
-            metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier);
-            persistPromise = completedFuture(null);
+            metadata = metadataBuilder(internalId, ldpType, mutable).container(parentIdentifier).build();
+            binary = null;
         }
 
         getAuditQuadData().forEachOrdered(immutable::add);
 
-        LOGGER.info("Creating resource");
-        return persistPromise.thenCompose(future -> handleResourceCreation(metadata.build(), mutable, immutable))
+        return handleResourceCreation(metadata, mutable, immutable)
+            .thenCompose(future -> persistBinaryContent(binary))
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {
                 ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, Link.TYPE));

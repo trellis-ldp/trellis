@@ -29,7 +29,6 @@ import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
@@ -42,10 +41,11 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
@@ -62,6 +62,7 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * Test the TriplestoreResource class.
  */
+@ExtendWith(MockitoExtension.class)
 class TriplestoreResourceTest {
 
     private static final RDF rdf = RDFFactory.getInstance();
@@ -86,14 +87,6 @@ class TriplestoreResourceTest {
 
     @Mock
     private Session mockSession;
-
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
-        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
-        when(mockSession.getCreated()).thenReturn(created);
-        when(mockSession.getDelegatedBy()).thenReturn(empty());
-    }
 
     @Test
     void testEmptyResource() {
@@ -127,6 +120,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithAuditQuads() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(empty());
+
         final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
@@ -142,6 +139,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithAuditQuads2() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(empty());
+
         final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
@@ -157,6 +158,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithAclQuads() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(empty());
+
         final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         dataset.add(aclId, aclSubject, ACL.mode, ACL.Read);
         dataset.add(aclId, aclSubject, ACL.agentClass, FOAF.Agent);
@@ -175,6 +180,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testResourceWithExtensionQuads() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(empty());
+
         final IRI fooId = rdf.createIRI(identifier.getIRIString() + "?ext=foo");
         final Map<String, IRI> ext = new HashMap<>();
         ext.put("acl", Trellis.PreferAccessControl);
@@ -212,6 +221,10 @@ class TriplestoreResourceTest {
 
     @Test
     void testBinaryResource() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(empty());
+
         final String mimeType = "image/jpeg";
         final IRI binaryIdentifier = rdf.createIRI("file:///binary");
         final Dataset dataset = buildLdpDataset(LDP.NonRDFSource);
@@ -340,11 +353,11 @@ class TriplestoreResourceTest {
         assertNotEquals(res.getRevision(), res2.getRevision(), "Revisions not unequal");
     }
 
-    private static Stream<IRI> getChildIRIs() {
+    static Stream<IRI> getChildIRIs() {
         return Stream.of(child1, child2, child3, child4);
     }
 
-    private static Dataset buildLdpDataset(final IRI ldpType) {
+    static Dataset buildLdpDataset(final IRI ldpType) {
         final Dataset dataset = rdf.createDataset();
         dataset.add(identifier, identifier, type, SKOS.Concept);
         dataset.add(identifier, identifier, SKOS.prefLabel, rdf.createLiteral("resource"));
@@ -356,7 +369,7 @@ class TriplestoreResourceTest {
         return dataset;
     }
 
-    private static Stream<Executable> checkResource(final Resource res, final IRI identifier, final IRI ldpType,
+    static Stream<Executable> checkResource(final Resource res, final IRI identifier, final IRI ldpType,
             final boolean hasBinary, final boolean hasAcl, final boolean hasParent) {
         return Stream.of(
                 () -> assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!"),
@@ -378,7 +391,7 @@ class TriplestoreResourceTest {
                 () -> assertEquals(hasAcl, res.hasMetadata(Trellis.PreferAccessControl), "Unexpected ACL presence!"));
     }
 
-    private static Stream<Executable> checkLdpProperties(final Resource res, final IRI membershipResource,
+    static Stream<Executable> checkLdpProperties(final Resource res, final IRI membershipResource,
             final IRI hasMemberRelation, final IRI memberOfRelation, final IRI insertedContentRelation) {
         return Stream.of(
                 () -> assertEquals(membershipResource != null, res.getMembershipResource().isPresent(),
@@ -399,7 +412,7 @@ class TriplestoreResourceTest {
                                    "Incorrect ldp:insertedContentRelation!"));
     }
 
-    private static Stream<Executable> checkRdfStream(final Resource res, final long userManaged,
+    static Stream<Executable> checkRdfStream(final Resource res, final long userManaged,
             final long serverManaged, final long acl, final long audit, final long membership, final long containment) {
         final long total = userManaged + acl + audit + membership + containment + serverManaged;
         return Stream.of(

@@ -31,9 +31,9 @@ import static javax.ws.rs.core.MediaType.WILDCARD;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
-import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
+import static org.trellisldp.common.HttpConstants.ACCEPT_PATCH;
+import static org.trellisldp.common.HttpConstants.ACCEPT_POST;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 
 import java.util.List;
 import java.util.Map;
@@ -44,8 +44,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.slf4j.Logger;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.TrellisRequest;
 
 /**
  * The OPTIONS response builder.

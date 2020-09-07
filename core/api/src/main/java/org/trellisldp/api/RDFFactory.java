@@ -17,9 +17,6 @@ package org.trellisldp.api;
 
 import static java.util.ServiceLoader.load;
 
-import java.util.Iterator;
-import java.util.Optional;
-
 import org.apache.commons.rdf.api.RDF;
 
 /**
@@ -27,8 +24,8 @@ import org.apache.commons.rdf.api.RDF;
  */
 public final class RDFFactory {
 
-    private static final RDF rdf = findFirst(RDF.class)
-                    .orElseThrow(() -> new RuntimeTrellisException("No RDF Commons implementation available!"));
+    private static final RDF rdf = load(RDF.class).findFirst()
+                    .orElseThrow(() -> new TrellisRuntimeException("No RDF Commons implementation available!"));
 
     /**
      * Get the Commons RDF instance in use.
@@ -37,18 +34,6 @@ public final class RDFFactory {
      */
     public static RDF getInstance() {
         return rdf;
-    }
-
-    /**
-     * Get a service.
-     *
-     * @param service the interface or abstract class representing the service
-     * @param <T> the class of the service type
-     * @return the first service provider or empty Optional if no service providers are located
-     */
-    static <T> Optional<T> findFirst(final Class<T> service) {
-        final Iterator<T> services = load(service).iterator();
-        return services.hasNext() ? Optional.of(services.next()) : Optional.empty();
     }
 
     private RDFFactory() {

@@ -46,23 +46,23 @@ import static org.mockito.Mockito.*;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
-import static org.trellisldp.http.core.HttpConstants.APPLICATION_LINK_FORMAT;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
-import static org.trellisldp.http.core.HttpConstants.EXT;
-import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
-import static org.trellisldp.http.core.HttpConstants.PREFER;
-import static org.trellisldp.http.core.HttpConstants.RANGE;
-import static org.trellisldp.http.core.HttpConstants.SLUG;
-import static org.trellisldp.http.core.HttpConstants.TIMEMAP;
-import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON;
-import static org.trellisldp.http.core.RdfMediaType.APPLICATION_LD_JSON_TYPE;
-import static org.trellisldp.http.core.RdfMediaType.APPLICATION_N_TRIPLES;
-import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.common.HttpConstants.ACCEPT_DATETIME;
+import static org.trellisldp.common.HttpConstants.ACCEPT_PATCH;
+import static org.trellisldp.common.HttpConstants.ACCEPT_POST;
+import static org.trellisldp.common.HttpConstants.ACCEPT_RANGES;
+import static org.trellisldp.common.HttpConstants.APPLICATION_LINK_FORMAT;
+import static org.trellisldp.common.HttpConstants.CONFIG_HTTP_PUT_UNCONTAINED;
+import static org.trellisldp.common.HttpConstants.EXT;
+import static org.trellisldp.common.HttpConstants.MEMENTO_DATETIME;
+import static org.trellisldp.common.HttpConstants.PREFER;
+import static org.trellisldp.common.HttpConstants.RANGE;
+import static org.trellisldp.common.HttpConstants.SLUG;
+import static org.trellisldp.common.HttpConstants.TIMEMAP;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_LD_JSON;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_LD_JSON_TYPE;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_N_TRIPLES;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_SPARQL_UPDATE;
+import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.vocabulary.RDF.type;
 import static org.trellisldp.vocabulary.Trellis.InvalidCardinality;
 import static org.trellisldp.vocabulary.Trellis.InvalidRange;
@@ -95,7 +95,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.StorageConflictException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.LDP;
@@ -195,6 +196,15 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testGetDefaultType() {
         try (final Response res = target(RESOURCE_PATH).request().get()) {
+            assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
+            assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), ERR_CONTENT_TYPE + res.getMediaType());
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), ERR_CONTENT_TYPE + res.getMediaType());
+        }
+    }
+
+    @Test
+    void testGetResourceWithSpace() {
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request().get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
             assertTrue(TEXT_TURTLE_TYPE.isCompatible(res.getMediaType()), ERR_CONTENT_TYPE + res.getMediaType());
             assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), ERR_CONTENT_TYPE + res.getMediaType());
@@ -857,7 +867,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testGetException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException(EXPECTED_EXCEPTION);
+            throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().get()) {
             assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), ERR_RESPONSE_CODE);
@@ -870,6 +880,18 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testOptionsLDPRS() {
         try (final Response res = target(RESOURCE_PATH).request().options()) {
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
+            assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
+            assertAll(CHECK_ALLOWED_METHODS,
+                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
+            assertAll(CHECK_NULL_HEADERS, checkNullHeaders(res, singletonList(MEMENTO_DATETIME)));
+        }
+    }
+
+    @Test
+    void testOptionsLDPRSWithSpace() {
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request().options()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(APPLICATION_SPARQL_UPDATE, res.getHeaderString(ACCEPT_PATCH), ERR_ACCEPT_PATCH);
             assertNotNull(res.getHeaderString(ACCEPT_POST), "Missing Accept-Post header!");
@@ -1042,6 +1064,22 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString(), ERR_LOCATION);
+            assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual(DESCRIBEDBY)), ERR_DESCRIBEDBY);
+            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
+        }
+    }
+
+    @Test
+    void testPostWithSpace() {
+        when(mockResourceWithSpace.getInteractionModel()).thenReturn(LDP.Container);
+        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_WITH_SPACE_PATH + "/"
+                            + RANDOM_VALUE)),
+                    eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request()
+                .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
+            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(getBaseUrl() + RESOURCE_WITH_SPACE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString(),
+                    ERR_LOCATION);
             assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual(DESCRIBEDBY)), ERR_DESCRIBEDBY);
             assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
         }
@@ -1517,7 +1555,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testPostException() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException(EXPECTED_EXCEPTION);
+            throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().post(entity("", TEXT_TURTLE_TYPE))) {
             assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), ERR_RESPONSE_CODE);
@@ -1530,6 +1568,17 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPutExisting() {
         try (final Response res = target(RESOURCE_PATH).request()
+                .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
+            assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual(DESCRIBEDBY)), ERR_DESCRIBEDBY);
+            assertNull(res.getHeaderString(MEMENTO_DATETIME), ERR_MEMENTO_DATETIME);
+        }
+    }
+
+    @Test
+    void testPutWithSpaces() {
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request()
                 .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
@@ -1996,7 +2045,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPutException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException(EXPECTED_EXCEPTION);
+            throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().put(entity("", TEXT_TURTLE_TYPE))) {
             assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), ERR_RESPONSE_CODE);
@@ -2009,6 +2058,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testDeleteExisting() {
         try (final Response res = target(RESOURCE_PATH).request().delete()) {
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertNull(res.getHeaderString(MEMENTO_DATETIME), ERR_MEMENTO_DATETIME);
+        }
+    }
+
+    @Test
+    void testDeleteWithSpaces() {
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request().delete()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertNull(res.getHeaderString(MEMENTO_DATETIME), ERR_MEMENTO_DATETIME);
         }
@@ -2104,7 +2161,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testDeleteException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException(EXPECTED_EXCEPTION);
+            throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().delete()) {
             assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), ERR_RESPONSE_CODE);
@@ -2133,6 +2190,16 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPatchExisting() {
         try (final Response res = target(RESOURCE_PATH).request()
+                .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
+            assertNull(res.getHeaderString(MEMENTO_DATETIME), ERR_MEMENTO_DATETIME);
+        }
+    }
+
+    @Test
+    void testPatchWithSpace() {
+        try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request()
                 .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
@@ -2210,6 +2277,31 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
             assertNull(res.getHeaderString(MEMENTO_DATETIME), ERR_MEMENTO_DATETIME);
+        }
+    }
+
+    @Test
+    void testPatchContentTypeWithCharset() throws IOException {
+        try (final Response res = target(RESOURCE_PATH).request()
+                .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE + ";charset=utf-8"))) {
+            assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
+            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
+        }
+    }
+
+    @Test
+    void testPatchUnsupportedWildcardContentType() throws IOException {
+        try (final Response res = target(RESOURCE_PATH).request()
+                .method(PATCH, entity(INSERT_TITLE, "*/sparql-update"))) {
+            assertEquals(SC_UNSUPPORTED_MEDIA_TYPE, res.getStatus(), ERR_RESPONSE_CODE);
+        }
+    }
+
+    @Test
+    void testPatchUnsupportedWildcardContentSubtype() throws IOException {
+        try (final Response res = target(RESOURCE_PATH).request()
+                .method(PATCH, entity(INSERT_TITLE, "application/*"))) {
+            assertEquals(SC_UNSUPPORTED_MEDIA_TYPE, res.getStatus(), ERR_RESPONSE_CODE);
         }
     }
 
@@ -2338,13 +2430,25 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPatchException() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
-            throw new RuntimeTrellisException(EXPECTED_EXCEPTION);
+            throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request()
                 .method(PATCH, entity("", APPLICATION_SPARQL_UPDATE))) {
             assertEquals(SC_INTERNAL_SERVER_ERROR, res.getStatus(), ERR_RESPONSE_CODE);
         }
     }
+
+    @Test
+    void testPatchConflict() {
+        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+            throw new StorageConflictException(EXPECTED_EXCEPTION);
+        }));
+        try (final Response res = target(RESOURCE_PATH).request()
+                .method(PATCH, entity("", APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(SC_CONFLICT, res.getStatus(), ERR_RESPONSE_CODE);
+        }
+    }
+
 
     /**
      * Some other method
@@ -2375,6 +2479,13 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertNull(res.getHeaderString(CACHE_CONTROL), "Unexpected Cache-Control header!");
         }
+    }
+
+    @Test
+    void testInitializeError() {
+        when(mockResourceService.get(any(IRI.class))).thenThrow(new RuntimeException("Expected"));
+        final TrellisHttpResource testService = new TrellisHttpResource(mockBundler);
+        assertThrows(TrellisRuntimeException.class, testService::initialize);
     }
 
     static List<Link> getLinks(final Response res) {

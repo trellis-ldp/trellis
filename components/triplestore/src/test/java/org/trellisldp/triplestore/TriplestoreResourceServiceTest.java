@@ -27,7 +27,6 @@ import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.setDefaultPollInterval;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.api.Metadata.builder;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -50,10 +49,11 @@ import org.apache.jena.rdfconnection.RDFConnection;
 import org.apache.jena.rdfconnection.RDFConnectionLocal;
 import org.apache.jena.rdfconnection.RDFConnectionRemote;
 import org.apache.jena.update.UpdateRequest;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
@@ -70,6 +70,7 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * Test the TriplestoreResourceService class.
  */
+@ExtendWith(MockitoExtension.class)
 class TriplestoreResourceServiceTest {
 
     private static final RDF rdf = RDFFactory.getInstance();
@@ -86,11 +87,6 @@ class TriplestoreResourceServiceTest {
 
     @Mock
     private RDFConnection mockRdfConnection;
-
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
-    }
 
     @Test
     void testIdentifierService() {
@@ -1328,26 +1324,26 @@ class TriplestoreResourceServiceTest {
         assertEquals(rdf.createIRI("http://example.com/Bar"), extensions.get("bar"));
     }
 
-    private static Consumer<Resource> checkChild(final Instant time, final long properties, final long audit) {
+    static Consumer<Resource> checkChild(final Instant time, final long properties, final long audit) {
         return res -> {
             assertAll("Check resource", checkResource(res, child, LDP.RDFSource, time));
             assertAll("Check resource stream", checkResourceStream(res, properties, 0L, audit, 0L, 0L));
         };
     }
 
-    private static Consumer<Resource> checkRoot(final Instant time, final long children) {
+    static Consumer<Resource> checkRoot(final Instant time, final long children) {
         return res -> {
             assertAll("Check resource", checkResource(res, root, LDP.BasicContainer, time));
             assertAll("Check resource stream", checkResourceStream(res, 0L, 5L, 0L, 0L, children));
         };
     }
 
-    private static Consumer<Resource> checkPredates(final Instant time) {
+    static Consumer<Resource> checkPredates(final Instant time) {
         return res -> assertTrue(res.getModified().isBefore(time), "Resource " + res.getIdentifier()
                 + " has an unexpected lastModified date: " + res.getModified() + " !< " + time);
     }
 
-    private static Consumer<Resource> checkResource(final Instant time, final IRI ldpType, final long properties,
+    static Consumer<Resource> checkResource(final Instant time, final IRI ldpType, final long properties,
             final long audit, final long children) {
         return res -> {
             assertAll("Check resource", checkResource(res, resource, ldpType, time));
@@ -1355,7 +1351,7 @@ class TriplestoreResourceServiceTest {
         };
     }
 
-    private static Consumer<Resource> checkMember(final Instant time, final long properties, final long audit,
+    static Consumer<Resource> checkMember(final Instant time, final long properties, final long audit,
             final long membership) {
         return res -> {
             assertAll("Check resource", checkResource(res, members, LDP.RDFSource, time));
@@ -1363,7 +1359,7 @@ class TriplestoreResourceServiceTest {
         };
     }
 
-    private static Stream<Executable> checkResource(final Resource res, final IRI identifier, final IRI ldpType,
+    static Stream<Executable> checkResource(final Resource res, final IRI identifier, final IRI ldpType,
             final Instant time) {
         return Stream.of(
                 () -> assertNotNull(res, "Missing resource!"),
@@ -1373,7 +1369,7 @@ class TriplestoreResourceServiceTest {
                 () -> assertFalse(res.getModified().isAfter(now().plusMillis(5L)), "modification date in the future!"));
     }
 
-    private static Stream<Executable> checkBinary(final Resource res, final IRI identifier, final String mimeType) {
+    static Stream<Executable> checkBinary(final Resource res, final IRI identifier, final String mimeType) {
         return Stream.of(
                 () -> assertNotNull(res, "Missing resource!"),
                 () -> assertTrue(res.getBinaryMetadata().isPresent(), "missing binary metadata!"),
@@ -1383,7 +1379,7 @@ class TriplestoreResourceServiceTest {
                                    "Incorrect binary mimetype!"));
     }
 
-    private static Stream<Executable> checkResourceStream(final Resource res, final long userManaged,
+    static Stream<Executable> checkResourceStream(final Resource res, final long userManaged,
             final long accessControl, final long audit, final long membership, final long containment) {
         final long serverManaged = 1; // LDP type triple
         final long total = userManaged + accessControl + audit + membership + containment + serverManaged;
@@ -1402,7 +1398,7 @@ class TriplestoreResourceServiceTest {
                 () -> assertEquals(total, res.stream().count(), "Incorrect total triple count!"));
     }
 
-    private static Instant meanwhile() {
+    static Instant meanwhile() {
         final Instant t1 = now();
         await().until(() -> isReallyLaterThan(t1));
         final Instant t2 = now();
@@ -1410,7 +1406,7 @@ class TriplestoreResourceServiceTest {
         return t2;
     }
 
-    private static boolean isReallyLaterThan(final Instant time) {
+    static boolean isReallyLaterThan(final Instant time) {
         final Instant t = now();
         return t.isAfter(time) && (t.toEpochMilli() > time.toEpochMilli() || t.getNano() > time.getNano());
     }

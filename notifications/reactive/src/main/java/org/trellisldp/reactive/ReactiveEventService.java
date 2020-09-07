@@ -15,8 +15,8 @@
  */
 package org.trellisldp.reactive;
 
-import static java.util.Objects.requireNonNull;
 import static org.eclipse.microprofile.reactive.messaging.Message.of;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
@@ -27,6 +27,7 @@ import javax.inject.Inject;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
+import org.slf4j.Logger;
 import org.trellisldp.api.*;
 
 /**
@@ -35,32 +36,22 @@ import org.trellisldp.api.*;
 @ApplicationScoped
 public class ReactiveEventService implements EventService {
 
+    private static final Logger LOGGER = getLogger(ReactiveEventService.class);
+
     public static final String REACTIVE_DESTINATION = "trellis";
 
-    private final EventSerializationService serializer;
     private final PublishSubject<Message<String>> subject = PublishSubject.create();
 
-    /**
-     * Create a new Reactive Stream Event Service with a no-op serializer.
-     *
-     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
-     *          It should not be invoked directly in user code.
-     */
-    public ReactiveEventService() {
-        this(new NoopEventSerializationService());
-    }
-
-    /**
-     * Create a new Reactive Stream Event Service.
-     * @param serializer the event serializer
-     */
     @Inject
-    public ReactiveEventService(final EventSerializationService serializer) {
-        this.serializer = requireNonNull(serializer, "serializer may not be null!");
-    }
+    EventSerializationService serializer;
+
+    @Inject
+    javax.enterprise.event.Event<Event> trellisEvent;
 
     @Override
     public void emit(final Event event) {
+        LOGGER.debug("Sending message to reactive destination: {}", event.getIdentifier());
+        trellisEvent.fireAsync(event);
         subject.onNext(of(serializer.serialize(event)));
     }
 

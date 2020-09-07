@@ -29,7 +29,7 @@ import java.util.Set;
 import javax.ws.rs.container.ContainerRequestFilter;
 
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.auth.basic.BasicAuthFilter;
 import org.trellisldp.cache.TrellisCache;
 import org.trellisldp.dropwizard.config.AuthConfiguration;
@@ -79,7 +79,7 @@ final class TrellisUtils {
             try {
                 webac.initialize();
             } catch (final Exception ex) {
-                throw new RuntimeTrellisException("Error initializing Access Control system", ex);
+                throw new TrellisRuntimeException("Error initializing Access Control system", ex);
             }
             return webac;
         }

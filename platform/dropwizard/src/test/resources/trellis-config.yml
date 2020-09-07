@@ -26,6 +26,23 @@ namespaces: namespaces.json
 baseUrl:
 hubUrl:
 
+# Database
+database:
+  driverClass: org.h2.Driver
+  user: trellis
+  password:
+  url:
+  properties:
+    charSet: UTF-8
+  maxWaitForConnection: 1s
+  validationQuery: "SELECT 1"
+  validationQueryTimeout: 3s
+  minSize: 8
+  maxSize: 32
+  checkConnectionWhileIdle: false
+  evictionInterval: 10s
+  minIdleTime: 1 minute
+
 auth:
     adminUsers: ["http://admin.example.com/#me"]
     webac:
@@ -50,8 +67,8 @@ notifications:
 jsonld:
     cacheSize: 10
     cacheExpireHours: 48
-    contextDomainWhitelist:
+    allowedContextDomains:
         - https://www.trellisldp.org/
-    contextWhitelist:
+    allowedContexts:
         - http://www.w3.org/ns/anno.jsonld
 

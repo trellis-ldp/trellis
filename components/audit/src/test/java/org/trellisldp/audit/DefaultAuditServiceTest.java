@@ -19,7 +19,6 @@ import static java.time.Instant.now;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 import static org.trellisldp.vocabulary.RDF.type;
 
 import java.time.Instant;
@@ -29,10 +28,11 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Session;
 import org.trellisldp.vocabulary.AS;
@@ -43,6 +43,7 @@ import org.trellisldp.vocabulary.XSD;
 /**
  * @author acoburn
  */
+@ExtendWith(MockitoExtension.class)
 class DefaultAuditServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
@@ -53,16 +54,12 @@ class DefaultAuditServiceTest {
     @Mock
     private Session mockSession;
 
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
+    @Test
+    void testAuditCreation() {
         when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
         when(mockSession.getCreated()).thenReturn(created);
         when(mockSession.getDelegatedBy()).thenReturn(of(Trellis.AdministratorAgent));
-    }
 
-    @Test
-    void testAuditCreation() {
         final Dataset dataset = rdf.createDataset();
         final AuditService svc = new DefaultAuditService() {};
         svc.creation(subject, mockSession).forEach(dataset::add);
@@ -74,6 +71,10 @@ class DefaultAuditServiceTest {
 
     @Test
     void testAuditDeletion() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(of(Trellis.AdministratorAgent));
+
         final Dataset dataset = rdf.createDataset();
         final AuditService svc = new DefaultAuditService() {};
         svc.deletion(subject, mockSession).forEach(dataset::add);
@@ -85,6 +86,10 @@ class DefaultAuditServiceTest {
 
     @Test
     void testAuditUpdate() {
+        when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
+        when(mockSession.getCreated()).thenReturn(created);
+        when(mockSession.getDelegatedBy()).thenReturn(of(Trellis.AdministratorAgent));
+
         final Dataset dataset = rdf.createDataset();
         final AuditService svc = new DefaultAuditService() {};
         svc.update(subject, mockSession).forEach(dataset::add);

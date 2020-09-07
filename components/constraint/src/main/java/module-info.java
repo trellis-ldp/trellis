@@ -16,8 +16,8 @@
 module org.trellisldp.constraint {
     exports org.trellisldp.constraint;
 
-    requires transitive org.trellisldp.api;
-    requires transitive org.trellisldp.vocabulary;
+    requires org.trellisldp.api;
+    requires org.trellisldp.vocabulary;
 
     requires jakarta.enterprise.cdi.api;
     requires org.apache.commons.rdf.api;

@@ -18,6 +18,7 @@ dependencies {
 
     testImplementation "commons-io:commons-io:$commonsIoVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation "org.apache.commons:commons-text:$commonsTextVersion"
     testImplementation "org.apache.jena:jena-commonsrdf:$jenaVersion"
     testImplementation project(':trellis-vocabulary')
@@ -26,8 +27,8 @@ dependencies {
 }
 
 pitest {
-    testPlugin = 'junit5'
     pitestVersion = pitestToolVersion
+    junit5PluginVersion = pitestJunitPluginVersion
     threads = 4
 }
 

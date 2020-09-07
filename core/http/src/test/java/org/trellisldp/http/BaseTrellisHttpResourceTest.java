@@ -73,9 +73,9 @@ import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
+import org.trellisldp.common.DefaultTimemapGenerator;
+import org.trellisldp.common.ServiceBundler;
 import org.trellisldp.constraint.LdpConstraintService;
-import org.trellisldp.http.core.DefaultTimemapGenerator;
-import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.jena.JenaIOService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
@@ -90,12 +90,14 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     static final ObjectMapper MAPPER = new ObjectMapper();
     static final String RANDOM_VALUE = "randomValue";
     static final String RESOURCE_PATH = "resource";
+    static final String RESOURCE_WITH_SPACE_PATH = "resource%20path";
     static final String CHILD_PATH = RESOURCE_PATH + "/child";
     static final String BINARY_PATH = "binary";
     static final String NON_EXISTENT_PATH = "nonexistent";
     static final String DELETED_PATH = "deleted";
     static final String NEW_RESOURCE = RESOURCE_PATH + "/newresource";
     static final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH);
+    static final IRI identifierWithSpace = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_WITH_SPACE_PATH);
     static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     static final IRI binaryIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + BINARY_PATH);
     static final IRI binaryInternalIdentifier = rdf.createIRI("file:///some/file");
@@ -136,7 +138,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     @Mock
     protected Resource mockResource, mockVersionedResource, mockBinaryResource, mockBinaryVersionedResource,
-              mockRootResource;
+              mockRootResource, mockResourceWithSpace;
 
     @Mock
     protected InputStream mockInputStream;
@@ -188,6 +190,10 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
 
     private void setUpResourceService() {
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(eq(identifierWithSpace))).thenAnswer(inv ->
+                completedFuture(mockResourceWithSpace));
+        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_WITH_SPACE_PATH + "/"
+                            + RANDOM_VALUE)))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource"))))
             .thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(mockRootResource));
@@ -218,12 +224,15 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
                 rdf.createQuad(PreferAccessControl, identifier, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, identifier, ACL.mode, ACL.Control)));
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
         doCallRealMethod().when(mockResource).stream(anyCollection());
     }
 
     private void setUpMementoService() {
         when(mockMementoService.get(any(IRI.class), any(Instant.class)))
             .thenAnswer(inv -> completedFuture(mockVersionedResource));
+        when(mockMementoService.get(eq(identifierWithSpace), any(Instant.class)))
+            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(childIdentifier), any(Instant.class)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(nonexistentIdentifier), any(Instant.class)))
@@ -261,7 +270,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
             return completedFuture(null);
         });
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
-        when(mockBinaryService.generateIdentifier()).thenReturn(RANDOM_VALUE);
+        when(mockBinaryService.generateIdentifier(any(IRI.class))).thenReturn(RANDOM_VALUE);
     }
 
     private void setUpResources() {
@@ -288,6 +297,15 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBinaryResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
         doCallRealMethod().when(mockBinaryResource).getRevision();
         doCallRealMethod().when(mockBinaryResource).hasMetadata(any());
+
+        when(mockResourceWithSpace.getContainer()).thenReturn(of(root));
+        when(mockResourceWithSpace.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockResourceWithSpace.getModified()).thenReturn(time);
+        when(mockResourceWithSpace.getBinaryMetadata()).thenReturn(empty());
+        when(mockResourceWithSpace.getIdentifier()).thenReturn(identifierWithSpace);
+        when(mockResourceWithSpace.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
+        doCallRealMethod().when(mockResourceWithSpace).getRevision();
+        doCallRealMethod().when(mockResourceWithSpace).hasMetadata(any());
 
         when(mockResource.getContainer()).thenReturn(of(root));
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);

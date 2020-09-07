@@ -15,32 +15,31 @@
  */
 package org.trellisldp.quarkus;
 
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
-import static org.trellisldp.triplestore.TriplestoreResourceService.CONFIG_TRIPLESTORE_RDF_LOCATION;
-import static org.trellisldp.triplestore.TriplestoreResourceService.buildRDFConnection;
+import io.quarkus.arc.DefaultBean;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 
-import org.apache.jena.rdfconnection.RDFConnection;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.common.DefaultTimemapGenerator;
+import org.trellisldp.common.TimemapGenerator;
 import org.trellisldp.file.FileMementoService;
 
 @ApplicationScoped
 class ServiceProducers {
 
-    private RDFConnection rdfConnection = buildRDFConnection(getConfig()
-            .getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class).orElse(null));
-
     private MementoService mementoService = new FileMementoService();
+    private TimemapGenerator timemapGenerator = new DefaultTimemapGenerator();
 
     @Produces
+    @DefaultBean
     MementoService getMementoService() {
         return mementoService;
     }
 
     @Produces
-    RDFConnection getRdfConnection() {
-        return rdfConnection;
+    @DefaultBean
+    TimemapGenerator getTimemapGenerator() {
+        return timemapGenerator;
     }
 }

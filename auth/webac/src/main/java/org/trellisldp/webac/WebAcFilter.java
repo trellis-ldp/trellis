@@ -31,11 +31,13 @@ import static javax.ws.rs.core.UriBuilder.fromPath;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.api.TrellisUtils.buildTrellisIdentifier;
-import static org.trellisldp.http.core.HttpConstants.CONFIG_HTTP_BASE_URL;
-import static org.trellisldp.http.core.HttpConstants.PREFER;
-import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
-import static org.trellisldp.http.core.TrellisRequest.buildBaseUrl;
+import static org.trellisldp.common.HttpConstants.CONFIG_HTTP_BASE_URL;
+import static org.trellisldp.common.HttpConstants.PREFER;
+import static org.trellisldp.common.Prefer.PREFER_REPRESENTATION;
+import static org.trellisldp.common.TrellisRequest.buildBaseUrl;
+import static org.trellisldp.vocabulary.Trellis.AnonymousAgent;
+import static org.trellisldp.vocabulary.Trellis.PreferAudit;
+import static org.trellisldp.vocabulary.Trellis.effectiveAcl;
 
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +51,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.core.Link;
 import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.rdf.api.IRI;
@@ -57,12 +60,13 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.slf4j.Logger;
 import org.trellisldp.api.RDFFactory;
+import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
-import org.trellisldp.http.core.HttpConstants;
-import org.trellisldp.http.core.HttpSession;
-import org.trellisldp.http.core.Prefer;
+import org.trellisldp.common.HttpConstants;
+import org.trellisldp.common.HttpSession;
+import org.trellisldp.common.LdpResource;
+import org.trellisldp.common.Prefer;
 import org.trellisldp.vocabulary.ACL;
-import org.trellisldp.vocabulary.Trellis;
 
 /**
  * A {@link ContainerRequestFilter} that implements WebAC-based authorization.
@@ -73,6 +77,7 @@ import org.trellisldp.vocabulary.Trellis;
  */
 @Provider
 @Priority(AUTHORIZATION)
+@LdpResource
 public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     /**
@@ -123,6 +128,7 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private static final String SLASH = "/";
     private static final RDF rdf = RDFFactory.getInstance();
 
+    private ResourceService resourceService;
     private WebAcService accessService;
     private List<String> challenges;
     private String baseUrl;
@@ -161,6 +167,15 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     }
 
     /**
+     * Set the resource service.
+     * @param resourceService the resource service
+     */
+    @Inject
+    public void setResourceService(final ResourceService resourceService) {
+        this.resourceService = requireNonNull(resourceService, "Resource service may not be null!");
+    }
+
+    /**
      * Set the challenges.
      * @param challenges the response challenges
      */
@@ -184,10 +199,12 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         }
 
         final String path = ctx.getUriInfo().getPath();
+        final String base = getBaseUrl(ctx, baseUrl);
         final Session s = buildSession(ctx, baseUrl);
         final String method = ctx.getMethod();
 
-        final AuthorizedModes modes = accessService.getAuthorizedModes(buildTrellisIdentifier(path), s);
+        final IRI resourceIdentifier = resourceService.getResourceIdentifier(base, path);
+        final AuthorizedModes modes = accessService.getAuthorizedModes(resourceIdentifier, s);
         ctx.setProperty(SESSION_WEBAC_MODES, modes);
 
         final Prefer prefer = Prefer.valueOf(ctx.getHeaderString(PREFER));
@@ -195,17 +212,17 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         // Control-level access
         if (ctx.getUriInfo().getQueryParameters().getOrDefault(HttpConstants.EXT, emptyList())
                 .contains(HttpConstants.ACL) || reqAudit(prefer)) {
-            verifyCanControl(modes.getAccessModes(), s, path);
+            verifyCanControl(modes.getAccessModes(), s, resourceIdentifier.getIRIString());
         // Everything else
         } else {
             if (readable.contains(method) || reqRepresentation(prefer)) {
-                verifyCanRead(modes.getAccessModes(), s, path);
+                verifyCanRead(modes.getAccessModes(), s, resourceIdentifier.getIRIString());
             }
             if (writable.contains(method)) {
-                verifyCanWrite(modes.getAccessModes(), s, path);
+                verifyCanWrite(modes.getAccessModes(), s, resourceIdentifier.getIRIString());
             }
             if (appendable.contains(method)) {
-                verifyCanAppend(modes.getAccessModes(), s, path);
+                verifyCanAppend(modes.getAccessModes(), s, resourceIdentifier.getIRIString());
             }
         }
     }
@@ -223,64 +240,64 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
                 final String path = req.getUriInfo().getPath();
                 res.getHeaders().add(LINK, fromUri(fromPath(path.startsWith(SLASH) ? path : SLASH + path)
                             .queryParam(HttpConstants.EXT, HttpConstants.ACL).build()).rel(rel).build());
-                res.getHeaders().add(LINK, fromUri(fromPath(modes.getEffectiveAcl().getIRIString()
-                                .replace(TRELLIS_DATA_PREFIX, SLASH))
+                modes.getEffectiveAcl().map(IRI::getIRIString).map(acl -> effectiveAclToUrlPath(acl, path, res))
+                    .ifPresent(urlPath -> res.getHeaders().add(LINK, fromUri(fromPath(urlPath)
                                 .queryParam(HttpConstants.EXT, HttpConstants.ACL).build())
-                            .rel(Trellis.effectiveAcl.getIRIString()).build());
+                            .rel(effectiveAcl.getIRIString()).build()));
             }
         }
     }
 
     protected void verifyCanAppend(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Append) && !modes.contains(ACL.Write)) {
-            LOGGER.warn("User: {} cannot Append to {}", session.getAgent(), path);
-            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
+            LOGGER.debug("User: {} cannot Append to {}", session.getAgent(), path);
+            if (AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }
             throw new ForbiddenException();
         }
-        LOGGER.debug("User: {} can append to {}", session.getAgent(), path);
+        LOGGER.trace("User: {} can append to {}", session.getAgent(), path);
     }
 
     protected void verifyCanControl(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Control)) {
-            LOGGER.warn("User: {} cannot Control {}", session.getAgent(), path);
-            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
+            LOGGER.debug("User: {} cannot Control {}", session.getAgent(), path);
+            if (AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }
             throw new ForbiddenException();
         }
-        LOGGER.debug("User: {} can control {}", session.getAgent(), path);
+        LOGGER.trace("User: {} can control {}", session.getAgent(), path);
     }
 
     protected void verifyCanWrite(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Write)) {
-            LOGGER.warn("User: {} cannot Write to {}", session.getAgent(), path);
-            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
+            LOGGER.debug("User: {} cannot Write to {}", session.getAgent(), path);
+            if (AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }
             throw new ForbiddenException();
         }
-        LOGGER.debug("User: {} can write to {}", session.getAgent(), path);
+        LOGGER.trace("User: {} can write to {}", session.getAgent(), path);
     }
 
     protected void verifyCanRead(final Set<IRI> modes, final Session session, final String path) {
         if (!modes.contains(ACL.Read)) {
-            LOGGER.warn("User: {} cannot Read from {}", session.getAgent(), path);
-            if (Trellis.AnonymousAgent.equals(session.getAgent())) {
+            LOGGER.debug("User: {} cannot Read from {}", session.getAgent(), path);
+            if (AnonymousAgent.equals(session.getAgent())) {
                 throw new NotAuthorizedException(challenges.get(0),
                         challenges.subList(1, challenges.size()).toArray());
             }
             throw new ForbiddenException();
         }
-        LOGGER.debug("User: {} can read {}", session.getAgent(), path);
+        LOGGER.trace("User: {} can read {}", session.getAgent(), path);
     }
 
     static boolean reqAudit(final Prefer prefer) {
-        return prefer != null && prefer.getInclude().contains(Trellis.PreferAudit.getIRIString());
+        return prefer != null && prefer.getInclude().contains(PreferAudit.getIRIString());
     }
 
     static boolean reqRepresentation(final Prefer prefer) {
@@ -311,5 +328,29 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
         final String realmParam = realm.isEmpty() ? "" : " realm=\"" + realm + "\"";
         final String scopeParam = scope.isEmpty() ? "" : " scope=\"" + scope + "\"";
         return challenge + realmParam + scopeParam;
+    }
+
+    static String effectiveAclToUrlPath(final String effectiveAclPath, final String resourceAclPath,
+            final ContainerResponseContext response) {
+
+        final String effectivePath = normalizePath(effectiveAclPath);
+        final String resourcePath = normalizePath(resourceAclPath);
+        final boolean inherited = ! effectivePath.equals(resourcePath);
+        final boolean isContainer = inherited || response.getStringHeaders().getOrDefault(LINK, emptyList()).stream()
+            .map(Link::valueOf).anyMatch(link ->
+                    link.getUri().toString().endsWith("Container") && link.getRels().contains(Link.TYPE));
+        if (SLASH.equals(effectivePath) || !isContainer) {
+            return effectivePath;
+        }
+        return effectivePath + SLASH;
+    }
+
+    static String normalizePath(final String path) {
+        if (path.startsWith(TRELLIS_DATA_PREFIX)) {
+            return path.substring(TRELLIS_DATA_PREFIX.length() - 1);
+        } else if (path.startsWith(SLASH)) {
+            return path;
+        }
+        return SLASH + path;
     }
 }

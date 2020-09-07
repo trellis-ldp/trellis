@@ -43,12 +43,12 @@ import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_BNODE_PREFIX;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.http.core.HttpConstants.ACL;
-import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.common.HttpConstants.ACL;
+import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE_TYPE;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -92,11 +92,11 @@ import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
+import org.trellisldp.common.DefaultTimemapGenerator;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.TrellisRequest;
 import org.trellisldp.constraint.LdpConstraintService;
-import org.trellisldp.http.core.DefaultTimemapGenerator;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.TrellisRequest;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -157,7 +157,7 @@ class BaseTestHandler {
 
     @BeforeEach
     void setUp() {
-        initMocks(this);
+        openMocks(this);
 
         setUpBundler();
         setUpResourceService();
@@ -218,7 +218,7 @@ class BaseTestHandler {
 
     static CompletionStage<Void> asyncException() {
         return runAsync(() -> {
-            throw new RuntimeTrellisException("Expected exception");
+            throw new TrellisRuntimeException("Expected exception");
         });
     }
 
@@ -238,6 +238,8 @@ class BaseTestHandler {
         when(mockResourceService.toInternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.toExternal(any(RDFTerm.class), any())).thenCallRealMethod();
         when(mockResourceService.touch(any(IRI.class))).thenReturn(completedFuture(null));
+
+        doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
     }
 
     private void setUpBinaryService() {
@@ -245,7 +247,7 @@ class BaseTestHandler {
                         .thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent())
                         .thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
-        when(mockBinaryService.generateIdentifier()).thenReturn("file:///" + randomUUID());
+        when(mockBinaryService.generateIdentifier(any(IRI.class))).thenReturn("file:///" + randomUUID());
         when(mockBinaryService.get(any(IRI.class))).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinaryService.purgeContent(any(IRI.class))).thenReturn(completedFuture(null));
         when(mockBinaryService.setContent(any(BinaryMetadata.class), any(InputStream.class)))

@@ -25,7 +25,7 @@ import javax.enterprise.context.ApplicationScoped;
 
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 
 /**
  * An {@link EventSerializationService} that serializes an {@link Event} object
@@ -48,7 +48,7 @@ public class DefaultEventSerializationService implements EventSerializationServi
         try {
             return MAPPER.writeValueAsString(ActivityStreamMessage.from(event));
         } catch (final JsonProcessingException ex) {
-            throw new RuntimeTrellisException("Error serializing event", ex);
+            throw new TrellisRuntimeException("Error serializing event", ex);
         }
     }
 }

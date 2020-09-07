@@ -73,8 +73,8 @@ import org.trellisldp.api.NoopResourceService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
@@ -96,6 +96,8 @@ public class WebAcService {
     public static final String CONFIG_WEBAC_MEMBERSHIP_CHECK = "trellis.webac.membership-check";
     /** The configuration key controlling the classpath location of the default root acl. */
     public static final String CONFIG_WEBAC_DEFAULT_ACL_LOCATION = "trellis.webac.default-acl-location";
+    /** The configuration key controlling whether the root ACL is initialized. */
+    public static final String CONFIG_WEBAC_INITIALIZE_ROOT_ACL = "trellis.webac.initialize-root-acl";
     /** The default classpath location of the default root acl. */
     public static final String DEFAULT_ACL_LOCATION = "org/trellisldp/webac/defaultAcl.ttl";
 
@@ -168,15 +170,18 @@ public class WebAcService {
      */
     @PostConstruct
     public void initialize() {
-        try (final Dataset dataset = generateDefaultRootAuthorizationsDataset(defaultAuthResourceLocation)) {
-            this.resourceService.get(root).thenCompose(res -> initialize(res, dataset))
-                .exceptionally(err -> {
-                    LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
-                    LOGGER.debug("Error auto-initializing Trellis", err);
-                    return null;
-                }).toCompletableFuture().join();
-        } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error initializing Trellis ACL", ex);
+        if (getConfig().getOptionalValue(CONFIG_WEBAC_INITIALIZE_ROOT_ACL, Boolean.class).orElse(Boolean.TRUE)) {
+            try (final Dataset dataset = generateDefaultRootAuthorizationsDataset(defaultAuthResourceLocation)) {
+                this.resourceService.get(root).thenCompose(res -> initialize(res, dataset))
+                    .exceptionally(err -> {
+                        LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info",
+                                err.getMessage());
+                        LOGGER.debug("Error auto-initializing Trellis", err);
+                        return null;
+                    }).toCompletableFuture().join();
+            } catch (final Exception ex) {
+                throw new TrellisRuntimeException("Error initializing Trellis ACL", ex);
+            }
         }
     }
 
@@ -215,9 +220,10 @@ public class WebAcService {
         requireNonNull(session, "A non-null session must be provided!");
 
         if (Trellis.AdministratorAgent.equals(session.getAgent())) {
-            return new AuthorizedModes(identifier, allModes);
+            return new AuthorizedModes(null, allModes);
         }
 
+        LOGGER.debug("Looking up ACL for agent [{}] on resource [{}]", session.getAgent(), identifier);
         final AuthorizedModes cachedModes = cache.get(generateCacheKey(identifier, session.getAgent()), k ->
                 getAuthz(identifier, session.getAgent()));
         return session.getDelegatedBy().map(delegate -> {
@@ -225,7 +231,7 @@ public class WebAcService {
                 final AuthorizedModes delegatedModes = cache.get(generateCacheKey(identifier, delegate),
                             k -> getAuthz(identifier, delegate));
                 modes.retainAll(delegatedModes.getAccessModes());
-                return new AuthorizedModes(cachedModes.getEffectiveAcl(), modes);
+                return new AuthorizedModes(cachedModes.getEffectiveAcl().orElse(null), modes);
             }).orElse(cachedModes);
     }
 
@@ -241,6 +247,10 @@ public class WebAcService {
 
     private AuthorizedModes getAuthz(final IRI identifier, final IRI agent) {
         final AuthorizedModes authModes = getModesFor(identifier, agent);
+
+        if (authModes.getAccessModes().isEmpty()) {
+            LOGGER.debug("Agent [{}] has no access to resource [{}]", agent, identifier);
+        }
         final Set<IRI> modes = new HashSet<>(authModes.getAccessModes());
         // consider membership resources, if relevant
         if (checkMembershipResources && hasWritableMode(modes)) {
@@ -255,16 +265,17 @@ public class WebAcService {
                         modes.remove(ACL.Append);
                     }
                 });
-            return new AuthorizedModes(authModes.getEffectiveAcl(), modes);
+            return new AuthorizedModes(authModes.getEffectiveAcl().orElse(null), modes);
         }
         return authModes;
     }
 
     private AuthorizedModes getModesFor(final IRI identifier, final IRI agent) {
-        return getNearestResource(identifier).map(resource ->
-                new AuthorizedModes(resource.getIdentifier(), getAllAuthorizationsFor(resource, false)
-                    .filter(agentFilter(agent)).flatMap(auth -> auth.getMode().stream()).collect(toSet())))
-            .orElseGet(() -> new AuthorizedModes(root, emptySet()));
+        return getNearestResource(identifier).map(resource -> {
+            final Authorizations authorizations = getAllAuthorizationsFor(resource, false);
+            return new AuthorizedModes(authorizations.getIdentifier(), authorizations.stream()
+                    .filter(agentFilter(agent)).flatMap(auth -> auth.getMode().stream()).collect(toSet()));
+        }).orElseGet(() -> new AuthorizedModes(root, emptySet()));
     }
 
     private Optional<Resource> getNearestResource(final IRI identifier) {
@@ -291,7 +302,7 @@ public class WebAcService {
         }).toCompletableFuture().join();
     }
 
-    private Stream<Authorization> getAllAuthorizationsFor(final Resource resource, final boolean inherited) {
+    private Authorizations getAllAuthorizationsFor(final Resource resource, final boolean inherited) {
         LOGGER.debug("Checking ACL for: {}", resource.getIdentifier());
         if (resource.hasMetadata(Trellis.PreferAccessControl)) {
             try (final Graph graph = resource.stream(Trellis.PreferAccessControl).map(Quad::asTriple)
@@ -300,20 +311,22 @@ public class WebAcService {
                 final List<Authorization> authorizations = getAuthorizationFromGraph(resource.getIdentifier(), graph);
                 // Check for any acl:default statements if checking for inheritance
                 if (inherited) {
-                    return authorizations.stream().filter(getInheritedAuth(resource.getIdentifier()));
+                    return new Authorizations(resource.getIdentifier(),
+                            authorizations.stream().filter(getInheritedAuth(resource.getIdentifier())));
                 }
                 // If not inheriting, just return the relevant Authorizations
-                return authorizations.stream();
+                return new Authorizations(resource.getIdentifier(), authorizations.stream()
+                        .filter(auth -> auth.getAccessTo().contains(resource.getIdentifier())));
             } catch (final Exception ex) {
-                throw new RuntimeTrellisException("Error closing graph", ex);
+                throw new TrellisRuntimeException("Error closing graph", ex);
             }
         } else if (root.equals(resource.getIdentifier())) {
-            return defaultRootAuthorizations.stream();
+            return new Authorizations(root, defaultRootAuthorizations.stream());
         }
         // Nothing here, check the parent
         LOGGER.debug("No ACL for {}; looking up parent resource", resource.getIdentifier());
         return getContainer(resource.getIdentifier()).flatMap(this::getNearestResource)
-            .map(res -> getAllAuthorizationsFor(res, true)).orElseGet(Stream::empty);
+            .map(res -> getAllAuthorizationsFor(res, true)).orElseGet(() -> new Authorizations(root));
     }
 
     static List<Authorization> getAuthorizationFromGraph(final IRI identifier, final Graph graph) {
@@ -321,9 +334,33 @@ public class WebAcService {
                 try (final Graph subGraph = graph.stream(subject, null, null).collect(toGraph())) {
                     return Authorization.from(subject, subGraph);
                 } catch (final Exception ex) {
-                    throw new RuntimeTrellisException("Error closing graph", ex);
+                    throw new TrellisRuntimeException("Error closing graph", ex);
                 }
-            }).filter(auth -> auth.getAccessTo().contains(identifier)).collect(toList());
+            })
+        .filter(auth -> auth.getAccessTo().contains(identifier) || auth.getDefault().contains(identifier))
+        .collect(toList());
+    }
+
+    static class Authorizations {
+        private final IRI resource;
+        private final Stream<Authorization> stream;
+
+        public Authorizations(final IRI resource) {
+            this(resource, Stream.empty());
+        }
+
+        public Authorizations(final IRI resource, final Stream<Authorization> stream) {
+            this.resource = resource;
+            this.stream = stream;
+        }
+
+        public IRI getIdentifier() {
+            return resource;
+        }
+
+        public Stream<Authorization> stream() {
+            return stream;
+        }
     }
 
     static boolean hasWritableMode(final Set<IRI> modes) {

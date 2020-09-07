@@ -38,4 +38,6 @@ module org.trellisldp.jdbc {
 
     uses org.trellisldp.api.IdentifierService;
     uses org.trellisldp.api.MementoService;
+
+    opens org.trellisldp.jdbc;
 }

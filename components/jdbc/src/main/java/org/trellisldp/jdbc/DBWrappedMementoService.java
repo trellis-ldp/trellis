@@ -17,6 +17,7 @@ package org.trellisldp.jdbc;
 
 import static java.time.Instant.ofEpochSecond;
 import static java.util.Objects.requireNonNull;
+import static java.util.ServiceLoader.load;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -59,7 +60,7 @@ public class DBWrappedMementoService implements MementoService {
      */
     @Inject
     public DBWrappedMementoService(final DataSource ds) {
-        this(ds, DBUtils.findFirst(MementoService.class).orElseGet(NoopMementoService::new));
+        this(ds, load(MementoService.class).findFirst().orElseGet(NoopMementoService::new));
     }
 
     /**
@@ -88,12 +89,18 @@ public class DBWrappedMementoService implements MementoService {
 
     @Override
     public CompletionStage<Void> put(final Resource resource) {
+        if (svc instanceof NoopMementoService) {
+            return svc.put(resource);
+        }
         return svc.put(resource).thenAccept(future ->
                 putTime(resource.getIdentifier(), resource.getModified()));
     }
 
     @Override
     public CompletionStage<SortedSet<Instant>> mementos(final IRI identifier) {
+        if (svc instanceof NoopMementoService) {
+            return svc.mementos(identifier);
+        }
         return supplyAsync(() -> {
             final SortedSet<Instant> instants = new TreeSet<>();
             jdbi.useHandle(handle -> handle

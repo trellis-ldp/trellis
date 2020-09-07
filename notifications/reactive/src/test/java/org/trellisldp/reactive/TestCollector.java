@@ -15,8 +15,8 @@
  */
 package org.trellisldp.reactive;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.enterprise.context.ApplicationScoped;
 
@@ -25,7 +25,7 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 @ApplicationScoped
 public class TestCollector {
 
-    private final List<String> list = new ArrayList<>();
+    private final List<String> list = new CopyOnWriteArrayList<>();
 
     @Incoming(ReactiveEventService.REACTIVE_DESTINATION)
     public void sink(final String message) {
@@ -34,5 +34,9 @@ public class TestCollector {
 
     public List<String> getResults() {
         return list;
+    }
+
+    public void clear() {
+        list.clear();
     }
 }

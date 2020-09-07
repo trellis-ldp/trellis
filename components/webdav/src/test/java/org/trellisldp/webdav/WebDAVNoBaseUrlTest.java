@@ -15,7 +15,7 @@
  */
 package org.trellisldp.webdav;
 
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.security.Principal;
 
@@ -29,15 +29,15 @@ import javax.ws.rs.core.SecurityContext;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.TestInstance;
+import org.trellisldp.common.ServiceBundler;
 import org.trellisldp.http.TrellisHttpResource;
-import org.trellisldp.http.core.ServiceBundler;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
 
     @PreMatching
     @Priority(500)
-    private static class TestAuthnFilter implements ContainerRequestFilter {
+    static class TestAuthnFilter implements ContainerRequestFilter {
         private final String principal;
         private final String userRole;
 
@@ -75,7 +75,7 @@ class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
     @Override
     public Application configure() {
 
-        initMocks(this);
+        openMocks(this);
 
         final ResourceConfig config = new ResourceConfig();
 

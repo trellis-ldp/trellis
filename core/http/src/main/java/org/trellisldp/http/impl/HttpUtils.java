@@ -31,7 +31,8 @@ import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.*;
-import static org.trellisldp.http.core.HttpConstants.*;
+import static org.trellisldp.api.TrellisUtils.normalizePath;
+import static org.trellisldp.common.HttpConstants.*;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
 import java.time.DateTimeException;
@@ -61,9 +62,9 @@ import org.trellisldp.api.IOService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.http.core.Prefer;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.api.TrellisRuntimeException;
+import org.trellisldp.common.Prefer;
+import org.trellisldp.common.TrellisRequest;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -191,11 +192,15 @@ public final class HttpUtils {
         if (acceptableTypes.isEmpty()) {
             return mimeType != null ? null : TURTLE;
         }
-        final MediaType mt = mimeType != null ? MediaType.valueOf(mimeType) : null;
-        for (final MediaType type : acceptableTypes) {
-            if (type.isCompatible(mt)) {
-                return null;
+        if (mimeType != null) {
+            final MediaType mt = MediaType.valueOf(mimeType);
+            for (final MediaType type : acceptableTypes) {
+                if (type.isCompatible(mt)) {
+                    return null;
+                }
             }
+        }
+        for (final MediaType type : acceptableTypes) {
             final RDFSyntax syntax = ioService.supportedReadSyntaxes().stream()
                 .filter(s -> MediaType.valueOf(s.mediaType()).isCompatible(type))
                 .findFirst().orElse(null);
@@ -385,7 +390,7 @@ public final class HttpUtils {
         try {
             dataset.close();
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error closing dataset", ex);
+            throw new TrellisRuntimeException("Error closing dataset", ex);
         }
     }
 
@@ -409,7 +414,8 @@ public final class HttpUtils {
      * @return an absolute URL
      */
     public static String buildResourceUrl(final TrellisRequest req, final String baseUrl) {
-        return fromUri(baseUrl).path(req.getPath() + (req.hasTrailingSlash() ? "/" : "")).build().toString();
+        return fromUri(baseUrl).path(normalizePath(req.getPath()) + (req.hasTrailingSlash() ? "/" : "")).build()
+            .toString();
     }
 
     private HttpUtils() {

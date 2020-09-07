@@ -23,10 +23,10 @@ import static java.util.stream.Stream.of;
 import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.core.HttpConstants.ACL;
+import static org.trellisldp.common.HttpConstants.ACL;
 import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
 
 import java.net.URI;
@@ -46,8 +46,8 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.api.TrellisRuntimeException;
+import org.trellisldp.common.TrellisRequest;
 
 /**
  * @author acoburn
@@ -74,7 +74,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     @Override
     protected Application configure() {
 
-        initMocks(this);
+        openMocks(this);
 
         System.setProperty(WebSubHeaderFilter.CONFIG_HTTP_WEB_SUB_HUB, HUB);
 
@@ -116,7 +116,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
         when(mockService.get(eq(root))).thenAnswer(inv -> runAsync(() -> {
-            throw new RuntimeTrellisException("Expected exception");
+            throw new TrellisRuntimeException("Expected exception");
         }));
 
         final TrellisHttpResource matcher = new TrellisHttpResource(mockBundler);

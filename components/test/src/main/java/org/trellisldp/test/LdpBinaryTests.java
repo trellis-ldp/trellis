@@ -22,9 +22,9 @@ import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.http.core.HttpConstants.SLUG;
-import static org.trellisldp.http.core.RdfMediaType.APPLICATION_SPARQL_UPDATE;
-import static org.trellisldp.http.core.RdfMediaType.TEXT_TURTLE_TYPE;
+import static org.trellisldp.common.HttpConstants.SLUG;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_SPARQL_UPDATE;
+import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.test.TestUtils.readEntityAsString;
 

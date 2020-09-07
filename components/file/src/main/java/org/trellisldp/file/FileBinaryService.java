@@ -138,7 +138,7 @@ public class FileBinaryService implements BinaryService {
     }
 
     @Override
-    public String generateIdentifier() {
+    public String generateIdentifier(final IRI identifier) {
         return idSupplier.get();
     }
 

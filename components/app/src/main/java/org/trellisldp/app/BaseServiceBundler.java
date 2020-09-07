@@ -19,7 +19,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.trellisldp.api.*;
-import org.trellisldp.http.core.*;
+import org.trellisldp.common.*;
 
 /**
  * A {@link ServiceBundler} that supplies components for a Trellis application from its fields.

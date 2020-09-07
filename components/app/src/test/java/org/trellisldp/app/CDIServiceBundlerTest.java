@@ -26,11 +26,11 @@ import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.trellisldp.api.*;
+import org.trellisldp.common.DefaultTimemapGenerator;
+import org.trellisldp.common.ServiceBundler;
 import org.trellisldp.constraint.LdpConstraintService;
 import org.trellisldp.file.FileBinaryService;
 import org.trellisldp.file.FileMementoService;
-import org.trellisldp.http.core.DefaultTimemapGenerator;
-import org.trellisldp.http.core.ServiceBundler;
 import org.trellisldp.jena.JenaIOService;
 import org.trellisldp.jena.NoopProfileCache;
 import org.trellisldp.rdfa.DefaultRdfaWriterService;
@@ -52,7 +52,9 @@ class CDIServiceBundlerTest {
                                            LdpConstraintService.class,
                                            NoopProfileCache.class,
                                            TestServices.class)
-                                       .alternatives(FileMementoService.class));
+                                       .alternatives(
+                                           DefaultTimemapGenerator.class,
+                                           FileMementoService.class));
 
     @Inject
     private ServiceBundler serviceBundler;

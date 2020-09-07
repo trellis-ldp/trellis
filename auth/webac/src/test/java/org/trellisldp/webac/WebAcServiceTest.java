@@ -22,7 +22,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
@@ -39,6 +39,7 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -47,8 +48,8 @@ import org.trellisldp.api.CacheService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
 import org.trellisldp.api.Session;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.FOAF;
 import org.trellisldp.vocabulary.LDP;
@@ -117,7 +118,7 @@ class WebAcServiceTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     void setUp() {
-        initMocks(this);
+        openMocks(this);
 
         testService = new WebAcService(mockResourceService, new WebAcService.NoopAuthorizationCache());
 
@@ -147,6 +148,11 @@ class WebAcServiceTest {
         when(mockSession.getDelegatedBy()).thenReturn(empty());
     }
 
+    @AfterEach
+    void cleanUp() {
+        System.clearProperty(WebAcService.CONFIG_WEBAC_INITIALIZE_ROOT_ACL);
+    }
+
     @Test
     void testDefaultResourceService() {
         assertDoesNotThrow(() -> new WebAcService());
@@ -163,12 +169,21 @@ class WebAcServiceTest {
     @Test
     void testInitializeError() {
         when(mockResourceService.get(any(IRI.class))).thenThrow(new RuntimeException("Expected"));
-        assertThrows(RuntimeTrellisException.class, testService::initialize);
+        assertThrows(TrellisRuntimeException.class, testService::initialize);
     }
 
     @Test
     void testDontInitialize() {
         when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
+
+        assertDoesNotThrow(() -> testService.initialize());
+        verify(mockRootResource, never()).stream(PreferUserManaged);
+    }
+
+    @Test
+    void testDontInitializeConfig() {
+        System.setProperty(WebAcService.CONFIG_WEBAC_INITIALIZE_ROOT_ACL, "false");
+        when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
 
         assertDoesNotThrow(() -> testService.initialize());
         verify(mockRootResource, never()).stream(PreferUserManaged);
@@ -181,7 +196,7 @@ class WebAcServiceTest {
         when(mockGraph.stream()).thenAnswer(inv ->
                 Stream.of(rdf.createTriple(subject, RDFS.label, rdf.createLiteral("literal"))));
         when(mockGraph.stream(eq(subject), any(), any())).thenThrow(new RuntimeException("Expected"));
-        assertThrows(RuntimeTrellisException.class, () ->
+        assertThrows(TrellisRuntimeException.class, () ->
                 WebAcService.getAuthorizationFromGraph(resourceIRI, mockGraph));
     }
 
@@ -191,7 +206,7 @@ class WebAcServiceTest {
         when(mockResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
         when(mockResource.stream(eq(PreferAccessControl))).thenThrow(new RuntimeException("Expected"));
 
-        assertThrows(RuntimeTrellisException.class, () ->
+        assertThrows(TrellisRuntimeException.class, () ->
                 testService.getAuthorizedModes(resourceIRI, mockSession));
     }
 
@@ -699,7 +714,7 @@ class WebAcServiceTest {
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.mode, ACL.Read),
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.agentGroup, groupIRI2),
                 rdf.createQuad(PreferAccessControl, authIRI3, ACL.accessTo, childIRI),
-                rdf.createQuad(PreferAccessControl, authIRI2, ACL.default_, childIRI),
+                rdf.createQuad(PreferAccessControl, authIRI3, ACL.default_, childIRI),
 
                 rdf.createQuad(PreferAccessControl, authIRI4, ACL.agentGroup, groupIRI2),
                 rdf.createQuad(PreferAccessControl, authIRI4, type, ACL.Authorization)));
@@ -891,7 +906,6 @@ class WebAcServiceTest {
                 rdf.createQuad(PreferAccessControl, authIRI1, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI1, ACL.mode, ACL.Read),
                 rdf.createQuad(PreferAccessControl, authIRI1, ACL.agent, addisonIRI),
-                rdf.createQuad(PreferAccessControl, authIRI1, ACL.accessTo, childIRI),
                 rdf.createQuad(PreferAccessControl, authIRI1, ACL.default_, childIRI),
 
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Read),

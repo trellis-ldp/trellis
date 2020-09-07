@@ -21,7 +21,6 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,9 +30,10 @@ import org.apache.commons.rdf.simple.SimpleRDF;
 import org.apache.kafka.clients.producer.MockProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.api.EventService;
@@ -45,6 +45,7 @@ import org.trellisldp.vocabulary.Trellis;
 /**
  * Test the Kafka publisher
  */
+@ExtendWith(MockitoExtension.class)
 class KafkaEventServiceTest {
 
     private static final RDF rdf = new SimpleRDF();
@@ -60,9 +61,8 @@ class KafkaEventServiceTest {
     @Mock
     private Event mockEvent;
 
-    @BeforeEach
-    void setUp() {
-        initMocks(this);
+    @Test
+    void testKafka() {
         when(mockEvent.getObject()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
         when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:test"));
@@ -70,10 +70,7 @@ class KafkaEventServiceTest {
         when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
         when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
-    }
 
-    @Test
-    void testKafka() {
         final EventService svc = new KafkaEventService(serializer, producer);
         svc.emit(mockEvent);
 
@@ -84,6 +81,10 @@ class KafkaEventServiceTest {
 
     @Test
     void testNoargCtor() {
+        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
+        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:test"));
+        when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
+
         final EventService svc = new KafkaEventService();
         assertDoesNotThrow(() -> svc.emit(mockEvent));
     }

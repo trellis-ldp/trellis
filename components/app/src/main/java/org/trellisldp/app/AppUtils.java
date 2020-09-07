@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 
 import org.slf4j.Logger;
 
@@ -38,28 +39,21 @@ public final class AppUtils {
      * @param resource the classpath resource to use
      */
     public static void printBanner(final String name, final String resource) {
-        final String banner = readResource(requireNonNull(resource, "resource cannot be null!"));
+        final String banner = readResource(Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(requireNonNull(resource, "resource cannot be null!")));
         LOGGER.info("Starting {}\n{}", name, banner);
     }
 
-    private static String readResource(final String resource) {
-        try (final InputStream resourceStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(resource)) {
-            if (resourceStream != null) {
-                return readResource(resourceStream);
+    static String readResource(final InputStream resourceStream) {
+        if (resourceStream != null) {
+            try (final InputStreamReader inputStreamReader = new InputStreamReader(resourceStream, UTF_8);
+                final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+                return bufferedReader.lines().collect(joining(String.format("%n")));
+            } catch (final IOException | UncheckedIOException ex) {
+                LOGGER.error("Error reading banner resource: {}", ex.getMessage());
             }
-            LOGGER.warn("Banner resource {} could not be read", resource);
-        } catch (final IOException ex) {
-            LOGGER.error("Error reading banner resource at {}: {}", resource, ex.getMessage());
         }
         return "";
-    }
-
-    private static String readResource(final InputStream resourceStream) throws IOException {
-        try (final InputStreamReader inputStreamReader = new InputStreamReader(resourceStream, UTF_8);
-            final BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-            return bufferedReader.lines().collect(joining(String.format("%n")));
-        }
     }
 
     private AppUtils() {

@@ -80,9 +80,11 @@ class FileBinaryServiceTest {
 
     @Test
     void testIdSupplier() {
+        final IRI identifier = rdf.createIRI("https://example.com/resource");
         final BinaryService service = new FileBinaryService();
-        assertTrue(service.generateIdentifier().startsWith("file:///"), "Identifier has incorrect prefix!");
-        assertNotEquals(service.generateIdentifier(), service.generateIdentifier(), "Identifiers are not unique!");
+        assertTrue(service.generateIdentifier(identifier).startsWith("file:///"), "Identifier has incorrect prefix!");
+        assertNotEquals(service.generateIdentifier(identifier), service.generateIdentifier(identifier),
+                "Identifiers are not unique!");
     }
 
     @Test
@@ -91,8 +93,8 @@ class FileBinaryServiceTest {
         try (final InputStream input = FileBinaryService.class.getResourceAsStream("/test.txt")) {
             final String doc = uncheckedToString(input);
             assertNotNull(doc);
-            assertEquals(doc, service.get(file).thenApply(Binary::getContent).thenApply(this::uncheckedToString)
-                            .toCompletableFuture().join(),
+            assertEquals(doc, service.get(file).thenApply(Binary::getContent)
+                    .thenApply(FileBinaryServiceTest::uncheckedToString).toCompletableFuture().join(),
                             "Incorrect content when fetching from a file!");
         }
     }
@@ -100,19 +102,20 @@ class FileBinaryServiceTest {
     @Test
     void testFileContentSegment() {
         final BinaryService service = new FileBinaryService();
-        assertEquals(" tes",
-                        service.get(file).thenApply(b -> b.getContent(1, 5)).thenApply(this::uncheckedToString)
+        assertEquals(" tes", service.get(file).thenApply(b -> b.getContent(1, 5))
+                        .thenApply(FileBinaryServiceTest::uncheckedToString)
                         .toCompletableFuture().join(), "Incorrect segment when fetching from a file!");
-        assertEquals("oc",
-                        service.get(file).thenApply(b -> b.getContent(8, 10)).thenApply(this::uncheckedToString)
+        assertEquals("oc", service.get(file).thenApply(b -> b.getContent(8, 10))
+                        .thenApply(FileBinaryServiceTest::uncheckedToString)
                         .toCompletableFuture().join(), "Incorrect segment when fetching from a file!");
     }
 
     @Test
     void testFileContentSegmentBeyond() {
         final BinaryService service = new FileBinaryService();
-        assertEquals("", service.get(file).thenApply(b -> b.getContent(1000, 1005)).thenApply(this::uncheckedToString)
-                        .toCompletableFuture().join(), "Incorrect out-of-range segment when fetching from a file!");
+        assertEquals("", service.get(file).thenApply(b -> b.getContent(1000, 1005))
+                .thenApply(FileBinaryServiceTest::uncheckedToString).toCompletableFuture().join(),
+                "Incorrect out-of-range segment when fetching from a file!");
     }
 
     @Test
@@ -123,8 +126,8 @@ class FileBinaryServiceTest {
         final InputStream inputStream = new ByteArrayInputStream(contents.getBytes(UTF_8));
         assertNull(service.setContent(BinaryMetadata.builder(fileIRI).build(), inputStream)
                 .toCompletableFuture().join(), "Setting content didn't complete cleanly!");
-        assertEquals(contents,
-                        service.get(fileIRI).thenApply(Binary::getContent).thenApply(this::uncheckedToString)
+        assertEquals(contents, service.get(fileIRI).thenApply(Binary::getContent)
+                        .thenApply(FileBinaryServiceTest::uncheckedToString)
                         .toCompletableFuture().join(), "Fetching new content returned incorrect value!");
     }
 
@@ -178,17 +181,17 @@ class FileBinaryServiceTest {
     void testBadIdentifier() {
         final BinaryService service = new FileBinaryService();
         assertFalse(service.get(rdf.createIRI("http://example.com/")).thenApply(Binary::getContent)
-                        .handle(this::checkError).toCompletableFuture().join(),
+                        .handle(FileBinaryServiceTest::checkError).toCompletableFuture().join(),
                         "Shouldn't be able to fetch content from a bad IRI!");
     }
 
-    private boolean checkError(final Object asyncValue, final Throwable err) {
+    static boolean checkError(final Object asyncValue, final Throwable err) {
         assertNull(asyncValue, "The async value should be null!");
         assertNotNull(err, "There should be an async error!");
         return false;
     }
 
-    private String uncheckedToString(final InputStream is) {
+    static String uncheckedToString(final InputStream is) {
         try {
             return IOUtils.toString(is, UTF_8);
         } catch (final IOException ex) {
@@ -196,7 +199,7 @@ class FileBinaryServiceTest {
         }
     }
 
-    private static String randomFilename() {
+    static String randomFilename() {
         final SecureRandom random = new SecureRandom();
         final String filename = new BigInteger(50, random).toString(32);
         return filename + ".json";

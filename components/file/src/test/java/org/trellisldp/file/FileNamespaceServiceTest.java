@@ -16,6 +16,7 @@
 package org.trellisldp.file;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -63,11 +64,25 @@ class FileNamespaceServiceTest {
     }
 
     @Test
+    void testNonObjectNamespaceFile() {
+        final URL res = FileNamespaceService.class.getResource("/invalidNamespaces.json");
+        assertTrue(FileNamespaceService.read(res.getPath()).isEmpty());
+    }
+
+    @Test
     void testWriteNonexistent() {
         final File file = new File(getClass().getResource(nsDoc).getFile());
         final File nonexistent = new File(file.getParentFile(), "nonexistent2/dir/file.json");
         assertDoesNotThrow(() -> new FileNamespaceService(nonexistent.getAbsolutePath()),
                     "Loaded namespaces from nonexistent directory!");
+    }
+
+    @Test
+    void testWriteCreateDirectories() {
+        final File file = new File(getClass().getResource(nsDoc).getFile());
+        final File nonexistent = new File(file.getParentFile(), "nonexistent3/dir/file.json");
+        final Map<String, String> data = singletonMap("dcterms", "http://purl.org/dc/terms/");
+        assertDoesNotThrow(() -> FileNamespaceService.write(nonexistent, data, true));
     }
 
     @Test
@@ -84,7 +99,7 @@ class FileNamespaceServiceTest {
             throw new IOException("Expected exception.");
         });
         final Map<String, String> namespaces = emptyMap();
-        assertThrows(UncheckedIOException.class, () -> FileNamespaceService.write(mockFile, namespaces));
+        assertThrows(UncheckedIOException.class, () -> FileNamespaceService.write(mockFile, namespaces, false));
     }
 
     @Test
@@ -111,7 +126,7 @@ class FileNamespaceServiceTest {
         }
     }
 
-    private static String randomFilename() {
+    static String randomFilename() {
         final SecureRandom random = new SecureRandom();
         final String filename = new BigInteger(50, random).toString(32);
         return filename + ".json";

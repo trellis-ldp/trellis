@@ -33,7 +33,7 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;
 import org.trellisldp.api.RDFFactory;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.TrellisRuntimeException;
 
 /**
  * @author acoburn
@@ -71,7 +71,7 @@ class WebDAVUtilsTest {
     void testCloseDataset() throws Exception {
         final Dataset mockDataset = mock(Dataset.class);
         doThrow(new IOException()).when(mockDataset).close();
-        assertThrows(RuntimeTrellisException.class, () -> WebDAVUtils.closeDataset(mockDataset));
+        assertThrows(TrellisRuntimeException.class, () -> WebDAVUtils.closeDataset(mockDataset));
     }
 
     private PathSegment asPathSegment(final String segment) {

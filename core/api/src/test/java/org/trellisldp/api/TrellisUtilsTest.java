@@ -69,15 +69,19 @@ class TrellisUtilsTest {
         final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
         final IRI resource = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final IRI resourceSlash = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/");
+        final IRI resourceSlashQuery = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource/?ext=description");
         final IRI child = rdf.createIRI("trellis:data/resource/child");
         final IRI childHash = rdf.createIRI("trellis:data/resource/child#hash");
         final IRI childSlashHash = rdf.createIRI("trellis:data/resource/child/#hash");
+        final IRI childSlashQueryHash = rdf.createIRI("trellis:data/resource/child/?ext=acl#hash");
         assertEquals(root, TrellisUtils.normalizeIdentifier(root));
         assertEquals(resource, TrellisUtils.normalizeIdentifier(resource));
         assertEquals(resource, TrellisUtils.normalizeIdentifier(resourceSlash));
+        assertEquals(resource, TrellisUtils.normalizeIdentifier(resourceSlashQuery));
         assertEquals(child, TrellisUtils.normalizeIdentifier(child));
         assertEquals(child, TrellisUtils.normalizeIdentifier(childHash));
         assertEquals(child, TrellisUtils.normalizeIdentifier(childSlashHash));
+        assertEquals(child, TrellisUtils.normalizeIdentifier(childSlashQueryHash));
     }
 
     @Test

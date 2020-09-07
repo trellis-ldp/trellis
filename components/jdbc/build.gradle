@@ -26,6 +26,7 @@ dependencies {
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation project(":trellis-vocabulary")
 
+    testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "com.google.guava:guava:$guavaVersion"
     testImplementation "com.opentable.components:otj-pg-embedded:$otjPgVersion"
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
@@ -41,6 +42,8 @@ dependencies {
 
     testImplementation project(":trellis-file")
     testImplementation project(":trellis-test")
+
+    testRuntimeOnly "org.postgresql:postgresql:$postgresVersion"
 }
 
 test {

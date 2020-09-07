@@ -22,6 +22,7 @@ import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
 import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
+import static org.trellisldp.api.TrellisUtils.normalizePath;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
 import java.time.Instant;
@@ -34,8 +35,8 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.TrellisRequest;
 
 /**
  * @author acoburn
@@ -120,7 +121,7 @@ class BaseLdpHandler {
      * @return an identifier string
      */
     protected String getIdentifier() {
-        return getBaseUrl() + getRequest().getPath();
+        return getBaseUrl() + normalizePath(getRequest().getPath());
     }
 
     /**
@@ -183,7 +184,7 @@ class BaseLdpHandler {
         return new EntityTag(sha256Hex(res.getRevision()), weakEtag);
     }
 
-    private static String getRequestBaseUrl(final TrellisRequest req, final String baseUrl) {
+    static String getRequestBaseUrl(final TrellisRequest req, final String baseUrl) {
         final String base = baseUrl != null ? baseUrl : req.getBaseUrl();
         if (base.endsWith("/")) {
             return base;

@@ -6,4 +6,5 @@
 <trellis:data/resource> <http://www.w3.org/ns/ldp#contains> <trellis:data/resource/1> <http://www.w3.org/ns/ldp#PreferContainment> .
 <trellis:data/resource> <http://www.w3.org/ns/ldp#contains> <trellis:data/resource/2> <http://www.w3.org/ns/ldp#PreferContainment> .
 <trellis:data/resource> <http://www.w3.org/ns/ldp#contains> <trellis:data/resource/3> <http://www.w3.org/ns/ldp#PreferContainment> .
+<trellis:data/resource> <http://purl.org/dc/terms/relation> <http://example.com/resource> <http://example.com/ns/Extensions> .
 

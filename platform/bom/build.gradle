@@ -1,6 +1,7 @@
 
 dependencies {
     implementation project(':trellis-api')
+    implementation project(':trellis-common')
     implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
 
@@ -57,9 +58,3 @@ tasks.withType(GenerateModuleMetadata) {
     enabled = false
 }
 
-java {
-    // because this isn't built as a JPMS module
-    if (project.hasProperty("jpms") && JavaVersion.current().isJava11Compatible()) {
-        disableAutoTargetJvm()
-    }
-}

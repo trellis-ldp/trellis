@@ -40,6 +40,7 @@ import org.ops4j.pax.exam.ConfigurationManager;
 import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.karaf.options.LogLevelOption.LogLevel;
+import org.ops4j.pax.exam.options.extra.VMOption;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.osgi.framework.BundleContext;
@@ -65,7 +66,7 @@ public class OSGiTest {
         final String sshPort = cm.getProperty("karaf.ssh.port");
         final String jenaVersion = cm.getProperty("jena.version");
         final String activemqVersion = cm.getProperty("activemq.version");
-        final String springFeatureVersion = cm.getProperty("spring.version");
+        final String karafVersion = cm.getProperty("karaf.version");
 
         return new Option[] {
             karafDistributionConfiguration()
@@ -78,14 +79,13 @@ public class OSGiTest {
             configureConsole().ignoreLocalConsole(),
 
             features(maven().groupId("org.apache.karaf.features").artifactId("standard")
-                        .versionAsInProject().classifier("features").type("xml"), "scr"),
+                        .version(karafVersion).classifier("features").type("xml"), "scr"),
+            features(maven().groupId("org.apache.karaf.features").artifactId("spring-legacy")
+                        .version(karafVersion).classifier("features").type("xml"), "spring"),
             features(maven().groupId("org.apache.activemq").artifactId("activemq-karaf")
                         .version(activemqVersion).classifier("features").type("xml")),
             features(maven().groupId("org.apache.jena").artifactId("jena-osgi-features")
                         .version(jenaVersion).classifier("features").type("xml")),
-            // TODO -- with a new version of ActiveMQ, it should be possible to user `versionAsInProject()`
-            features(maven().groupId("org.apache.karaf.features").artifactId("spring")
-                        .version(springFeatureVersion).classifier("features").type("xml"), "spring"),
             features(maven().groupId("org.trellisldp").artifactId("trellis-karaf")
                         .type("xml").classifier("features").versionAsInProject(),
                         "trellis-jena"),
@@ -94,7 +94,24 @@ public class OSGiTest {
                     "https://repo1.maven.org/maven2@id=central"),
             editConfigurationFilePut("etc/org.apache.karaf.management.cfg", "rmiRegistryPort", rmiRegistryPort),
             editConfigurationFilePut("etc/org.apache.karaf.management.cfg", "rmiServerPort", rmiServerPort),
-            editConfigurationFilePut("etc/org.apache.karaf.shell.cfg", "sshPort", sshPort)
+            editConfigurationFilePut("etc/org.apache.karaf.shell.cfg", "sshPort", sshPort),
+
+            new VMOption("--add-opens"),
+            new VMOption("java.base/java.security=ALL-UNNAMED"),
+            new VMOption("--add-opens"),
+            new VMOption("java.base/java.net=ALL-UNNAMED"),
+            new VMOption("--add-opens"),
+            new VMOption("java.base/java.lang=ALL-UNNAMED"),
+            new VMOption("--add-opens"),
+            new VMOption("java.base/java.util=ALL-UNNAMED"),
+            new VMOption("--add-opens"),
+            new VMOption("java.naming/javax.naming.spi=ALL-UNNAMED"),
+            new VMOption("--add-opens"),
+            new VMOption("java.rmi/sun.rmi.transport.tcp=ALL-UNNAMED"),
+            new VMOption("--add-exports=java.base/sun.net.www.protocol.http=ALL-UNNAMED"),
+            new VMOption("--add-exports=java.base/sun.net.www.protocol.https=ALL-UNNAMED"),
+            new VMOption("--add-exports=java.base/sun.net.www.protocol.jar=ALL-UNNAMED"),
+            new VMOption("--add-exports=jdk.naming.rmi/com.sun.jndi.url.rmi=ALL-UNNAMED")
        };
     }
 

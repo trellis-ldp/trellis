@@ -41,18 +41,19 @@ import static javax.ws.rs.core.Response.ok;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_DATETIME;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_PATCH;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_POST;
-import static org.trellisldp.http.core.HttpConstants.ACCEPT_RANGES;
-import static org.trellisldp.http.core.HttpConstants.DESCRIPTION;
-import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
-import static org.trellisldp.http.core.HttpConstants.PREFER;
-import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
-import static org.trellisldp.http.core.HttpConstants.RANGE;
-import static org.trellisldp.http.core.Prefer.PREFER_MINIMAL;
-import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
-import static org.trellisldp.http.core.Prefer.PREFER_RETURN;
+import static org.trellisldp.api.TrellisUtils.normalizePath;
+import static org.trellisldp.common.HttpConstants.ACCEPT_DATETIME;
+import static org.trellisldp.common.HttpConstants.ACCEPT_PATCH;
+import static org.trellisldp.common.HttpConstants.ACCEPT_POST;
+import static org.trellisldp.common.HttpConstants.ACCEPT_RANGES;
+import static org.trellisldp.common.HttpConstants.DESCRIPTION;
+import static org.trellisldp.common.HttpConstants.MEMENTO_DATETIME;
+import static org.trellisldp.common.HttpConstants.PREFER;
+import static org.trellisldp.common.HttpConstants.PREFERENCE_APPLIED;
+import static org.trellisldp.common.HttpConstants.RANGE;
+import static org.trellisldp.common.Prefer.PREFER_MINIMAL;
+import static org.trellisldp.common.Prefer.PREFER_REPRESENTATION;
+import static org.trellisldp.common.Prefer.PREFER_RETURN;
 import static org.trellisldp.http.impl.HttpUtils.getDefaultProfile;
 import static org.trellisldp.http.impl.HttpUtils.getProfile;
 import static org.trellisldp.http.impl.HttpUtils.getSyntax;
@@ -81,7 +82,6 @@ import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.apache.commons.rdf.api.RDFSyntax;
@@ -89,10 +89,10 @@ import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.Resource;
-import org.trellisldp.http.core.Prefer;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.TrellisRequest;
-import org.trellisldp.http.core.Version;
+import org.trellisldp.common.Prefer;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.TrellisRequest;
+import org.trellisldp.common.Version;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -364,9 +364,8 @@ public class GetHandler extends BaseLdpHandler {
                         .thenApply(builder::entity);
     }
 
-    // TODO -- with JDK 9 use InputStream::transferTo instead of IOUtils::copy
     private static void copy(final InputStream from, final OutputStream to) throws IOException {
-        IOUtils.copy(from, to);
+        from.transferTo(to);
         from.close();
     }
 
@@ -411,10 +410,10 @@ public class GetHandler extends BaseLdpHandler {
 
     private void handleTrailingSlashRedirection(final Resource resource) {
         if (getRequest().hasTrailingSlash() && !isContainer(resource.getInteractionModel())) {
-            throw new RedirectionException(303, create(getBaseUrl() + getRequest().getPath()));
+            throw new RedirectionException(303, create(getBaseUrl() + normalizePath(getRequest().getPath())));
         } else if (!getRequest().hasTrailingSlash() && !getRequest().getPath().isEmpty()
                 && isContainer(resource.getInteractionModel())) {
-            throw new RedirectionException(303, create(getBaseUrl() + getRequest().getPath() + "/"));
+            throw new RedirectionException(303, create(getBaseUrl() + normalizePath(getRequest().getPath()) + "/"));
         }
     }
 }

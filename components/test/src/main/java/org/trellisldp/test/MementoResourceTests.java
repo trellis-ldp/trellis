@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.trellisldp.http.core.HttpConstants.MEMENTO_DATETIME;
+import static org.trellisldp.common.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.vocabulary.RDF.type;

@@ -27,9 +27,8 @@ import static javax.ws.rs.core.Response.status;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
-import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
-import static org.trellisldp.http.core.HttpConstants.PREFERENCE_APPLIED;
-import static org.trellisldp.http.core.Prefer.PREFER_REPRESENTATION;
+import static org.trellisldp.common.HttpConstants.PREFERENCE_APPLIED;
+import static org.trellisldp.common.Prefer.PREFER_REPRESENTATION;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.exists;
 import static org.trellisldp.http.impl.HttpUtils.getDefaultProfile;
@@ -52,6 +51,7 @@ import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.core.Link;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -66,10 +66,10 @@ import org.trellisldp.api.ConstraintService;
 import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.RuntimeTrellisException;
-import org.trellisldp.http.core.Prefer;
-import org.trellisldp.http.core.ServiceBundler;
-import org.trellisldp.http.core.TrellisRequest;
+import org.trellisldp.api.TrellisRuntimeException;
+import org.trellisldp.common.Prefer;
+import org.trellisldp.common.ServiceBundler;
+import org.trellisldp.common.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.RDF;
@@ -108,11 +108,12 @@ public class PatchHandler extends MutatingLdpHandler {
 
         this.updateBody = updateBody;
         this.syntax = getServices().getIOService().supportedUpdateSyntaxes().stream()
-            .filter(s -> s.mediaType().equalsIgnoreCase(req.getContentType())).findFirst().orElse(null);
+            .filter(s -> supportsContentType(s, req.getContentType())).findFirst().orElse(null);
         this.defaultJsonLdProfile = defaultJsonLdProfile;
         this.preference = getPreference(req.getPrefer());
         this.supportsCreate = supportsCreate;
-        this.internalId = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
+        this.internalId = trellis.getResourceService()
+            .getResourceIdentifier(getRequestBaseUrl(req, baseUrl), req.getPath());
     }
 
     /**
@@ -138,7 +139,7 @@ public class PatchHandler extends MutatingLdpHandler {
                 .entity("Unsupported interaction model provided").type(TEXT_PLAIN_TYPE).build());
         } else if (syntax == null) {
             // Get the incoming syntax and check that the underlying I/O service supports it
-            LOGGER.warn("Content-Type: {} not supported", getRequest().getContentType());
+            LOGGER.debug("Content-Type: {} not supported", getRequest().getContentType());
             throw new NotSupportedException();
         }
         // Check the cache headers
@@ -207,7 +208,7 @@ public class PatchHandler extends MutatingLdpHandler {
             triples = graph.stream().filter(triple -> !RDF.type.equals(triple.getPredicate())
                 || !triple.getObject().ntriplesString().startsWith("<" + LDP.getNamespace())).collect(toList());
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error closing graph", ex);
+            throw new TrellisRuntimeException("Error closing graph", ex);
         }
 
         return triples;
@@ -227,7 +228,7 @@ public class PatchHandler extends MutatingLdpHandler {
         final List<Triple> triples;
         try {
             triples = updateGraph(syntax, graphName);
-        } catch (final RuntimeTrellisException ex) {
+        } catch (final TrellisRuntimeException ex) {
             throw new BadRequestException("Invalid RDF: " + ex.getMessage(), ex);
         }
 
@@ -275,7 +276,7 @@ public class PatchHandler extends MutatingLdpHandler {
 
         return createOrReplace(metadata, mutable, immutable)
             .thenCompose(future -> emitEvent(metadata.getIdentifier(), getResource() == null ? AS.Create : AS.Update,
-                        getExtensionGraphName() != null ? LDP.RDFSource : getLdpType()))
+                        getLdpType()))
             .thenApply(future -> {
                 final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
                         getRequest().getAcceptableMediaTypes(), null);
@@ -299,24 +300,33 @@ public class PatchHandler extends MutatingLdpHandler {
         return getDefaultProfile(outputSyntax, getIdentifier(), defaultJsonLdProfile);
     }
 
-    private static Stream<ConstraintViolation> handleConstraintViolation(final ConstraintService service,
+    static Stream<ConstraintViolation> handleConstraintViolation(final ConstraintService service,
             final IRI identifier, final Dataset dataset, final IRI graphName, final IRI interactionModel) {
         final IRI model = PreferUserManaged.equals(graphName) ? interactionModel : LDP.RDFSource;
         return dataset.getGraph(graphName).map(Stream::of).orElseGet(Stream::empty)
                 .flatMap(g -> service.constrainedBy(identifier, model, g));
     }
 
-    private static Stream<String> getLinkTypes(final IRI ldpType) {
+    static Stream<String> getLinkTypes(final IRI ldpType) {
         if (LDP.NonRDFSource.equals(ldpType)) {
             return ldpResourceTypes(LDP.RDFSource).map(IRI::getIRIString);
         }
         return ldpResourceTypes(ldpType).map(IRI::getIRIString);
     }
 
-    private static String getPreference(final Prefer prefer) {
+    static String getPreference(final Prefer prefer) {
         if (prefer != null) {
             return prefer.getPreference().filter(PREFER_REPRESENTATION::equals).orElse(null);
         }
         return null;
+    }
+
+    static boolean supportsContentType(final RDFSyntax syntax, final String contentType) {
+        if (contentType != null) {
+            final MediaType mediaType = MediaType.valueOf(contentType);
+            return mediaType.isCompatible(MediaType.valueOf(syntax.mediaType())) &&
+                !mediaType.isWildcardSubtype() && !mediaType.isWildcardType();
+        }
+        return false;
     }
 }

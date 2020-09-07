@@ -70,7 +70,8 @@ import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
-import org.trellisldp.api.RuntimeTrellisException;
+import org.trellisldp.api.StorageConflictException;
+import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.OA;
@@ -205,20 +206,6 @@ public class DBResourceService implements ResourceService {
     }
 
     @Override
-    public CompletionStage<Void> delete(final Metadata metadata) {
-        LOGGER.debug("Deleting: {}", metadata.getIdentifier());
-        return runAsync(() -> {
-            try (final Dataset dataset = rdf.createDataset()) {
-                final Instant time = now();
-                final Metadata md = Metadata.builder(metadata.getIdentifier()).interactionModel(LDP.Resource).build();
-                storeResource(md, dataset, time, OperationType.DELETE);
-            } catch (final Exception ex) {
-                throw new RuntimeTrellisException("Error deleting resoruce: " + metadata.getIdentifier(), ex);
-            }
-        });
-    }
-
-    @Override
     public CompletionStage<Void> replace(final Metadata metadata, final Dataset dataset) {
         LOGGER.debug("Updating: {}", metadata.getIdentifier());
         return runAsync(() -> storeResource(metadata, dataset, now(), OperationType.REPLACE));
@@ -264,7 +251,7 @@ public class DBResourceService implements ResourceService {
                         }
                     }));
             } catch (final Exception ex) {
-                throw new RuntimeTrellisException("Error storing audit dataset for " + id, ex);
+                throw new TrellisRuntimeException("Error storing audit dataset for " + id, ex);
             }
         });
     }
@@ -272,6 +259,18 @@ public class DBResourceService implements ResourceService {
     @Override
     public Set<IRI> supportedInteractionModels() {
         return supportedIxnModels;
+    }
+
+    @Override
+    public CompletionStage<Void> delete(final Metadata metadata) {
+        LOGGER.debug("Deleting: {}", metadata.getIdentifier());
+        final Metadata md = Metadata.builder(metadata.getIdentifier()).interactionModel(LDP.Resource).build();
+        return delete(md, rdf.createDataset());
+    }
+
+    private CompletionStage<Void> delete(final Metadata metadata, final Dataset dataset) {
+        return runAsync(() -> storeResource(metadata, dataset, now(), OperationType.DELETE))
+            .whenComplete((a, b) -> DBUtils.closeDataset(dataset));
     }
 
     private void updateResourceModification(final IRI identifier, final Instant time) {
@@ -285,7 +284,7 @@ public class DBResourceService implements ResourceService {
                 }
             });
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Error updating modification date for " + identifier, ex);
+            throw new TrellisRuntimeException("Error updating modification date for " + identifier, ex);
         }
     }
 
@@ -402,9 +401,19 @@ public class DBResourceService implements ResourceService {
                 extensions.forEach((ext, graph) ->
                         dataset.getGraph(graph).filter(g -> !"acl".equals(ext)).ifPresent(g ->
                             updateExtension(handle, resourceId, ext, g)));
+                if (opType == OperationType.DELETE) {
+                    // Verify that the container really is empty
+                    final String query = "SELECT EXISTS(SELECT 1 FROM resource WHERE is_part_of = ?)";
+                    if (Boolean.TRUE.equals(handle.select(query, metadata.getIdentifier().getIRIString())
+                            .map((rs, ctx) -> rs.getBoolean(1)).one())) {
+                        throw new StorageConflictException("Cannot delete non-empty containers");
+                    }
+                }
             });
+        } catch (final TrellisRuntimeException ex) {
+            throw ex;
         } catch (final Exception ex) {
-            throw new RuntimeTrellisException("Could not update data for " + metadata.getIdentifier(), ex);
+            throw new TrellisRuntimeException("Could not update data for " + metadata.getIdentifier(), ex);
         }
     }
 

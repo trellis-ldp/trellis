@@ -16,8 +16,8 @@
 module org.trellisldp.audit {
     exports org.trellisldp.audit;
 
-    requires transitive org.trellisldp.api;
-    requires transitive org.trellisldp.vocabulary;
+    requires org.trellisldp.api;
+    requires org.trellisldp.vocabulary;
 
     requires jakarta.enterprise.cdi.api;
     requires org.apache.commons.rdf.api;
