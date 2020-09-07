@@ -27,6 +27,7 @@ import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.common.HttpConstants.SLUG;
+import static org.trellisldp.common.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.test.AuthCommonTests.EXT_ACL;
 import static org.trellisldp.test.TestUtils.buildJwt;
