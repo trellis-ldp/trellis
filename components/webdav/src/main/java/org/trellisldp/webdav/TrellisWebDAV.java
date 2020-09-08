@@ -334,11 +334,8 @@ public class TrellisWebDAV {
     }
 
     private CompletionStage<? extends Resource> getParent(final IRI identifier) {
-        final Optional<IRI> parent = getContainer(identifier);
-        if (parent.isPresent()) {
-            return services.getResourceService().get(parent.get());
-        }
-        return completedFuture(MISSING_RESOURCE);
+        return getContainer(identifier).map(services.getResourceService()::get)
+            .orElseGet(() -> completedFuture(MISSING_RESOURCE));
     }
 
     private IRI getDestination(final HttpHeaders headers, final String baseUrl) {

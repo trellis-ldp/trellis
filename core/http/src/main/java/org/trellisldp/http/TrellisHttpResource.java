@@ -26,7 +26,6 @@ import static org.trellisldp.common.HttpConstants.*;
 
 import java.io.InputStream;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import javax.annotation.PostConstruct;
@@ -381,11 +380,8 @@ public class TrellisHttpResource {
     }
 
     private CompletionStage<? extends Resource> getParent(final IRI identifier) {
-        final Optional<IRI> parent = getContainer(identifier);
-        if (parent.isPresent()) {
-            return trellis.getResourceService().get(parent.get());
-        }
-        return completedFuture(MISSING_RESOURCE);
+        return getContainer(identifier).map(trellis.getResourceService()::get)
+            .orElseGet(() -> completedFuture(MISSING_RESOURCE));
     }
 
     private String getBaseUrl(final TrellisRequest req) {
