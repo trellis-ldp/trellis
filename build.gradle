@@ -10,7 +10,7 @@ plugins {
 ext {
     // Core dependencies
     commonsCodecVersion = "1.15"
-    commonsIoVersion = "2.7"
+    commonsIoVersion = "2.8.0"
     commonsLangVersion = "3.11"
     commonsRdfVersion = "0.5.0"
     slf4jVersion = "1.7.30"
