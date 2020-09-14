@@ -69,7 +69,7 @@ ext {
     cxfVersion = "3.4.0"
     glassfishJaxbVersion = "2.3.3"
     jerseyVersion = "2.31"
-    junitVersion = "5.6.2"
+    junitVersion = "5.7.0"
     junitLauncherVersion = "1.6.2"
     hamcrestVersion = "2.2"
     logbackVersion = "1.2.3"
