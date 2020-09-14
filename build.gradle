@@ -59,7 +59,7 @@ ext {
     postgresVersion = "42.2.16"
 
     // Transitive dependencies
-    snakeyamlVersion = "1.26"
+    snakeyamlVersion = "1.27"
 
     // Testing
     apiguardianVersion = "1.1.0"
