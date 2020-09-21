@@ -75,7 +75,7 @@ ext {
     logbackVersion = "1.2.3"
     mockitoVersion = "3.5.11"
     otjPgVersion = "0.13.3"
-    qpidVersion = "8.0.0"
+    qpidVersion = "8.0.1"
     sleepycatVersion = "18.3.12"
     smallryeConfigVersion = "1.9.0"
     smallryeHealthVersion = "2.2.3"
