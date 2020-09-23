@@ -86,7 +86,7 @@ ext {
     yassonVersion = "1.0.8"
 
     // Tooling
-    jacocoToolVersion = "0.8.5"
+    jacocoToolVersion = "0.8.6"
     checkstyleToolVersion = "8.34"
     pitestToolVersion = "1.5.2"
     pitestJunitPluginVersion = "0.12"
