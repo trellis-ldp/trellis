@@ -92,8 +92,7 @@ public class DBWrappedMementoService implements MementoService {
         if (svc instanceof NoopMementoService) {
             return svc.put(resource);
         }
-        return svc.put(resource).thenAccept(future ->
-                putTime(resource.getIdentifier(), resource.getModified()));
+        return svc.put(resource).thenRun(() -> putTime(resource.getIdentifier(), resource.getModified()));
     }
 
     @Override
