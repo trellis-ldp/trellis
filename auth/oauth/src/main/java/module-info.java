@@ -24,4 +24,5 @@ module org.trellisldp.oauth {
     requires jjwt.impl;
     requires microprofile.config.api;
     requires org.slf4j;
+    requires org.trellisldp.common;
 }

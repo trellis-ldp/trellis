@@ -71,6 +71,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import javax.annotation.security.PermitAll;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -130,6 +131,7 @@ import org.w3c.dom.Node;
 @ApplicationScoped
 @Path("{path: .*}")
 @LdpResource
+@PermitAll
 public class TrellisWebDAV {
 
     private static final String SUCCESS = "HTTP/1.1 200 OK";

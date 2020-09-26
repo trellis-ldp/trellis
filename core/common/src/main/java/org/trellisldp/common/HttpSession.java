@@ -37,9 +37,6 @@ import org.trellisldp.vocabulary.Trellis;
  */
 public class HttpSession implements Session {
 
-    /** The admin role. */
-    public static final String ADMIN_ROLE = "admin";
-
     private static final RDF rdf = RDFFactory.getInstance();
 
     private final IRI identifier = rdf.createIRI(TRELLIS_SESSION_PREFIX + randomUUID());
@@ -103,7 +100,7 @@ public class HttpSession implements Session {
     public static Session from(final SecurityContext security) {
         if (security != null && security.getUserPrincipal() != null && security.getUserPrincipal().getName() != null) {
             final IRI webid = rdf.createIRI(security.getUserPrincipal().getName());
-            if (security.isUserInRole(ADMIN_ROLE)) {
+            if (security.isUserInRole(TrellisRoles.ADMIN)) {
                 return new HttpSession(Trellis.AdministratorAgent, webid);
             }
             return new HttpSession(webid);

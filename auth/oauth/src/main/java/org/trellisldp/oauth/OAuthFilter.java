@@ -40,6 +40,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
+import org.trellisldp.common.TrellisRoles;
 
 /**
  * An OAuth authentication filter that processes JWT-based Bearer tokens
@@ -65,8 +66,6 @@ public class OAuthFilter implements ContainerRequestFilter {
     public static final String CONFIG_AUTH_OAUTH_JWK_URL = "trellis.oauth.jwk";
     /** The authentication scheme used by this module. */
     public static final String SCHEME = "Bearer";
-    /** The admin role. */
-    public static final String ADMIN_ROLE = "admin";
 
     private static final Logger LOGGER = getLogger(OAuthFilter.class);
 
@@ -190,7 +189,10 @@ public class OAuthFilter implements ContainerRequestFilter {
 
         @Override
         public boolean isUserInRole(final String role) {
-            return ADMIN_ROLE.equals(role) && admins.contains(principal.getName());
+            if (TrellisRoles.ADMIN.equals(role)) {
+                return admins.contains(principal.getName());
+            }
+            return TrellisRoles.USER.equals(role);
         }
 
         @Override

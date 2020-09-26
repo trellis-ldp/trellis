@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.security.PermitAll;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.ClientErrorException;
@@ -90,6 +91,7 @@ import org.trellisldp.vocabulary.LDP;
 @ApplicationScoped
 @Path("{path: .*}")
 @LdpResource
+@PermitAll
 public class TrellisHttpResource {
 
     private static final Logger LOGGER = getLogger(TrellisHttpResource.class);

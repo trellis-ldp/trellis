@@ -20,6 +20,7 @@ dependencies {
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation project(":trellis-common")
 
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "io.smallrye:smallrye-jwt:$smallryeJwtVersion"
