@@ -38,6 +38,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 
 import org.eclipse.microprofile.config.Config;
+import org.trellisldp.common.TrellisRoles;
 
 /**
  * A basic authentication filter using an Authorization HTTP header.
@@ -54,9 +55,6 @@ public class BasicAuthFilter implements ContainerRequestFilter {
 
     /** The configuration key controlling the list of of admin WebID values. */
     public static final String CONFIG_AUTH_ADMIN_USERS = "trellis.auth.admin-users";
-
-    /** The admin role. */
-    public static final String ADMIN_ROLE = "admin";
 
     private File file;
     private String challenge;
@@ -172,7 +170,10 @@ public class BasicAuthFilter implements ContainerRequestFilter {
 
         @Override
         public boolean isUserInRole(final String role) {
-            return ADMIN_ROLE.equals(role) && admins.contains(principal.getName());
+            if (TrellisRoles.ADMIN.equals(role)) {
+                return admins.contains(principal.getName());
+            }
+            return TrellisRoles.USER.equals(role);
         }
     }
 }

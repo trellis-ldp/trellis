@@ -24,6 +24,7 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-jackson:$jjwtVersion"
     implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
     implementation "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
+    implementation project(":trellis-common")
 
     testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
 

@@ -51,6 +51,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.trellisldp.common.TrellisRoles;
 
 /**
  * @author acoburn
@@ -152,8 +153,8 @@ class OAuthFilterTest {
         assertEquals(WEBID2, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
         assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-        assertFalse(securityArgument.getValue().isUserInRole("admin"), "Unexpectedly in user role!");
-        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
+        assertFalse(securityArgument.getValue().isUserInRole(TrellisRoles.ADMIN), "Unexpectedly in user role!");
+        assertTrue(securityArgument.getValue().isUserInRole(TrellisRoles.USER), "Unexpectedly in user role!");
     }
 
     @Test
@@ -171,8 +172,8 @@ class OAuthFilterTest {
         assertEquals(WEBID2, securityArgument.getValue().getUserPrincipal().getName(), "Unexpected agent IRI!");
         assertEquals(OAuthFilter.SCHEME, securityArgument.getValue().getAuthenticationScheme(), "Unexpected scheme!");
         assertFalse(securityArgument.getValue().isSecure(), "Unexpected secure flag!");
-        assertTrue(securityArgument.getValue().isUserInRole("admin"), "Unexpectedly in user role!");
-        assertFalse(securityArgument.getValue().isUserInRole("some role"), "Unexpectedly in user role!");
+        assertTrue(securityArgument.getValue().isUserInRole(TrellisRoles.ADMIN), "Unexpectedly in user role!");
+        assertTrue(securityArgument.getValue().isUserInRole(TrellisRoles.USER), "Unexpectedly in user role!");
     }
 
 

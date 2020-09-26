@@ -27,6 +27,7 @@ import javax.ws.rs.core.SecurityContext;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jose4j.jwt.JwtClaims;
 import org.junit.jupiter.api.Test;
+import org.trellisldp.common.TrellisRoles;
 
 class WebIdSecurityContextTest {
 
@@ -45,6 +46,7 @@ class WebIdSecurityContextTest {
         final SecurityContext ctx = new WebIdSecurityContext(mockDelegate, null, emptySet());
         assertTrue(ctx.isSecure());
         assertEquals("Bearer", ctx.getAuthenticationScheme());
+        assertTrue(ctx.isUserInRole(TrellisRoles.USER));
     }
 
     @Test
@@ -58,7 +60,7 @@ class WebIdSecurityContextTest {
         final JsonWebToken principal = new DefaultJWTCallerPrincipal(claims);
 
         final SecurityContext ctx = new WebIdSecurityContext(mockDelegate, principal, singleton(iss + sub));
-        assertTrue(ctx.isUserInRole(WebIdSecurityContext.ADMIN_ROLE));
+        assertTrue(ctx.isUserInRole(TrellisRoles.ADMIN));
         assertFalse(ctx.isUserInRole("other-role"));
     }
 

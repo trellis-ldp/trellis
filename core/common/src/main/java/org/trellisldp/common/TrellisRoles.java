@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-module org.trellisldp.auth.basic {
-    exports org.trellisldp.auth.basic;
+package org.trellisldp.common;
 
-    requires jakarta.inject;
-    requires java.ws.rs;
-    requires java.xml.bind;
-    requires java.annotation;
-    requires microprofile.config.api;
-    requires org.slf4j;
-    requires org.trellisldp.common;
+/**
+ * A collection of security roles for use with Trellis.
+ */
+public final class TrellisRoles {
+
+    /** A user role for Trellis. */
+    public static final String USER = "USER";
+
+    /** An admin role for Trellis. */
+    public static final String ADMIN = "ADMIN";
+
+    /** An owner role for Trellis. */
+    public static final String OWNER = "OWNER";
+
+    private TrellisRoles() {
+        // Prevent instantiation.
+    }
 }

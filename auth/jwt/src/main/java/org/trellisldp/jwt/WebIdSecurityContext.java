@@ -21,12 +21,10 @@ import java.util.Set;
 import javax.ws.rs.core.SecurityContext;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.trellisldp.common.TrellisRoles;
 
 /** A WebId-enabled SecurityContext implementation. */
 public class WebIdSecurityContext implements SecurityContext {
-
-    /** The admin role. */
-    public static final String ADMIN_ROLE = "admin";
 
     private final JsonWebToken principal;
     private final SecurityContext delegate;
@@ -62,9 +60,9 @@ public class WebIdSecurityContext implements SecurityContext {
 
     @Override
     public boolean isUserInRole(final String role) {
-        if (ADMIN_ROLE.equals(role)) {
+        if (TrellisRoles.ADMIN.equals(role)) {
             return admins.contains(principal.getName());
         }
-        return principal.getGroups().contains(role);
+        return TrellisRoles.USER.equals(role) || principal.getGroups().contains(role);
     }
 }
