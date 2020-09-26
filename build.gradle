@@ -453,27 +453,6 @@ subprojects { subproj ->
         }
     }
 
-    task docs(type: Javadoc) {
-        outputs.upToDateWhen { false }
-        source sourceSets.main.allJava
-        classpath = files(sourceSets.main.compileClasspath)
-        destinationDir = new File(projectDir, "docs/${version}")
-        failOnError = false
-        options.addBooleanOption('html5', true)
-        options {
-            tags = ["apiNote:a:API Note:",
-                    "implSpec:a:Implementation Requirements:",
-                    "implNote:a:Implementation Note:"]
-            links "https://docs.oracle.com/en/java/javase/11/docs/api/"
-            links 'https://jakarta.ee/specifications/platform/8/apidocs/'
-            links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
-            links 'https://commons.apache.org/proper/commons-codec/apidocs/'
-            links 'https://activemq.apache.org/maven/apidocs/'
-            links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
-            links 'https://kafka.apache.org/20/javadoc/'
-        }
-    }
-
     javadoc {
         failOnError = false
         options.addBooleanOption('html5', true)
@@ -495,7 +474,6 @@ subprojects { subproj ->
         skipProject = ! JavaVersion.current().isJava11()
     }
 
-    afterReleaseBuild.dependsOn docs
     afterReleaseBuild.dependsOn publish
     afterReleaseBuild.dependsOn assemble
 
