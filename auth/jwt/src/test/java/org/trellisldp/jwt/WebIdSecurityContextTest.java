@@ -22,6 +22,8 @@ import static org.mockito.Mockito.*;
 
 import io.smallrye.jwt.auth.principal.DefaultJWTCallerPrincipal;
 
+import java.util.List;
+
 import javax.ws.rs.core.SecurityContext;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -46,7 +48,25 @@ class WebIdSecurityContextTest {
         final SecurityContext ctx = new WebIdSecurityContext(mockDelegate, null, emptySet());
         assertTrue(ctx.isSecure());
         assertEquals("Bearer", ctx.getAuthenticationScheme());
+        assertFalse(ctx.isUserInRole(TrellisRoles.ADMIN));
+        assertFalse(ctx.isUserInRole(TrellisRoles.USER));
+        assertFalse(ctx.isUserInRole("other-role"));
+    }
+
+    @Test
+    void testUserRoles() {
+        final SecurityContext mockDelegate = mock(SecurityContext.class);
+        final String iss = "https://example.com/idp/";
+        final String sub = "acoburn";
+        final JwtClaims claims = new JwtClaims();
+        claims.setSubject(sub);
+        claims.setIssuer(iss);
+        final JsonWebToken principal = new DefaultJWTCallerPrincipal(claims);
+
+        final SecurityContext ctx = new WebIdSecurityContext(mockDelegate, principal, emptySet());
+        assertFalse(ctx.isUserInRole(TrellisRoles.ADMIN));
         assertTrue(ctx.isUserInRole(TrellisRoles.USER));
+        assertFalse(ctx.isUserInRole("other-role"));
     }
 
     @Test
@@ -57,11 +77,13 @@ class WebIdSecurityContextTest {
         final JwtClaims claims = new JwtClaims();
         claims.setSubject(sub);
         claims.setIssuer(iss);
+        claims.setClaim("groups", List.of("testers"));
         final JsonWebToken principal = new DefaultJWTCallerPrincipal(claims);
 
         final SecurityContext ctx = new WebIdSecurityContext(mockDelegate, principal, singleton(iss + sub));
         assertTrue(ctx.isUserInRole(TrellisRoles.ADMIN));
+        assertTrue(ctx.isUserInRole(TrellisRoles.USER));
         assertFalse(ctx.isUserInRole("other-role"));
+        assertTrue(ctx.isUserInRole("testers"));
     }
-
 }

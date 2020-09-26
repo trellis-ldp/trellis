@@ -60,9 +60,12 @@ public class WebIdSecurityContext implements SecurityContext {
 
     @Override
     public boolean isUserInRole(final String role) {
-        if (TrellisRoles.ADMIN.equals(role)) {
-            return admins.contains(principal.getName());
+        if (principal != null) {
+            if (TrellisRoles.ADMIN.equals(role)) {
+                return admins.contains(principal.getName());
+            }
+            return TrellisRoles.USER.equals(role) || principal.getGroups().contains(role);
         }
-        return TrellisRoles.USER.equals(role) || principal.getGroups().contains(role);
+        return false;
     }
 }
