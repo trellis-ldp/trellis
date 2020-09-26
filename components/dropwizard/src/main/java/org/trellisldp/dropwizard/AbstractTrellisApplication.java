@@ -156,9 +156,15 @@ public abstract class AbstractTrellisApplication<T extends TrellisConfiguration>
                 @Override
                 protected void configure() {
                     bind(webac).to(WebAcService.class);
-                    bind(getServiceBundler().getResourceService()).to(ResourceService.class);
                 }
             });
+        });
+
+        environment.jersey().register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(getServiceBundler().getResourceService()).to(ResourceService.class);
+            }
         });
 
         // WebSub
