@@ -233,7 +233,7 @@ public class TrellisWebDAV {
             .thenApply(this::checkResource)
             // Note: all MOVE operations are recursive (Depth: infinity), hence recursiveCopy
             .thenAccept(res -> recursiveCopy(services, session, res, destination, baseUrl))
-            .thenAccept(future -> recursiveDelete(services, session, identifier, baseUrl))
+            .thenRun(() -> recursiveDelete(services, session, identifier, baseUrl))
             .thenCompose(future -> services.getResourceService().delete(Metadata.builder(identifier)
                     .interactionModel(LDP.Resource).build()))
             .thenCompose(future -> {
@@ -243,7 +243,7 @@ public class TrellisWebDAV {
                 return services.getResourceService().add(identifier, immutable)
                     .whenComplete((a, b) -> closeDataset(immutable));
             })
-            .thenAccept(future -> services.getEventService().emit(new SimpleEvent(externalUrl(identifier,
+            .thenRun(() -> services.getEventService().emit(new SimpleEvent(externalUrl(identifier,
                 baseUrl), session.getAgent(), asList(PROV.Activity, AS.Delete), singletonList(LDP.Resource))))
             .thenApply(future -> status(NO_CONTENT).build())
             .exceptionally(this::handleException).thenApply(response::resume);
@@ -437,7 +437,7 @@ public class TrellisWebDAV {
                 .whenComplete((a, b) -> closeDataset(immutable))
                 .thenCompose(future ->
                         services.getMementoService().put(services.getResourceService(), resource.getIdentifier()))
-                .thenAccept(future -> services.getEventService().emit(new SimpleEvent(location, session.getAgent(),
+                .thenRun(() -> services.getEventService().emit(new SimpleEvent(location, session.getAgent(),
                             asList(PROV.Activity, AS.Update), singletonList(resource.getInteractionModel()))))
                 .thenApply(future -> multistatus);
         };

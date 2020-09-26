@@ -81,7 +81,7 @@ public final class WebDAVUtils {
                         .container(identifier).build())
                     .thenCompose(future -> services.getResourceService().add(id, immutable))
                     .whenComplete((a, b) -> closeDataset(immutable))
-                    .thenAccept(future -> services.getEventService().emit(new SimpleEvent(externalUrl(id, baseUrl),
+                    .thenRun(() -> services.getEventService().emit(new SimpleEvent(externalUrl(id, baseUrl),
                                 session.getAgent(), asList(PROV.Activity, AS.Delete), singletonList(LDP.Resource))));
             })
             .map(CompletionStage::toCompletableFuture).forEach(CompletableFuture::join);
@@ -205,7 +205,7 @@ public final class WebDAVUtils {
                     })
                 .thenCompose(future -> services.getMementoService().put(services.getResourceService(),
                             resource.getIdentifier()))
-                .thenAccept(future -> services.getEventService().emit(new SimpleEvent(externalUrl(destination, baseUrl),
+                .thenRun(() -> services.getEventService().emit(new SimpleEvent(externalUrl(destination, baseUrl),
                             session.getAgent(), asList(PROV.Activity, AS.Create),
                             singletonList(resource.getInteractionModel()))));
         }
