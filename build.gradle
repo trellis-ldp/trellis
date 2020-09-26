@@ -458,6 +458,7 @@ subprojects { subproj ->
         source sourceSets.main.allJava
         classpath = files(sourceSets.main.compileClasspath)
         destinationDir = new File(projectDir, "docs/${version}")
+        failOnError = false
         options.addBooleanOption('html5', true)
         options {
             tags = ["apiNote:a:API Note:",
@@ -478,8 +479,8 @@ subprojects { subproj ->
         options.addBooleanOption('html5', true)
         options {
             tags = ["apiNote:a:API Note:",
-                "implSpec:a:Implementation Requirements:",
-                "implNote:a:Implementation Note:"]
+                    "implSpec:a:Implementation Requirements:",
+                    "implNote:a:Implementation Note:"]
             links "https://docs.oracle.com/en/java/javase/11/docs/api/"
             links 'https://jakarta.ee/specifications/platform/8/apidocs/'
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
