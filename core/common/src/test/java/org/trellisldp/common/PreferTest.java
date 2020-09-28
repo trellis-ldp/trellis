@@ -23,6 +23,8 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.Trellis;
 
@@ -50,26 +52,17 @@ class PreferTest {
     }
 
     @Test
-    void testPrefer1() {
-        final Prefer prefer = valueOf("return=representation; include=\"http://example.org/test\"");
-        assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
-    }
-
-    @Test
-    void testPrefer1b() {
+    void testPrefer() {
         final Prefer prefer = ofInclude(URL);
         assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
     }
 
-    @Test
-    void testPrefer1c() {
-        final Prefer prefer = valueOf("return=representation; include=http://example.org/test");
-        assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
-    }
-
-    @Test
-    void testPrefer2() {
-        final Prefer prefer = valueOf("return  =  representation;   include =  \"http://example.org/test\"");
+    @ParameterizedTest
+    @ValueSource(strings = {"return=representation; include=\"http://example.org/test\"",
+                            "return=representation; include=http://example.org/test",
+                            "return  =  representation;   include =  \"http://example.org/test\""})
+    void testPreferValueOf(final String value) {
+        final Prefer prefer = valueOf(value);
         assertAll(CHECK_SIMPLE_PARSING, checkPreferInclude(prefer, URL));
     }
 
@@ -155,33 +148,12 @@ class PreferTest {
         assertFalse(prefer.getRespondAsync(), CHECK_ASYNC);
     }
 
-    @Test
-    void testRoundTrip1() {
-        final Prefer prefer = valueOf("return=minimal; handling=lenient; respond-async");
-        final String prefString = prefer.toString();
-        final Prefer prefer2 = valueOf(prefString);
-        assertEquals(prefer.getInclude(), prefer2.getInclude());
-        assertEquals(prefer.getOmit(), prefer2.getOmit());
-        assertEquals(prefer.getPreference(), prefer2.getPreference());
-        assertEquals(prefer.getHandling(), prefer2.getHandling());
-        assertEquals(prefer.getRespondAsync(), prefer2.getRespondAsync());
-    }
-
-    @Test
-    void testRoundTrip2() {
-        final Prefer prefer = valueOf("return=representation; include=\"https://example.com/Prefer\"");
-        final String prefString = prefer.toString();
-        final Prefer prefer2 = valueOf(prefString);
-        assertEquals(prefer.getInclude(), prefer2.getInclude());
-        assertEquals(prefer.getOmit(), prefer2.getOmit());
-        assertEquals(prefer.getPreference(), prefer2.getPreference());
-        assertEquals(prefer.getHandling(), prefer2.getHandling());
-        assertEquals(prefer.getRespondAsync(), prefer2.getRespondAsync());
-    }
-
-    @Test
-    void testRoundTrip3() {
-        final Prefer prefer = valueOf("return=representation; omit=\"https://example.com/Prefer\"");
+    @ParameterizedTest
+    @ValueSource(strings = {"return=minimal; handling=lenient; respond-async",
+                            "return=representation; include=\"https://example.com/Prefer\"",
+                            "return=representation; omit=\"https://example.com/Prefer\""})
+    void testRoundTrip(final String value) {
+        final Prefer prefer = valueOf(value);
         final String prefString = prefer.toString();
         final Prefer prefer2 = valueOf(prefString);
         assertEquals(prefer.getInclude(), prefer2.getInclude());

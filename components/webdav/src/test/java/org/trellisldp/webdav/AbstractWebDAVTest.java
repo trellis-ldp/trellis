@@ -81,6 +81,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
@@ -641,26 +643,11 @@ abstract class AbstractWebDAVTest extends JerseyTest {
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
     }
 
-    @Test
-    void testCopyDepth0() {
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "1", "infinity"})
+    void testCopyDepth(final String depth) {
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
-            .header("Depth", "0").method("COPY");
-
-        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
-    }
-
-    @Test
-    void testCopyDepth1() {
-        final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
-            .header("Depth", "1").method("COPY");
-
-        assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
-    }
-
-    @Test
-    void testCopyDepthInfinity() {
-        final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
-            .header("Depth", "infinity").method("COPY");
+            .header("Depth", depth).method("COPY");
 
         assertEquals(SC_NO_CONTENT, res.getStatus(), "Unexpected response code!");
     }

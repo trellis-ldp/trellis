@@ -154,6 +154,7 @@ allprojects { subproj ->
 
     dependencies {
         testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+        testImplementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
         testImplementation "org.apiguardian:apiguardian-api:${apiguardianVersion}"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
         testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junitLauncherVersion}"
@@ -237,6 +238,7 @@ subprojects { subproj ->
                 inputs.property("moduleName", moduleName)
                 def mods = subproj.ext.has("testModules") ? subproj.ext.get("testModules") : []
                 mods.add('org.junit.jupiter.api')
+                mods.add('org.junit.jupiter.params')
                 doFirst {
                     options.compilerArgs = [
                         '--module-path', classpath.asPath,
@@ -251,6 +253,7 @@ subprojects { subproj ->
                 inputs.property("moduleName", moduleName)
                 def mods = subproj.ext.has("testModules") ? subproj.ext.get("testModules") : []
                 mods.add('org.junit.jupiter.api')
+                mods.add('org.junit.jupiter.params')
                 doFirst {
                     jvmArgs = [
                         '--module-path', classpath.asPath,
