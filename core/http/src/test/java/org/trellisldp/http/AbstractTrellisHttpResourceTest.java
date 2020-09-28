@@ -93,6 +93,8 @@ import org.apache.commons.rdf.api.Quad;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.trellisldp.api.EventService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.StorageConflictException;
@@ -1204,12 +1206,13 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         }
     }
 
-    @Test
-    void testPostSlugWithSlash() {
+    @ParameterizedTest
+    @ValueSource(strings = {"child/grandchild", "child%2Fgrandchild", "child grandchild", "child%09grandchild"})
+    void testPostSlugWithSlash(final String slug) {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + PATH_REL_GRANDCHILD))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "child/grandchild")
+        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, slug)
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(getBaseUrl() + CHILD_PATH + GRANDCHILD_SUFFIX, res.getLocation().toString(), ERR_LOCATION);
@@ -1217,51 +1220,13 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         }
     }
 
-    @Test
-    void testPostEncodedSlugWithSlash() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + PATH_REL_GRANDCHILD))))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%2Fgrandchild")
-                .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
-            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            assertEquals(getBaseUrl() + CHILD_PATH + GRANDCHILD_SUFFIX, res.getLocation().toString(), ERR_LOCATION);
-            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
-        }
-    }
-
-    @Test
-    void testPostSlugWithWhitespace() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + PATH_REL_GRANDCHILD))))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "child grandchild")
-                .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
-            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            assertEquals(getBaseUrl() + CHILD_PATH + GRANDCHILD_SUFFIX, res.getLocation().toString(), ERR_LOCATION);
-            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
-        }
-    }
-
-    @Test
-    void testPostEncodedSlugWithEncodedWhitespace() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + PATH_REL_GRANDCHILD))))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%09grandchild")
-                .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
-            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            assertEquals(getBaseUrl() + CHILD_PATH + GRANDCHILD_SUFFIX, res.getLocation().toString(), ERR_LOCATION);
-            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
-        }
-    }
-
-    @Test
-    void testPostEncodedSlugWithInvalidEncoding() {
+    @ParameterizedTest
+    @ValueSource(strings = {"child%0 grandchild", "", "%20%09"})
+    void testPostEncodedInvalidSlug(final String slug) {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%0 grandchild")
+        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, slug)
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString(), ERR_LOCATION);
@@ -1270,71 +1235,11 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         }
     }
 
-    @Test
-    void testPostEmptySlug() {
+    @ParameterizedTest
+    @ValueSource(strings = {"child#hash", "child%23hash", "child?foo=bar", "child%3Ffoo=bar"})
+    void testPostSlugWithHashURI(final String slug) {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "")
-                .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
-            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString(), ERR_LOCATION);
-            assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual(DESCRIBEDBY)), ERR_DESCRIBEDBY);
-            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
-        }
-    }
-
-    @Test
-    void testPostEmptyEncodedSlug() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
-            .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "%20%09")
-                .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
-            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            assertEquals(getBaseUrl() + RESOURCE_PATH + "/" + RANDOM_VALUE, res.getLocation().toString(), ERR_LOCATION);
-            assertFalse(getLinks(res).stream().map(Link::getRel).anyMatch(isEqual(DESCRIBEDBY)), ERR_DESCRIBEDBY);
-            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
-        }
-    }
-
-    @Test
-    void testPostSlugWithHashURI() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "child#hash")
-                .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
-            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString(), ERR_LOCATION);
-            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
-        }
-    }
-
-    @Test
-    void testPostSlugWithEncodedHashURI() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%23hash")
-                .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
-            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString(), ERR_LOCATION);
-            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
-        }
-    }
-
-    @Test
-    void testPostSlugWithQuestionMark() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "child?foo=bar")
-                .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
-            assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString(), ERR_LOCATION);
-            assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
-        }
-    }
-
-    @Test
-    void testPostSlugWithEncodedQuestionMark() {
-        when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, "child%3Ffoo=bar")
+        try (final Response res = target(RESOURCE_PATH).request().header(SLUG, slug)
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString(), ERR_LOCATION);

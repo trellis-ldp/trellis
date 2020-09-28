@@ -18,6 +18,8 @@ package org.trellisldp.common;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * @author acoburn
@@ -40,21 +42,10 @@ class SlugTest {
         assertEquals("slug:value", slug.getValue(), "Check decoding slug value");
     }
 
-    @Test
-    void testSpaceNormalization() {
-        final Slug slug = Slug.valueOf("slug  value");
-        assertEquals(SLUG_UNDERSCORE_VALUE, slug.getValue(), CHECK_SLUG_VALUE);
-    }
-
-    @Test
-    void testSlashNormalization() {
-        final Slug slug = Slug.valueOf("slug/value");
-        assertEquals(SLUG_UNDERSCORE_VALUE, slug.getValue(), CHECK_SLUG_VALUE);
-    }
-
-    @Test
-    void testSpaceSlashNormalization() {
-        final Slug slug = Slug.valueOf("slug\t/ value");
+    @ParameterizedTest
+    @ValueSource(strings = {"slug  value", "slug/value", "slug\t/ value"})
+    void testNormalization(final String value) {
+        final Slug slug = Slug.valueOf(value);
         assertEquals(SLUG_UNDERSCORE_VALUE, slug.getValue(), CHECK_SLUG_VALUE);
     }
 
