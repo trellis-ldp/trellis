@@ -16,9 +16,12 @@
 package org.trellisldp.api;
 
 import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -36,9 +39,11 @@ public final class Metadata {
     private final IRI membershipResource;
     private final IRI memberOfRelation;
     private final IRI insertedContentRelation;
+    private final IRI agent;
     private final BinaryMetadata binary;
     private final Set<IRI> graphNames;
     private final String revision;
+    private final Map<String, String> properties;
 
     /**
      * A Metadata-bearing data structure for use with resource manipulation.
@@ -50,16 +55,19 @@ public final class Metadata {
      * @param memberRelation an LDP hasMemberRelation predicate, may be {@code null}
      * @param memberOfRelation an LDP isMemberOfRelation predicate, may be {@code null}
      * @param insertedContentRelation an LDP insertedContentRelation, may be {@code null}
+     * @param agent the agent associated with the operation, may be {@code null}
      * @param binary metadata about a BinaryMetadata, may be {@code null}
      * @param revision a revision value, may be {@code null}. This value may be used by a
      *          {@link ResourceService} implementation for additional concurrency control.
      *          This value would typically be used in tandem with the {@link Resource#getRevision}
      *          method.
      * @param graphNames a collection of metadata graphNames
+     * @param properties a collection of additional properties
      */
     private Metadata(final IRI identifier, final IRI ixnModel, final IRI container, final IRI membershipResource,
-            final IRI memberRelation, final IRI memberOfRelation, final IRI insertedContentRelation,
-            final BinaryMetadata binary, final String revision, final Set<IRI> graphNames) {
+            final IRI memberRelation, final IRI memberOfRelation, final IRI insertedContentRelation, final IRI agent,
+            final BinaryMetadata binary, final String revision, final Set<IRI> graphNames,
+            final Map<String, String> properties) {
         this.identifier = requireNonNull(identifier, "Identifier cannot be null!");
         this.ixnModel = requireNonNull(ixnModel, "Interaction model cannot be null!");
         this.container = container;
@@ -67,9 +75,11 @@ public final class Metadata {
         this.memberRelation = memberRelation;
         this.memberOfRelation = memberOfRelation;
         this.insertedContentRelation = insertedContentRelation;
+        this.agent = agent;
         this.binary = binary;
         this.revision = revision;
         this.graphNames = graphNames;
+        this.properties = properties;
     }
 
     /**
@@ -127,6 +137,14 @@ public final class Metadata {
      */
     public Optional<IRI> getContainer() {
         return ofNullable(container);
+    }
+
+    /**
+     * Retrieve the agent associated with this opertation, if known.
+     * @return the agent identified with a WebID
+     */
+    public Optional<IRI> getAgent() {
+        return ofNullable(agent);
     }
 
     /**
@@ -195,6 +213,14 @@ public final class Metadata {
     }
 
     /**
+     * Retrieve any additional properties.
+     * @return an immutable collection of properties
+     */
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    /**
      * A mutable builder for a {@link Metadata} object.
      */
     public static final class Builder {
@@ -205,9 +231,11 @@ public final class Metadata {
         private IRI membershipResource;
         private IRI memberOfRelation;
         private IRI insertedContentRelation;
+        private IRI agent;
         private BinaryMetadata binary;
         private String revision;
         private Set<IRI> graphNames = emptySet();
+        private Map<String, String> properties = new HashMap<>();
 
         /**
          * Create a Metadata builder with the provided identifier.
@@ -278,6 +306,16 @@ public final class Metadata {
         }
 
         /**
+         * Set the agent value.
+         * @param agent the agent associated with the operation
+         * @return this builder
+         */
+        public Builder agent(final IRI agent) {
+            this.agent = agent;
+            return this;
+        }
+
+        /**
          * Set the binary metadata.
          * @param binary the binary metadata
          * @return this builder
@@ -308,12 +346,23 @@ public final class Metadata {
         }
 
         /**
+         * Set a property on the resource metadata.
+         * @param key the property key
+         * @param value the property value
+         * @return this builder
+         */
+        public Builder property(final String key, final String value) {
+            this.properties.put(key, value);
+            return this;
+        }
+
+        /**
          * Build the Metadata object, transitioning this builder to the built state.
          * @return the built Metadata
          */
         public Metadata build() {
             return new Metadata(identifier, ixnModel, container, membershipResource, memberRelation, memberOfRelation,
-                            insertedContentRelation, binary, revision, graphNames);
+                            insertedContentRelation, agent, binary, revision, graphNames, unmodifiableMap(properties));
         }
     }
 }

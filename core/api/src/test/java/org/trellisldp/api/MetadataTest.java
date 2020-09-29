@@ -36,6 +36,7 @@ class MetadataTest {
     private static final IRI identifier = rdf.createIRI("trellis:data/resource");
     private static final IRI member = rdf.createIRI("trellis:data/member");
     private static final IRI root = rdf.createIRI("trellis:data/");
+    private static final IRI agent = rdf.createIRI("https://example.com/agent#i");
 
     @Test
     void testMetadataIndirectContainer() {
@@ -44,6 +45,7 @@ class MetadataTest {
                 .container(root).memberRelation(LDP.member)
                 .membershipResource(member)
                 .insertedContentRelation(FOAF.primaryTopic)
+                .property("key", "value")
                 .revision("blahblahblah").build();
         assertEquals(identifier, metadata.getIdentifier());
         assertEquals(LDP.IndirectContainer, metadata.getInteractionModel());
@@ -54,13 +56,16 @@ class MetadataTest {
         assertFalse(metadata.getMemberOfRelation().isPresent());
         assertTrue(metadata.getMetadataGraphNames().isEmpty());
         assertFalse(metadata.getBinary().isPresent());
+        assertFalse(metadata.getAgent().isPresent());
         assertEquals(of("blahblahblah"), metadata.getRevision());
+        assertEquals("value", metadata.getProperties().get("key"));
     }
 
     @Test
     void testMetadataDirectContainer() {
         final Metadata metadata = Metadata.builder(identifier)
                 .interactionModel(LDP.DirectContainer)
+                .agent(agent)
                 .container(root).memberOfRelation(DC.isPartOf)
                 .membershipResource(member).metadataGraphNames(singleton(Trellis.PreferAccessControl)).build();
         assertEquals(identifier, metadata.getIdentifier());
@@ -68,6 +73,7 @@ class MetadataTest {
         assertEquals(of(root), metadata.getContainer());
         assertEquals(of(member), metadata.getMembershipResource());
         assertEquals(of(DC.isPartOf), metadata.getMemberOfRelation());
+        assertEquals(of(agent), metadata.getAgent());
         assertFalse(metadata.getInsertedContentRelation().isPresent());
         assertFalse(metadata.getMemberRelation().isPresent());
         assertFalse(metadata.getBinary().isPresent());
