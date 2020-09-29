@@ -258,7 +258,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
     }
 
     protected Metadata.Builder metadataBuilder(final IRI identifier, final IRI ixnModel, final Dataset mutable) {
-        final Metadata.Builder builder = Metadata.builder(identifier).interactionModel(ixnModel);
+        final Metadata.Builder builder = Metadata.builder(identifier).interactionModel(ixnModel)
+            .agent(getSession().getAgent());
         mutable.getGraph(Trellis.PreferUserManaged).ifPresent(graph -> {
             graph.stream(null, LDP.membershipResource, null)
                 .filter(triple -> matchIdentifier(triple.getSubject(), identifier)).findFirst().map(Triple::getObject)
