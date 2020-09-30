@@ -13,7 +13,9 @@ sonarqube {
 }
 
 dependencies {
-    api "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    api platform("org.junit:junit-bom:$junitVersion")
+
+    api "org.junit.jupiter:junit-jupiter-api"
 
     implementation "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
@@ -30,7 +32,7 @@ dependencies {
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }
     implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
-    implementation "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+    implementation "org.junit.jupiter:junit-jupiter-engine"
     implementation "org.hamcrest:hamcrest:$hamcrestVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation project(':trellis-api')

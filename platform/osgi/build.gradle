@@ -66,8 +66,10 @@ dependencies {
     testImplementation project(':trellis-karaf')
     testImplementation project(':trellis-vocabulary')
 
+    testRuntimeOnly platform("org.junit:junit-bom:$junitVersion")
+
     testRuntimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
-    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junitVersion}"
+    testRuntimeOnly "org.junit.vintage:junit-vintage-engine"
 
     karafDistro group: 'org.apache.karaf', name: 'apache-karaf', version: karafVersion, ext: 'zip'
 }
