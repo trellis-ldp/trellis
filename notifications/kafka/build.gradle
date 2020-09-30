@@ -12,11 +12,13 @@ ext {
 }
 
 dependencies {
+    api platform("org.eclipse.microprofile:microprofile:$microprofileVersion")
+
     api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
     api "org.apache.kafka:kafka-clients:$kafkaVersion"
     api project(':trellis-api')
 
-    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"

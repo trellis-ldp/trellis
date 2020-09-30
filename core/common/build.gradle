@@ -11,6 +11,8 @@ ext {
 }
 
 dependencies {
+    api platform("org.eclipse.microprofile:microprofile:$microprofileVersion")
+
     api "jakarta.enterprise:jakarta.enterprise.cdi-api:$cdiApiVersion"
     api "jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion"
     api "org.apache.commons:commons-rdf-api:$commonsRdfVersion"
@@ -19,7 +21,7 @@ dependencies {
 
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
-    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"

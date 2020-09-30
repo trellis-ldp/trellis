@@ -16,11 +16,13 @@ ext {
 }
 
 dependencies {
+    api platform("org.eclipse.microprofile:microprofile:$microprofileVersion")
+
     api "com.rabbitmq:amqp-client:$rabbitMqVersion"
     api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
     api project(':trellis-api')
 
-    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"

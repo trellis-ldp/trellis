@@ -17,6 +17,7 @@ dependencies {
 
     api "org.junit.jupiter:junit-jupiter-api"
 
+    implementation platform("org.eclipse.microprofile:microprofile:$microprofileVersion")
     implementation platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
 
     implementation "com.fasterxml.jackson.core:jackson-core"
@@ -33,7 +34,7 @@ dependencies {
         exclude group: 'org.hamcrest', module: 'hamcrest-library'
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }
-    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation "org.junit.jupiter:junit-jupiter-engine"
     implementation "org.hamcrest:hamcrest:$hamcrestVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
