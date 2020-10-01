@@ -70,7 +70,6 @@ ext {
     glassfishJaxbVersion = "2.3.3"
     jerseyVersion = "2.32"
     junitVersion = "5.7.0"
-    junitLauncherVersion = "1.7.0"
     hamcrestVersion = "2.2"
     logbackVersion = "1.2.3"
     mockitoVersion = "3.5.13"
@@ -153,11 +152,13 @@ allprojects { subproj ->
     }
 
     dependencies {
-        testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
-        testImplementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
-        testImplementation "org.apiguardian:apiguardian-api:${apiguardianVersion}"
-        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
-        testRuntimeOnly "org.junit.platform:junit-platform-launcher:${junitLauncherVersion}"
+        testImplementation platform("org.junit:junit-bom:$junitVersion")
+
+        testImplementation "org.junit.jupiter:junit-jupiter-api"
+        testImplementation "org.junit.jupiter:junit-jupiter-params"
+        testImplementation "org.apiguardian:apiguardian-api"
+        testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+        testRuntimeOnly "org.junit.platform:junit-platform-launcher"
     }
 
     dependencyCheck {
