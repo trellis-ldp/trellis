@@ -16,11 +16,12 @@ dependencies {
     api project(':trellis-cache')
 
     implementation platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
+    implementation platform("org.eclipse.microprofile:microprofile:$microprofileVersion")
 
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "jakarta.validation:jakarta.validation-api:$validationApiVersion"
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
-    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation project(':trellis-vocabulary')
     implementation project(':trellis-audit')

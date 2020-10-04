@@ -12,12 +12,14 @@ ext {
 }
 
 dependencies {
+    api platform("org.eclipse.microprofile:microprofile:$microprofileVersion")
+
     api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
     api "org.apache.jena:jena-commonsrdf:$jenaVersion"
     api project(':trellis-api')
 
     implementation "commons-io:commons-io:$commonsIoVersion"
-    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation project(':trellis-vocabulary')
 

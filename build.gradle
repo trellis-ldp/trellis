@@ -29,11 +29,7 @@ ext {
     validationApiVersion = "2.0.2"
 
     // MicroProfile
-    microprofileConfigVersion = "1.4"
-    microprofileHealthVersion = "2.2"
-    microprofileMetricsVersion = "2.3.2"
-    microprofileJwtVersion = "1.1.1"
-    microprofileOpenapiVersion = "1.1.2"
+    microprofileVersion = "3.3"
     microprofileReactiveMessagingVersion = "1.0"
 
     // Component dependencies
@@ -96,6 +92,11 @@ ext {
     jenaVersionRange = "[3.16,4)"
     kafkaOsgiVersion = "2.5.0_1"
     karafVersion = "4.2.9"
+    microprofileConfigVersion = "1.4"
+    microprofileHealthVersion = "2.2"
+    microprofileMetricsVersion = "2.3.2"
+    microprofileJwtVersion = "1.1.1"
+    microprofileOpenapiVersion = "1.1.2"
     mustacheOsgiVersion = "0.9.6_1"
     osgiVersion = "6.0.0"
     osgiCompendiumVersion = "5.0.0"

@@ -11,15 +11,17 @@ ext {
 }
 
 dependencies {
+    api platform("org.eclipse.microprofile:microprofile:$microprofileVersion")
+
     api "jakarta.annotation:jakarta.annotation-api:$annotationApiVersion"
     api "jakarta.enterprise:jakarta.enterprise.cdi-api:$cdiApiVersion"
     api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
     api "jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion"
-    api "org.eclipse.microprofile.jwt:microprofile-jwt-auth-api:$microprofileJwtVersion"
+    api "org.eclipse.microprofile.jwt:microprofile-jwt-auth-api"
 
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
-    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation project(":trellis-common")
 
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"

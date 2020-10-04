@@ -16,11 +16,13 @@ ext {
 }
 
 dependencies {
+    api platform("org.eclipse.microprofile:microprofile:$microprofileVersion")
+
     api "jakarta.inject:jakarta.inject-api:$injectApiVersion"
     api "jakarta.jms:jakarta.jms-api:$jmsApiVersion"
     api project(':trellis-api')
 
-    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
     testImplementation "org.apache.activemq:activemq-client:$activeMqVersion"

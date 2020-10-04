@@ -22,6 +22,8 @@ ext {
 }
 
 dependencies {
+    implementation platform("org.eclipse.microprofile:microprofile:$microprofileVersion")
+
     implementation "jakarta.enterprise:jakarta.enterprise.cdi-api:${cdiApiVersion}"
     implementation "jakarta.annotation:jakarta.annotation-api:$annotationApiVersion"
     implementation "jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion"
@@ -50,7 +52,7 @@ dependencies {
     implementation "org.apache.jena:jena-arq:$jenaVersion"
     implementation "org.apache.jena:jena-rdfconnection:$jenaVersion"
     implementation "org.apache.jena:jena-tdb2:$jenaVersion"
-    implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
+    implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation "org.apache.commons:commons-rdf-api:$commonsRdfVersion"
     implementation "org.apache.jena:jena-commonsrdf:$jenaVersion"
