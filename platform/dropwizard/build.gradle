@@ -16,6 +16,8 @@ configurations.all {
 }
 
 dependencies {
+    implementation platform("io.dropwizard:dropwizard-bom:$dropwizardVersion")
+
     implementation("com.github.jsonld-java:jsonld-java:$jsonldVersion") {
         exclude group: 'org.apache.httpcomponents', module: 'httpclient-osgi'
         exclude group: 'org.apache.httpcomponents', module: 'httpcore-osgi'
@@ -56,12 +58,12 @@ dependencies {
     implementation project(':trellis-vocabulary')
     implementation project(':trellis-webac')
 
-    implementation "io.dropwizard:dropwizard-auth:$dropwizardVersion"
-    implementation "io.dropwizard:dropwizard-core:$dropwizardVersion"
-    implementation "io.dropwizard:dropwizard-jdbi3:$dropwizardVersion"
-    implementation "io.dropwizard:dropwizard-metrics:$dropwizardVersion"
-    implementation "io.dropwizard:dropwizard-http2:$dropwizardVersion"
-    implementation "io.dropwizard:dropwizard-migrations:$dropwizardVersion"
+    implementation "io.dropwizard:dropwizard-auth"
+    implementation "io.dropwizard:dropwizard-core"
+    implementation "io.dropwizard:dropwizard-jdbi3"
+    implementation "io.dropwizard:dropwizard-metrics"
+    implementation "io.dropwizard:dropwizard-http2"
+    implementation "io.dropwizard:dropwizard-migrations"
 
     runtimeOnly "com.h2database:h2:$h2Version"
     runtimeOnly "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
@@ -78,8 +80,8 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation project(':trellis-test')
-    testImplementation "io.dropwizard:dropwizard-client:$dropwizardVersion"
-    testImplementation "io.dropwizard:dropwizard-testing:$dropwizardVersion"
+    testImplementation "io.dropwizard:dropwizard-client"
+    testImplementation "io.dropwizard:dropwizard-testing"
     testImplementation "org.apache.activemq:activemq-broker:$activeMqVersion"
 }
 
