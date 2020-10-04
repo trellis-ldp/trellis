@@ -30,8 +30,10 @@ dependencies {
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation project(':trellis-vocabulary')
 
-    testImplementation "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
-    testImplementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    testImplementation platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
+
+    testImplementation "com.fasterxml.jackson.core:jackson-core"
+    testImplementation "com.fasterxml.jackson.core:jackson-databind"
     testImplementation "commons-io:commons-io:$commonsIoVersion"
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "org.apache.jena:jena-commonsrdf:$jenaVersion"

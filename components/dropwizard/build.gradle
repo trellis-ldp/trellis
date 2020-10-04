@@ -15,7 +15,9 @@ dependencies {
     api project(':trellis-http')
     api project(':trellis-cache')
 
-    implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    implementation platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
+
+    implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "jakarta.validation:jakarta.validation-api:$validationApiVersion"
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
     implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
