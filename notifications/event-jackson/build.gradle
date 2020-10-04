@@ -14,6 +14,8 @@ ext {
 dependencies {
     api project(':trellis-api')
 
+    implementation platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
+
     implementation "com.fasterxml.jackson.core:jackson-annotations"
     implementation "com.fasterxml.jackson.core:jackson-core"
     implementation "com.fasterxml.jackson.core:jackson-databind"
