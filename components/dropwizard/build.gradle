@@ -8,7 +8,9 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    api "io.dropwizard:dropwizard-core:$dropwizardVersion"
+    api platform("io.dropwizard:dropwizard-bom:$dropwizardVersion")
+
+    api "io.dropwizard:dropwizard-core"
     api project(':trellis-api')
     api project(':trellis-http')
     api project(':trellis-cache')
@@ -45,8 +47,8 @@ dependencies {
     testImplementation project(':trellis-jena')
     testImplementation project(':trellis-rdfa')
     testImplementation project(':trellis-triplestore')
-    testImplementation "io.dropwizard:dropwizard-client:$dropwizardVersion"
-    testImplementation("io.dropwizard:dropwizard-testing:$dropwizardVersion") {
+    testImplementation "io.dropwizard:dropwizard-client"
+    testImplementation("io.dropwizard:dropwizard-testing") {
         exclude group: 'org.hamcrest', module: 'hamcrest-core'
     }
 }
