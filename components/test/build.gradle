@@ -17,8 +17,10 @@ dependencies {
 
     api "org.junit.jupiter:junit-jupiter-api"
 
-    implementation "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
-    implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    implementation platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
+
+    implementation "com.fasterxml.jackson.core:jackson-core"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "commons-io:commons-io:$commonsIoVersion"
     implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
