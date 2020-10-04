@@ -24,9 +24,11 @@ dependencies {
     implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 
+    testImplementation platform("org.glassfish.jersey:jersey-bom:$jerseyVersion")
+
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "org.apache.jena:jena-commonsrdf:$jenaVersion"
-    testImplementation "org.glassfish.jersey.core:jersey-common:$jerseyVersion"
+    testImplementation "org.glassfish.jersey.core:jersey-common"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
 

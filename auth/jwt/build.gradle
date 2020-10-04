@@ -24,11 +24,13 @@ dependencies {
     implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation project(":trellis-common")
 
+    testImplementation platform("org.glassfish.jersey:jersey-bom:$jerseyVersion")
+
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "io.smallrye:smallrye-jwt:$smallryeJwtVersion"
     testImplementation "jakarta.json.bind:jakarta.json.bind-api:$jsonbApiVersion"
     testImplementation "org.eclipse:yasson:$yassonVersion"
-    testImplementation "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
+    testImplementation "org.glassfish.jersey.core:jersey-server"
     testImplementation("org.jboss.weld:weld-junit5:$weldVersion") {
         exclude group: "org.jboss.spec.javax.interceptor", module: "jboss-interceptors-api_1.2_spec"
         exclude group: "org.jboss.spec.javax.el", module: "jboss-el-api_3.0_spec"

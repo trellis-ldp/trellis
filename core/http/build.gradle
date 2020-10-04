@@ -32,6 +32,7 @@ dependencies {
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
     implementation project(':trellis-vocabulary')
 
+    testImplementation platform("org.glassfish.jersey:jersey-bom:$jerseyVersion")
     testImplementation platform("com.fasterxml.jackson:jackson-bom:$jacksonVersion")
 
     testImplementation "com.fasterxml.jackson.core:jackson-core"
@@ -39,10 +40,10 @@ dependencies {
     testImplementation "commons-io:commons-io:$commonsIoVersion"
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "org.apache.jena:jena-commonsrdf:$jenaVersion"
-    testImplementation "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
-    testImplementation "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:$jerseyVersion"
-    testImplementation "org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion"
-    testImplementation "org.glassfish.jersey.connectors:jersey-apache-connector:$jerseyVersion"
+    testImplementation "org.glassfish.jersey.core:jersey-server"
+    testImplementation "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2"
+    testImplementation "org.glassfish.jersey.inject:jersey-hk2"
+    testImplementation "org.glassfish.jersey.connectors:jersey-apache-connector"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint')

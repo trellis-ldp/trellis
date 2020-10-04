@@ -30,14 +30,16 @@ dependencies {
     implementation "io.jsonwebtoken:jjwt-impl:$jjwtVersion"
     implementation project(":trellis-common")
 
-    testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
+    testImplementation platform("org.glassfish.jersey:jersey-bom:$jerseyVersion")
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
-    testImplementation "org.glassfish.jersey.core:jersey-server:$jerseyVersion"
+    testImplementation "org.glassfish.jersey.core:jersey-server"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
+
+    testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
 }
 
 pitest {
