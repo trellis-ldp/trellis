@@ -44,10 +44,6 @@ pitest {
 
 configurations.all {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        if (details.requested.group.startsWith('com.fasterxml.jackson.')) {
-            details.useVersion jacksonVersion
-            details.because 'Jackson modules should use a consistent version'
-        }
         if (details.requested.group == 'com.sleepycat') {
             details.useVersion sleepycatVersion
         }

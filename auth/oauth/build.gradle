@@ -16,7 +16,7 @@ dependencies {
     api "jakarta.annotation:jakarta.annotation-api:$annotationApiVersion"
     api "jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion"
 
-    implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "commons-io:commons-io:$commonsIoVersion"
     implementation "org.eclipse.microprofile.config:microprofile-config-api:$microprofileConfigVersion"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
