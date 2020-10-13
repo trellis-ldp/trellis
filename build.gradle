@@ -91,7 +91,7 @@ ext {
     interceptorVersion = "1.2.5"
     jenaVersionRange = "[3.16,4)"
     kafkaOsgiVersion = "2.5.0_1"
-    karafVersion = "4.2.9"
+    karafVersion = "4.2.10"
     microprofileConfigVersion = "1.4"
     microprofileHealthVersion = "2.2"
     microprofileMetricsVersion = "2.3.2"
