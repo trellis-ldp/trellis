@@ -44,7 +44,7 @@ ext {
     kafkaVersion = "2.6.0"
     liquibaseVersion = "4.1.1"
     mustacheVersion = "0.9.6"
-    nettyVersion = "4.1.51.Final"
+    nettyVersion = "4.1.53.Final"
     quarkusVersion = "1.9.0.Final"
     rabbitMqVersion = "5.9.0"
     rxjavaVersion = "2.2.20"
