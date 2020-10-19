@@ -37,7 +37,7 @@ ext {
     dropwizardVersion = "2.0.13"
     guavaVersion = "30.0-jre"
     jacksonVersion = "2.11.3"
-    jdbiVersion = "3.16.0"
+    jdbiVersion = "3.17.0"
     jenaVersion = "3.16.0"
     jjwtVersion = "0.11.2"
     jsonldVersion = "0.13.0"
