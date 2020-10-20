@@ -66,7 +66,7 @@ ext {
     junitVersion = "5.7.0"
     hamcrestVersion = "2.2"
     logbackVersion = "1.2.3"
-    mockitoVersion = "3.5.13"
+    mockitoVersion = "3.5.15"
     otjPgVersion = "0.13.3"
     qpidVersion = "8.0.1"
     sleepycatVersion = "18.3.12"
