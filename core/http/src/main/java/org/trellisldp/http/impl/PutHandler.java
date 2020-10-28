@@ -15,7 +15,6 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.net.URI.create;
 import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
 import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM;
@@ -49,6 +48,7 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -297,7 +297,7 @@ public class PutHandler extends MutatingLdpHandler {
 
     private ResponseBuilder decorateResponse(final ResponseBuilder builder) {
         if (getResource() == null) {
-            return builder.status(CREATED).contentLocation(create(getIdentifier()));
+            return builder.status(CREATED).contentLocation(UriBuilder.fromUri(getIdentifier()).build());
         }
         return builder;
     }

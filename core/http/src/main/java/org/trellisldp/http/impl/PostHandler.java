@@ -15,7 +15,6 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.net.URI.create;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
@@ -50,6 +49,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;
@@ -213,7 +213,7 @@ public class PostHandler extends MutatingLdpHandler {
             .thenCompose(future -> emitEvent(internalId, AS.Create, ldpType))
             .thenApply(future -> {
                 ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, Link.TYPE));
-                return builder.location(create(getIdentifier()));
+                return builder.location(UriBuilder.fromUri(getIdentifier()).build());
             });
     }
 

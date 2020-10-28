@@ -16,7 +16,6 @@
 package org.trellisldp.http.impl;
 
 import static java.lang.String.join;
-import static java.net.URI.create;
 import static java.util.Date.from;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.joining;
@@ -81,6 +80,7 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
@@ -410,10 +410,12 @@ public class GetHandler extends BaseLdpHandler {
 
     private void handleTrailingSlashRedirection(final Resource resource) {
         if (getRequest().hasTrailingSlash() && !isContainer(resource.getInteractionModel())) {
-            throw new RedirectionException(303, create(getBaseUrl() + normalizePath(getRequest().getPath())));
+            throw new RedirectionException(303,
+                    UriBuilder.fromUri(getBaseUrl()).path(normalizePath(getRequest().getPath())).build());
         } else if (!getRequest().hasTrailingSlash() && !getRequest().getPath().isEmpty()
                 && isContainer(resource.getInteractionModel())) {
-            throw new RedirectionException(303, create(getBaseUrl() + normalizePath(getRequest().getPath()) + "/"));
+            throw new RedirectionException(303,
+                    UriBuilder.fromUri(getBaseUrl()).path(normalizePath(getRequest().getPath()) + "/").build());
         }
     }
 }

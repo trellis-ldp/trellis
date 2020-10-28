@@ -34,6 +34,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
+import org.apache.jena.util.URIref;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.slf4j.Logger;
@@ -147,7 +148,7 @@ public class FileBinaryService implements BinaryService {
         final String iriString = identifier.getIRIString();
         if (!iriString.startsWith("file:"))
             throw new IllegalArgumentException("Could not create File object from IRI: " + identifier);
-        final String schemeSpecificPart = URI.create(iriString).getSchemeSpecificPart();
+        final String schemeSpecificPart = URI.create(URIref.encode(iriString)).getSchemeSpecificPart();
         return new File(basePath, trimStart(schemeSpecificPart, "/"));
     }
 
