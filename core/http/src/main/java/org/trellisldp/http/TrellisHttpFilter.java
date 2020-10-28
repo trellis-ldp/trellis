@@ -44,6 +44,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.rdf.api.IRI;
 import org.trellisldp.common.AcceptDatetime;
 import org.trellisldp.common.LdpResource;
@@ -85,6 +86,8 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(final ContainerRequestContext ctx) {
+        // Validate path
+        validatePath(ctx);
         // Validate headers
         validateAcceptDatetime(ctx);
         validateRange(ctx);
@@ -100,6 +103,13 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
                         singletonList(extensions.get(ext).getIRIString()),
                         asList(PreferServerManaged.getIRIString(), PreferUserManaged.getIRIString(),
                             PreferContainment.getIRIString(), PreferMembership.getIRIString()), null, null).toString());
+        }
+    }
+
+    private void validatePath(final ContainerRequestContext ctx) {
+        final String path = ctx.getUriInfo().getPath();
+        if (StringUtils.containsAny(path, UNWISE_CHARACTERS)) {
+            ctx.abortWith(status(BAD_REQUEST).build());
         }
     }
 

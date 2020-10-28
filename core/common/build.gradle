@@ -21,6 +21,7 @@ dependencies {
 
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
+    implementation "org.apache.commons:commons-lang3:$commonsLangVersion"
     implementation "org.eclipse.microprofile.config:microprofile-config-api"
     implementation "org.slf4j:slf4j-api:$slf4jVersion"
 

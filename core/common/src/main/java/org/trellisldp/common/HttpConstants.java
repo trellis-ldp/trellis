@@ -130,6 +130,9 @@ public final class HttpConstants {
     /** The Memento link parameter indicating the ending range of a TimeMap. */
     public static final String UNTIL = "until";
 
+    /** A collection of "unwise" characters according to RFC 3987. */
+    public static final String UNWISE_CHARACTERS = "<>{}`^\\%\"|";
+
     /** The implied or default set of IRIs used with a Prefer header. */
     public static final Set<IRI> DEFAULT_REPRESENTATION = Set.of(PreferContainment, PreferMembership,
             PreferUserManaged, PreferServerManaged);

@@ -20,6 +20,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 /**
@@ -80,8 +81,9 @@ public class Slug {
     }
 
     private static String cleanSlugString(final String value) {
-        // Remove any fragment URIs and query parameters
-        // Then trim the string and replace any remaining whitespace or slash characters with underscores
-        return value.split("#")[0].split("\\?")[0].trim().replaceAll("[\\s/]+", "_");
+        // Remove any fragment URIs, query parameters and whitespace
+        final String base = StringUtils.deleteWhitespace(value.split("#")[0].split("\\?")[0]);
+        // Remove any "unwise" characters plus '/'
+        return StringUtils.replaceChars(base, HttpConstants.UNWISE_CHARACTERS + "/", "");
     }
 }

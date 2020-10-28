@@ -155,8 +155,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     private static final String VAL_VERSION = "version";
     private static final String VERSION_PARAM = "?version=1496262729";
     private static final String PATH_REL_CHILD = "/child";
-    private static final String PATH_REL_GRANDCHILD = "/child_grandchild";
-    private static final String GRANDCHILD_SUFFIX = "_grandchild";
+    private static final String PATH_REL_GRANDCHILD = "/childgrandchild";
+    private static final String GRANDCHILD_SUFFIX = "grandchild";
     private static final String WEAK_PREFIX = "W/\"";
     private static final String PREFER_PREFIX = "return=representation; include=\"";
 

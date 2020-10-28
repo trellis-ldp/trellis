@@ -27,7 +27,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class SlugTest {
 
     private static final String SLUG_VALUE = "slugValue";
-    private static final String SLUG_UNDERSCORE_VALUE = "slug_value";
+    private static final String SLUG_UNDERSCORE_VALUE = "slugvalue";
     private static final String CHECK_SLUG_VALUE = "Check slug value";
 
     @Test
@@ -59,6 +59,12 @@ class SlugTest {
     void testQueryParam() {
         final Slug slug = Slug.valueOf("slugValue?bar=baz");
         assertEquals(SLUG_VALUE, slug.getValue(), CHECK_SLUG_VALUE);
+    }
+
+    @Test
+    void testUnwiseCharacters() {
+        final Slug slug = Slug.valueOf("a|b^c\"d{e}f\\g`h^i<j>k");
+        assertEquals("abcdefghijk", slug.getValue(), CHECK_SLUG_VALUE);
     }
 
     @Test
