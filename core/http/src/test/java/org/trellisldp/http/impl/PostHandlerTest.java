@@ -130,7 +130,7 @@ class PostHandlerTest extends BaseTestHandler {
 
     @Test
     void testDefaultType3() throws IOException {
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel(TYPE).build());
+        when(mockTrellisRequest.getLink()).thenReturn(null);
 
         final PostHandler handler = buildPostHandler(RESOURCE_EMPTY, NEW_RESOURCE, null);
         try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))
@@ -144,7 +144,7 @@ class PostHandlerTest extends BaseTestHandler {
     @Test
     void testDefaultType4() throws IOException {
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel(TYPE).build());
+        when(mockTrellisRequest.getLink()).thenReturn(null);
 
         final PostHandler handler = buildPostHandler(RESOURCE_SIMPLE, NEW_RESOURCE, null);
         try (final Response res = handler.createResource(handler.initialize(mockParent, MISSING_RESOURCE))

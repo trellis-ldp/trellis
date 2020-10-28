@@ -212,11 +212,8 @@ public class PutHandler extends MutatingLdpHandler {
             return getResource().getInteractionModel();
         }
         final Link link = getRequest().getLink();
-        if (link != null && Link.TYPE.equals(link.getRel())) {
-            final String uri = link.getUri().toString();
-            if (uri.startsWith(LDP.getNamespace()) && !uri.equals(LDP.Resource.getIRIString())) {
-                return rdf.createIRI(uri);
-            }
+        if (link != null) {
+            return rdf.createIRI(link.getUri().toString());
         }
         if (getResource() != null) {
             return getResource().getInteractionModel();
