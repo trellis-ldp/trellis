@@ -74,6 +74,7 @@ import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
+import org.apache.jena.util.URIref;
 import org.eclipse.microprofile.config.Config;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
@@ -234,7 +235,7 @@ public class JenaIOService implements IOService {
 
         try {
             if (RDFA.equals(syntax)) {
-                writeHTML(triples, output, baseUrl);
+                writeHTML(triples, output, encodeURI(baseUrl));
             } else {
                 final Lang lang = JenaCommonsRDF.toJena(syntax).orElseThrow(() ->
                         new TrellisRuntimeException("Invalid content type: " + syntax.mediaType()));
@@ -247,7 +248,7 @@ public class JenaIOService implements IOService {
                     stream.start();
                     nsService.getNamespaces().forEach(stream::prefix);
                     if (shouldUseRelativeIRIs(relativeIRIs, profiles)) {
-                        stream.base(baseUrl);
+                        stream.base(encodeURI(baseUrl));
                     }
                     triples.map(JenaCommonsRDF::toJena).forEachOrdered(stream::triple);
                     stream.finish();
@@ -329,7 +330,7 @@ public class JenaIOService implements IOService {
             final Lang lang = JenaCommonsRDF.toJena(syntax).orElseThrow(() ->
                     new TrellisRuntimeException("Unsupported RDF Syntax: " + syntax.mediaType()));
 
-            RDFParser.source(input).lang(lang).base(base).parse(graph);
+            RDFParser.source(input).lang(lang).base(encodeURI(base)).parse(graph);
 
             // Check the graph for any new namespace definitions
             final Set<String> namespaces = new HashSet<>(nsService.getNamespaces().values());
@@ -356,10 +357,17 @@ public class JenaIOService implements IOService {
 
         try {
             final org.apache.jena.graph.Graph g = JenaCommonsRDF.toJena(graph);
-            execute(create(update, base), g);
+            execute(create(update, encodeURI(base)), g);
         } catch (final UpdateException | QueryParseException ex) {
             throw new TrellisRuntimeException(ex);
         }
+    }
+
+    static String encodeURI(final String uri) {
+        if (uri != null) {
+            return URIref.encode(uri);
+        }
+        return uri;
     }
 
     static Set<String> intoSet(final String property) {
