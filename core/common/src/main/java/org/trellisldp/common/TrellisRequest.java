@@ -15,6 +15,7 @@
  */
 package org.trellisldp.common;
 
+import static java.util.Collections.emptyList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static org.trellisldp.common.HttpConstants.ACCEPT_DATETIME;
@@ -33,6 +34,8 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+
+import org.trellisldp.vocabulary.LDP;
 
 /**
  * A class representing an HTTP request with various LDP-related headers and query parameters.
@@ -110,14 +113,19 @@ public class TrellisRequest {
     }
 
     /**
-     * Get the Link header.
+     * Get the first LDP Link header.
      *
-     * @return the Link header
+     * @return the first LDP Link header
      */
     public Link getLink() {
-        final String link = headers.getFirst(LINK);
-        if (link != null) {
-            return Link.valueOf(link);
+        for (final String header : headers.getOrDefault(LINK, emptyList())) {
+            final Link link = Link.valueOf(header);
+            if (Link.TYPE.equals(link.getRel())) {
+                final String uri = link.getUri().toString();
+                if (uri.startsWith(LDP.getNamespace()) && !uri.equals(LDP.Resource.getIRIString())) {
+                    return link;
+                }
+            }
         }
         return null;
     }

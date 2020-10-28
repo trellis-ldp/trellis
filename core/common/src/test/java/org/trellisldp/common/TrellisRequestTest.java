@@ -208,6 +208,9 @@ class TrellisRequestTest {
         final URI uri = create("http://example.com/");
         final MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
         final MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
+        headers.add("Link", "<http://www.w3.org/ns/ldp#Resource>; rel=\"type\"");
+        headers.add("Link", "<http://example.com/SomeType>; rel=\"type\"");
+        headers.add("Link", "<http://www.w3.org/ns/ldp#BasicContainer>; rel=\"about\"");
         final String rawLink = "<http://www.w3.org/ns/ldp#BasicContainer>; rel=\"type\"";
         headers.add("Link", rawLink);
         final MultivaluedMap<String, String> pathParams = new MultivaluedHashMap<>();
@@ -223,5 +226,28 @@ class TrellisRequestTest {
 
         final TrellisRequest req = new TrellisRequest(mockRequest, mockUriInfo, mockHeaders);
         assertEquals(Link.valueOf(rawLink), req.getLink());
+    }
+
+    @Test
+    void testSkippedLinkHeaders() {
+        final URI uri = create("http://example.com/");
+        final MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
+        final MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
+        headers.add("Link", "<http://www.w3.org/ns/ldp#Resource>; rel=\"type\"");
+        headers.add("Link", "<http://example.com/SomeType>; rel=\"type\"");
+        headers.add("Link", "<http://www.w3.org/ns/ldp#BasicContainer>; rel=\"about\"");
+        final MultivaluedMap<String, String> pathParams = new MultivaluedHashMap<>();
+        pathParams.add("path", "resource");
+
+        when(mockUriInfo.getPath()).thenReturn("resource");
+        when(mockUriInfo.getPathParameters()).thenReturn(pathParams);
+        when(mockUriInfo.getQueryParameters()).thenReturn(queryParams);
+        when(mockUriInfo.getBaseUri()).thenReturn(uri);
+        when(mockHeaders.getRequestHeaders()).thenReturn(headers);
+        when(mockRequest.getMethod()).thenReturn(GET);
+        when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(RdfMediaType.TEXT_TURTLE_TYPE));
+
+        final TrellisRequest req = new TrellisRequest(mockRequest, mockUriInfo, mockHeaders);
+        assertNull(req.getLink());
     }
 }

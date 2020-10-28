@@ -119,14 +119,8 @@ public class PostHandler extends MutatingLdpHandler {
     }
 
     private static IRI getLdpType(final Link link, final RDFSyntax syntax, final String contentType) {
-        if (link != null && Link.TYPE.equals(link.getRel())) {
-            final String uri = link.getUri().toString();
-            if (uri.startsWith(LDP.getNamespace())) {
-                final IRI iri = rdf.createIRI(uri);
-                if (!LDP.Resource.equals(iri)) {
-                    return iri;
-                }
-            }
+        if (link != null) {
+            return rdf.createIRI(link.getUri().toString());
         }
         return contentType != null && syntax == null ? LDP.NonRDFSource : LDP.RDFSource;
     }

@@ -145,10 +145,10 @@ class PutHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    void testPutLdpResourceDefaultType() {
+    void testPutNoLdpLinkType() {
         when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_TURTLE);
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel(TYPE).build());
+        when(mockTrellisRequest.getLink()).thenReturn(null);
 
         final PutHandler handler = buildPutHandler(RESOURCE_TURTLE, null, false);
         try (final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
@@ -214,10 +214,10 @@ class PutHandlerTest extends BaseTestHandler {
     }
 
     @Test
-    void testPutLdpBinaryResourceWithLdprLink() {
+    void testPutLdpBinaryResourceNoLdpLink() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.NonRDFSource);
         when(mockTrellisRequest.getContentType()).thenReturn(TEXT_PLAIN);
-        when(mockTrellisRequest.getLink()).thenReturn(fromUri(LDP.Resource.getIRIString()).rel(TYPE).build());
+        when(mockTrellisRequest.getLink()).thenReturn(null);
 
         final PutHandler handler = buildPutHandler(RESOURCE_SIMPLE, null);
         try (final Response res = handler.setResource(handler.initialize(mockParent, mockResource))
