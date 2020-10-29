@@ -54,4 +54,18 @@ class TrellisHttpFilterTest {
         filter.filter(mockContext);
         verify(mockContext, never().description("Trailing slash should trigger a redirect!")).abortWith(any());
     }
+
+    @Test
+    void testUnwisePath() {
+        when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
+        when(mockUriInfo.getPath()).thenReturn("/foo/bar/one|two");
+        when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
+
+        final TrellisHttpFilter filter = new TrellisHttpFilter();
+        filter.setMutatingMethods(emptyList());
+        filter.setExtensions(emptyMap());
+
+        filter.filter(mockContext);
+        verify(mockContext).abortWith(any());
+    }
 }
