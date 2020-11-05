@@ -97,10 +97,10 @@ ext {
     microprofileJwtVersion = "1.1.1"
     microprofileOpenapiVersion = "1.1.2"
     mustacheOsgiVersion = "0.9.6_1"
-    osgiVersion = "6.0.0"
+    osgiVersion = "7.0.0"
     osgiCompendiumVersion = "5.0.0"
     paxExamVersion = "4.13.4"
-    spiflyVersion = "1.3.0"
+    spiflyVersion = "1.3.2"
 
     omitFromJacocoReporting = [
         'trellis-bom',

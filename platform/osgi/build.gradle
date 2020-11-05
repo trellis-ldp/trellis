@@ -40,7 +40,7 @@ dependencies {
     testImplementation "org.ops4j.pax.exam:pax-exam:$paxExamVersion"
     testImplementation "org.ops4j.pax.exam:pax-exam-junit4:$paxExamVersion"
     testImplementation "org.ops4j.pax.exam:pax-exam-container-karaf:$paxExamVersion"
-    testImplementation "org.osgi:org.osgi.core:$osgiVersion"
+    testImplementation "org.osgi:osgi.core:$osgiVersion"
     testImplementation "org.osgi:org.osgi.compendium:$osgiCompendiumVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
 
