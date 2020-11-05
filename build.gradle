@@ -24,7 +24,7 @@ ext {
     jaxrsApiVersion = "2.1.6"
     jmsApiVersion = "2.0.3"
     jsonApiVersion = "1.1.6"
-    jsonbApiVersion = "1.0.2"
+    jsonbApiVersion = "2.0.0"
     managementApiVersion = "1.1.4"
     validationApiVersion = "2.0.2"
 
