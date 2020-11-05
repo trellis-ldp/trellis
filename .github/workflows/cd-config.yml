@@ -169,7 +169,7 @@ jobs:
           mv docs/apidocs/$(./gradlew -q getVersion) docs/trellis/$(./gradlew -q getVersion)/apidocs
 
     - name: Sync to AWS S3
-      uses: jakejarvis/s3-sync-action@v0.5
+      uses: jakejarvis/s3-sync-action@v0.5.1
       with:
         args: --acl public-read
       env:
