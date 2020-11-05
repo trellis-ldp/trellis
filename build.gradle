@@ -26,7 +26,7 @@ ext {
     jsonApiVersion = "1.1.6"
     jsonbApiVersion = "1.0.2"
     managementApiVersion = "1.1.4"
-    validationApiVersion = "2.0.2"
+    validationApiVersion = "3.0.0"
 
     // MicroProfile
     microprofileVersion = "3.3"
