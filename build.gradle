@@ -90,17 +90,17 @@ ext {
     interceptorVersion = "1.2.5"
     jenaVersionRange = "[3.16,4)"
     kafkaOsgiVersion = "2.5.0_1"
-    karafVersion = "4.2.10"
+    karafVersion = "4.3.0"
     microprofileConfigVersion = "1.4"
     microprofileHealthVersion = "2.2"
     microprofileMetricsVersion = "2.3.2"
     microprofileJwtVersion = "1.1.1"
     microprofileOpenapiVersion = "1.1.2"
     mustacheOsgiVersion = "0.9.6_1"
-    osgiVersion = "6.0.0"
+    osgiVersion = "7.0.0"
     osgiCompendiumVersion = "5.0.0"
     paxExamVersion = "4.13.4"
-    spiflyVersion = "1.3.0"
+    spiflyVersion = "1.3.2"
 
     omitFromJacocoReporting = [
         'trellis-bom',
