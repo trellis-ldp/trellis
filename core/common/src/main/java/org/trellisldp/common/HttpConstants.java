@@ -64,6 +64,12 @@ public final class HttpConstants {
     /** Configuration key defining whether to include dates in memento headers. */
     public static final String CONFIG_HTTP_MEMENTO_HEADER_DATES = "trellis.http.memento-header-dates";
 
+    /** Configuration key defining path characters to disallow. */
+    public static final String CONFIG_HTTP_PATH_CHARACTERS_DISALLOW = "trellis.http.path-chars-disallow";
+
+    /** Configuration key defining path characters to URL-encode. */
+    public static final String CONFIG_HTTP_PATH_CHARACTERS_ENCODE = "trellis.http.path-chars-encode";
+
     /** Configuration key defining whether to use weak ETags for RDF responses. */
     public static final String CONFIG_HTTP_WEAK_ETAG = "trellis.http.weak-etag";
 
@@ -131,7 +137,10 @@ public final class HttpConstants {
     public static final String UNTIL = "until";
 
     /** A collection of "unwise" characters according to RFC 3987. */
-    public static final String UNWISE_CHARACTERS = "<>{}`^\\%\"|";
+    public static final String UNWISE_CHARACTERS = "[]:?#`^\\%\"|";
+
+    /** A collection of "invalid" characters according to RFC 3987. */
+    public static final String INVALID_CHARACTERS = "<>{}";
 
     /** The implied or default set of IRIs used with a Prefer header. */
     public static final Set<IRI> DEFAULT_REPRESENTATION = Set.of(PreferContainment, PreferMembership,

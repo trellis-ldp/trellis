@@ -15,15 +15,16 @@
  */
 package org.trellisldp.common;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static javax.ws.rs.core.HttpHeaders.CONTENT_TYPE;
 import static javax.ws.rs.core.HttpHeaders.LINK;
-import static org.trellisldp.common.HttpConstants.ACCEPT_DATETIME;
-import static org.trellisldp.common.HttpConstants.PREFER;
-import static org.trellisldp.common.HttpConstants.RANGE;
-import static org.trellisldp.common.HttpConstants.SLUG;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
+import static org.trellisldp.common.HttpConstants.*;
 
 import java.net.URI;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -35,6 +36,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.trellisldp.vocabulary.LDP;
 
 /**
@@ -43,6 +45,11 @@ import org.trellisldp.vocabulary.LDP;
  * @author acoburn
  */
 public class TrellisRequest {
+
+    private static final String ESCAPE_CHARACTERS = getConfig()
+        .getOptionalValue(CONFIG_HTTP_PATH_CHARACTERS_ENCODE, String.class).orElse(UNWISE_CHARACTERS);
+    private static final String[] ESCAPE_SEARCH = getSearchArray(ESCAPE_CHARACTERS);
+    private static final String[] ESCAPE_REPLACE = getReplaceArray(ESCAPE_CHARACTERS);
 
     private final boolean trailingSlash;
     private final String path;
@@ -80,8 +87,10 @@ public class TrellisRequest {
         // Extract URI values
         this.parameters = uriInfo.getQueryParameters();
         this.baseUrl = buildBaseUrl(uriInfo.getBaseUri(), this.headers);
-        this.path = uriInfo.getPathParameters().getFirst("path");
         this.trailingSlash = uriInfo.getPath().endsWith("/");
+
+        final String urlPath = uriInfo.getPathParameters().getFirst("path");
+        this.path = StringUtils.replaceEach(urlPath, ESCAPE_SEARCH, ESCAPE_REPLACE);
 
         // Extract request method
         this.method = request.getMethod();
@@ -262,5 +271,21 @@ public class TrellisRequest {
             forwarded.getProto().ifPresent(builder::scheme);
         }
         return builder.build().toString();
+    }
+
+    static String[] getSearchArray(final String escapeChars) {
+        final List<String> search = new ArrayList<>();
+        for (char ch : escapeChars.toCharArray()) {
+            search.add(String.valueOf(ch));
+        }
+        return search.toArray(String[]::new);
+    }
+
+    static String[] getReplaceArray(final String escapeChars) {
+        final List<String> replace = new ArrayList<>();
+        for (char ch : escapeChars.toCharArray()) {
+            replace.add(URLEncoder.encode(String.valueOf(ch), UTF_8));
+        }
+        return replace.toArray(String[]::new);
     }
 }

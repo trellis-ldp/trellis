@@ -112,6 +112,7 @@ public interface LdpRdfTests extends CommonTests {
                 this::testGetRDF,
                 this::testRdfContainment,
                 this::testPostJsonLd,
+                this::testPutReservedCharacters,
                 this::testInvalidRDF);
     }
 
@@ -321,6 +322,38 @@ public interface LdpRdfTests extends CommonTests {
             assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Check that the container is RDF");
             assertTrue(g.contains(rdf.createIRI(getBaseURL()), LDP.contains,
                     rdf.createIRI(getResourceLocation())), "Check for an ldp:contains property");
+        }
+    }
+
+    /**
+     * Verify that reserved characters are properly escaped.
+     * @throws Exception if the RDF resource does not close cleanly
+     */
+    default void testPutReservedCharacters() throws Exception {
+        final RDF rdf = RDFFactory.getInstance();
+        final String content = getResourceAsString(SIMPLE_RESOURCE);
+        final String path = getResourceLocation() + "-%5B-%5D-%3A-%3F-%23-%60-%5E-%5C-%25-%22-%7C";
+
+        // PUT an LDP-RS
+        try (final Response res = target(path).request()
+                .put(entity(content, TEXT_TURTLE))) {
+            assertAll("Check PUTting an RDF resource", checkRdfResponse(res, LDP.RDFSource, null));
+        }
+
+        // Test the parent container
+        try (final Response res = target(getBaseURL()).request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Check that the container is RDF");
+            assertTrue(g.contains(rdf.createIRI(getBaseURL()), LDP.contains,
+                    rdf.createIRI(path)), "Check for an ldp:contains property");
+        }
+
+        // Test the child resource
+        try (final Response res = target(path).request().get();
+             final Graph g = readEntityAsGraph(res.getEntity(), path, TURTLE)) {
+            assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), "Check that the container is RDF");
+            assertTrue(g.contains(rdf.createIRI(path), DC.subject, rdf.createIRI("http://example.org/subject/1")),
+                    "Check for an ldp:contains property");
         }
     }
 

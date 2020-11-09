@@ -16,7 +16,9 @@
 package org.trellisldp.common;
 
 import static java.util.Objects.requireNonNull;
+import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
+import static org.trellisldp.common.HttpConstants.*;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
@@ -35,6 +37,10 @@ import org.slf4j.Logger;
  */
 public class Slug {
 
+    private static final String UNWISE_CHARS = getConfig()
+        .getOptionalValue(CONFIG_HTTP_PATH_CHARACTERS_ENCODE, String.class).orElse(UNWISE_CHARACTERS);
+    private static final String INVALID_CHARS = getConfig()
+        .getOptionalValue(CONFIG_HTTP_PATH_CHARACTERS_DISALLOW, String.class).orElse(INVALID_CHARACTERS);
     private static final Logger LOGGER = getLogger(Slug.class);
     private static final URLCodec DECODER = new URLCodec();
 
@@ -84,6 +90,6 @@ public class Slug {
         // Remove any fragment URIs, query parameters and whitespace
         final String base = StringUtils.deleteWhitespace(value.split("#")[0].split("\\?")[0]);
         // Remove any "unwise" characters plus '/'
-        return StringUtils.replaceChars(base, HttpConstants.UNWISE_CHARACTERS + "/", "");
+        return StringUtils.replaceChars(base, UNWISE_CHARS + INVALID_CHARS + "/", "");
     }
 }

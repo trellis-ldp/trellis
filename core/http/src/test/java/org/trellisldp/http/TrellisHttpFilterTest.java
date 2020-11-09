@@ -66,6 +66,6 @@ class TrellisHttpFilterTest {
         filter.setExtensions(emptyMap());
 
         filter.filter(mockContext);
-        verify(mockContext).abortWith(any());
+        verify(mockContext, never()).abortWith(any());
     }
 }
