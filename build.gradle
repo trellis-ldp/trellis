@@ -22,7 +22,7 @@ ext {
     injectApiVersion = "1.0.1"
     jaxbApiVersion = "2.3.3"
     jaxrsApiVersion = "2.1.6"
-    jmsApiVersion = "2.0.3"
+    jmsApiVersion = "3.0.0"
     jsonApiVersion = "1.1.6"
     jsonbApiVersion = "1.0.2"
     managementApiVersion = "1.1.4"
