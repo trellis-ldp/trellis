@@ -332,7 +332,7 @@ public interface LdpRdfTests extends CommonTests {
     default void testPutReservedCharacters() throws Exception {
         final RDF rdf = RDFFactory.getInstance();
         final String content = getResourceAsString(SIMPLE_RESOURCE);
-        final String path = getResourceLocation() + "-%5B-%5D-%3A-%3F-%23-%60-%5E-%5C-%25-%22-%7C";
+        final String path = getResourceLocation() + "-%5B-%5D-%3A-%3F-%23-%60-%20-%5E-%5C-%25-%22-%7C";
 
         // PUT an LDP-RS
         try (final Response res = target(path).request()
