@@ -16,12 +16,14 @@
 package org.trellisldp.common;
 
 import static java.net.URI.create;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 import static javax.ws.rs.HttpMethod.GET;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.net.URI;
+import java.net.URLEncoder;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Link;
@@ -32,6 +34,8 @@ import javax.ws.rs.core.UriInfo;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -116,8 +120,11 @@ class TrellisRequestTest {
         final MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
         headers.putSingle("Forwarded", "host=app.example.com;proto=https");
 
+        final MultivaluedMap<String, String> pathParams = new MultivaluedHashMap<>();
+        pathParams.add("path", "resource");
+
         when(mockUriInfo.getPath()).thenReturn("resource");
-        when(mockUriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getPathParameters()).thenReturn(pathParams);
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
         when(mockUriInfo.getBaseUri()).thenReturn(uri);
         when(mockHeaders.getRequestHeaders()).thenReturn(headers);
@@ -133,8 +140,11 @@ class TrellisRequestTest {
         final MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
         headers.putSingle("Forwarded", "host=app.example.com:9000;proto=https");
 
+        final MultivaluedMap<String, String> pathParams = new MultivaluedHashMap<>();
+        pathParams.add("path", "resource");
+
         when(mockUriInfo.getPath()).thenReturn("resource");
-        when(mockUriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getPathParameters()).thenReturn(pathParams);
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
         when(mockUriInfo.getBaseUri()).thenReturn(uri);
         when(mockHeaders.getRequestHeaders()).thenReturn(headers);
@@ -147,12 +157,15 @@ class TrellisRequestTest {
     void testTrellisRequestBadXForwardedPort() {
         final URI uri = create("http://example.com/");
 
+        final MultivaluedMap<String, String> pathParams = new MultivaluedHashMap<>();
+        pathParams.add("path", "resource");
+
         final MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
         headers.putSingle("X-Forwarded-Proto", "foo");
         headers.putSingle("X-Forwarded-Host", "app.example.com");
 
         when(mockUriInfo.getPath()).thenReturn("resource");
-        when(mockUriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getPathParameters()).thenReturn(pathParams);
         when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
         when(mockUriInfo.getBaseUri()).thenReturn(uri);
         when(mockHeaders.getRequestHeaders()).thenReturn(headers);
@@ -249,5 +262,44 @@ class TrellisRequestTest {
 
         final TrellisRequest req = new TrellisRequest(mockRequest, mockUriInfo, mockHeaders);
         assertNull(req.getLink());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "[", "]", "%", ":", "?", "#", "\"", "\\", "|", "^", "`" })
+    void testExcapeChars(final String character) {
+        final String path = "before" + character + "after";
+        final MultivaluedMap<String, String> pathParams = new MultivaluedHashMap<>();
+        pathParams.add("path", path);
+
+        when(mockUriInfo.getPath()).thenReturn(path);
+        when(mockUriInfo.getPathParameters()).thenReturn(pathParams);
+        when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
+        when(mockHeaders.getRequestHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("http://example.com"));
+        when(mockRequest.getMethod()).thenReturn(GET);
+        when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(RdfMediaType.TEXT_TURTLE_TYPE));
+
+        final TrellisRequest req = new TrellisRequest(mockRequest, mockUriInfo, mockHeaders);
+        assertEquals(URLEncoder.encode(path, UTF_8), req.getPath());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "before[middle]after", "a:b%c", "c%b:a", "a?b#c", "a%b?c",
+                             "A|B", "before^after", "x%y|z" })
+    void testExcapeMultipleChars(final String character) {
+        final String path = "before" + character + "after";
+        final MultivaluedMap<String, String> pathParams = new MultivaluedHashMap<>();
+        pathParams.add("path", path);
+
+        when(mockUriInfo.getPath()).thenReturn(path);
+        when(mockUriInfo.getPathParameters()).thenReturn(pathParams);
+        when(mockUriInfo.getQueryParameters()).thenReturn(new MultivaluedHashMap<>());
+        when(mockHeaders.getRequestHeaders()).thenReturn(new MultivaluedHashMap<>());
+        when(mockUriInfo.getBaseUri()).thenReturn(create("http://example.com"));
+        when(mockRequest.getMethod()).thenReturn(GET);
+        when(mockHeaders.getAcceptableMediaTypes()).thenReturn(singletonList(RdfMediaType.TEXT_TURTLE_TYPE));
+
+        final TrellisRequest req = new TrellisRequest(mockRequest, mockUriInfo, mockHeaders);
+        assertEquals(URLEncoder.encode(path, UTF_8), req.getPath());
     }
 }

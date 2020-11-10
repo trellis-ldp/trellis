@@ -46,6 +46,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.rdf.api.IRI;
+import org.eclipse.microprofile.config.Config;
 import org.trellisldp.common.AcceptDatetime;
 import org.trellisldp.common.LdpResource;
 import org.trellisldp.common.Prefer;
@@ -57,6 +58,8 @@ import org.trellisldp.common.Version;
 @LdpResource
 public class TrellisHttpFilter implements ContainerRequestFilter {
 
+    private final String invalidChars;
+
     private List<String> mutatingMethods;
     private Map<String, IRI> extensions;
 
@@ -64,8 +67,11 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
      * Create a simple pre-matching filter.
      */
     public TrellisHttpFilter() {
+        final Config config = getConfig();
         this.mutatingMethods = asList(POST, PUT, DELETE, PATCH);
-        this.extensions = buildExtensionMapFromConfig(getConfig());
+        this.extensions = buildExtensionMapFromConfig(config);
+        this.invalidChars = config.getOptionalValue(CONFIG_HTTP_PATH_CHARACTERS_DISALLOW, String.class)
+            .orElse(INVALID_CHARACTERS);
     }
 
     /**
@@ -108,7 +114,7 @@ public class TrellisHttpFilter implements ContainerRequestFilter {
 
     private void validatePath(final ContainerRequestContext ctx) {
         final String path = ctx.getUriInfo().getPath();
-        if (StringUtils.containsAny(path, UNWISE_CHARACTERS)) {
+        if (StringUtils.containsAny(path, invalidChars)) {
             ctx.abortWith(status(BAD_REQUEST).build());
         }
     }

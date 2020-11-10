@@ -39,11 +39,11 @@ class SlugTest {
     @Test
     void testEncodedInput() {
         final Slug slug = Slug.valueOf("slug%3Avalue");
-        assertEquals("slug:value", slug.getValue(), "Check decoding slug value");
+        assertEquals("slugvalue", slug.getValue(), "Check decoding slug value");
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"slug  value", "slug/value", "slug\t/ value"})
+    @ValueSource(strings = {"slug  value", "slug/value", "slug\t/ value", "slug|value", "sl[ug^val]ue"})
     void testNormalization(final String value) {
         final Slug slug = Slug.valueOf(value);
         assertEquals(SLUG_UNDERSCORE_VALUE, slug.getValue(), CHECK_SLUG_VALUE);
@@ -63,8 +63,8 @@ class SlugTest {
 
     @Test
     void testUnwiseCharacters() {
-        final Slug slug = Slug.valueOf("a|b^c\"d{e}f\\g`h^i<j>k");
-        assertEquals("abcdefghijk", slug.getValue(), CHECK_SLUG_VALUE);
+        final Slug slug = Slug.valueOf("a|b^c\"d\\e`f^g\"h<i>j{k}l");
+        assertEquals("abcdefghijkl", slug.getValue(), CHECK_SLUG_VALUE);
     }
 
     @Test
