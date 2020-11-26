@@ -59,7 +59,7 @@ ext {
     bouncycastleVersion = "1.67"
     commonsTextVersion = "1.9"
     cxfVersion = "3.4.1"
-    glassfishJaxbVersion = "2.3.3"
+    glassfishJaxbVersion = "3.0.0"
     jerseyVersion = "2.32"
     junitVersion = "5.7.0"
     hamcrestVersion = "2.2"
