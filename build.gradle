@@ -36,7 +36,7 @@ ext {
     activeMqVersion = "5.16.0"
     dropwizardVersion = "2.0.15"
     guavaVersion = "30.0-jre"
-    jacksonVersion = "2.11.3"
+    jacksonVersion = "2.12.0"
     jdbiVersion = "3.17.0"
     jenaVersion = "3.16.0"
     jjwtVersion = "0.11.2"
