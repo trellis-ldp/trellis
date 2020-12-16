@@ -44,7 +44,7 @@ ext {
     kafkaVersion = "2.6.0"
     liquibaseVersion = "4.2.2"
     mustacheVersion = "0.9.6"
-    quarkusVersion = "1.10.3.Final"
+    quarkusVersion = "1.10.4.Final"
     rabbitMqVersion = "5.10.0"
     rxjavaVersion = "2.2.20"
     snakeyamlVersion = "1.27"
