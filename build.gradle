@@ -56,7 +56,7 @@ ext {
 
     // Testing
     awaitilityVersion = "4.0.3"
-    bouncycastleVersion = "1.67"
+    bouncycastleVersion = "1.68"
     commonsTextVersion = "1.9"
     cxfVersion = "3.4.1"
     glassfishJaxbVersion = "2.3.3"
