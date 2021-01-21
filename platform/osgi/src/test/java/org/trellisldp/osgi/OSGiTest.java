@@ -260,16 +260,6 @@ public class OSGiTest {
     }
 
     @Test
-    public void testBasicAuthInstallation() throws Exception {
-        assertFalse("trellis-auth-basic already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-auth-basic")));
-        featuresService.installFeature("trellis-auth-basic");
-        checkTrellisBundlesAreActive();
-        assertTrue("trellis-auth-basic not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-auth-basic")));
-    }
-
-    @Test
     public void testNamespaceInstallation() throws Exception {
         assertFalse("trellis-namespace already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-namespace")));
