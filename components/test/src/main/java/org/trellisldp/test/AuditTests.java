@@ -27,10 +27,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.common.HttpConstants.SLUG;
 import static org.trellisldp.common.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE;
-import static org.trellisldp.test.TestUtils.buildJwt;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.vocabulary.RDF.type;
+
+import io.smallrye.jwt.build.Jwt;
 
 import java.util.stream.Stream;
 
@@ -55,12 +56,6 @@ import org.trellisldp.vocabulary.Trellis;
 public interface AuditTests extends CommonTests {
 
     /**
-     * Get the JWT secret.
-     * @return the JWT secret
-     */
-    String getJwtSecret();
-
-    /**
      * Get the location of the test resource.
      * @return the resource URL
      */
@@ -76,11 +71,11 @@ public interface AuditTests extends CommonTests {
      * Set up the test infrastructure.
      */
     default void setUp() {
-        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString(), getJwtSecret());
+        final String jwt = "Bearer " + Jwt.claims().claim("webid", Trellis.AdministratorAgent.getIRIString()).sign();
 
-        final String user1 = buildJwt("https://people.apache.org/~acoburn/#i", getJwtSecret());
+        final String user1 = "Bearer " + Jwt.claims().claim("webid", "https://people.apache.org/~acoburn/#i").sign();
 
-        final String user2 = buildJwt("https://madison.example.com/profile#me", getJwtSecret());
+        final String user2 = "Bearer " + Jwt.claims().claim("webid", "https://madison.example.com/profile#me").sign();
 
         final String container;
         final String containerContent = getResourceAsString("/basicContainer.ttl");

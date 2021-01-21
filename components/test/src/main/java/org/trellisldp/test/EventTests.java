@@ -56,12 +56,6 @@ public interface EventTests extends CommonTests {
     String CHILD_RESOURCE_FILE = "/childResource.ttl";
 
     /**
-     * Get the JWT secret.
-     * @return the JWT secret
-     */
-    String getJwtSecret();
-
-    /**
      * Get the location of the test container.
      * @return the container URL
      */
@@ -120,7 +114,7 @@ public interface EventTests extends CommonTests {
      */
     default void setUp() {
 
-        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString(), getJwtSecret());
+        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString());
 
         final String containerContent = getResourceAsString("/basicContainer.ttl");
 
@@ -191,7 +185,7 @@ public interface EventTests extends CommonTests {
 
         // POST an LDP-RS
         try (final Response res = target(getContainerLocation()).request()
-                .header(AUTHORIZATION, buildJwt(agent, getJwtSecret())).post(entity("", TEXT_TURTLE))) {
+                .header(AUTHORIZATION, buildJwt(agent)).post(entity("", TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Verify a successful LDP-RS POST response");
             assertAll("Check the resource parent",
                     checkResourceParentLdpBC(res.getLocation().toString(), agent, AS.Create, LDP.RDFSource));
@@ -207,7 +201,7 @@ public interface EventTests extends CommonTests {
 
         // POST an LDP-RS
         try (final Response res = target(getContainerLocation()).request()
-                .header(AUTHORIZATION, buildJwt(agent1, getJwtSecret())).post(entity("", TEXT_TURTLE))) {
+                .header(AUTHORIZATION, buildJwt(agent1)).post(entity("", TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Verify a successful LDP-RS POST response");
             resource = res.getLocation().toString();
             assertAll("Check the resource parent",
@@ -217,8 +211,7 @@ public interface EventTests extends CommonTests {
         final String agent2 = "https://pat.example.com/profile#me";
 
         // DELETE the LDP-RS
-        try (final Response res = target(resource).request().header(AUTHORIZATION, buildJwt(agent2, getJwtSecret()))
-                .delete()) {
+        try (final Response res = target(resource).request().header(AUTHORIZATION, buildJwt(agent2)).delete()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Verify a successful LDP-RS DELETE response");
             assertAll("Check the LDP-BC parent", checkResourceParentLdpBC(resource, agent2, AS.Delete, LDP.RDFSource));
         }
@@ -232,7 +225,7 @@ public interface EventTests extends CommonTests {
 
         // POST an LDP-RS
         try (final Response res = target(getDirectContainerLocation()).request()
-                .header(AUTHORIZATION, buildJwt(agent, getJwtSecret())).post(entity("", TEXT_TURTLE))) {
+                .header(AUTHORIZATION, buildJwt(agent)).post(entity("", TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful POST response");
             assertAll("Check the LDP-DC parent", checkResourceParentLdpDC(res.getLocation().toString(), agent,
                         AS.Create, LDP.RDFSource, LDP.Container));
@@ -248,7 +241,7 @@ public interface EventTests extends CommonTests {
 
         // POST an LDP-RS
         try (final Response res = target(getDirectContainerLocation()).request()
-                .header(AUTHORIZATION, buildJwt(agent, getJwtSecret())).post(entity("", TEXT_TURTLE))) {
+                .header(AUTHORIZATION, buildJwt(agent)).post(entity("", TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful POST in an LDP-DC");
             resource = res.getLocation().toString();
             assertAll("Check the LDP-DC parent",
@@ -258,8 +251,7 @@ public interface EventTests extends CommonTests {
         final String agent2 = "https://pat.example.com/profile#me";
 
         // DELETE the LDP-RS
-        try (final Response res = target(resource).request().header(AUTHORIZATION, buildJwt(agent2, getJwtSecret()))
-                .delete()) {
+        try (final Response res = target(resource).request().header(AUTHORIZATION, buildJwt(agent2)).delete()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful LDP-RS DELETE");
             assertAll("Check the LDP-DC parent resource",
                     checkResourceParentLdpDC(resource, agent2, AS.Delete, LDP.RDFSource, LDP.Container));
@@ -274,7 +266,7 @@ public interface EventTests extends CommonTests {
 
         // POST an LDP-RS
         try (final Response res = target(getIndirectContainerLocation()).request()
-                .header(AUTHORIZATION, buildJwt(agent, getJwtSecret()))
+                .header(AUTHORIZATION, buildJwt(agent))
                 .post(entity(getResourceAsString(CHILD_RESOURCE_FILE), TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful POST in an LDP-IC");
             assertAll("Check the LDP-IC parent", checkResourceParentLdpIC(res.getLocation().toString(),
@@ -292,7 +284,7 @@ public interface EventTests extends CommonTests {
 
         // POST an LDP-RS
         try (final Response res = target(getIndirectContainerLocation()).request()
-                .header(AUTHORIZATION, buildJwt(agent, getJwtSecret())).post(entity(childContent, TEXT_TURTLE))) {
+                .header(AUTHORIZATION, buildJwt(agent)).post(entity(childContent, TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful POST to an LDP-IC");
             resource = res.getLocation().toString();
         }
@@ -303,7 +295,7 @@ public interface EventTests extends CommonTests {
         final String agent2 = "https://hayden.example.com/profile#me";
 
         // Replace the LDP-RS
-        try (final Response res = target(resource).request().header(AUTHORIZATION, buildJwt(agent2, getJwtSecret()))
+        try (final Response res = target(resource).request().header(AUTHORIZATION, buildJwt(agent2))
                 .put(entity(childContent + "\n<> a <http://example.com/Type3> .", TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful PUT in an LDP-IC");
         }
@@ -324,7 +316,7 @@ public interface EventTests extends CommonTests {
 
         // POST an LDP-RS
         try (final Response res = target(getIndirectContainerLocation()).request()
-                .header(AUTHORIZATION, buildJwt(agent, getJwtSecret())).post(entity(childContent, TEXT_TURTLE))) {
+                .header(AUTHORIZATION, buildJwt(agent)).post(entity(childContent, TEXT_TURTLE))) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful POST in an LDP-IC");
             resource = res.getLocation().toString();
             assertAll("Check the LDP-IC parent resource",
@@ -334,8 +326,7 @@ public interface EventTests extends CommonTests {
         final String agent2 = "https://daryl.example.com/profile#me";
 
         // DELETE the LDP-RS
-        try (final Response res = target(resource).request().header(AUTHORIZATION, buildJwt(agent2, getJwtSecret()))
-                .delete()) {
+        try (final Response res = target(resource).request().header(AUTHORIZATION, buildJwt(agent2)).delete()) {
             assertEquals(SUCCESSFUL, res.getStatusInfo().getFamily(), "Check for a successful DELETE in an LDP-IC");
             assertAll("Check the LDP-IC parent resource",
                     checkResourceParentLdpIC(resource, agent2, AS.Delete, LDP.RDFSource, LDP.Container));
@@ -345,7 +336,7 @@ public interface EventTests extends CommonTests {
 
     default void testReceiveCreateMessageACL() {
 
-        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString(), getJwtSecret());
+        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString());
 
         final String resourceContent = getResourceAsString(CHILD_RESOURCE_FILE);
 
@@ -377,7 +368,7 @@ public interface EventTests extends CommonTests {
 
     default void testReceiveUpdateMessageACL() {
 
-        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString(), getJwtSecret());
+        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString());
 
         final String resourceContent = getResourceAsString(CHILD_RESOURCE_FILE);
 
@@ -425,7 +416,7 @@ public interface EventTests extends CommonTests {
 
     default void testReceiveDeleteMessageACL() {
 
-        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString(), getJwtSecret());
+        final String jwt = buildJwt(Trellis.AdministratorAgent.getIRIString());
 
         final String resourceContent = getResourceAsString(CHILD_RESOURCE_FILE);
 

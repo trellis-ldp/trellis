@@ -57,12 +57,6 @@ public abstract class AbstractApplicationAuthTests {
     public abstract String getBaseURL();
 
     /**
-     * Get the JWT secret.
-     * @return the JWT secret
-     */
-    public abstract String getJwtSecret();
-
-    /**
      * Get the credentials for the first user.
      * @return the credentials
      */
@@ -84,7 +78,7 @@ public abstract class AbstractApplicationAuthTests {
 
         @Override
         public String getAuthorizationHeader() {
-            return buildJwt(getAdminWebId(), AbstractApplicationAuthTests.this.getJwtSecret());
+            return buildJwt(getAdminWebId());
         }
     }
 
@@ -92,8 +86,7 @@ public abstract class AbstractApplicationAuthTests {
 
         @Override
         public String getAuthorizationHeader() {
-            return buildJwt("https://people.apache.org/~acoburn/#i",
-                    AbstractApplicationAuthTests.this.getJwtSecret());
+            return buildJwt("https://people.apache.org/~acoburn/#i");
         }
     }
 
@@ -107,8 +100,7 @@ public abstract class AbstractApplicationAuthTests {
     public class OtherUserTests extends BasicTests implements AuthOtherUserTests {
         @Override
         public String getAuthorizationHeader() {
-            return buildJwt("https://madison.example.com/profile/#me",
-                    AbstractApplicationAuthTests.this.getJwtSecret());
+            return buildJwt("https://madison.example.com/profile/#me");
         }
     }
 
@@ -290,7 +282,7 @@ public abstract class AbstractApplicationAuthTests {
         public void setUp() {
             final String acl = "acl";
             final String prefixAcl = "PREFIX acl: <http://www.w3.org/ns/auth/acl#>\n\n";
-            final String jwt = buildJwt(getAdminWebId(), AbstractApplicationAuthTests.this.getJwtSecret());
+            final String jwt = buildJwt(getAdminWebId());
 
             final String containerContent = getResourceAsString("/basicContainer.ttl");
             final String container;
