@@ -28,7 +28,6 @@ import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 
 import org.trellisldp.http.*;
-import org.trellisldp.oauth.OAuthFilter;
 
 /**
  * Web Application wrapper.
@@ -46,9 +45,6 @@ public class WebApplication extends Application {
     @Inject
     private CacheControlFilter cacheFilter;
 
-    @Inject
-    private OAuthFilter oauthFilter;
-
     @PostConstruct
     void init() {
         printBanner("Trellis Triplestore Application", "org/trellisldp/app/banner.txt");
@@ -56,6 +52,6 @@ public class WebApplication extends Application {
 
     @Override
     public Set<Object> getSingletons() {
-        return new HashSet<>(asList(httpResource, httpFilter, cacheFilter, oauthFilter));
+        return new HashSet<>(asList(httpResource, httpFilter, cacheFilter));
     }
 }
