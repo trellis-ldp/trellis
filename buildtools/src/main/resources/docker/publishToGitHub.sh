@@ -25,16 +25,5 @@ if [[ $VERSION != *SNAPSHOT* ]]; then
 
     docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$VERSION" .
     docker push "$IMAGE:$VERSION"
-
-    #########################
-    # Dropwizard-based image
-    #########################
-    IMAGE=docker.pkg.github.com/trellis-ldp/trellis/trellis
-
-    cd ../dropwizard
-    ../../gradlew assemble
-
-    docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$VERSION" .
-    docker push "$IMAGE:$VERSION"
 fi
 

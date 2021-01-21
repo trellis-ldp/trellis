@@ -22,7 +22,6 @@ dependencies {
     implementation project(':trellis-cache')
     implementation project(':trellis-cdi')
     implementation project(':trellis-constraint')
-    implementation project(':trellis-dropwizard')
     implementation project(':trellis-file')
     implementation project(':trellis-jdbc')
     implementation project(':trellis-jena')
