@@ -49,23 +49,3 @@ fi
 
 docker push $IMAGE
 
-
-#########################
-# Dropwizard-based image
-#########################
-IMAGE=trellisldp/trellis
-
-cd ../dropwizard
-../../gradlew assemble
-
-# Don't use latest/develop tags for maintenance branches
-if [[ $BRANCH == *.x ]]; then
-    docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$VERSION" .
-else
-    docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$TAG" -t "$IMAGE:$VERSION" .
-fi
-
-docker push $IMAGE
-
-
-

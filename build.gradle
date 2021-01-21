@@ -34,7 +34,6 @@ ext {
 
     // Component dependencies
     activeMqVersion = "5.16.0"
-    dropwizardVersion = "2.0.18"
     guavaVersion = "30.1-jre"
     jacksonVersion = "2.12.1"
     jdbiVersion = "3.18.0"
@@ -103,7 +102,6 @@ ext {
 
     omitFromJacocoReporting = [
         'trellis-bom',
-        'trellis-dropwizard-app',
         'trellis-karaf',
         'trellis-openliberty',
         'trellis-osgi',
@@ -112,7 +110,6 @@ ext {
     ]
 
     omitFromMavenPublishing = [
-        'trellis-dropwizard-app',
         'trellis-osgi',
         'trellis-quarkus',
         'trellis-openliberty'
