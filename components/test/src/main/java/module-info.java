@@ -37,7 +37,7 @@ module org.trellisldp.test {
     requires jakarta.inject;
 
     requires awaitility;
-    requires jjwt.api;
+    requires smallrye.jwt.build;
 
     opens org.trellisldp.test;
 }

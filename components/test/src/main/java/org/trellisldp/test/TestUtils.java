@@ -15,7 +15,6 @@
  */
 package org.trellisldp.test;
 
-import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.now;
 import static java.util.Collections.emptySet;
@@ -27,7 +26,7 @@ import static org.trellisldp.vocabulary.RDF.type;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.jsonwebtoken.Jwts;
+import io.smallrye.jwt.build.Jwt;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,15 +60,14 @@ public final class TestUtils {
             new NoopProfileCache(), emptySet(), emptySet(), false);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+
     /**
-     * Build a JWT Token.
-     * @param webid the web ID
-     * @param secret the JWT secret
-     * @return the JWT token
+     * Get a bearer token for the given webid.
+     * @param webid the webid
+     * @return the bearer token
      */
-    public static String buildJwt(final String webid, final String secret) {
-        return "Bearer " + Jwts.builder().claim("webid", webid)
-            .signWith(hmacShaKeyFor(secret.getBytes(UTF_8))).compact();
+    public static String buildJwt(final String webid) {
+        return "Bearer " + Jwt.claims().claim("webid", webid).sign();
     }
 
     /**

@@ -24,7 +24,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "commons-io:commons-io:$commonsIoVersion"
-    implementation "io.jsonwebtoken:jjwt-api:$jjwtVersion"
+    implementation "io.smallrye:smallrye-jwt-build:$smallryeJwtVersion"
     implementation "jakarta.ws.rs:jakarta.ws.rs-api:$jaxrsApiVersion"
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
     implementation "org.apache.commons:commons-text:$commonsTextVersion"
