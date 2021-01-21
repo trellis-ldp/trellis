@@ -38,7 +38,6 @@ dependencies {
     implementation project(':trellis-http')
     implementation project(':trellis-jena')
     implementation project(':trellis-namespace')
-    implementation project(':trellis-oauth')
     implementation project(':trellis-rdfa')
     implementation project(':trellis-triplestore')
     implementation project(':trellis-vocabulary')
