@@ -15,13 +15,12 @@
  */
 package org.trellisldp.jdbc;
 
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import javax.sql.DataSource;
@@ -39,32 +38,14 @@ public class DBNamespaceService implements NamespaceService {
 
     private static final Logger LOGGER = getLogger(DBNamespaceService.class);
 
-    private final Jdbi jdbi;
+    private Jdbi jdbi;
 
-    /**
-     * Create a namespace service.
-     *
-     * <p>Note: this is generally used for CDI proxies and should not be invoked directly
-     */
-    public DBNamespaceService() {
-        this(Jdbi.create(getConfig().getOptionalValue(DBResourceService.CONFIG_JDBC_URL, String.class).orElse("")));
-    }
-
-    /**
-     * Create a namespace service.
-     * @param ds the datasource
-     */
     @Inject
-    public DBNamespaceService(final DataSource ds) {
-        this(Jdbi.create(ds));
-    }
+    DataSource ds;
 
-    /**
-     * Create a namespace service.
-     * @param jdbi the Jdbi object
-     */
-    public DBNamespaceService(final Jdbi jdbi) {
-        this.jdbi = jdbi;
+    @PostConstruct
+    void init() {
+        jdbi = Jdbi.create(ds);
         LOGGER.info("Initialized DB Namespace Service");
     }
 
@@ -73,7 +54,7 @@ public class DBNamespaceService implements NamespaceService {
         final Map<String, String> namespaces = new HashMap<>();
         jdbi.useHandle(handle ->
                 handle.select("SELECT prefix, namespace FROM namespaces")
-                    .map((rs, ctx) -> new SimpleImmutableEntry<>(rs.getString("prefix"), rs.getString("namespace")))
+                    .map((rs, ctx) -> Map.entry(rs.getString("prefix"), rs.getString("namespace")))
                     .forEach(pair -> namespaces.put(pair.getKey(), pair.getValue())));
         return namespaces;
     }

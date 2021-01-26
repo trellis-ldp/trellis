@@ -19,7 +19,12 @@ import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 
+import java.util.Optional;
+
+import javax.sql.DataSource;
+
 import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.test.AbstractResourceServiceTests;
 
@@ -31,10 +36,23 @@ class ResourceServiceTest extends AbstractResourceServiceTests {
 
     private static final EmbeddedPostgres pg = DBTestUtils.setupDatabase("build");
 
-    private final ResourceService svc = new DBResourceService(pg.getPostgresDatabase());
+    private final ResourceService svc = buildResourceService(pg.getPostgresDatabase());
 
     @Override
     public ResourceService getResourceService() {
         return svc;
+    }
+
+    ResourceService buildResourceService(final DataSource ds) {
+        final DBResourceService rs = new DBResourceService();
+        rs.ds = ds;
+        rs.extensionConfig = Optional.empty();
+        rs.batchSize = 1000;
+        rs.includeLdpType = true;
+        rs.supportDirectContainment = true;
+        rs.supportIndirectContainment = true;
+        rs.idService = new DefaultIdentifierService();
+        rs.init();
+        return rs;
     }
 }

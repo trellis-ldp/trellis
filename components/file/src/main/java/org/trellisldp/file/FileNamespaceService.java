@@ -30,9 +30,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Alternative;
+import javax.inject.Inject;
 
-import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.trellisldp.api.NamespaceService;
 
@@ -50,25 +52,22 @@ public class FileNamespaceService implements NamespaceService {
     private static final Logger LOGGER = getLogger(FileNamespaceService.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private final String filePath;
-    private final Map<String, String> data;
-    private final Map<String, String> dataRev = new ConcurrentHashMap<>();
+    private Map<String, String> data;
+    private Map<String, String> dataRev = new ConcurrentHashMap<>();
 
-    /**
-     * Create a JSON-based Namespace service.
-     */
-    public FileNamespaceService() {
-        this(ConfigProvider.getConfig().getValue(CONFIG_FILE_NAMESPACE_PATH, String.class));
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_FILE_NAMESPACE_PATH)
+    String filePath;
 
-    /**
-     * Create a JSON-based Namespace service.
-     * @param path the path to the JSON file
-     */
-    public FileNamespaceService(final String path) {
-        this.filePath = path;
-        this.data = read(path);
-        init();
+    @PostConstruct
+    void init() {
+        data = read(filePath);
+        if (data.isEmpty()) {
+            data.putAll(read(Thread.currentThread().getContextClassLoader()
+                        .getResource("org/trellisldp/file/defaultNamespaces.json").getPath()));
+            write(filePath, data);
+        }
+        data.forEach((k, v) -> dataRev.put(v, k));
     }
 
     @Override
@@ -90,15 +89,6 @@ public class FileNamespaceService implements NamespaceService {
         dataRev.put(namespace, prefix);
         write(filePath, data);
         return true;
-    }
-
-    private void init() {
-        if (data.isEmpty()) {
-            data.putAll(read(Thread.currentThread().getContextClassLoader()
-                        .getResource("org/trellisldp/file/defaultNamespaces.json").getPath()));
-            write(filePath, data);
-        }
-        data.forEach((k, v) -> dataRev.put(v, k));
     }
 
     static Map<String, String> read(final String filePath) {

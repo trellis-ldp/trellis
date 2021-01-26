@@ -21,18 +21,8 @@ import static java.util.Collections.singletonMap;
 import static java.util.Optional.of;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.function.Predicate.isEqual;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.condition.OS.WINDOWS;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -49,8 +39,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
@@ -66,7 +59,6 @@ import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
-import org.trellisldp.api.ResourceService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.DC;
 import org.trellisldp.vocabulary.FOAF;
@@ -97,7 +89,7 @@ class DBResourceTest {
 
     private static EmbeddedPostgres pg = null;
 
-    private static ResourceService svc = null;
+    private static DBResourceService svc = new DBResourceService();
 
     static {
         try {
@@ -114,46 +106,32 @@ class DBResourceTest {
                 liquibase.update(ctx);
             }
 
-            svc = new DBResourceService(pg.getPostgresDatabase());
-
+            svc.ds = pg.getPostgresDatabase();
+            svc.extensionConfig = Optional.of(new String[]{
+                "acl=http://www.trellisldp.org/ns/trellis#PreferAccessControl",
+                "test=http://example.com/TestGraph"});
+            svc.batchSize = 1000;
+            svc.includeLdpType = true;
+            svc.supportDirectContainment = true;
+            svc.supportIndirectContainment = true;
+            svc.idService = idService;
+            svc.init();
         } catch (final IOException | SQLException | LiquibaseException ex) {
             LOGGER.error("Error setting up tests", ex);
         }
     }
 
     @Test
-    void testNoargResourceService() {
-        try {
-            System.setProperty(DBResourceService.CONFIG_JDBC_URL, pg.getJdbcUrl("postgres", "postgres"));
-            final ResourceService svc2 = new DBResourceService();
-            final Resource res = svc2.get(root).toCompletableFuture().join();
-            assertEquals(LDP.BasicContainer, res.getInteractionModel());
-            assertFalse(res.getContainer().isPresent());
-        } finally {
-            System.clearProperty(DBResourceService.CONFIG_JDBC_URL);
-        }
-    }
-
-    @Test
     void testDisableExtendedContainers() {
-        try {
-            System.setProperty(DBResourceService.CONFIG_JDBC_DIRECT_CONTAINMENT, "false");
-            System.setProperty(DBResourceService.CONFIG_JDBC_INDIRECT_CONTAINMENT, "false");
-            assertTrue(svc.supportedInteractionModels().contains(LDP.IndirectContainer));
-            assertTrue(svc.supportedInteractionModels().contains(LDP.DirectContainer));
-            final ResourceService svc2 = new DBResourceService(pg.getPostgresDatabase());
-            assertFalse(svc2.supportedInteractionModels().contains(LDP.IndirectContainer));
-            assertFalse(svc2.supportedInteractionModels().contains(LDP.DirectContainer));
-
-        } finally {
-            System.clearProperty(DBResourceService.CONFIG_JDBC_DIRECT_CONTAINMENT);
-            System.clearProperty(DBResourceService.CONFIG_JDBC_INDIRECT_CONTAINMENT);
-        }
-    }
-
-    @Test
-    void testNoargResourceServiceNoConfig() {
-        assertDoesNotThrow(() -> new DBResourceService());
+        assertTrue(svc.supportedInteractionModels().contains(LDP.IndirectContainer));
+        assertTrue(svc.supportedInteractionModels().contains(LDP.DirectContainer));
+        final DBResourceService svc2 = new DBResourceService();
+        svc2.ds = pg.getPostgresDatabase();
+        svc2.idService = idService;
+        svc2.extensionConfig = Optional.empty();
+        svc2.init();
+        assertFalse(svc2.supportedInteractionModels().contains(LDP.IndirectContainer));
+        assertFalse(svc2.supportedInteractionModels().contains(LDP.DirectContainer));
     }
 
     @Test
@@ -164,8 +142,11 @@ class DBResourceTest {
 
     @Test
     void testReinit() {
-        final ResourceService svc2 = new DBResourceService(pg.getPostgresDatabase());
-        assertNotNull(svc2);
+        final DBResourceService svc2 = new DBResourceService();
+        svc2.ds = pg.getPostgresDatabase();
+        svc2.idService = idService;
+        svc2.extensionConfig = Optional.empty();
+        assertDoesNotThrow(svc2::init);
     }
 
     @Test
@@ -460,24 +441,33 @@ class DBResourceTest {
     }
 
     @Test
-    void testTouchErrorCondition() {
+    void testTouchErrorCondition() throws Exception {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        final Jdbi mockJdbi = mock(Jdbi.class);
-        doThrow(RuntimeException.class).when(mockJdbi).useHandle(any());
+        final DataSource mockDataSource = mock(DataSource.class);
+        doThrow(RuntimeException.class).when(mockDataSource).getConnection();
 
-        final ResourceService svc2 = new DBResourceService(mockJdbi, 100, false, idService);
+        final DBResourceService svc2 = new DBResourceService();
+        svc2.ds = mockDataSource;
+        svc2.batchSize = 100;
+        svc2.idService = idService;
+        svc2.extensionConfig = Optional.empty();
         final CompletableFuture<Void> future = svc2.touch(identifier).toCompletableFuture();
         assertThrows(CompletionException.class, future::join);
     }
 
     @Test
-    void testCreateErrorCondition2() {
+    void testCreateErrorCondition2() throws Exception {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final Dataset dataset = rdf.createDataset();
-        final Jdbi mockJdbi = mock(Jdbi.class);
-        doThrow(RuntimeException.class).when(mockJdbi).useTransaction(any());
+        final DataSource mockDataSource = mock(DataSource.class);
+        doThrow(RuntimeException.class).when(mockDataSource).getConnection();
 
-        final ResourceService svc2 = new DBResourceService(mockJdbi, 100, false, idService);
+        final DBResourceService svc2 = new DBResourceService();
+        svc2.ds = mockDataSource;
+        svc2.batchSize = 100;
+        svc2.idService = idService;
+        svc2.extensionConfig = Optional.empty();
+        svc2.init();
         final CompletableFuture<Void> future = svc2.create(builder(identifier).interactionModel(LDP.Container).build(),
                 dataset).toCompletableFuture();
 
@@ -495,7 +485,7 @@ class DBResourceTest {
     @Test
     void testBuildExtensionMap() {
         final Map<String, IRI> extensions = DBResourceService.buildExtensionMap(
-                "foo=http://example.com/Foo,bar=http://example.com/Bar");
+                new String[]{"foo=http://example.com/Foo", "bar=http://example.com/Bar"});
         assertEquals(2, extensions.size());
         assertEquals(rdf.createIRI("http://example.com/Foo"), extensions.get("foo"));
         assertEquals(rdf.createIRI("http://example.com/Bar"), extensions.get("bar"));
@@ -504,23 +494,9 @@ class DBResourceTest {
     @Test
     void testBuildExtensionMapOddities() {
         final Map<String, IRI> extensions = DBResourceService.buildExtensionMap(
-                "foo, ,bar=http://example.com/Bar, baz = , = baz ");
+                new String[]{"foo", " ", "bar=http://example.com/Bar", "baz = ", "= baz "});
         assertEquals(1, extensions.size());
         assertEquals(rdf.createIRI("http://example.com/Bar"), extensions.get("bar"));
-    }
-
-    @Test
-    void testBuildDefaultExtensionMap() {
-        final String prop = "trellis.http.extension-graphs";
-        final String original = getConfig().getValue(prop, String.class);
-        try {
-            System.clearProperty(prop);
-            final Map<String, IRI> graphs = DBResourceService.buildExtensionMap();
-            assertEquals(1, graphs.size());
-            assertEquals(Trellis.PreferAccessControl, graphs.get("acl"));
-        } finally {
-            System.setProperty(prop, original);
-        }
     }
 
     @Test

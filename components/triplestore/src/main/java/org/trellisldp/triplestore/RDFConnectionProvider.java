@@ -15,34 +15,34 @@
  */
 package org.trellisldp.triplestore;
 
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.trellisldp.triplestore.TriplestoreResourceService.CONFIG_TRIPLESTORE_RDF_LOCATION;
 import static org.trellisldp.triplestore.TriplestoreResourceService.buildRDFConnection;
 
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
 public class RDFConnectionProvider {
 
-    private final RDFConnection rdfConnection;
+    @Inject
+    @ConfigProperty(name = CONFIG_TRIPLESTORE_RDF_LOCATION)
+    Optional<String> connectionString;
+
+    private RDFConnection rdfConnection;
 
     /**
      * Create an RDFConnection bean.
      */
-    public RDFConnectionProvider() {
-        this(buildRDFConnection(getConfig()
-                    .getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class).orElse(null)));
-    }
-
-    /**
-     * Create an RDFConnection provider with a user-supplied connection.
-     * @param rdfConnection the RDF connection
-     */
-    public RDFConnectionProvider(final RDFConnection rdfConnection) {
-        this.rdfConnection = rdfConnection;
+    @PostConstruct
+    void init() {
+        rdfConnection = buildRDFConnection(connectionString.orElse(null));
     }
 
     @Produces

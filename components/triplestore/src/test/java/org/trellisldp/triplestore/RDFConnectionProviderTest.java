@@ -18,37 +18,36 @@ package org.trellisldp.triplestore;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
+import java.util.Optional;
 
 import org.apache.jena.rdfconnection.RDFConnectionLocal;
 import org.apache.jena.rdfconnection.RDFConnectionRemote;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class RDFConnectionProviderTest {
 
-    @AfterEach
-    void cleanup() {
-        System.clearProperty(TriplestoreResourceService.CONFIG_TRIPLESTORE_RDF_LOCATION);
-    }
-
     @Test
     void testRDFConnectionMemory() {
         final RDFConnectionProvider provider = new RDFConnectionProvider();
+        provider.connectionString = Optional.empty();
+        provider.init();
         assertTrue(provider.getRdfConnection() instanceof RDFConnectionLocal);
     }
 
     @Test
     void testRDFConnectionRemote() {
-        System.setProperty(TriplestoreResourceService.CONFIG_TRIPLESTORE_RDF_LOCATION, "http://example.com/sparql");
         final RDFConnectionProvider provider = new RDFConnectionProvider();
+        provider.connectionString = Optional.of("http://example.com/sparql");
+        provider.init();
         assertTrue(provider.getRdfConnection() instanceof RDFConnectionRemote);
     }
 
     @Test
     void testRDFConnectionLocal() throws Exception {
         final File dir = new File(new File(getClass().getResource("/logback-test.xml").toURI()).getParent(), "data2");
-        System.setProperty(TriplestoreResourceService.CONFIG_TRIPLESTORE_RDF_LOCATION, dir.getAbsolutePath());
         final RDFConnectionProvider provider = new RDFConnectionProvider();
+        provider.connectionString = Optional.of(dir.getAbsolutePath());
+        provider.init();
         assertTrue(provider.getRdfConnection() instanceof RDFConnectionLocal);
     }
 }

@@ -30,7 +30,6 @@ import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.slf4j.Logger;
-import org.trellisldp.api.NamespaceService;
 import org.trellisldp.vocabulary.LDP;
 
 import liquibase.Contexts;
@@ -66,26 +65,10 @@ class DBNamespaceServiceTest {
     }
 
     @Test
-    void testNoargNamespaceService() {
-        try {
-            System.setProperty(DBResourceService.CONFIG_JDBC_URL, pg.getJdbcUrl("postgres", "postgres"));
-            final NamespaceService svc = new DBNamespaceService();
-
-            assertTrue(svc.getNamespaces().containsKey("ldp"));
-            assertEquals(LDP.getNamespace(), svc.getNamespaces().get("ldp"));
-        } finally {
-            System.clearProperty(DBResourceService.CONFIG_JDBC_URL);
-        }
-    }
-
-    @Test
-    void testNoargNamespaceServiceNoConfig() {
-        assertDoesNotThrow(() -> new DBNamespaceService());
-    }
-
-    @Test
     void testNamespaceService() {
-        final NamespaceService svc = new DBNamespaceService(pg.getPostgresDatabase());
+        final DBNamespaceService svc = new DBNamespaceService();
+        svc.ds = pg.getPostgresDatabase();
+        assertDoesNotThrow(svc::init);
 
         assertTrue(svc.getNamespaces().containsKey("ldp"));
         assertEquals(LDP.getNamespace(), svc.getNamespaces().get("ldp"));

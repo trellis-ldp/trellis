@@ -20,14 +20,11 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableSet;
-import static java.util.Objects.requireNonNull;
 import static java.util.Optional.of;
-import static java.util.ServiceLoader.load;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toMap;
 import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.riot.Lang.NTRIPLES;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.jdbc.DBUtils.getObjectDatatype;
 import static org.trellisldp.jdbc.DBUtils.getObjectLang;
@@ -41,13 +38,13 @@ import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.ServiceLoader;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.sql.DataSource;
@@ -58,13 +55,13 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;
 import org.apache.jena.riot.RDFDataMgr;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.statement.PreparedBatch;
 import org.jdbi.v3.core.statement.Update;
 import org.slf4j.Logger;
 import org.trellisldp.api.BinaryMetadata;
-import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
@@ -107,87 +104,52 @@ public class DBResourceService implements ResourceService {
     /** The configuration key used to define whether direct containers are supported. */
     public static final String CONFIG_JDBC_INDIRECT_CONTAINMENT = "trellis.jdbc.indirect-containment";
 
-    /** The default size of a database batch write operation. */
-    public static final int DEFAULT_BATCH_SIZE = 1000;
-
     private static final Logger LOGGER = getLogger(DBResourceService.class);
     private static final RDF rdf = RDFFactory.getInstance();
     private static final String ACL_EXT = "acl";
 
-    private final Supplier<String> supplier;
-    private final Jdbi jdbi;
-    private final boolean includeLdpType;
-    private final boolean supportDirectContainment;
-    private final boolean supportIndirectContainment;
-    private final Map<String, IRI> extensions;
-    private final Set<IRI> supportedIxnModels;
-    private final int batchSize;
+    private Supplier<String> supplier;
+    private Jdbi jdbi;
+    private Map<String, IRI> extensions;
+    private Set<IRI> supportedIxnModels;
 
-    /**
-     * Create a Database-backed resource service.
-     *
-     * <p>This constructor is generally used by CDI proxies and should
-     * not be invoked directly.
-     */
-    public DBResourceService() {
-        this(Jdbi.create(getConfig().getOptionalValue(CONFIG_JDBC_URL, String.class).orElse("")),
-                DEFAULT_BATCH_SIZE, false, new DefaultIdentifierService());
-    }
-
-    /**
-     * Create a Database-backed resource service.
-     * @param ds the data source
-     */
     @Inject
-    public DBResourceService(final DataSource ds) {
-        this(Jdbi.create(ds));
-    }
+    @ConfigProperty(name = CONFIG_HTTP_EXTENSION_GRAPHS)
+    Optional<String[]> extensionConfig;
 
-    /**
-     * Create a Database-backed resource service.
-     * @param jdbi the jdbi object
-     */
-    public DBResourceService(final Jdbi jdbi) {
-        this(jdbi, getConfig().getOptionalValue(CONFIG_JDBC_BATCH_SIZE, Integer.class).orElse(DEFAULT_BATCH_SIZE),
-                getConfig().getOptionalValue(CONFIG_JDBC_LDP_TYPE, Boolean.class).orElse(Boolean.TRUE),
-                getConfig().getOptionalValue(CONFIG_JDBC_DIRECT_CONTAINMENT, Boolean.class).orElse(Boolean.TRUE),
-                getConfig().getOptionalValue(CONFIG_JDBC_INDIRECT_CONTAINMENT, Boolean.class).orElse(Boolean.TRUE),
-                of(load(IdentifierService.class)).map(ServiceLoader::iterator).filter(Iterator::hasNext)
-                    .map(Iterator::next).orElseGet(DefaultIdentifierService::new));
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_JDBC_BATCH_SIZE,
+                    defaultValue = "1000")
+    int batchSize;
 
-    /**
-     * Create a Database-backed resource service.
-     * @param jdbi the jdbi object
-     * @param batchSize the batch size
-     * @param includeLdpType whether to include the LDP type in the RDF body
-     * @param identifierService an ID supplier service
-     */
-    public DBResourceService(final Jdbi jdbi, final int batchSize, final boolean includeLdpType,
-            final IdentifierService identifierService) {
-        this(jdbi, batchSize, includeLdpType, true, true, identifierService);
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_JDBC_LDP_TYPE,
+                    defaultValue = "true")
+    boolean includeLdpType;
 
-    /**
-     * Create a Database-backed resource service.
-     * @param jdbi the jdbi object
-     * @param batchSize the batch size
-     * @param includeLdpType whether to include the LDP type in the RDF body
-     * @param supportDirectContainment whether to support direct containment
-     * @param supportIndirectContainment whether to support indirect containment
-     * @param identifierService an ID supplier service
-     */
-    public DBResourceService(final Jdbi jdbi, final int batchSize, final boolean includeLdpType,
-            final boolean supportDirectContainment, final boolean supportIndirectContainment,
-            final IdentifierService identifierService) {
-        this.jdbi = requireNonNull(jdbi, "Jdbi may not be null!");
-        this.supplier = requireNonNull(identifierService, "IdentifierService may not be null!").getSupplier();
-        this.batchSize = batchSize;
-        this.includeLdpType = includeLdpType;
-        this.extensions = buildExtensionMap();
-        this.supportDirectContainment = supportDirectContainment;
-        this.supportIndirectContainment = supportIndirectContainment;
-        LOGGER.info("Using database persistence with TrellisLDP");
+    @Inject
+    @ConfigProperty(name = CONFIG_JDBC_DIRECT_CONTAINMENT,
+                    defaultValue = "true")
+    boolean supportDirectContainment;
+
+    @Inject
+    @ConfigProperty(name = CONFIG_JDBC_INDIRECT_CONTAINMENT,
+                    defaultValue = "true")
+    boolean supportIndirectContainment;
+
+    @Inject
+    IdentifierService idService;
+
+    @Inject
+    DataSource ds;
+
+    @PostConstruct
+    void init() {
+        jdbi = Jdbi.create(ds);
+        supplier = idService.getSupplier();
+        extensions = extensionConfig.map(DBResourceService::buildExtensionMap).orElseGet(() ->
+                    singletonMap(ACL_EXT, PreferAccessControl));
+
         final Set<IRI> ixnModels = new HashSet<>(asList(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
                     LDP.BasicContainer));
         if (supportDirectContainment) {
@@ -196,7 +158,8 @@ public class DBResourceService implements ResourceService {
         if (supportIndirectContainment) {
             ixnModels.add(LDP.IndirectContainer);
         }
-        this.supportedIxnModels = unmodifiableSet(ixnModels);
+        supportedIxnModels = unmodifiableSet(ixnModels);
+        LOGGER.info("Using database persistence with TrellisLDP");
     }
 
     @Override
@@ -423,23 +386,13 @@ public class DBResourceService implements ResourceService {
 
     /*
      * Build a map suitable for extension graphs from a config string.
-     * @param extensions the config value
+     * @param extensions the config values
      * @return the formatted map
      */
-    static Map<String, IRI> buildExtensionMap(final String extensions) {
-        return stream(extensions.split(",")).map(item -> item.split("=")).filter(kv -> kv.length == 2)
+    static Map<String, IRI> buildExtensionMap(final String[] extensions) {
+        return stream(extensions).map(item -> item.split("=")).filter(kv -> kv.length == 2)
             .filter(kv -> !kv[0].trim().isEmpty() && !kv[1].trim().isEmpty())
             .collect(toMap(kv -> kv[0].trim(), kv -> rdf.createIRI(kv[1].trim())));
-    }
-
-    /**
-     * Build an extension map from configuration.
-     * @return the formatted map
-     */
-    static Map<String, IRI> buildExtensionMap() {
-        return getConfig().getOptionalValue(CONFIG_HTTP_EXTENSION_GRAPHS, String.class)
-            .map(DBResourceService::buildExtensionMap).orElseGet(() ->
-                    singletonMap(ACL_EXT, PreferAccessControl));
     }
 
     /**

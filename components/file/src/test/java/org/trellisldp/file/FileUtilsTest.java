@@ -143,7 +143,7 @@ class FileUtilsTest {
     void testWriteMementoBadDirectory() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File file = new File(getClass().getResource("/resource.nq").getFile());
-        final Resource res = new FileResource(identifier, file);
+        final Resource res = new FileResource(identifier, file, true);
         final File dir = new File(file.getParentFile(), "nonexistent");
         final Instant time = now();
 
@@ -153,12 +153,7 @@ class FileUtilsTest {
     @Test
     void testFilterServerManaged() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
-        try {
-            System.setProperty(FileUtils.CONFIG_FILE_LDP_TYPE, "false");
-            assertFalse(FileUtils.filterServerManagedQuads(rdf.createQuad(Trellis.PreferServerManaged,
-                            identifier, type, LDP.Container)));
-        } finally {
-            System.clearProperty(FileUtils.CONFIG_FILE_LDP_TYPE);
-        }
+        assertFalse(FileUtils.filterServerManagedQuads(rdf.createQuad(Trellis.PreferServerManaged,
+                        identifier, type, LDP.Container), false));
     }
 }

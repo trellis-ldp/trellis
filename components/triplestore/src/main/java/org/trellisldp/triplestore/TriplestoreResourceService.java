@@ -19,9 +19,7 @@ import static java.time.Instant.now;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static java.util.Collections.synchronizedList;
-import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Stream.builder;
@@ -32,7 +30,6 @@ import static org.apache.jena.query.DatasetFactory.wrap;
 import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.apache.jena.system.Txn.executeWrite;
 import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.normalizeIdentifier;
@@ -50,6 +47,7 @@ import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
@@ -79,8 +77,8 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementPathBlock;
 import org.apache.jena.update.UpdateRequest;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
-import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IdentifierService;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
@@ -114,40 +112,24 @@ public class TriplestoreResourceService implements ResourceService {
 
     private final Set<IRI> supportedIxnModels = Set.of(LDP.Resource, LDP.RDFSource, LDP.NonRDFSource, LDP.Container,
             LDP.BasicContainer, LDP.DirectContainer, LDP.IndirectContainer);
-    private final Supplier<String> supplier;
-    private final RDFConnection rdfConnection;
-    private final boolean includeLdpType;
-    private final Map<String, IRI> extensions;
 
-    /**
-     * Create a triplestore-backed resource service.
-     */
-    public TriplestoreResourceService() {
-        this(buildRDFConnection(getConfig().getOptionalValue(CONFIG_TRIPLESTORE_RDF_LOCATION, String.class)
-                    .orElse(null)));
-    }
+    private Supplier<String> supplier;
+    private Map<String, IRI> extensions;
 
-    /**
-     * Create a triplestore-backed resource service.
-     * @param rdfConnection the connection to an RDF datastore
-     */
-    public TriplestoreResourceService(final RDFConnection rdfConnection) {
-        this(rdfConnection, new DefaultIdentifierService());
-    }
-
-    /**
-     * Create a triplestore-backed resource service.
-     * @param rdfConnection the connection to an RDF datastore
-     * @param identifierService an ID supplier service
-     */
     @Inject
-    public TriplestoreResourceService(final RDFConnection rdfConnection, final IdentifierService identifierService) {
-        this.includeLdpType = getConfig().getOptionalValue(CONFIG_TRIPLESTORE_LDP_TYPE, Boolean.class)
-            .orElse(Boolean.TRUE);
-        this.rdfConnection = requireNonNull(rdfConnection, "RDFConnection may not be null!");
-        this.supplier = requireNonNull(identifierService, "IdentifierService may not be null!").getSupplier();
-        this.extensions = buildExtensionMap();
-    }
+    @ConfigProperty(name = CONFIG_TRIPLESTORE_LDP_TYPE,
+                    defaultValue = "true")
+    boolean includeLdpType = true;
+
+    @Inject
+    @ConfigProperty(name = CONFIG_HTTP_EXTENSION_GRAPHS)
+    Optional<String> extensionGraphConfig = Optional.empty();
+
+    @Inject
+    RDFConnection rdfConnection;
+
+    @Inject
+    IdentifierService idService;
 
     @Override
     public CompletionStage<Void> delete(final Metadata metadata) {
@@ -346,6 +328,10 @@ public class TriplestoreResourceService implements ResourceService {
      */
     @PostConstruct
     public void initialize() {
+        extensions = extensionGraphConfig.map(TriplestoreResourceService::buildExtensionMap)
+            .orElseGet(() -> Map.of(ACL_EXT, PreferAccessControl));
+        supplier = idService.getSupplier();
+
         final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
         final Query q = new Query();
         q.setQuerySelectType();
@@ -475,15 +461,5 @@ public class TriplestoreResourceService implements ResourceService {
         return stream(extensions.split(",")).map(item -> item.split("=")).filter(kv -> kv.length == 2)
             .filter(kv -> !kv[0].trim().isEmpty() && !kv[1].trim().isEmpty())
             .collect(toMap(kv -> kv[0].trim(), kv -> rdf.createIRI(kv[1].trim())));
-    }
-
-    /**
-     * Build an extension map from configuration.
-     * @return the formatted map
-     */
-    static Map<String, IRI> buildExtensionMap() {
-        return getConfig().getOptionalValue(CONFIG_HTTP_EXTENSION_GRAPHS, String.class)
-            .map(TriplestoreResourceService::buildExtensionMap).orElseGet(() ->
-                    singletonMap(ACL_EXT, PreferAccessControl));
     }
 }

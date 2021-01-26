@@ -26,7 +26,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.CompletionStage;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.annotation.Priority;
+import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import javax.sql.DataSource;
 
@@ -36,7 +37,8 @@ import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import org.slf4j.Logger;
 import org.trellisldp.api.*;
 
-@ApplicationScoped
+@Alternative
+@Priority(10)
 public class DBWrappedMementoService implements MementoService {
 
     private static final Logger LOGGER = getLogger(DBWrappedMementoService.class);

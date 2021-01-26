@@ -17,14 +17,17 @@ package org.trellisldp.namespace;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
-import org.trellisldp.api.NamespaceService;
 
 class SimpleNamespaceServiceTest {
 
     @Test
     void testNamespace() {
-        final NamespaceService svc = new SimpleNamespaceService();
+        final SimpleNamespaceService svc = new SimpleNamespaceService();
+        svc.mappingConfig = Optional.of("dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = ");
+        svc.init();
         assertEquals(11, svc.getNamespaces().size());
         assertTrue(svc.setPrefix("foo", "bar"));
         assertEquals(11, svc.getNamespaces().size());
@@ -32,7 +35,9 @@ class SimpleNamespaceServiceTest {
 
     @Test
     void testEnvNamespace() {
-        final NamespaceService svc = new SimpleNamespaceService();
+        final SimpleNamespaceService svc = new SimpleNamespaceService();
+        svc.mappingConfig = Optional.of("dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = ");
+        svc.init();
         final String dc11 = "http://purl.org/dc/elements/1.1/";
         assertEquals(dc11, svc.getNamespaces().get("dc11"));
     }

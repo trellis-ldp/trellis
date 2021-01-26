@@ -21,7 +21,6 @@ import javax.enterprise.inject.Produces;
 import org.trellisldp.api.*;
 import org.trellisldp.common.DefaultTimemapGenerator;
 import org.trellisldp.common.TimemapGenerator;
-import org.trellisldp.file.FileMementoService;
 
 /**
  * A managed bean that generates an RDF connection for the triplestore resource service.
@@ -31,7 +30,7 @@ public class TrellisServiceSupplier {
 
     private EventService eventService = new NoopEventService();
 
-    private MementoService mementoService = new FileMementoService();
+    private MementoService mementoService = new NoopMementoService();
 
     private TimemapGenerator timemapGenerator = new DefaultTimemapGenerator();
 
