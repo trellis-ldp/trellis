@@ -22,6 +22,7 @@ import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.jena.rdfconnection.RDFConnection;
+import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.ResourceService;
 import org.trellisldp.test.AbstractResourceServiceTests;
@@ -35,10 +36,18 @@ public class ResourceServiceTest extends AbstractResourceServiceTests {
 
     private final Dataset dataset = rdf.createDataset();
     private final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
-    private final ResourceService svc = new TriplestoreResourceService(rdfConnection);
+    private final ResourceService svc = buildResourceService(rdfConnection);
 
     @Override
     public ResourceService getResourceService() {
         return svc;
+    }
+
+    ResourceService buildResourceService(final RDFConnection connection) {
+        final TriplestoreResourceService service = new TriplestoreResourceService();
+        service.rdfConnection = connection;
+        service.idService = new DefaultIdentifierService();
+        service.initialize();
+        return service;
     }
 }

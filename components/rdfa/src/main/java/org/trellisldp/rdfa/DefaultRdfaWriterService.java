@@ -16,11 +16,8 @@
 package org.trellisldp.rdfa;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -34,16 +31,18 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Triple;
-import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.trellisldp.api.NamespaceService;
-import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.RDFaWriterService;
 
 /**
@@ -66,77 +65,34 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
     /** The configuration key controlling the JS URLs to use. */
     public static final String CONFIG_RDFA_JS = "trellis.rdfa.js";
 
-    private final NamespaceService namespaceService;
-    private final Mustache template;
-    private final List<String> css;
-    private final List<String> js;
-    private final String icon;
+    private Mustache template;
 
-    /**
-     * Create an HTML Serializer object.
-     */
-    public DefaultRdfaWriterService() {
-        this(new NoopNamespaceService());
-    }
-
-    /**
-     * Create an HTML Serializer object.
-     *
-     * @param namespaceService a namespace service
-     */
     @Inject
-    public DefaultRdfaWriterService(final NamespaceService namespaceService) {
-        this(namespaceService, getConfig());
-    }
+    @ConfigProperty(name = CONFIG_RDFA_TEMPLATE)
+    Optional<String> templateLocation;
 
-    private DefaultRdfaWriterService(final NamespaceService namespaceService, final Config config) {
-        this(namespaceService, config.getOptionalValue(CONFIG_RDFA_TEMPLATE, String.class).orElse(null),
-                config.getOptionalValue(CONFIG_RDFA_CSS, String.class)
-                    .orElse("//www.trellisldp.org/assets/css/trellis.css"),
-                config.getOptionalValue(CONFIG_RDFA_JS, String.class).orElse(""),
-                config.getOptionalValue(CONFIG_RDFA_ICON, String.class)
-                    .orElse("//www.trellisldp.org/assets/img/trellis.png"));
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_RDFA_ICON,
+                    defaultValue = "//www.trellisldp.org/assets/img/trellis.png")
+    String icon;
 
-    /**
-     * Create an HTML Serializer object.
-     *
-     * @param namespaceService a namespace service
-     * @param template the template location
-     * @param css the css to use (comma-delimited for multiple css documents)
-     * @param js the js to use (comma-delimited for multiple js documents)
-     * @param icon an icon, may be {@code null}
-     */
-    public DefaultRdfaWriterService(final NamespaceService namespaceService,
-            final String template, final String css,
-            final String js, final String icon) {
-        this(namespaceService, template, intoList(css), intoList(js), icon);
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_RDFA_CSS,
+                    defaultValue = "//www.trellisldp.org/assets/css/trellis.css")
+    Optional<String[]> css;
 
-    /**
-     * Create an HTML Serializer object.
-     *
-     * @param namespaceService a namespace service
-     * @param template the template location
-     * @param css the css to use (comma-delimited for multiple css documents)
-     * @param js the js to use (comma-delimited for multiple js documents)
-     * @param icon an icon, may be {@code null}
-     */
-    public DefaultRdfaWriterService(final NamespaceService namespaceService,
-            final String template, final List<String> css,
-            final List<String> js, final String icon) {
-        this.namespaceService = requireNonNull(namespaceService, "NamespaceService may not be null!");
-        final String templatePath = template != null ? template : "org/trellisldp/rdfa/resource.mustache";
-        final File tpl = new File(templatePath);
-        this.template = tpl.exists() ? mf.compile(templatePath) : mf.compile(getReader(templatePath), templatePath);
-        this.css = css != null ? css : emptyList();
-        this.js = js != null ? js : emptyList();
-        this.icon = icon;
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_RDFA_JS)
+    Optional<String[]> js;
 
-    private Reader getReader(final String template) {
-        return new InputStreamReader(Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(template), UTF_8);
+    @Inject
+    NamespaceService namespaceService;
+
+    @PostConstruct
+    void init() {
+        final String templatePath = templateLocation.orElse("org/trellisldp/rdfa/resource.mustache");
+        final File file = new File(templatePath);
+        template = file.exists() ? mf.compile(templatePath) : mf.compile(getReader(templatePath), templatePath);
     }
 
     /**
@@ -151,17 +107,17 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
         final Writer writer = new OutputStreamWriter(out, UTF_8);
         try {
             template
-                .execute(writer, new HtmlData(namespaceService, subject, triples.collect(toList()), css, js, icon))
+                .execute(writer, new HtmlData(namespaceService, subject, triples.collect(toList()),
+                            css.map(List::of).orElseGet(Collections::emptyList),
+                            js.map(List::of).orElseGet(Collections::emptyList), icon))
                 .flush();
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
     }
 
-    private static List<String> intoList(final String property) {
-        if (property != null) {
-            return stream(property.split(",")).map(String::trim).filter(x -> !x.isEmpty()).collect(toList());
-        }
-        return emptyList();
+    static Reader getReader(final String template) {
+        return new InputStreamReader(Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(template), UTF_8);
     }
 }

@@ -26,6 +26,3 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
 }
 
-test {
-    systemProperty 'trellis.namespace.mapping', 'dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = '
-}

@@ -7,7 +7,7 @@ description = 'Trellis JDBC component'
 
 ext {
     moduleName = 'org.trellisldp.jdbc'
-    testModules = ['smallrye.config', 'org.trellisldp.test', 'org.trellisldp.file', 'liquibase.core']
+    testModules = ['smallrye.config', 'org.trellisldp.test', 'liquibase.core']
 }
 
 dependencies {
@@ -38,18 +38,13 @@ dependencies {
     testImplementation "jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion"
     testImplementation "org.apache.commons:commons-text:$commonsTextVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation "org.yaml:snakeyaml:$snakeyamlVersion"
 
     testImplementation "org.liquibase:liquibase-core:$liquibaseVersion"
 
-    testImplementation project(":trellis-file")
     testImplementation project(":trellis-test")
 
     testRuntimeOnly "org.postgresql:postgresql:$postgresVersion"
-}
-
-test {
-    systemProperty 'trellis.file.memento-path', "$buildDir/data/mementos"
-    systemProperty 'trellis.http.extension-graphs', "acl=http://www.trellisldp.org/ns/trellis#PreferAccessControl,test=http://example.com/TestGraph"
 }
 

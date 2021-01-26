@@ -29,7 +29,6 @@ import java.security.SecureRandom;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.trellisldp.api.NamespaceService;
 import org.trellisldp.vocabulary.JSONLD;
 
 /**
@@ -42,25 +41,18 @@ class FileNamespaceServiceTest {
     @Test
     void testReadFromJson() {
         final URL res = FileNamespaceService.class.getResource(nsDoc);
-        try {
-            System.setProperty(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH, res.getPath());
-            final NamespaceService svc = new FileNamespaceService();
-            assertEquals(2, svc.getNamespaces().size(), "Namespace mapping count is incorrect!");
-        } finally {
-            System.clearProperty(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH);
-        }
+        final FileNamespaceService svc = new FileNamespaceService();
+        svc.filePath = res.getPath();
+        svc.init();
+        assertEquals(2, svc.getNamespaces().size(), "Namespace mapping count is incorrect!");
     }
 
     @Test
     void testReadError() {
         final URL res = FileNamespaceService.class.getResource("/thisIsNot.json");
-        try {
-            System.setProperty(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH, res.getPath());
-            assertThrows(UncheckedIOException.class, FileNamespaceService::new,
-                    "Loaded namespaces from invalid file!");
-        } finally {
-            System.clearProperty(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH);
-        }
+        final FileNamespaceService svc = new FileNamespaceService();
+        svc.filePath = res.getPath();
+        assertThrows(UncheckedIOException.class, svc::init, "Loaded namespaces from invalid file!");
     }
 
     @Test
@@ -73,8 +65,9 @@ class FileNamespaceServiceTest {
     void testWriteNonexistent() {
         final File file = new File(getClass().getResource(nsDoc).getFile());
         final File nonexistent = new File(file.getParentFile(), "nonexistent2/dir/file.json");
-        assertDoesNotThrow(() -> new FileNamespaceService(nonexistent.getAbsolutePath()),
-                    "Loaded namespaces from nonexistent directory!");
+        final FileNamespaceService svc = new FileNamespaceService();
+        svc.filePath = nonexistent.getAbsolutePath();
+        assertDoesNotThrow(svc::init, "Loaded namespaces from nonexistent directory!");
     }
 
     @Test
@@ -107,23 +100,21 @@ class FileNamespaceServiceTest {
         final File file = new File(FileNamespaceService.class.getResource(nsDoc).getPath());
         final String filename = file.getParent() + "/" + randomFilename();
 
-        try {
-            System.setProperty(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH, filename);
+        final FileNamespaceService svc1 = new FileNamespaceService();
+        svc1.filePath = filename;
+        svc1.init();
+        assertEquals(15, svc1.getNamespaces().size(), "Incorrect namespace mapping count!");
+        assertFalse(svc1.getNamespaces().containsKey("jsonld"), "jsonld prefix unexpectedly found!");
+        assertTrue(svc1.setPrefix("jsonld", JSONLD.getNamespace()), "unable to set jsonld mapping!");
+        assertEquals(16, svc1.getNamespaces().size(), "Namespace count was not incremented!");
+        assertTrue(svc1.getNamespaces().containsKey("jsonld"), "jsonld prefix not found in mapping!");
 
-            final NamespaceService svc1 = new FileNamespaceService();
-            assertEquals(15, svc1.getNamespaces().size(), "Incorrect namespace mapping count!");
-            assertFalse(svc1.getNamespaces().containsKey("jsonld"), "jsonld prefix unexpectedly found!");
-            assertTrue(svc1.setPrefix("jsonld", JSONLD.getNamespace()), "unable to set jsonld mapping!");
-            assertEquals(16, svc1.getNamespaces().size(), "Namespace count was not incremented!");
-            assertTrue(svc1.getNamespaces().containsKey("jsonld"), "jsonld prefix not found in mapping!");
-
-            final NamespaceService svc2 = new FileNamespaceService();
-            assertEquals(16, svc2.getNamespaces().size(), "Incorrect namespace count when reloading from file!");
-            assertFalse(svc2.setPrefix("jsonld", JSONLD.getNamespace()),
-                    "unexpected response when trying to re-set jsonld mapping!");
-        } finally {
-            System.getProperties().remove(FileNamespaceService.CONFIG_FILE_NAMESPACE_PATH);
-        }
+        final FileNamespaceService svc2 = new FileNamespaceService();
+        svc2.filePath = filename;
+        svc2.init();
+        assertEquals(16, svc2.getNamespaces().size(), "Incorrect namespace count when reloading from file!");
+        assertFalse(svc2.setPrefix("jsonld", JSONLD.getNamespace()),
+                "unexpected response when trying to re-set jsonld mapping!");
     }
 
     static String randomFilename() {

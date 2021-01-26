@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Triple;
@@ -47,7 +47,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.NoopNamespaceService;
-import org.trellisldp.api.RDFaWriterService;
 
 /**
  * @author acoburn
@@ -63,7 +62,7 @@ class DefaultRdfaWriterServiceTest {
     @Mock
     private OutputStream mockOutputStream;
 
-    private RDFaWriterService service;
+    private DefaultRdfaWriterService service;
 
     @BeforeEach
     void setUp() {
@@ -71,8 +70,13 @@ class DefaultRdfaWriterServiceTest {
         namespaces.put("rdf", RDF.uri);
         namespaces.put("dcmitype", "http://purl.org/dc/dcmitype/");
 
-        service = new DefaultRdfaWriterService(mockNamespaceService);
-
+        service = new DefaultRdfaWriterService();
+        service.namespaceService = mockNamespaceService;
+        service.icon = "//www.trellisldp.org/assets/img/trellis.png";
+        service.css = Optional.of(new String[]{"//www.trellisldp.org/assets/css/trellis.css"});
+        service.js = Optional.empty();
+        service.templateLocation = Optional.empty();
+        service.init();
     }
 
     @Test
@@ -85,7 +89,13 @@ class DefaultRdfaWriterServiceTest {
 
     @Test
     void testDefaultSerializer() {
-        final RDFaWriterService svc = new DefaultRdfaWriterService();
+        final DefaultRdfaWriterService svc = new DefaultRdfaWriterService();
+        svc.namespaceService = new NoopNamespaceService();
+        svc.icon = "//www.trellisldp.org/assets/img/trellis.png";
+        svc.css = Optional.empty();
+        svc.js = Optional.empty();
+        svc.templateLocation = Optional.empty();
+        svc.init();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         svc.write(getTriples2(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));
@@ -110,26 +120,19 @@ class DefaultRdfaWriterServiceTest {
     }
 
     @Test
-    void testDefaultRdfaWriterService3() {
-        when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
-
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final RDFaWriterService service4 = new DefaultRdfaWriterService(mockNamespaceService, "resource-test.mustache",
-                "//www.trellisldp.org/assets/css/trellis.css", "", "//www.trellisldp.org/assets/img/trellis.png");
-
-        service4.write(getTriples(), out, "http://example.com/");
-        assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
-    }
-
-    @Test
     void testDefaultRdfaWriterService4() throws Exception {
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
 
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final RDFaWriterService service4 = new DefaultRdfaWriterService(mockNamespaceService, path,
-                "//www.trellisldp.org/assets/css/trellis.css", "", null);
-        service4.write(getTriples(), out, "http://example.com/");
+        final DefaultRdfaWriterService svc4 = new DefaultRdfaWriterService();
+        svc4.namespaceService = mockNamespaceService;
+        svc4.css = Optional.empty();
+        svc4.js = Optional.empty();
+        svc4.templateLocation = Optional.of(path);
+        svc4.init();
+
+        svc4.write(getTriples(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlFromTriples(new String(out.toByteArray(), UTF_8)));
     }
 
@@ -137,10 +140,14 @@ class DefaultRdfaWriterServiceTest {
     void testDefaultRdfaWriterService5() throws Exception {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final RDFaWriterService service4 = new DefaultRdfaWriterService(new NoopNamespaceService(), path,
-                null, (String) null, null);
+        final DefaultRdfaWriterService svc5 = new DefaultRdfaWriterService();
+        svc5.namespaceService = new NoopNamespaceService();
+        svc5.css = Optional.empty();
+        svc5.js = Optional.empty();
+        svc5.templateLocation = Optional.of(path);
+        svc5.init();
 
-        service4.write(getTriples2(), out, "http://example.com/");
+        svc5.write(getTriples2(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));
     }
 
@@ -148,10 +155,14 @@ class DefaultRdfaWriterServiceTest {
     void testHtmlNullSerializer() throws Exception {
         final String path = getClass().getResource("/resource-test.mustache").toURI().getPath();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final RDFaWriterService service6 = new DefaultRdfaWriterService(new NoopNamespaceService(), path,
-                (List<String>) null, null, null);
+        final DefaultRdfaWriterService svc6 = new DefaultRdfaWriterService();
+        svc6.namespaceService = new NoopNamespaceService();
+        svc6.css = Optional.empty();
+        svc6.js = Optional.empty();
+        svc6.templateLocation = Optional.of(path);
+        svc6.init();
 
-        service6.write(getTriples2(), out, "http://example.com/");
+        svc6.write(getTriples2(), out, "http://example.com/");
         assertAll("HTML check", checkHtmlWithoutNamespaces(new String(out.toByteArray(), UTF_8)));
     }
 

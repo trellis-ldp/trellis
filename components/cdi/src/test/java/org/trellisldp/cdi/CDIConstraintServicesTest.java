@@ -18,6 +18,8 @@ package org.trellisldp.cdi;
 import static java.util.stream.StreamSupport.stream;
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.smallrye.config.inject.ConfigProducer;
+
 import javax.inject.Inject;
 
 import org.jboss.weld.junit5.WeldInitiator;
@@ -25,6 +27,7 @@ import org.jboss.weld.junit5.WeldJunit5Extension;
 import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.app.ConstraintServices;
 import org.trellisldp.constraint.LdpConstraintService;
 
@@ -34,6 +37,8 @@ class CDIConstraintServicesTest {
     @WeldSetup
     private WeldInitiator weld = WeldInitiator.of(WeldInitiator.createWeld()
                                        .beanClasses(
+                                           ConfigProducer.class,
+                                           DefaultIdentifierService.class,
                                            CDIConstraintServices.class,
                                            LdpConstraintService.class));
 

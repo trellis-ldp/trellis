@@ -30,18 +30,17 @@ import java.net.URI;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.jena.util.URIref;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.DefaultIdentifierService;
 import org.trellisldp.api.IdentifierService;
 
 /**
@@ -60,48 +59,30 @@ public class FileBinaryService implements BinaryService {
     public static final String CONFIG_FILE_BINARY_LENGTH = "trellis.file.binary-length";
 
     private static final Logger LOGGER = getLogger(FileBinaryService.class);
-    private static final int DEFAULT_HIERARCHY = 3;
-    private static final int DEFAULT_LENGTH = 2;
 
-    private final String basePath;
-    private final Supplier<String> idSupplier;
+    private Supplier<String> idSupplier;
 
-    /**
-     * Create a File-based Binary service.
-     */
-    public FileBinaryService() {
-        this(new DefaultIdentifierService());
-    }
-
-    /**
-     * Create a File-based Binary service.
-     *
-     * @param idService an identifier service
-     */
     @Inject
-    public FileBinaryService(final IdentifierService idService) {
-        this(idService, ConfigProvider.getConfig());
-    }
+    IdentifierService idService;
 
-    /**
-     * Create a File-based Binary service.
-     *
-     * @param idService an identifier service
-     * @param basePath the base file path
-     * @param hierarchy the levels of hierarchy
-     * @param length the length of each level of hierarchy
-     */
-    public FileBinaryService(final IdentifierService idService, final String basePath,
-            final int hierarchy, final int length) {
-        this.basePath = basePath;
+    @Inject
+    @ConfigProperty(name = CONFIG_FILE_BINARY_PATH)
+    String basePath;
+
+    @Inject
+    @ConfigProperty(name = CONFIG_FILE_BINARY_HIERARCHY,
+                    defaultValue = "3")
+    int hierarchy;
+
+    @Inject
+    @ConfigProperty(name = CONFIG_FILE_BINARY_LENGTH,
+                    defaultValue = "2")
+    int length;
+
+    @PostConstruct
+    void init() {
         LOGGER.info("Storing binaries as files at {}", basePath);
         this.idSupplier = idService.getSupplier("file:///", hierarchy, length);
-    }
-
-    private FileBinaryService(final IdentifierService idService, final Config config) {
-        this(idService, config.getValue(CONFIG_FILE_BINARY_PATH, String.class),
-                config.getOptionalValue(CONFIG_FILE_BINARY_HIERARCHY, Integer.class).orElse(DEFAULT_HIERARCHY),
-                config.getOptionalValue(CONFIG_FILE_BINARY_LENGTH, Integer.class).orElse(DEFAULT_LENGTH));
     }
 
     @Override

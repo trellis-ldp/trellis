@@ -43,7 +43,7 @@ class FileResourceTest {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File file = new File(getClass().getResource("/resource.nq").getFile());
         assertTrue(file.exists(), "Resource file doesn't exist!");
-        final Resource res = new FileResource(identifier, file);
+        final Resource res = new FileResource(identifier, file, true);
 
         assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!");
         assertEquals(parse("2017-02-16T11:15:01Z"), res.getModified(), "Incorrect modification date!");
@@ -67,7 +67,7 @@ class FileResourceTest {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "binary");
         final File file = new File(getClass().getResource("/binary.nq").getFile());
         assertTrue(file.exists(), "Resource file doesn't exist!");
-        final Resource res = new FileResource(identifier, file);
+        final Resource res = new FileResource(identifier, file, true);
 
         assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!");
         assertEquals(parse("2017-02-16T11:17:00Z"), res.getModified(), "Incorrect modification date!");
@@ -95,7 +95,7 @@ class FileResourceTest {
         final File dir = new File(getClass().getResource("/resource.nq").getFile()).getParentFile();
         final File file = new File(dir, "nonexistent");
         assertFalse(file.exists(), "Non-existent file shouldn't exist!");
-        final Resource res = new FileResource(identifier, file);
+        final Resource res = new FileResource(identifier, file, true);
         assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!");
         assertNull(res.getInteractionModel(), "Unexpected interaction model!");
         assertEquals(0L, res.stream().count(), "Incorrect total triple count!");
@@ -106,7 +106,7 @@ class FileResourceTest {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File file = new File(getClass().getResource("/ldpic.nq").getFile());
         assertTrue(file.exists(), "Resource file doesn't exist!");
-        final Resource res = new FileResource(identifier, file);
+        final Resource res = new FileResource(identifier, file, true);
 
         assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!");
         assertEquals(parse("2017-02-16T11:15:01Z"), res.getModified(), "Incorrect modification date!");
@@ -133,7 +133,7 @@ class FileResourceTest {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + "resource");
         final File file = new File(getClass().getResource("/ldpdc.nq").getFile());
         assertTrue(file.exists(), "Resource file doesn't exist!");
-        final Resource res = new FileResource(identifier, file);
+        final Resource res = new FileResource(identifier, file, true);
 
         assertEquals(identifier, res.getIdentifier(), "Incorrect identifier!");
         assertEquals(parse("2017-02-16T11:15:01Z"), res.getModified(), "Incorrect modification date!");

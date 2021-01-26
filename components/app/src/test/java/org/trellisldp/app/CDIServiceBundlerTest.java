@@ -18,6 +18,8 @@ package org.trellisldp.app;
 import static java.util.stream.StreamSupport.stream;
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.smallrye.config.inject.ConfigProducer;
+
 import javax.inject.Inject;
 
 import org.jboss.weld.junit5.WeldInitiator;
@@ -41,6 +43,7 @@ class CDIServiceBundlerTest {
     @WeldSetup
     private WeldInitiator weld = WeldInitiator.of(WeldInitiator.createWeld()
                                        .beanClasses(
+                                           ConfigProducer.class,
                                            BaseServiceBundler.class,
                                            CDIConstraintServices.class,
                                            DefaultIdentifierService.class,

@@ -28,12 +28,10 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.IntStream.range;
 import static java.util.stream.Stream.empty;
 import static java.util.stream.Stream.of;
-import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.apache.jena.commonsrdf.JenaCommonsRDF.fromJena;
 import static org.apache.jena.riot.tokens.TokenizerText.fromString;
 import static org.apache.jena.sparql.core.Quad.create;
 import static org.apache.jena.sparql.core.Quad.defaultGraphIRI;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.vocabulary.RDF.type;
 import static org.trellisldp.vocabulary.Trellis.PreferServerManaged;
@@ -74,15 +72,9 @@ import org.trellisldp.vocabulary.XSD;
  */
 public final class FileUtils {
 
-    /** The configuration key for controlling LDP type triples. */
-    public static final String CONFIG_FILE_LDP_TYPE = "trellis.file.ldp-type";
-    /** The configuration key controlling the digest algorithm in use. */
-    public static final String CONFIG_FILE_DIGEST_ALGORITHM = "trellis.file.digest-algorithm";
 
     private static final Logger LOGGER = getLogger(FileUtils.class);
     private static final RDF rdf = RDFFactory.getInstance();
-    private static final String ALGORITHM = getConfig()
-        .getOptionalValue(CONFIG_FILE_DIGEST_ALGORITHM, String.class).orElse(SHA_256);
 
     private static final String SEP = " ";
 
@@ -96,11 +88,13 @@ public final class FileUtils {
      * Get a directory for a given resource identifier.
      * @param baseDirectory the base directory
      * @param identifier a resource identifier
+     * @param algorithm the digest algorithm
      * @return a directory
      */
-    public static File getResourceDirectory(final File baseDirectory, final IRI identifier) {
+    public static File getResourceDirectory(final File baseDirectory, final IRI identifier, final String algorithm) {
         requireNonNull(baseDirectory, "The baseDirectory may not be null!");
         requireNonNull(identifier, "The identifier may not be null!");
+        requireNonNull(algorithm, "The algorithm may not be null!");
         final String id = identifier.getIRIString();
         final StringJoiner joiner = new StringJoiner(separator);
         final CRC32 hasher = new CRC32();
@@ -110,7 +104,7 @@ public final class FileUtils {
         range(0, intermediate.length() / LENGTH).limit(MAX)
             .forEach(i -> joiner.add(intermediate.substring(i * LENGTH, (i + 1) * LENGTH)));
 
-        joiner.add(new DigestUtils(ALGORITHM).digestAsHex(id));
+        joiner.add(new DigestUtils(algorithm).digestAsHex(id));
         return new File(baseDirectory, joiner.toString());
     }
 
@@ -139,12 +133,12 @@ public final class FileUtils {
     /**
      * Filter any server-managed triples from the resource stream.
      * @param quad the quad
+     * @param includeLdpType whether to include the LDP type
      * @return true if the quad should be kept, false otherwise
      */
-    public static boolean filterServerManagedQuads(final Quad quad) {
+    public static boolean filterServerManagedQuads(final Quad quad, final boolean includeLdpType) {
         if (quad.getGraphName().equals(Optional.of(PreferServerManaged))) {
-            return quad.getPredicate().equals(type) && getConfig()
-                .getOptionalValue(CONFIG_FILE_LDP_TYPE, Boolean.class).orElse(Boolean.TRUE);
+            return quad.getPredicate().equals(type) && includeLdpType;
         }
         return true;
     }

@@ -36,6 +36,7 @@ pitest {
 }
 
 test {
+    systemProperty 'trellis.file.binary-path', "./build/data"
     inputs.property("moduleName", moduleName)
     doFirst {
         jvmArgs += [

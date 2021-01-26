@@ -18,14 +18,11 @@ package org.trellisldp.jdbc;
 import static java.io.File.separator;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.condition.OS.WINDOWS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
@@ -35,22 +32,20 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.SortedSet;
-import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
-import org.trellisldp.file.FileMementoService;
-import org.trellisldp.vocabulary.DC;
-import org.trellisldp.vocabulary.LDP;
-import org.trellisldp.vocabulary.Trellis;
 
 import liquibase.Contexts;
 import liquibase.Liquibase;
@@ -59,11 +54,15 @@ import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 
 @DisabledOnOs(WINDOWS)
+@ExtendWith(MockitoExtension.class)
 class DBWrappedMementoServiceTest {
     private static final Logger LOGGER = getLogger(DBWrappedMementoService.class);
     private static final RDF rdf = RDFFactory.getInstance();
     private static final IRI root = rdf.createIRI("trellis:data/");
     private static EmbeddedPostgres pg = null;
+
+    @Mock
+    MementoService mockMementoService;
 
     static {
         try {
@@ -87,24 +86,18 @@ class DBWrappedMementoServiceTest {
 
     @Test
     void testMementoService() {
-        final MementoService svc = new DBWrappedMementoService(pg.getPostgresDatabase());
+        final Resource mockResource = mock(Resource.class);
+
+        when(mockMementoService.put(any(Resource.class))).thenAnswer(inv -> completedFuture(null));
+        when(mockMementoService.get(any(IRI.class), any(Instant.class))).thenAnswer(inv ->
+                completedFuture(mockResource));
+        final MementoService svc = new DBWrappedMementoService(pg.getPostgresDatabase(), mockMementoService);
 
         final Instant time = now();
         final IRI identifier = rdf.createIRI("trellis:data/resource");
 
-        final Resource mockResource = mock(Resource.class);
-
         when(mockResource.getIdentifier()).thenReturn(identifier);
-        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
-        when(mockResource.getContainer()).thenReturn(of(root));
-        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                    rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Title"))));
-        when(mockResource.getBinaryMetadata()).thenReturn(empty());
-        when(mockResource.getMemberOfRelation()).thenReturn(empty());
-        when(mockResource.getMemberRelation()).thenReturn(empty());
-        when(mockResource.getMembershipResource()).thenReturn(empty());
-        when(mockResource.getInsertedContentRelation()).thenReturn(empty());
 
         assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
         assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
@@ -120,6 +113,7 @@ class DBWrappedMementoServiceTest {
         assertTrue(mementos.contains(time.plusSeconds(2L).truncatedTo(SECONDS)));
         assertTrue(mementos.contains(time.plusSeconds(4L).truncatedTo(SECONDS)));
 
+        when(mockResource.getModified()).thenReturn(time);
         final Resource res = svc.get(identifier, time).toCompletableFuture().join();
         assertEquals(time, res.getModified());
     }
@@ -139,25 +133,9 @@ class DBWrappedMementoServiceTest {
 
         final Resource mockResource = mock(Resource.class);
 
-        when(mockResource.getIdentifier()).thenReturn(identifier);
-        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
-        when(mockResource.getModified()).thenReturn(time);
-        when(mockResource.getContainer()).thenReturn(of(root));
-        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                    rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Title"))));
-        when(mockResource.getBinaryMetadata()).thenReturn(empty());
-        when(mockResource.getMemberOfRelation()).thenReturn(empty());
-        when(mockResource.getMemberRelation()).thenReturn(empty());
-        when(mockResource.getMembershipResource()).thenReturn(empty());
-        when(mockResource.getInsertedContentRelation()).thenReturn(empty());
-
         assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
         assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
-
-        when(mockResource.getModified()).thenReturn(time.plusSeconds(2L));
         assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
-
-        when(mockResource.getModified()).thenReturn(time.plusSeconds(4L));
         assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
 
         assertTrue(svc.mementos(identifier).toCompletableFuture().join().isEmpty());
@@ -169,26 +147,18 @@ class DBWrappedMementoServiceTest {
 
     @Test
     void testMementoUtils() {
-        final String dir = DBWrappedMementoService.class.getResource("/mementos").getFile();
-        final MementoService svc = new DBWrappedMementoService(pg.getPostgresDatabase(),
-                new FileMementoService(dir, true));
+        final Resource mockResource = mock(Resource.class);
+
+        when(mockMementoService.put(any(Resource.class))).thenAnswer(inv -> completedFuture(null));
+        when(mockMementoService.get(any(IRI.class), any(Instant.class))).thenAnswer(inv ->
+                completedFuture(mockResource));
+        final MementoService svc = new DBWrappedMementoService(pg.getPostgresDatabase(), mockMementoService);
 
         final Instant time = now();
         final IRI identifier = rdf.createIRI("trellis:data/resource");
 
-        final Resource mockResource = mock(Resource.class);
-
         when(mockResource.getIdentifier()).thenReturn(identifier);
-        when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getModified()).thenReturn(time);
-        when(mockResource.getContainer()).thenReturn(of(root));
-        when(mockResource.stream()).thenAnswer(inv -> Stream.of(
-                    rdf.createQuad(Trellis.PreferUserManaged, identifier, DC.title, rdf.createLiteral("Title"))));
-        when(mockResource.getBinaryMetadata()).thenReturn(empty());
-        when(mockResource.getMemberOfRelation()).thenReturn(empty());
-        when(mockResource.getMemberRelation()).thenReturn(empty());
-        when(mockResource.getMembershipResource()).thenReturn(empty());
-        when(mockResource.getInsertedContentRelation()).thenReturn(empty());
 
         assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
         assertDoesNotThrow(svc.put(mockResource).toCompletableFuture()::join);
@@ -204,6 +174,7 @@ class DBWrappedMementoServiceTest {
         assertTrue(mementos.contains(time.plusSeconds(2L).truncatedTo(SECONDS)));
         assertTrue(mementos.contains(time.plusSeconds(4L).truncatedTo(SECONDS)));
 
+        when(mockResource.getModified()).thenReturn(time);
         final Resource res = svc.get(identifier, time).toCompletableFuture().join();
         assertEquals(time, res.getModified());
     }

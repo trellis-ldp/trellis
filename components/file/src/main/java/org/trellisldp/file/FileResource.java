@@ -57,6 +57,7 @@ public class FileResource implements Resource {
 
     private final File file;
     private final IRI identifier;
+    private final boolean includeLdpTypes;
     private final Map<IRI, RDFTerm> data;
     private final Set<IRI> metadataGraphs;
 
@@ -64,10 +65,12 @@ public class FileResource implements Resource {
      * Create a resource backed by an NQuads file.
      * @param identifier the resource identifier
      * @param file the file
+     * @param includeLdpTypes whether to include ldp types in the response
      */
-    public FileResource(final IRI identifier, final File file) {
+    public FileResource(final IRI identifier, final File file, final boolean includeLdpTypes) {
         this.identifier = requireNonNull(identifier, "identifier may not be null!");
         this.file = file;
+        this.includeLdpTypes = includeLdpTypes;
         try (final Stream<Quad> quads = fetchContent(identifier, file)) {
             final Map<IRI, RDFTerm> serverManaged = new HashMap<>();
             final Set<IRI> graphs = new HashSet<>();
@@ -139,7 +142,7 @@ public class FileResource implements Resource {
 
     @Override
     public Stream<Quad> stream() {
-        return fetchContent(identifier, file).filter(FileUtils::filterServerManagedQuads);
+        return fetchContent(identifier, file).filter(quad -> FileUtils.filterServerManagedQuads(quad, includeLdpTypes));
     }
 
     private Optional<IRI> asIRI(final IRI predicate) {

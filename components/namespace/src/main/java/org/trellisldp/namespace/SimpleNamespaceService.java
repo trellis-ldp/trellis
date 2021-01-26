@@ -18,13 +18,16 @@ package org.trellisldp.namespace;
 import static java.util.Arrays.stream;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.stream.Collectors.toMap;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.vocabulary.ACL;
 import org.trellisldp.vocabulary.AS;
@@ -51,10 +54,12 @@ public class SimpleNamespaceService implements NamespaceService {
 
     private final Map<String, String> namespaces = new HashMap<>();
 
-    /**
-     * Create a simple, in-memory namespace service.
-     */
-    public SimpleNamespaceService() {
+    @Inject
+    @ConfigProperty(name = CONFIG_NAMESPACE_MAPPING)
+    Optional<String> mappingConfig = Optional.empty();
+
+    @PostConstruct
+    void init() {
         namespaces.put("ldp", LDP.getNamespace());
         namespaces.put("acl", ACL.getNamespace());
         namespaces.put("as", AS.getNamespace());
@@ -65,8 +70,7 @@ public class SimpleNamespaceService implements NamespaceService {
         namespaces.put("xsd", XSD.getNamespace());
         namespaces.put("foaf", FOAF.getNamespace());
         namespaces.put("vcard", VCARD.getNamespace());
-        getConfig().getOptionalValue(CONFIG_NAMESPACE_MAPPING, String.class).map(SimpleNamespaceService::configToMap)
-            .ifPresent(data -> data.forEach(namespaces::put));
+        mappingConfig.map(SimpleNamespaceService::configToMap).ifPresent(data -> data.forEach(namespaces::put));
     }
 
     @Override

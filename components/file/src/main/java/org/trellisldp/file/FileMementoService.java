@@ -21,6 +21,7 @@ import static java.util.Collections.unmodifiableSortedSet;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.runAsync;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.SHA_256;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 
@@ -32,12 +33,14 @@ import java.util.TreeSet;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Priority;
 import javax.enterprise.inject.Alternative;
+import javax.inject.Inject;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.rdf.api.IRI;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Resource;
@@ -46,6 +49,7 @@ import org.trellisldp.api.Resource;
  * A file-based versioning system.
  */
 @Alternative
+@Priority(1)
 public class FileMementoService implements MementoService {
 
     /** The configuration key controlling the base filesystem path for memento storage. */
@@ -54,34 +58,43 @@ public class FileMementoService implements MementoService {
     /** The configuration key controlling whether Memento versioning is enabled. */
     public static final String CONFIG_FILE_MEMENTO = "trellis.file.memento";
 
+    /** The configuration key controlling the digest algorithm in use. */
+    public static final String CONFIG_FILE_DIGEST_ALGORITHM = "trellis.file.digest-algorithm";
+
+    /** The configuration key for controlling LDP type triples. */
+    public static final String CONFIG_FILE_LDP_TYPE = "trellis.file.ldp-type";
+
     private static final Logger LOGGER = getLogger(FileMementoService.class);
 
-    private final File directory;
-    private final boolean enabled;
+    private File directory;
 
-    /**
-     * Create a file-based memento service.
-     */
-    public FileMementoService() {
-        this(ConfigProvider.getConfig());
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_FILE_MEMENTO_PATH)
+    String directoryPath;
 
-    private FileMementoService(final Config config) {
-        this(config.getValue(CONFIG_FILE_MEMENTO_PATH, String.class),
-                config.getOptionalValue(CONFIG_FILE_MEMENTO, Boolean.class).orElse(Boolean.TRUE));
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_FILE_DIGEST_ALGORITHM,
+                    defaultValue = SHA_256)
+    String algorithm;
 
-    /**
-     * Create a file-based memento service.
-     * @param path the file path
-     * @param enabled whether memento handling is enabled
-     */
-    public FileMementoService(final String path, final boolean enabled) {
-        this.directory = new File(path);
-        this.enabled = enabled;
+    @Inject
+    @ConfigProperty(name = CONFIG_FILE_LDP_TYPE,
+                    defaultValue = "true")
+    boolean includeLdpType;
+
+    @Inject
+    @ConfigProperty(name = CONFIG_FILE_MEMENTO,
+                    defaultValue = "true")
+    boolean enabled;
+
+    @PostConstruct
+    void init() {
         if (enabled) {
-            LOGGER.info("Storing Mementos as files at {}", path);
-            init();
+            directory = new File(directoryPath);
+            LOGGER.info("Storing Mementos as files at {}", directoryPath);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
         }
     }
 
@@ -99,7 +112,7 @@ public class FileMementoService implements MementoService {
     public CompletionStage<Void> put(final Resource resource, final Instant time) {
         if (enabled) {
             return runAsync(() -> {
-                final File resourceDir = FileUtils.getResourceDirectory(directory, resource.getIdentifier());
+                final File resourceDir = FileUtils.getResourceDirectory(directory, resource.getIdentifier(), algorithm);
                 if (!resourceDir.exists()) {
                     resourceDir.mkdirs();
                 }
@@ -114,10 +127,10 @@ public class FileMementoService implements MementoService {
         if (enabled) {
             return supplyAsync(() -> {
                 final Instant mementoTime = time.truncatedTo(SECONDS);
-                final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
+                final File resourceDir = FileUtils.getResourceDirectory(directory, identifier, algorithm);
                 final File file = FileUtils.getNquadsFile(resourceDir, mementoTime);
                 if (file.exists()) {
-                    return new FileResource(identifier, file);
+                    return new FileResource(identifier, file, includeLdpType);
                 }
                 final SortedSet<Instant> allMementos = listMementos(identifier);
                 if (allMementos.isEmpty()) {
@@ -128,9 +141,11 @@ public class FileMementoService implements MementoService {
                     // In this case, the requested Memento is earlier than the set of all existing Mementos.
                     // Based on RFC 7089, Section 4.5.3 https://tools.ietf.org/html/rfc7089#section-4.5.3
                     // the first extant memento should therefore be returned.
-                    return new FileResource(identifier, FileUtils.getNquadsFile(resourceDir, allMementos.first()));
+                    return new FileResource(identifier, FileUtils.getNquadsFile(resourceDir, allMementos.first()),
+                            includeLdpType);
                 }
-                return new FileResource(identifier, FileUtils.getNquadsFile(resourceDir, possible.last()));
+                return new FileResource(identifier, FileUtils.getNquadsFile(resourceDir, possible.last()),
+                        includeLdpType);
             });
         }
         return completedFuture(MISSING_RESOURCE);
@@ -154,7 +169,7 @@ public class FileMementoService implements MementoService {
     public CompletionStage<Void> delete(final IRI identifier, final Instant time) {
         if (enabled) {
             return runAsync(() -> {
-                final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
+                final File resourceDir = FileUtils.getResourceDirectory(directory, identifier, algorithm);
                 final File file = FileUtils.getNquadsFile(resourceDir, time.truncatedTo(SECONDS));
                 if (FileUtils.uncheckedDeleteIfExists(file.toPath())) {
                     LOGGER.debug("Deleted Memento {} at {}", identifier, file);
@@ -164,14 +179,8 @@ public class FileMementoService implements MementoService {
         return completedFuture(null);
     }
 
-    private void init() {
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-    }
-
     private SortedSet<Instant> listMementos(final IRI identifier) {
-        final File resourceDir = FileUtils.getResourceDirectory(directory, identifier);
+        final File resourceDir = FileUtils.getResourceDirectory(directory, identifier, algorithm);
         if (!resourceDir.exists()) {
             return emptySortedSet();
         }
