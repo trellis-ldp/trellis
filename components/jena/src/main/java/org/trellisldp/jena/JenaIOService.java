@@ -111,6 +111,7 @@ public class JenaIOService implements IOService {
 
     private Set<String> allowedContexts;
     private Set<String> allowedContextDomains;
+    private boolean relativeIRIs;
 
     @Inject
     NamespaceService namespaceService;
@@ -131,14 +132,15 @@ public class JenaIOService implements IOService {
     Optional<String[]> allowedContextsConfig;
 
     @Inject
-    @ConfigProperty(name = CONFIG_IO_RELATIVE_IRIS,
-                    defaultValue = "false")
-    boolean relativeIRIs;
+    @ConfigProperty(name = CONFIG_IO_RELATIVE_IRIS)
+    Optional<Boolean> relativeIriConfig;
 
     @PostConstruct
     void init() {
         allowedContexts = allowedContextsConfig.map(Set::of).orElseGet(Collections::emptySet);
         allowedContextDomains = allowedDomainsConfig.map(Set::of).orElseGet(Collections::emptySet);
+        relativeIRIs = relativeIriConfig.orElse(Boolean.FALSE);
+        LOGGER.info("Using Jena IO Service");
     }
 
     /**
@@ -151,6 +153,7 @@ public class JenaIOService implements IOService {
         svc.namespaceService = new NoopNamespaceService();
         svc.allowedDomainsConfig = Optional.empty();
         svc.allowedContextsConfig = Optional.empty();
+        svc.relativeIriConfig = Optional.empty();
         svc.init();
         return svc;
     }

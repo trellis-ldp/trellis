@@ -120,6 +120,7 @@ class JenaIOServiceTest {
         service.namespaceService = mockNamespaceService;
         service.htmlSerializer = mockRdfaWriterService;
         service.cache = mockCache;
+        service.relativeIriConfig = Optional.empty();
         service.allowedContextsConfig = Optional.of(new String[]{"http://www.w3.org/ns/anno.jsonld"});
         service.allowedDomainsConfig = Optional.of(new String[]{"http://www.trellisldp.org/ns/"});
         service.init();
@@ -128,6 +129,7 @@ class JenaIOServiceTest {
         service2.namespaceService = mockNamespaceService;
         service2.htmlSerializer = mockRdfaWriterService;
         service2.cache = mockCache;
+        service2.relativeIriConfig = Optional.empty();
         service2.allowedContextsConfig = Optional.empty();
         service2.allowedDomainsConfig = Optional.of(new String[]{"http://www.w3.org/ns/"});
         service2.init();
@@ -136,9 +138,9 @@ class JenaIOServiceTest {
         service3.namespaceService = mockNamespaceService;
         service3.htmlSerializer = mockRdfaWriterService;
         service3.cache = mockCache;
+        service3.relativeIriConfig = Optional.of(Boolean.TRUE);
         service3.allowedContextsConfig = Optional.empty();
         service3.allowedDomainsConfig = Optional.empty();
-        service3.relativeIRIs = true;
         service3.init();
     }
 
