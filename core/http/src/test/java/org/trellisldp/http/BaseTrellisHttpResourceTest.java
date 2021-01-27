@@ -105,7 +105,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     static final IRI childIdentifier = rdf.createIRI(TRELLIS_DATA_PREFIX + CHILD_PATH);
     static final String HUB = "http://hub.example.org/";
 
-    private static final IOService ioService = new JenaIOService();
+    private static final IOService ioService = JenaIOService.newJenaIOService();
     private static final AuditService auditService = new NoopAuditService();
     private static final String USER_DELETED_PATH = "userdeleted";
     private static final String BINARY_MIME_TYPE = "text/plain";

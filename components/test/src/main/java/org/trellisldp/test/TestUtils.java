@@ -17,7 +17,6 @@ package org.trellisldp.test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.now;
-import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.HttpHeaders.LINK;
 import static org.awaitility.Awaitility.await;
@@ -43,10 +42,8 @@ import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDFSyntax;
 import org.trellisldp.api.IOService;
-import org.trellisldp.api.NoopNamespaceService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.jena.JenaIOService;
-import org.trellisldp.jena.NoopProfileCache;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
@@ -56,8 +53,7 @@ import org.trellisldp.vocabulary.PROV;
  */
 public final class TestUtils {
 
-    private static final IOService ioService = new JenaIOService(new NoopNamespaceService(), null,
-            new NoopProfileCache(), emptySet(), emptySet(), false);
+    private static final IOService ioService = JenaIOService.newJenaIOService();
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
 

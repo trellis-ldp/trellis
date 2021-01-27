@@ -16,8 +16,6 @@
 package org.trellisldp.jena;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
 import static java.util.stream.Stream.of;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
@@ -52,6 +50,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -91,7 +90,7 @@ class JenaIOServiceTest {
 
     private final Map<String, String> namespaces = new HashMap<>();
 
-    private IOService service, service2, service3;
+    private JenaIOService service, service2, service3;
 
     @Mock
     private NamespaceService mockNamespaceService;
@@ -117,14 +116,30 @@ class JenaIOServiceTest {
         namespaces.put("dcterms", DCTerms.NS);
         namespaces.put("rdf", uri);
 
-        service = new JenaIOService(mockNamespaceService, null, mockCache,
-                "http://www.w3.org/ns/anno.jsonld,,,", "http://www.trellisldp.org/ns/", false);
+        service = new JenaIOService();
+        service.namespaceService = mockNamespaceService;
+        service.htmlSerializer = mockRdfaWriterService;
+        service.cache = mockCache;
+        service.allowedContextsConfig = Optional.of(new String[]{"http://www.w3.org/ns/anno.jsonld"});
+        service.allowedDomainsConfig = Optional.of(new String[]{"http://www.trellisldp.org/ns/"});
+        service.init();
 
-        service2 = new JenaIOService(mockNamespaceService, mockRdfaWriterService, mockCache, emptySet(),
-                singleton("http://www.w3.org/ns/"), false);
+        service2 = new JenaIOService();
+        service2.namespaceService = mockNamespaceService;
+        service2.htmlSerializer = mockRdfaWriterService;
+        service2.cache = mockCache;
+        service2.allowedContextsConfig = Optional.empty();
+        service2.allowedDomainsConfig = Optional.of(new String[]{"http://www.w3.org/ns/"});
+        service2.init();
 
-        service3 = new JenaIOService(mockNamespaceService, null, mockCache, emptySet(), emptySet(), true);
-
+        service3 = new JenaIOService();
+        service3.namespaceService = mockNamespaceService;
+        service3.htmlSerializer = mockRdfaWriterService;
+        service3.cache = mockCache;
+        service3.allowedContextsConfig = Optional.empty();
+        service3.allowedDomainsConfig = Optional.empty();
+        service3.relativeIRIs = true;
+        service3.init();
     }
 
     @Test
@@ -204,10 +219,9 @@ class JenaIOServiceTest {
         when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final IOService svc = new JenaIOService(mockNamespaceService, null, new NoopProfileCache(),
-                "http://www.w3.org/ns/anno.jsonld,,,", "http://www.trellisldp.org/ns/", true);
+        final IOService svc = JenaIOService.newJenaIOService();
 
-        svc.write(getTriples(), out, JSONLD, identifier, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
+        svc.write(getTriples(), out, JSONLD, identifier);
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, identifier).forEach(graph::add);
@@ -248,17 +262,6 @@ class JenaIOServiceTest {
         final String output = out.toString("UTF-8");
         final Graph graph = rdf.createGraph();
         service.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
-        assertAll("Check compact serialization", checkCompactSerialization(output, graph));
-    }
-
-    @Test
-    void testJsonLdNullCache() throws UnsupportedEncodingException {
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        final IOService myservice = new JenaIOService();
-        myservice.write(getTriples(), out, JSONLD, identifier, rdf.createIRI("http://www.w3.org/ns/anno.jsonld"));
-        final String output = out.toString("UTF-8");
-        final Graph graph = rdf.createGraph();
-        myservice.read(new ByteArrayInputStream(output.getBytes(UTF_8)), JSONLD, null).forEach(graph::add);
         assertAll("Check compact serialization", checkCompactSerialization(output, graph));
     }
 
@@ -408,30 +411,16 @@ class JenaIOServiceTest {
 
     @Test
     void testHtmlSerializer() {
-        final IOService service4 = new JenaIOService(mockNamespaceService, mockRdfaWriterService);
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service4.write(getComplexTriples(), out, RDFA, "http://example.org/");
+        service.write(getComplexTriples(), out, RDFA, "http://example.org/");
         verify(mockRdfaWriterService).write(any(), eq(out), eq("http://example.org/"));
     }
 
     @Test
     void testHtmlSerializer2() {
-        final IOService service4 = new JenaIOService(mockNamespaceService, mockRdfaWriterService);
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service4.write(getComplexTriples(), out, RDFA, null);
+        service.write(getComplexTriples(), out, RDFA, null);
         verify(mockRdfaWriterService).write(any(), eq(out), eq(null));
-    }
-
-    @Test
-    void testNullHtmlSerializer() {
-        when(mockNamespaceService.getNamespaces()).thenReturn(namespaces);
-
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        service.write(getTriples(), out, RDFA, identifier);
-        final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        final org.apache.jena.graph.Graph graph = createDefaultGraph();
-        RDFDataMgr.read(graph, in, Lang.TURTLE);
-        assertTrue(validateGraph(fromJena(graph)), "null HTML serialization didn't default to Turtle!");
     }
 
     @Test
@@ -512,9 +501,10 @@ class JenaIOServiceTest {
         assertTrue(service.supportedReadSyntaxes().contains(TURTLE), "Turtle not supported for reading!");
         assertTrue(service.supportedReadSyntaxes().contains(JSONLD), "JSON-LD not supported for reading!");
         assertTrue(service.supportedReadSyntaxes().contains(NTRIPLES), "N-Triples not supported for reading!");
+        assertTrue(service.supportedReadSyntaxes().contains(RDFA), "RDFa not supported for reading!");
         assertFalse(service.supportedReadSyntaxes().contains(RDFXML), "RDF/XML unexpectedly supported for reading!");
-        assertFalse(service.supportedReadSyntaxes().contains(RDFA), "RDFa unexpectedly supported for reading!");
-        assertTrue(service2.supportedReadSyntaxes().contains(RDFA), "RDFa not supported for reading!");
+        assertFalse(JenaIOService.newJenaIOService().supportedReadSyntaxes().contains(RDFA),
+                "RDFa unexpectedly supported!");
     }
 
     @Test
@@ -524,7 +514,6 @@ class JenaIOServiceTest {
         assertTrue(service.supportedWriteSyntaxes().contains(NTRIPLES), "N-Triples not supported for writing!");
         assertFalse(service.supportedWriteSyntaxes().contains(RDFXML), "RDF/XML unexpectedly supported for writing!");
         assertFalse(service.supportedWriteSyntaxes().contains(RDFA), "RDFa unexpectedly supported for writing!");
-        assertFalse(service2.supportedWriteSyntaxes().contains(RDFA), "RDFa not supported for writing!");
     }
 
     @Test
@@ -552,7 +541,7 @@ class JenaIOServiceTest {
     void testShouldSkipNamespace() {
         final String foo = "http://example.com/foo";
         final String ns = "http://example.com/namespace#";
-        final Set<String> namespaces = singleton(ns);
+        final Set<String> namespaces = Set.of(ns);
         assertFalse(JenaIOService.shouldAddNamespace(namespaces, ns, null),
                 "Added namespace that already exists");
         assertFalse(JenaIOService.shouldAddNamespace(namespaces, foo, null),

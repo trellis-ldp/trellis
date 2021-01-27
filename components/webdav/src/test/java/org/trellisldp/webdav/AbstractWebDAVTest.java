@@ -111,7 +111,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     private static final Logger LOGGER = getLogger(WebDAVTest.class);
     private static final int SC_MULTI_STATUS = 207;
 
-    private static final IOService ioService = new JenaIOService();
+    private static final IOService ioService = JenaIOService.newJenaIOService();
 
     private static final int timestamp = 1496262729;
 

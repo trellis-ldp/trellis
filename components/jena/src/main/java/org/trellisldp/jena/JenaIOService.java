@@ -16,11 +16,8 @@
 package org.trellisldp.jena;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
-import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -33,7 +30,6 @@ import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.apache.jena.update.UpdateAction.execute;
 import static org.apache.jena.update.UpdateFactory.create;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Syntax.SPARQL_UPDATE;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
@@ -49,6 +45,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -74,7 +71,7 @@ import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
-import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.CacheService.TrellisProfileCache;
@@ -108,111 +105,62 @@ public class JenaIOService implements IOService {
                 flattened, JSONLD_FLATTEN_FLAT,
                 expanded, JSONLD_EXPAND_FLAT);
 
-    private final NamespaceService nsService;
-    private final CacheService<String, String> cache;
-    private final RDFaWriterService htmlSerializer;
-    private final Set<String> allowedContexts;
-    private final Set<String> allowedContextDomains;
-    private final List<RDFSyntax> readable;
-    private final List<RDFSyntax> writable;
-    private final List<RDFSyntax> updatable;
-    private final boolean relativeIRIs;
+    private final List<RDFSyntax> readable = List.of(TURTLE, RDFSyntax.JSONLD, NTRIPLES, RDFA);
+    private final List<RDFSyntax> writable = List.of(TURTLE, RDFSyntax.JSONLD, NTRIPLES);
+    private final List<RDFSyntax> updatable = List.of(SPARQL_UPDATE);
 
-    /**
-     * Create a serialization service.
-     */
-    public JenaIOService() {
-        this(new NoopNamespaceService());
-    }
+    private Set<String> allowedContexts;
+    private Set<String> allowedContextDomains;
 
-    /**
-     * Create a serialization service.
-     * @param namespaceService the namespace service
-     */
-    public JenaIOService(final NamespaceService namespaceService) {
-        this(namespaceService, null);
-    }
-
-    /**
-     * Create a serialization service.
-     *
-     * @param namespaceService the namespace service
-     * @param htmlSerializer the HTML serializer service
-     */
-    public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer) {
-        this(namespaceService, htmlSerializer, new NoopProfileCache());
-    }
-
-    /**
-     * Create a serialization service.
-     *
-     * @param namespaceService the namespace service
-     * @param htmlSerializer the HTML serializer service
-     * @param cache a cache for custom JSON-LD profile resolution
-     */
     @Inject
-    public JenaIOService(final NamespaceService namespaceService,
-            final RDFaWriterService htmlSerializer,
-            @TrellisProfileCache final CacheService<String, String> cache) {
-        this(namespaceService, htmlSerializer, cache, getConfig());
-    }
+    NamespaceService namespaceService;
 
-    private JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
-            final CacheService<String, String> cache, final Config config) {
-        this(namespaceService, htmlSerializer, cache, config.getOptionalValue(CONFIG_IO_JSONLD_PROFILES, String.class)
-                .orElse(""), config.getOptionalValue(CONFIG_IO_JSONLD_DOMAINS, String.class).orElse(""),
-                config.getOptionalValue(CONFIG_IO_RELATIVE_IRIS, Boolean.class).orElse(Boolean.FALSE));
+    @Inject
+    RDFaWriterService htmlSerializer;
+
+    @Inject
+    @TrellisProfileCache
+    CacheService<String, String> cache;
+
+    @Inject
+    @ConfigProperty(name = CONFIG_IO_JSONLD_DOMAINS)
+    Optional<String[]> allowedDomainsConfig;
+
+    @Inject
+    @ConfigProperty(name = CONFIG_IO_JSONLD_PROFILES)
+    Optional<String[]> allowedContextsConfig;
+
+    @Inject
+    @ConfigProperty(name = CONFIG_IO_RELATIVE_IRIS,
+                    defaultValue = "false")
+    boolean relativeIRIs;
+
+    @PostConstruct
+    void init() {
+        allowedContexts = allowedContextsConfig.map(Set::of).orElseGet(Collections::emptySet);
+        allowedContextDomains = allowedDomainsConfig.map(Set::of).orElseGet(Collections::emptySet);
     }
 
     /**
-     * Create a serialization service.
-     *
-     * @param namespaceService the namespace service
-     * @param htmlSerializer the HTML serializer service
-     * @param cache a cache for custom JSON-LD profile resolution
-     * @param allowedContexts allowed JSON-LD profiles
-     * @param allowedContextDomains allowed domains for JSON-LD profiles
-     * @param relativeIRIs whether to use relative IRIs for Turtle output
+     * Create a new Jena-based IOService.
+     * @return an IOService instance
      */
-    public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
-            final CacheService<String, String> cache, final String allowedContexts, final String allowedContextDomains,
-            final boolean relativeIRIs) {
-        this(namespaceService, htmlSerializer, cache, intoSet(allowedContexts), intoSet(allowedContextDomains),
-                relativeIRIs);
-    }
-
-    /**
-     * Create a serialization service.
-     *
-     * @param namespaceService the namespace service
-     * @param htmlSerializer the HTML serializer service
-     * @param cache a cache for custom JSON-LD profile resolution
-     * @param allowedContexts allowed JSON-LD profiles
-     * @param allowedContextDomains allowed domains for JSON-LD profiles
-     * @param relativeIRIs whether to use relative IRIs for Turtle output
-     */
-    public JenaIOService(final NamespaceService namespaceService, final RDFaWriterService htmlSerializer,
-            final CacheService<String, String> cache, final Set<String> allowedContexts,
-            final Set<String> allowedContextDomains, final boolean relativeIRIs) {
-        this.nsService = requireNonNull(namespaceService, "The NamespaceService may not be null!");
-        this.cache = requireNonNull(cache, "The CacheService may not be null!");
-        this.htmlSerializer = htmlSerializer;
-        this.allowedContexts = allowedContexts;
-        this.allowedContextDomains = allowedContextDomains;
-        this.relativeIRIs = relativeIRIs;
-
-        final List<RDFSyntax> reads = new ArrayList<>(asList(TURTLE, RDFSyntax.JSONLD, NTRIPLES));
-        if (htmlSerializer != null) {
-            reads.add(RDFA);
-        }
-        this.readable = unmodifiableList(reads);
-        this.updatable = List.of(SPARQL_UPDATE);
-        this.writable = List.of(TURTLE, RDFSyntax.JSONLD, NTRIPLES);
+    public static IOService newJenaIOService() {
+        final JenaIOService svc = new JenaIOService();
+        svc.cache = new NoopProfileCache();
+        svc.namespaceService = new NoopNamespaceService();
+        svc.allowedDomainsConfig = Optional.empty();
+        svc.allowedContextsConfig = Optional.empty();
+        svc.init();
+        return svc;
     }
 
     @Override
     public List<RDFSyntax> supportedReadSyntaxes() {
-        return readable;
+        if (htmlSerializer != null) {
+            return readable;
+        }
+        return readable.stream().filter(format -> !RDFA.equals(format)).collect(toList());
     }
 
     @Override
@@ -245,7 +193,7 @@ public class JenaIOService implements IOService {
                     LOGGER.debug("Writing stream-based RDF: {}", format);
                     final StreamRDF stream = getWriterStream(output, format, null);
                     stream.start();
-                    nsService.getNamespaces().forEach(stream::prefix);
+                    namespaceService.getNamespaces().forEach(stream::prefix);
                     if (shouldUseRelativeIRIs(relativeIRIs, profiles)) {
                         stream.base(baseUrl);
                     }
@@ -254,7 +202,7 @@ public class JenaIOService implements IOService {
                 } else {
                     LOGGER.debug("Writing buffered RDF: {}", lang);
                     final org.apache.jena.graph.Graph graph = createDefaultGraph();
-                    graph.getPrefixMapping().setNsPrefixes(nsService.getNamespaces());
+                    graph.getPrefixMapping().setNsPrefixes(namespaceService.getNamespaces());
                     triples.map(JenaCommonsRDF::toJena).forEachOrdered(graph::add);
                     if (JSONLD.equals(lang)) {
                         writeJsonLd(output, DatasetGraphFactory.create(graph), profiles);
@@ -264,6 +212,49 @@ public class JenaIOService implements IOService {
                 }
             }
         } catch (final AtlasException ex) {
+            throw new TrellisRuntimeException(ex);
+        }
+    }
+
+    @Override
+    public Stream<Triple> read(final InputStream input, final RDFSyntax syntax, final String base) {
+        requireNonNull(input, "The input stream may not be null!");
+        requireNonNull(syntax, "The syntax value may not be null!");
+
+        try {
+            final org.apache.jena.graph.Graph graph = createDefaultGraph();
+            final Lang lang = JenaCommonsRDF.toJena(syntax).orElseThrow(() ->
+                    new TrellisRuntimeException("Unsupported RDF Syntax: " + syntax.mediaType()));
+
+            RDFParser.source(input).lang(lang).base(base).parse(graph);
+
+            // Check the graph for any new namespace definitions
+            final Set<String> namespaces = new HashSet<>(namespaceService.getNamespaces().values());
+            graph.getPrefixMapping().getNsPrefixMap().forEach((prefix, namespace) -> {
+                if (shouldAddNamespace(namespaces, namespace, base)) {
+                    LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
+                    namespaceService.setPrefix(prefix, namespace);
+                }
+            });
+            return JenaCommonsRDF.fromJena(graph).stream().map(Triple.class::cast);
+        } catch (final RiotException | AtlasException | IllegalArgumentException ex) {
+            throw new TrellisRuntimeException(ex);
+        }
+    }
+
+    @Override
+    public void update(final Graph graph, final String update, final RDFSyntax syntax, final String base) {
+        requireNonNull(graph, "The input graph may not be null");
+        requireNonNull(update, "The update command may not be null");
+        requireNonNull(syntax, "The RDF syntax may not be null");
+        if (!SPARQL_UPDATE.equals(syntax)) {
+            throw new TrellisRuntimeException("The syntax " + syntax + " is not supported for updates.");
+        }
+
+        try {
+            final org.apache.jena.graph.Graph g = JenaCommonsRDF.toJena(graph);
+            execute(create(update, base), g);
+        } catch (final UpdateException | QueryParseException ex) {
             throw new TrellisRuntimeException(ex);
         }
     }
@@ -317,53 +308,6 @@ public class JenaIOService implements IOService {
             }
         }
         return null;
-    }
-
-    @Override
-    public Stream<Triple> read(final InputStream input, final RDFSyntax syntax, final String base) {
-        requireNonNull(input, "The input stream may not be null!");
-        requireNonNull(syntax, "The syntax value may not be null!");
-
-        try {
-            final org.apache.jena.graph.Graph graph = createDefaultGraph();
-            final Lang lang = JenaCommonsRDF.toJena(syntax).orElseThrow(() ->
-                    new TrellisRuntimeException("Unsupported RDF Syntax: " + syntax.mediaType()));
-
-            RDFParser.source(input).lang(lang).base(base).parse(graph);
-
-            // Check the graph for any new namespace definitions
-            final Set<String> namespaces = new HashSet<>(nsService.getNamespaces().values());
-            graph.getPrefixMapping().getNsPrefixMap().forEach((prefix, namespace) -> {
-                if (shouldAddNamespace(namespaces, namespace, base)) {
-                    LOGGER.debug("Setting prefix ({}) for namespace {}", prefix, namespace);
-                    nsService.setPrefix(prefix, namespace);
-                }
-            });
-            return JenaCommonsRDF.fromJena(graph).stream().map(Triple.class::cast);
-        } catch (final RiotException | AtlasException | IllegalArgumentException ex) {
-            throw new TrellisRuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void update(final Graph graph, final String update, final RDFSyntax syntax, final String base) {
-        requireNonNull(graph, "The input graph may not be null");
-        requireNonNull(update, "The update command may not be null");
-        requireNonNull(syntax, "The RDF syntax may not be null");
-        if (!SPARQL_UPDATE.equals(syntax)) {
-            throw new TrellisRuntimeException("The syntax " + syntax + " is not supported for updates.");
-        }
-
-        try {
-            final org.apache.jena.graph.Graph g = JenaCommonsRDF.toJena(graph);
-            execute(create(update, base), g);
-        } catch (final UpdateException | QueryParseException ex) {
-            throw new TrellisRuntimeException(ex);
-        }
-    }
-
-    static Set<String> intoSet(final String property) {
-        return stream(property.split(",")).map(String::trim).filter(x -> !x.isEmpty()).collect(toSet());
     }
 
     static IRI mergeProfiles(final IRI... profiles) {
