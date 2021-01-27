@@ -70,7 +70,7 @@ import org.trellisldp.vocabulary.Trellis;
 class HttpUtilsTest {
 
     private static final RDF rdf = RDFFactory.getInstance();
-    private static final IOService ioService = new JenaIOService();
+    private static final IOService ioService = JenaIOService.newJenaIOService();
     private static final IRI identifier = rdf.createIRI("trellis:data/resource");
 
     @Mock
