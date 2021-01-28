@@ -30,7 +30,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.jena.commonsrdf.JenaCommonsRDF.fromJena;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.apache.jena.riot.Lang.TURTLE;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
@@ -65,11 +64,10 @@ import org.apache.commons.rdf.api.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.riot.RDFParser;
 import org.apache.jena.riot.RiotException;
-import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.trellisldp.api.CacheService;
 import org.trellisldp.api.Metadata;
-import org.trellisldp.api.NoopResourceService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -116,61 +114,37 @@ public class WebAcService {
         allModes.add(ACL.Append);
     }
 
-    private final ResourceService resourceService;
-    private final CacheService<String, AuthorizedModes> cache;
-    private final String defaultAuthResourceLocation;
-    private final List<Authorization> defaultRootAuthorizations;
-    private final boolean checkMembershipResources;
+    private List<Authorization> defaultRootAuthorizations;
 
-    /**
-     * Create a WebAC-based authorization service.
-     */
-    public WebAcService() {
-        this(new NoopResourceService(), new NoopAuthorizationCache());
-    }
-
-    /**
-     * Create a WebAC-based authorization service.
-     *
-     * @param resourceService the trellis service bundler
-     * @param cache a cache
-     */
     @Inject
-    public WebAcService(final ResourceService resourceService,
-            @TrellisAuthorizationCache final CacheService<String, AuthorizedModes> cache) {
-        this(resourceService, cache, getConfig());
-    }
+    @ConfigProperty(name = CONFIG_WEBAC_MEMBERSHIP_CHECK,
+                    defaultValue = "false")
+    boolean checkMembershipResources;
 
-    private WebAcService(final ResourceService resourceService, final CacheService<String, AuthorizedModes> cache,
-            final Config config) {
-        this(resourceService, cache,
-                config.getOptionalValue(CONFIG_WEBAC_MEMBERSHIP_CHECK, Boolean.class).orElse(Boolean.FALSE),
-                config.getOptionalValue(CONFIG_WEBAC_DEFAULT_ACL_LOCATION, String.class).orElse(DEFAULT_ACL_LOCATION));
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_WEBAC_INITIALIZE_ROOT_ACL,
+                    defaultValue = "true")
+    boolean initializeRoot;
 
-    /**
-     * Create a WebAC-based authorization service.
-     *
-     * @param resourceService the resource service
-     * @param cache a cache
-     * @param checkMembershipResources whether to check membership resource permissions (default=false)
-     * @param defaultAuthResourceLocation a classpath location of a default root ACL (in Turtle)
-     */
-    public WebAcService(final ResourceService resourceService, final CacheService<String, AuthorizedModes> cache,
-            final boolean checkMembershipResources, final String defaultAuthResourceLocation) {
-        this.resourceService = requireNonNull(resourceService, "A non-null ResourceService must be provided!");
-        this.cache = cache;
-        this.checkMembershipResources = checkMembershipResources;
-        this.defaultAuthResourceLocation = requireNonNull(defaultAuthResourceLocation, "ACL location may not be null!");
-        this.defaultRootAuthorizations = unmodifiableList(getDefaultRootAuthorizations(defaultAuthResourceLocation));
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_WEBAC_DEFAULT_ACL_LOCATION,
+                    defaultValue = DEFAULT_ACL_LOCATION)
+    String defaultAuthResourceLocation;
+
+    @Inject
+    ResourceService resourceService;
+
+    @Inject
+    @TrellisAuthorizationCache
+    CacheService<String, AuthorizedModes> cache;
 
     /**
      * Initializes the root ACL, if there is no root ACL.
      */
     @PostConstruct
     public void initialize() {
-        if (getConfig().getOptionalValue(CONFIG_WEBAC_INITIALIZE_ROOT_ACL, Boolean.class).orElse(Boolean.TRUE)) {
+        defaultRootAuthorizations = unmodifiableList(getDefaultRootAuthorizations(defaultAuthResourceLocation));
+        if (initializeRoot) {
             try (final Dataset dataset = generateDefaultRootAuthorizationsDataset(defaultAuthResourceLocation)) {
                 this.resourceService.get(root).thenCompose(res -> initialize(res, dataset))
                     .exceptionally(err -> {

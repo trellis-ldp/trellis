@@ -19,7 +19,6 @@ import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.Objects.requireNonNull;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.HttpMethod.DELETE;
@@ -128,10 +127,14 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
     private static final String SLASH = "/";
     private static final RDF rdf = RDFFactory.getInstance();
 
-    private ResourceService resourceService;
-    private WebAcService accessService;
-    private List<String> challenges;
-    private String baseUrl;
+    @Inject
+    WebAcService accessService;
+
+    @Inject
+    ResourceService resourceService;
+
+    List<String> challenges;
+    String baseUrl;
 
     private final boolean enabled;
 
@@ -155,40 +158,6 @@ public class WebAcFilter implements ContainerRequestFilter, ContainerResponseFil
                 stream(w.split(",")).map(String::trim).map(String::toUpperCase).forEach(writable::add));
         config.getOptionalValue(CONFIG_WEBAC_APPENDABLE_METHODS, String.class).ifPresent(a ->
                 stream(a.split(",")).map(String::trim).map(String::toUpperCase).forEach(appendable::add));
-    }
-
-    /**
-     * Set the access service.
-     * @param accessService the access service
-     */
-    @Inject
-    public void setAccessService(final WebAcService accessService) {
-        this.accessService = requireNonNull(accessService, "Access service may not be null!");
-    }
-
-    /**
-     * Set the resource service.
-     * @param resourceService the resource service
-     */
-    @Inject
-    public void setResourceService(final ResourceService resourceService) {
-        this.resourceService = requireNonNull(resourceService, "Resource service may not be null!");
-    }
-
-    /**
-     * Set the challenges.
-     * @param challenges the response challenges
-     */
-    public void setChallenges(final List<String> challenges) {
-        this.challenges = requireNonNull(challenges, "Challenges may not be null!");
-    }
-
-    /**
-     * Set the base URL.
-     * @param baseUrl the base URL
-     */
-    public void setBaseUrl(final String baseUrl) {
-        this.baseUrl = baseUrl;
     }
 
     @Timed

@@ -45,6 +45,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.trellisldp.api.CacheService;
+import org.trellisldp.api.Metadata;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -120,7 +121,12 @@ class WebAcServiceTest {
     void setUp() {
         openMocks(this);
 
-        testService = new WebAcService(mockResourceService, new WebAcService.NoopAuthorizationCache());
+        testService = new WebAcService();
+        testService.resourceService = mockResourceService;
+        testService.cache = new WebAcService.NoopAuthorizationCache();
+        testService.defaultAuthResourceLocation = WebAcService.DEFAULT_ACL_LOCATION;
+        testService.checkMembershipResources = true;
+        testService.initialize();
 
         when(mockCache.get(anyString(), any(Function.class))).thenAnswer(inv -> {
             final String key = inv.getArgument(0);
@@ -162,6 +168,7 @@ class WebAcServiceTest {
     void testInitialize() {
         when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
 
+        testService.initializeRoot = true;
         assertDoesNotThrow(() -> testService.initialize());
         verify(mockRootResource).stream(PreferUserManaged);
     }
@@ -169,6 +176,7 @@ class WebAcServiceTest {
     @Test
     void testInitializeError() {
         when(mockResourceService.get(any(IRI.class))).thenThrow(new RuntimeException("Expected"));
+        testService.initializeRoot = true;
         assertThrows(TrellisRuntimeException.class, testService::initialize);
     }
 
@@ -341,8 +349,12 @@ class WebAcServiceTest {
 
     @Test
     void testCanWrite6() {
-        final WebAcService testService2 = new WebAcService(mockResourceService,
-                new WebAcService.NoopAuthorizationCache(), false, WebAcService.DEFAULT_ACL_LOCATION);
+        final WebAcService testService2 = new WebAcService();
+        testService2.resourceService = mockResourceService;
+        testService2.cache = new WebAcService.NoopAuthorizationCache();
+        testService2.defaultAuthResourceLocation = WebAcService.DEFAULT_ACL_LOCATION;
+        testService2.initializeRoot = true;
+        testService2.initialize();
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
@@ -363,8 +375,13 @@ class WebAcServiceTest {
 
     @Test
     void testCanWrite7() {
-        final WebAcService testService2 = new WebAcService(mockResourceService,
-                new WebAcService.NoopAuthorizationCache(), false, WebAcService.DEFAULT_ACL_LOCATION);
+        final WebAcService testService2 = new WebAcService();
+        testService2.resourceService = mockResourceService;
+        testService2.cache = new WebAcService.NoopAuthorizationCache();
+        testService2.defaultAuthResourceLocation = WebAcService.DEFAULT_ACL_LOCATION;
+        testService2.initializeRoot = true;
+        testService2.initialize();
+
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockParentResource.getMembershipResource()).thenReturn(of(memberIRI));
@@ -766,7 +783,13 @@ class WebAcServiceTest {
 
     @Test
     void testCacheCanWrite1() {
-        final WebAcService testCacheService = new WebAcService(mockResourceService, mockCache);
+        final WebAcService testCacheService = new WebAcService();
+        testCacheService.resourceService = mockResourceService;
+        testCacheService.cache = mockCache;
+        testCacheService.defaultAuthResourceLocation = WebAcService.DEFAULT_ACL_LOCATION;
+        testCacheService.initializeRoot = true;
+        testCacheService.initialize();
+
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         assertAll("Check writability with cache", checkCannotWrite(testCacheService, nonexistentIRI),
                 checkCannotWrite(testCacheService, resourceIRI),
@@ -777,7 +800,13 @@ class WebAcServiceTest {
 
     @Test
     void testCacheCanWrite2() {
-        final WebAcService testCacheService = new WebAcService(mockResourceService, mockCache);
+        final WebAcService testCacheService = new WebAcService();
+        testCacheService.resourceService = mockResourceService;
+        testCacheService.cache = mockCache;
+        testCacheService.defaultAuthResourceLocation = WebAcService.DEFAULT_ACL_LOCATION;
+        testCacheService.initializeRoot = true;
+        testCacheService.initialize();
+
         when(mockSession.getAgent()).thenReturn(addisonIRI);
         assertAll("Check writability with cache", checkCanWrite(testCacheService, nonexistentIRI),
                 checkCanWrite(testCacheService, resourceIRI), checkCanWrite(testCacheService, childIRI),
@@ -787,7 +816,13 @@ class WebAcServiceTest {
 
     @Test
     void testCacheCanWrite3() {
-        final WebAcService testCacheService = new WebAcService(mockResourceService, mockCache);
+        final WebAcService testCacheService = new WebAcService();
+        testCacheService.resourceService = mockResourceService;
+        testCacheService.cache = mockCache;
+        testCacheService.initializeRoot = true;
+        testCacheService.defaultAuthResourceLocation = WebAcService.DEFAULT_ACL_LOCATION;
+        testCacheService.initialize();
+
         when(mockSession.getAgent()).thenReturn(agentIRI);
         when(mockSession.getDelegatedBy()).thenReturn(of(addisonIRI));
         assertAll("Check delegated writability with cache", checkCanWrite(testCacheService, nonexistentIRI),
@@ -986,12 +1021,14 @@ class WebAcServiceTest {
     private void setUpResourceService() {
         when(mockResourceService.get(eq(nonexistentIRI))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockResourceService.supportedInteractionModels()).thenReturn(allModels);
-        when(mockResourceService.get(eq(resourceIRI))).thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResourceService.get(eq(childIRI))).thenAnswer(inv -> completedFuture(mockChildResource));
-        when(mockResourceService.get(eq(parentIRI))).thenAnswer(inv -> completedFuture(mockParentResource));
-        when(mockResourceService.get(eq(rootIRI))).thenAnswer(inv -> completedFuture(mockRootResource));
-        when(mockResourceService.get(eq(groupIRI))).thenAnswer(inv -> completedFuture(mockGroupResource));
-        when(mockResourceService.get(eq(memberIRI))).thenAnswer(inv -> completedFuture(mockMemberResource));
+        when(mockResourceService.get(resourceIRI)).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(childIRI)).thenAnswer(inv -> completedFuture(mockChildResource));
+        when(mockResourceService.get(parentIRI)).thenAnswer(inv -> completedFuture(mockParentResource));
+        when(mockResourceService.get(rootIRI)).thenAnswer(inv -> completedFuture(mockRootResource));
+        when(mockResourceService.get(groupIRI)).thenAnswer(inv -> completedFuture(mockGroupResource));
+        when(mockResourceService.get(memberIRI)).thenAnswer(inv -> completedFuture(mockMemberResource));
+        when(mockResourceService.replace(any(Metadata.class), any(Dataset.class)))
+            .thenAnswer(inv -> completedFuture(null));
     }
 
     private Executable checkCannotRead(final IRI id) {

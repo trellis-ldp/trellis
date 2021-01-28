@@ -15,8 +15,6 @@
  */
 package org.trellisldp.jwt;
 
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toSet;
 import static javax.ws.rs.Priorities.AUTHENTICATION;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -52,17 +50,13 @@ public class JwtAuthFilter implements ContainerRequestFilter {
      * Create an auth filter that augments MicroProfile-JWT authentication with WebID support.
      */
     public JwtAuthFilter() {
-        this.admins = getConfiguredAdmins(getConfig().getOptionalValue(CONFIG_AUTH_ADMIN_USERS, String.class)
-                .orElse(""));
+        this.admins = Set.of(getConfig().getOptionalValue(CONFIG_AUTH_ADMIN_USERS, String[].class)
+                .orElseGet(() -> new String[]{}));
     }
 
     @Override
     public void filter(final ContainerRequestContext ctx) throws IOException {
         LOGGER.trace("JWT Auth Token: {}", jwt);
         ctx.setSecurityContext(new WebIdSecurityContext(ctx.getSecurityContext(), jwt, admins));
-    }
-
-    static Set<String> getConfiguredAdmins(final String admins) {
-        return stream(admins.split(",")).map(String::trim).collect(toSet());
     }
 }
