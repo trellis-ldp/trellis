@@ -15,7 +15,6 @@
  */
 package org.trellisldp.webdav;
 
-import static java.util.Objects.requireNonNull;
 import static javax.ws.rs.HttpMethod.DELETE;
 import static javax.ws.rs.HttpMethod.POST;
 import static javax.ws.rs.HttpMethod.PUT;
@@ -55,10 +54,11 @@ import org.trellisldp.vocabulary.LDP;
 @PreMatching
 public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
 
+    @Inject
+    ServiceBundler services;
 
-    private boolean createUncontained;
-    private String baseUrl;
-    private ServiceBundler services;
+    boolean createUncontained;
+    String baseUrl;
 
     /**
      * Create a Trellis HTTP request filter for WebDAV.
@@ -68,31 +68,6 @@ public class TrellisWebDAVRequestFilter implements ContainerRequestFilter {
         this.createUncontained = config.getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class)
             .orElse(Boolean.FALSE);
         this.baseUrl = config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null);
-    }
-
-    /**
-     * Set the service bundler.
-     * @param services the services
-     */
-    @Inject
-    public void setServiceBundler(final ServiceBundler services) {
-        this.services = requireNonNull(services, "Services may not be null!");
-    }
-
-    /**
-     * Set the create-uncontained flag.
-     * @param createUncontained whether created resources should be uncontained by parent containers
-     */
-    public void setCreateUncontained(final boolean createUncontained) {
-        this.createUncontained = createUncontained;
-    }
-
-    /**
-     * Set the base URL.
-     * @param baseUrl the base URL
-     */
-    public void setBaseUrl(final String baseUrl) {
-        this.baseUrl = baseUrl;
     }
 
     @Override

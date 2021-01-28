@@ -16,7 +16,8 @@
 package org.trellisldp.webdav;
 
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.trellisldp.common.HttpConstants.CONFIG_HTTP_BASE_URL;
+
+import java.util.Optional;
 
 import javax.ws.rs.core.Application;
 
@@ -35,24 +36,23 @@ class WebDAVTest extends AbstractWebDAVTest {
         openMocks(this);
 
         final ResourceConfig config = new ResourceConfig();
+        final TrellisWebDAV dav = new TrellisWebDAV();
+        dav.userBaseUrl = Optional.of(getBaseUri().toString());
+        dav.extensionConfig = Optional.empty();
+        dav.init();
 
-        try {
-            System.setProperty(CONFIG_HTTP_BASE_URL, getBaseUri().toString());
-            config.register(new DebugExceptionMapper());
-            config.register(new TrellisWebDAVRequestFilter());
-            config.register(new TrellisWebDAVResponseFilter());
-            config.register(new TrellisWebDAV(mockBundler));
-            config.register(new TrellisHttpResource(mockBundler));
-            config.register(new AbstractBinder() {
-                @Override
-                protected void configure() {
-                    bind(mockBundler).to(ServiceBundler.class);
-                }
-            });
-            return config;
-        } finally {
-            System.clearProperty(CONFIG_HTTP_BASE_URL);
-        }
+        config.register(dav);
+        config.register(new DebugExceptionMapper());
+        config.register(new TrellisWebDAVRequestFilter());
+        config.register(new TrellisWebDAVResponseFilter());
+        config.register(new TrellisHttpResource(mockBundler));
+        config.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(mockBundler).to(ServiceBundler.class);
+            }
+        });
+        return config;
     }
 }
 
