@@ -82,7 +82,7 @@ class TrellisWebDAVRequestFilterTest {
         openMocks(this);
 
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
         when(mockContext.getMethod()).thenReturn(PUT);
@@ -97,9 +97,8 @@ class TrellisWebDAVRequestFilterTest {
         when(mockPathSegment.getPath()).thenReturn(PATH);
 
         filter = new TrellisWebDAVRequestFilter();
-        filter.setServiceBundler(mockBundler);
-        filter.setCreateUncontained(true);
-        filter.setBaseUrl(null);
+        filter.services = mockBundler;
+        filter.createUncontained = true;
     }
 
     @Test
@@ -111,41 +110,41 @@ class TrellisWebDAVRequestFilterTest {
     void testTestPutUncontainedMissing() {
 
         filter.filter(mockContext);
-        verify(mockContext).setMethod(eq(POST));
-        verify(mockHeaders).putSingle(eq(SLUG), eq(PATH));
+        verify(mockContext).setMethod(POST);
+        verify(mockHeaders).putSingle(SLUG, PATH);
     }
 
     @Test
     void testTestPutContainedMissing() {
         final TrellisWebDAVRequestFilter filter2 = new TrellisWebDAVRequestFilter();
-        filter2.setServiceBundler(mockBundler);
+        filter2.services = mockBundler;
 
         filter2.filter(mockContext);
-        verify(mockContext, never()).setMethod(eq(POST));
-        verify(mockHeaders, never()).putSingle(eq(SLUG), eq(PATH));
+        verify(mockContext, never()).setMethod(POST);
+        verify(mockHeaders, never()).putSingle(SLUG, PATH);
     }
 
 
     @Test
     void testTestPutUncontainedDeleted() {
 
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH)))
             .thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
 
         filter.filter(mockContext);
-        verify(mockContext).setMethod(eq(POST));
-        verify(mockHeaders).putSingle(eq(SLUG), eq(PATH));
+        verify(mockContext).setMethod(POST);
+        verify(mockHeaders).putSingle(SLUG, PATH);
     }
 
     @Test
     void testTestPutUncontainedExisting() {
 
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + PATH)))
             .thenAnswer(inv -> completedFuture(mockResource));
 
         filter.filter(mockContext);
-        verify(mockContext, never()).setMethod(eq(POST));
-        verify(mockHeaders, never()).putSingle(eq(SLUG), eq(PATH));
+        verify(mockContext, never()).setMethod(POST);
+        verify(mockHeaders, never()).putSingle(SLUG, PATH);
     }
 
 
@@ -155,8 +154,8 @@ class TrellisWebDAVRequestFilterTest {
         when(mockUriInfo.getPathSegments()).thenReturn(emptyList());
 
         filter.filter(mockContext);
-        verify(mockContext, never()).setMethod(eq(POST));
-        verify(mockHeaders, never()).putSingle(eq(SLUG), eq(PATH));
+        verify(mockContext, never()).setMethod(POST);
+        verify(mockHeaders, never()).putSingle(SLUG, PATH);
     }
 
     @Test
@@ -165,7 +164,7 @@ class TrellisWebDAVRequestFilterTest {
         when(mockPathSegment.getPath()).thenReturn("");
 
         filter.filter(mockContext);
-        verify(mockContext, never()).setMethod(eq(POST));
-        verify(mockHeaders, never()).putSingle(eq(SLUG), eq(PATH));
+        verify(mockContext, never()).setMethod(POST);
+        verify(mockHeaders, never()).putSingle(SLUG, PATH);
     }
 }

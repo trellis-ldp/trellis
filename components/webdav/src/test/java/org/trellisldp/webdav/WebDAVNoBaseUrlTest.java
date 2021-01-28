@@ -18,6 +18,7 @@ package org.trellisldp.webdav;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.security.Principal;
+import java.util.Optional;
 
 import javax.annotation.Priority;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -78,12 +79,16 @@ class WebDAVNoBaseUrlTest extends AbstractWebDAVTest {
         openMocks(this);
 
         final ResourceConfig config = new ResourceConfig();
+        final TrellisWebDAV dav = new TrellisWebDAV();
+        dav.userBaseUrl = Optional.empty();
+        dav.extensionConfig = Optional.empty();
+        dav.init();
 
+        config.register(dav);
         config.register(new DebugExceptionMapper());
         config.register(new TestAuthnFilter("testUser", ""));
         config.register(new TrellisWebDAVRequestFilter());
         config.register(new TrellisWebDAVResponseFilter());
-        config.register(new TrellisWebDAV(mockBundler));
         config.register(new TrellisHttpResource(mockBundler));
         config.register(new AbstractBinder() {
             @Override

@@ -287,7 +287,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
 
     @Test
     void testPropFindContainer() throws IOException {
-        when(mockRootResource.stream(eq(LDP.PreferContainment))).thenAnswer(inf -> Stream.of(
+        when(mockRootResource.stream(any(IRI.class))).thenAnswer(inf -> Stream.of(
                 rdf.createQuad(LDP.PreferContainment, root, LDP.contains, identifier),
                 rdf.createQuad(LDP.PreferContainment, root, LDP.contains, binaryIdentifier)));
 
@@ -489,7 +489,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
 
     @Test
     void testPutPreviouslyDeleted() {
-        when(mockResourceService.get(eq(childIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockResourceService.get(childIdentifier)).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         final Response res = target(CHILD_PATH).request().put(entity("another text document.", TEXT_PLAIN_TYPE));
 
@@ -502,7 +502,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
 
     @Test
     void testPutRoot() {
-        when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockResourceService.get(root)).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         final Response res = target().request().put(entity("another text document.", TEXT_PLAIN_TYPE));
 
         assertEquals(SC_CREATED, res.getStatus(), "Unexpected response code!");
@@ -526,8 +526,8 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     void testDeleteRecursive() {
 
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
-        when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
-        when(mockResource.stream(eq(LDP.PreferContainment))).thenAnswer(inf -> Stream.of(
+        when(mockResourceService.get(otherIdentifier)).thenAnswer(inv -> completedFuture(mockOtherResource));
+        when(mockResource.stream(LDP.PreferContainment)).thenAnswer(inf -> Stream.of(
                 rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains, otherIdentifier)));
 
         final Response res = target(RESOURCE_PATH).request().delete();
@@ -599,8 +599,8 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testMoveToRoot() {
 
-        when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(otherIdentifier)).thenAnswer(inv -> completedFuture(mockOtherResource));
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri())
             .method("MOVE");
@@ -611,8 +611,8 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testMoveToDeletedParent() {
 
-        when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockResourceService.get(otherIdentifier)).thenAnswer(inv -> completedFuture(mockOtherResource));
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
 
         final Response res = target(OTHER_PATH).request().header("Destination", getBaseUri() + RESOURCE_PATH + "/other")
             .method("MOVE");
@@ -623,8 +623,8 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testMoveToMissingParent() {
 
-        when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(otherIdentifier)).thenAnswer(inv -> completedFuture(mockOtherResource));
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(OTHER_PATH).request().header("Destination", getBaseUri() + RESOURCE_PATH + "/other")
             .method("MOVE");
@@ -701,7 +701,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
 
     @Test
     void testCopyMissingResource() {
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
             .method("COPY");
 
@@ -711,9 +711,9 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testCopyRecursive() {
 
-        when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
+        when(mockResourceService.get(otherIdentifier)).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResource.stream(eq(LDP.PreferContainment))).thenAnswer(inf -> Stream.of(
+        when(mockResource.stream(LDP.PreferContainment)).thenAnswer(inf -> Stream.of(
                 rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains, otherIdentifier)));
 
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri() + NON_EXISTENT_PATH)
@@ -725,9 +725,9 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testCopyRecursiveDepth0() {
 
-        when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
+        when(mockResourceService.get(otherIdentifier)).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResource.stream(eq(LDP.PreferContainment))).thenAnswer(inf -> Stream.of(
+        when(mockResource.stream(LDP.PreferContainment)).thenAnswer(inf -> Stream.of(
                 rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains, otherIdentifier)));
 
         final Response res = target(RESOURCE_PATH).request().header("Depth", "0")
@@ -739,9 +739,9 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testCopyRecursiveDepth1() {
 
-        when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
+        when(mockResourceService.get(otherIdentifier)).thenAnswer(inv -> completedFuture(mockOtherResource));
         when(mockResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
-        when(mockResource.stream(eq(LDP.PreferContainment))).thenAnswer(inf -> Stream.of(
+        when(mockResource.stream(LDP.PreferContainment)).thenAnswer(inf -> Stream.of(
                 rdf.createQuad(LDP.PreferContainment, identifier, LDP.contains, otherIdentifier)));
 
         final Response res = target(RESOURCE_PATH).request().header("Depth", "1")
@@ -753,8 +753,8 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testCopyToRoot() {
 
-        when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(otherIdentifier)).thenAnswer(inv -> completedFuture(mockOtherResource));
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(RESOURCE_PATH).request().header("Destination", getBaseUri())
             .method("COPY");
@@ -765,8 +765,8 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testCopyToDeletedParent() {
 
-        when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockResourceService.get(otherIdentifier)).thenAnswer(inv -> completedFuture(mockOtherResource));
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
 
         final Response res = target(OTHER_PATH).request().header("Destination", getBaseUri() + RESOURCE_PATH + "/other")
             .method("COPY");
@@ -777,8 +777,8 @@ abstract class AbstractWebDAVTest extends JerseyTest {
     @Test
     void testCopyToMissingParent() {
 
-        when(mockResourceService.get(eq(otherIdentifier))).thenAnswer(inv -> completedFuture(mockOtherResource));
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(otherIdentifier)).thenAnswer(inv -> completedFuture(mockOtherResource));
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
 
         final Response res = target(OTHER_PATH).request().header("Destination", getBaseUri() + RESOURCE_PATH + "/other")
             .method("COPY");
@@ -844,14 +844,14 @@ abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockResourceService.create(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
         when(mockResourceService.delete(any(Metadata.class))).thenReturn(completedFuture(null));
         when(mockResourceService.generateIdentifier()).thenReturn(RANDOM_VALUE);
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource"))))
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + "resource")))
             .thenAnswer(inv -> completedFuture(mockResource));
-        when(mockResourceService.get(eq(binaryIdentifier))).thenAnswer(inv -> completedFuture(mockBinaryResource));
-        when(mockResourceService.get(eq(childIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockResourceService.get(eq(deletedIdentifier))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
-        when(mockResourceService.get(eq(nonexistentIdentifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockResourceService.get(eq(root))).thenAnswer(inv -> completedFuture(mockRootResource));
+        when(mockResourceService.get(binaryIdentifier)).thenAnswer(inv -> completedFuture(mockBinaryResource));
+        when(mockResourceService.get(childIdentifier)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(deletedIdentifier)).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockResourceService.get(nonexistentIdentifier)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(root)).thenAnswer(inv -> completedFuture(mockRootResource));
         when(mockResourceService.replace(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
         when(mockResourceService.skolemize(any(BlankNode.class))).thenAnswer(inv ->
                 rdf.createIRI(TRELLIS_BNODE_PREFIX + ((BlankNode) inv.getArgument(0)).uniqueReference()));
@@ -873,7 +873,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockResource.getBinaryMetadata()).thenReturn(empty());
         when(mockResource.getIdentifier()).thenReturn(identifier);
         when(mockResource.getExtraLinkRelations()).thenAnswer(inv -> Stream.empty());
-        when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(inf -> Stream.of(
+        when(mockResource.stream(PreferUserManaged)).thenAnswer(inf -> Stream.of(
                 rdf.createQuad(PreferUserManaged, identifier, DC.relation, rdf.createBlankNode()),
                 rdf.createQuad(PreferUserManaged, identifier, DC.created,
                     rdf.createLiteral("2017-04-01T10:15:00Z", XSD.dateTime)),
