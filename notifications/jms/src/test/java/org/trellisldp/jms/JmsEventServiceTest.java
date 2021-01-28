@@ -19,8 +19,6 @@ import static java.time.Instant.now;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static javax.jms.Session.AUTO_ACKNOWLEDGE;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
@@ -39,14 +37,12 @@ import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
-import org.trellisldp.api.EventService;
 import org.trellisldp.event.jackson.DefaultEventSerializationService;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
@@ -98,11 +94,6 @@ class JmsEventServiceTest {
         BROKER.stop();
     }
 
-    @BeforeEach
-    void setUp() throws JMSException {
-
-    }
-
     @Test
     void testJms() throws JMSException {
         when(mockEvent.getAgents()).thenReturn(singleton(Trellis.AdministratorAgent));
@@ -115,10 +106,13 @@ class JmsEventServiceTest {
         when(mockSession.createQueue(eq(queueName))).thenReturn(mockQueue);
         when(mockSession.createTextMessage(anyString())).thenReturn(mockMessage);
         when(mockSession.createProducer(any(Queue.class))).thenReturn(mockProducer);
-        when(mockConnection.createSession(anyBoolean(), eq(AUTO_ACKNOWLEDGE))).thenReturn(mockSession);
         doNothing().when(mockProducer).send(any(TextMessage.class));
 
-        final EventService svc = new JmsEventService(serializer, mockConnection);
+        final JmsEventService svc = new JmsEventService();
+        svc.serializer = serializer;
+        svc.session = mockSession;
+        svc.useQueue = true;
+        svc.queueName = queueName;
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));
@@ -138,7 +132,11 @@ class JmsEventServiceTest {
         when(mockSession.createProducer(any(Queue.class))).thenReturn(mockProducer);
         doNothing().when(mockProducer).send(any(TextMessage.class));
 
-        final EventService svc = new JmsEventService(serializer, mockSession, queueName, true);
+        final JmsEventService svc = new JmsEventService();
+        svc.serializer = serializer;
+        svc.session = mockSession;
+        svc.useQueue = true;
+        svc.queueName = queueName;
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));
@@ -158,7 +156,11 @@ class JmsEventServiceTest {
         when(mockSession.createTextMessage(anyString())).thenReturn(mockMessage);
         when(mockSession.createProducer(any(Topic.class))).thenReturn(mockTopicProducer);
 
-        final EventService svc = new JmsEventService(serializer, mockSession, queueName, false);
+        final JmsEventService svc = new JmsEventService();
+        svc.serializer = serializer;
+        svc.session = mockSession;
+        svc.useQueue = false;
+        svc.queueName = queueName;
         svc.emit(mockEvent);
 
         verify(mockTopicProducer).send(eq(mockMessage));
@@ -180,14 +182,13 @@ class JmsEventServiceTest {
 
         doThrow(JMSException.class).when(mockProducer).send(eq(mockMessage));
 
-        final EventService svc = new JmsEventService(serializer, mockSession, queueName);
+        final JmsEventService svc = new JmsEventService();
+        svc.serializer = serializer;
+        svc.session = mockSession;
+        svc.useQueue = true;
+        svc.queueName = queueName;
         svc.emit(mockEvent);
 
         verify(mockProducer).send(eq(mockMessage));
-    }
-
-    @Test
-    void testNoargCtor() {
-        assertDoesNotThrow(() -> new JmsEventService());
     }
 }

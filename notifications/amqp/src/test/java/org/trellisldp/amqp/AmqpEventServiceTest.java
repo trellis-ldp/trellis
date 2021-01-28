@@ -19,7 +19,6 @@ import static java.time.Instant.now;
 import static java.util.Collections.singleton;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
@@ -43,7 +42,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
-import org.trellisldp.api.EventService;
 import org.trellisldp.event.jackson.DefaultEventSerializationService;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
@@ -96,7 +94,11 @@ class AmqpEventServiceTest {
         doNothing().when(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
                 any(BasicProperties.class), any(byte[].class));
 
-        final EventService svc = new AmqpEventService(serializer, mockChannel, exchangeName, queueName);
+        final AmqpEventService svc = new AmqpEventService();
+        svc.serializer = serializer;
+        svc.channel = mockChannel;
+        svc.exchangeName = exchangeName;
+        svc.routingKey = queueName;
         svc.emit(mockEvent);
 
         verify(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
@@ -115,7 +117,11 @@ class AmqpEventServiceTest {
         doNothing().when(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
                 any(BasicProperties.class), any(byte[].class));
 
-        final EventService svc = new AmqpEventService(serializer, mockChannel);
+        final AmqpEventService svc = new AmqpEventService();
+        svc.serializer = serializer;
+        svc.channel = mockChannel;
+        svc.exchangeName = exchangeName;
+        svc.routingKey = queueName;
         svc.emit(mockEvent);
 
         verify(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
@@ -135,15 +141,14 @@ class AmqpEventServiceTest {
         doThrow(IOException.class).when(mockChannel).basicPublish(eq(exchangeName), eq(queueName),
                 anyBoolean(), anyBoolean(), any(BasicProperties.class), any(byte[].class));
 
-        final EventService svc = new AmqpEventService(serializer, mockChannel, exchangeName, queueName, true, true);
+        final AmqpEventService svc = new AmqpEventService();
+        svc.serializer = serializer;
+        svc.channel = mockChannel;
+        svc.exchangeName = exchangeName;
+        svc.routingKey = queueName;
         svc.emit(mockEvent);
 
         verify(mockChannel).basicPublish(eq(exchangeName), eq(queueName), anyBoolean(), anyBoolean(),
                 any(BasicProperties.class), any(byte[].class));
-    }
-
-    @Test
-    void testNoargCtor() {
-        assertDoesNotThrow(() -> new AmqpEventService());
     }
 }

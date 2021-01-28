@@ -17,7 +17,6 @@ package org.trellisldp.amqp;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
-import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
@@ -27,12 +26,11 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 
-import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
 import org.trellisldp.api.EventService;
-import org.trellisldp.api.NoopEventSerializationService;
 
 /**
  * An AMQP message producer capable of publishing messages to an AMQP broker such as
@@ -54,79 +52,29 @@ public class AmqpEventService implements EventService {
     /** The configuration key controlling whether publishing is immediate. */
     public static final String CONFIG_AMQP_IMMEDIATE = "trellis.amqp.immediate";
 
-    /** The configuration key controlling the AMQP connection URI. */
-    public static final String CONFIG_AMQP_URI = "trellis.amqp.uri";
-
-    private final EventSerializationService service;
-    private final Channel channel;
-    private final String exchangeName;
-    private final String routingKey;
-    private final boolean mandatory;
-    private final boolean immediate;
-
-    /**
-     * Create an AMQP publisher.
-     *
-     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
-     *          It should not be invoked directly in user code.
-     */
-    public AmqpEventService() {
-        this.service = new NoopEventSerializationService();
-        this.channel = null;
-        this.exchangeName = null;
-        this.routingKey = null;
-        this.mandatory = false;
-        this.immediate = false;
-    }
-
-    /**
-     * Create an AMQP publisher.
-     * @param serializer the event serializer
-     * @param channel the channel
-     */
     @Inject
-    public AmqpEventService(final EventSerializationService serializer, final Channel channel) {
-        this(serializer, channel, getConfig());
-    }
+    Channel channel;
 
-    private AmqpEventService(final EventSerializationService serializer, final Channel channel, final Config config) {
-        this(serializer, channel, config.getValue(CONFIG_AMQP_EXCHANGE_NAME, String.class),
-                config.getValue(CONFIG_AMQP_ROUTING_KEY, String.class),
-            config.getOptionalValue(CONFIG_AMQP_MANDATORY, Boolean.class).orElse(Boolean.TRUE),
-            config.getOptionalValue(CONFIG_AMQP_IMMEDIATE, Boolean.class).orElse(Boolean.FALSE));
-    }
+    @Inject
+    EventSerializationService serializer;
 
-    /**
-     * Create an AMQP publisher.
-     * @param serializer the event serializer
-     * @param channel the channel
-     * @param exchangeName the exchange name
-     * @param routingKey the routing key
-     */
-    public AmqpEventService(final EventSerializationService serializer, final Channel channel,
-            final String exchangeName, final String routingKey) {
-        this(serializer, channel, exchangeName, routingKey, true, false);
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_AMQP_EXCHANGE_NAME)
+    String exchangeName;
 
-    /**
-     * Create an AMQP publisher.
-     * @param serializer the event serializer
-     * @param channel the channel
-     * @param exchangeName the exchange name
-     * @param routingKey the routing key
-     * @param mandatory the mandatory setting
-     * @param immediate the immediate setting
-     */
-    public AmqpEventService(final EventSerializationService serializer, final Channel channel,
-            final String exchangeName, final String routingKey, final boolean mandatory, final boolean immediate) {
-        this.service = requireNonNull(serializer, "Event serializer may not be null!");
-        this.channel = requireNonNull(channel, "AMQP Channel may not be null!");
-        this.exchangeName = requireNonNull(exchangeName, "AMQP exchange name may not be null!");
-        this.routingKey = requireNonNull(routingKey, "AMQP routing key may not be null!");
+    @Inject
+    @ConfigProperty(name = CONFIG_AMQP_ROUTING_KEY)
+    String routingKey;
 
-        this.mandatory = mandatory;
-        this.immediate = immediate;
-    }
+    @Inject
+    @ConfigProperty(name = CONFIG_AMQP_IMMEDIATE,
+                    defaultValue = "false")
+    boolean immediate;
+
+    @Inject
+    @ConfigProperty(name = CONFIG_AMQP_MANDATORY,
+                    defaultValue = "true")
+    boolean mandatory;
 
     @Override
     public void emit(final Event event) {
@@ -137,7 +85,7 @@ public class AmqpEventService implements EventService {
 
         try {
             channel.basicPublish(exchangeName, routingKey, mandatory, immediate, props,
-                    service.serialize(event).getBytes(UTF_8));
+                    serializer.serialize(event).getBytes(UTF_8));
         } catch (final IOException ex) {
             LOGGER.error("Error writing to broker: {}", ex.getMessage());
         }

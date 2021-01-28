@@ -36,7 +36,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.trellisldp.api.Event;
 import org.trellisldp.api.EventSerializationService;
-import org.trellisldp.api.EventService;
 import org.trellisldp.event.jackson.DefaultEventSerializationService;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
@@ -71,26 +70,14 @@ class KafkaEventServiceTest {
         when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
 
-        final EventService svc = new KafkaEventService(serializer, producer);
+        final KafkaEventService svc = new KafkaEventService();
+        svc.serializer = serializer;
+        svc.producer = producer;
+        svc.topic = queueName;
         svc.emit(mockEvent);
 
         final List<ProducerRecord<String, String>> records = producer.history();
         assertEquals(1L, records.size(), "Incorrect total records size!");
         assertEquals(1L, records.stream().filter(r -> r.topic().equals(queueName)).count(), "Incorrect filtered size!");
-    }
-
-    @Test
-    void testNoargCtor() {
-        when(mockEvent.getObject()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
-        when(mockEvent.getIdentifier()).thenReturn(rdf.createIRI("urn:test"));
-        when(mockEvent.getTypes()).thenReturn(singleton(AS.Update));
-
-        final EventService svc = new KafkaEventService();
-        assertDoesNotThrow(() -> svc.emit(mockEvent));
-    }
-
-    @Test
-    void testDefaultKafka() {
-        assertDoesNotThrow(() -> new KafkaEventService(serializer));
     }
 }
