@@ -110,6 +110,18 @@ public class TrellisHttpResource {
     @Inject
     ServiceBundler services;
 
+    @Context
+    Request request;
+
+    @Context
+    UriInfo uriInfo;
+
+    @Context
+    HttpHeaders headers;
+
+    @Context
+    SecurityContext security;
+
     Optional<String> baseUrl;
 
     /**
@@ -171,9 +183,6 @@ public class TrellisHttpResource {
      *
      * @implNote The Memento implemenation pattern exactly follows
      *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
-     * @param uriInfo the URI info
-     * @param headers the HTTP headers
-     * @param request the request
      * @return the async response
      */
     @GET
@@ -192,8 +201,7 @@ public class TrellisHttpResource {
                 responseCode = "200",
                 description = "The linked data resource, serialized as JSON-LD",
                 content = @Content(mediaType = "application/ld+json"))})
-    public CompletionStage<Response> getResource(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers) {
+    public CompletionStage<Response> getResource() {
         return fetchResource(new TrellisRequest(request, uriInfo, headers))
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
@@ -203,17 +211,13 @@ public class TrellisHttpResource {
      *
      * @implNote The Memento implemenation pattern exactly follows
      *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
-     * @param uriInfo the URI info
-     * @param headers the HTTP headers
-     * @param request the request
      * @return the async response
      */
     @HEAD
     @Timed
     @Operation(summary = "Get the headers for a linked data resource")
     @APIResponse(description = "The headers for a linked data resource")
-    public CompletionStage<Response> getResourceHeaders(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers) {
+    public CompletionStage<Response> getResourceHeaders() {
         return fetchResource(new TrellisRequest(request, uriInfo, headers))
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
@@ -221,17 +225,13 @@ public class TrellisHttpResource {
     /**
      * Perform an OPTIONS operation on an LDP Resource.
      *
-     * @param uriInfo the URI info
-     * @param headers the HTTP headers
-     * @param request the request
      * @return the async response
      */
     @OPTIONS
     @Timed
     @Operation(summary = "Get the interaction options for a linked data resource")
     @APIResponse(description = "The interaction options for a linked data resource")
-    public CompletionStage<Response> options(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers) {
+    public CompletionStage<Response> options() {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final OptionsHandler optionsHandler = new OptionsHandler(req, services, extensions);
         return supplyAsync(optionsHandler::ldpOptions).thenApply(ResponseBuilder::build)
@@ -241,22 +241,17 @@ public class TrellisHttpResource {
     /**
      * Perform a PATCH operation on an LDP Resource.
      *
-     * @param uriInfo the URI info
-     * @param secContext the security context
-     * @param headers the HTTP headers
-     * @param request the request
      * @param body the body
      * @return the async response
      */
     @PATCH
     @Timed
     @Operation(summary = "Update a linked data resource")
-    public CompletionStage<Response> updateResource(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers, @Context final SecurityContext secContext,
+    public CompletionStage<Response> updateResource(
             @RequestBody(description = "The update request for RDF resources, typically as SPARQL-Update",
                          required = true,
                          content = @Content(mediaType = "application/sparql-update")) final String body) {
-        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = services.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final PatchHandler patchHandler = new PatchHandler(req, body, services, extensions, supportsCreateOnPatch,
@@ -271,18 +266,13 @@ public class TrellisHttpResource {
     /**
      * Perform a DELETE operation on an LDP Resource.
      *
-     * @param uriInfo the URI info
-     * @param secContext the security context
-     * @param headers the HTTP headers
-     * @param request the request
      * @return the async response
      */
     @DELETE
     @Timed
     @Operation(summary = "Delete a linked data resource")
-    public CompletionStage<Response> deleteResource(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers, @Context final SecurityContext secContext) {
-        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
+    public CompletionStage<Response> deleteResource() {
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = services.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final DeleteHandler deleteHandler = new DeleteHandler(req, services, extensions, urlBase);
@@ -296,20 +286,15 @@ public class TrellisHttpResource {
     /**
      * Perform a POST operation on a LDP Resource.
      *
-     * @param uriInfo the URI info
-     * @param secContext the security context
-     * @param headers the HTTP headers
-     * @param request the request
      * @param body the body
      * @return the async response
      */
     @POST
     @Timed
     @Operation(summary = "Create a linked data resource")
-    public CompletionStage<Response> createResource(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers, @Context final SecurityContext secContext,
+    public CompletionStage<Response> createResource(
             @RequestBody(description = "The new resource") final InputStream body) {
-        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String urlBase = getBaseUrl(req);
         final String path = req.getPath();
         final String identifier = getIdentifier(req);
@@ -328,20 +313,15 @@ public class TrellisHttpResource {
     /**
      * Perform a PUT operation on a LDP Resource.
      *
-     * @param uriInfo the URI info
-     * @param secContext the security context
-     * @param headers the HTTP headers
-     * @param request the request
      * @param body the body
      * @return the async response
      */
     @PUT
     @Timed
     @Operation(summary = "Create or update a linked data resource")
-    public CompletionStage<Response> setResource(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers, @Context final SecurityContext secContext,
+    public CompletionStage<Response> setResource(
             @RequestBody(description = "The updated resource") final InputStream body) {
-        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = services.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final PutHandler putHandler = new PutHandler(req, body, services, extensions, preconditionRequired,

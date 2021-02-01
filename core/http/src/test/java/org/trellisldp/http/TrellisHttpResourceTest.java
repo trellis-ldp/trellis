@@ -98,8 +98,11 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     @Test
     void testNoBaseURL() throws Exception {
         final TrellisHttpResource matcher = new TrellisHttpResource();
-        matcher.services = mockBundler;
         matcher.baseUrl = Optional.empty();
+        matcher.services = mockBundler;
+        matcher.request = mockRequest;
+        matcher.uriInfo = mockUriInfo;
+        matcher.headers = mockHttpHeaders;
 
         when(mockUriInfo.getPathParameters()).thenReturn(new MultivaluedHashMap<>(singletonMap("path", "resource")));
         when(mockUriInfo.getPath()).thenReturn("resource");
@@ -108,8 +111,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
         when(mockHttpHeaders.getRequestHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockTrellisRequest.getAcceptableMediaTypes()).thenReturn(singletonList(WILDCARD_TYPE));
 
-        try (final Response res = matcher.getResourceHeaders(mockRequest, mockUriInfo, mockHttpHeaders)
-                .toCompletableFuture().join()) {
+        try (final Response res = matcher.getResourceHeaders().toCompletableFuture().join()) {
             assertTrue(getLinks(res).stream().anyMatch(l ->
                         l.getRel().equals("self") && l.getUri().toString().startsWith("http://my.example.com/")),
                     "Missing rel=self header with correct prefix!");
