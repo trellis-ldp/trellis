@@ -45,7 +45,7 @@ class WebDAVTest extends AbstractWebDAVTest {
         config.register(new DebugExceptionMapper());
         config.register(new TrellisWebDAVRequestFilter());
         config.register(new TrellisWebDAVResponseFilter());
-        config.register(new TrellisHttpResource(mockBundler));
+        config.register(new TrellisHttpResource());
         config.register(new AbstractBinder() {
             @Override
             protected void configure() {

@@ -15,14 +15,14 @@
  */
 package org.trellisldp.http;
 
-import static java.util.Collections.singletonMap;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.trellisldp.common.HttpConstants.ACL;
-import static org.trellisldp.vocabulary.Trellis.PreferAccessControl;
+import static org.trellisldp.common.HttpConstants.CONFIG_HTTP_BASE_URL;
 
 import javax.ws.rs.core.Application;
 
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.trellisldp.common.ServiceBundler;
 
 /**
  * @author acoburn
@@ -40,15 +40,22 @@ class TrellisHttpResourceNoAgentTest extends AbstractTrellisHttpResourceTest {
         // Junit runner doesn't seem to work very well with JerseyTest
         openMocks(this);
 
-        System.setProperty(WebSubHeaderFilter.CONFIG_HTTP_WEB_SUB_HUB, HUB);
-
         final String baseUri = getBaseUri().toString();
 
+        System.setProperty(WebSubHeaderFilter.CONFIG_HTTP_WEB_SUB_HUB, HUB);
+        System.setProperty(CONFIG_HTTP_BASE_URL, baseUri);
+
         final ResourceConfig config = new ResourceConfig();
-        config.register(new TrellisHttpResource(mockBundler, singletonMap(ACL, PreferAccessControl), baseUri));
+        config.register(new TrellisHttpResource());
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter());
         config.register(new TrellisHttpFilter());
+        config.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(mockBundler).to(ServiceBundler.class);
+            }
+        });
         return config;
     }
 }

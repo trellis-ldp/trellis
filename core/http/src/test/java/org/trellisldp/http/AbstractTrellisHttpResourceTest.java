@@ -2389,7 +2389,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testInitializeError() {
         when(mockResourceService.get(any(IRI.class))).thenThrow(new RuntimeException("Expected"));
-        final TrellisHttpResource testService = new TrellisHttpResource(mockBundler);
+        final TrellisHttpResource testService = new TrellisHttpResource();
+        testService.services = mockBundler;
         assertThrows(TrellisRuntimeException.class, testService::initialize);
     }
 

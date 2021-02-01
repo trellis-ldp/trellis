@@ -16,10 +16,13 @@
 package org.trellisldp.http;
 
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.trellisldp.common.HttpConstants.CONFIG_HTTP_BASE_URL;
 
 import javax.ws.rs.core.Application;
 
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.trellisldp.common.ServiceBundler;
 
 /**
  * @author acoburn
@@ -33,13 +36,20 @@ class TrellisHttpResourceUserTest extends AbstractTrellisHttpResourceTest {
         openMocks(this);
 
         System.setProperty(WebSubHeaderFilter.CONFIG_HTTP_WEB_SUB_HUB, HUB);
+        System.clearProperty(CONFIG_HTTP_BASE_URL);
 
         final ResourceConfig config = new ResourceConfig();
-        config.register(new TrellisHttpResource(mockBundler));
+        config.register(new TrellisHttpResource());
         config.register(new TestAuthenticationFilter("testUser", "group"));
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter());
         config.register(new TrellisHttpFilter());
+        config.register(new AbstractBinder() {
+            @Override
+            protected void configure() {
+                bind(mockBundler).to(ServiceBundler.class);
+            }
+        });
         return config;
     }
 }

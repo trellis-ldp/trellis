@@ -63,7 +63,8 @@ test {
             '--add-opens', "java.base/java.net=jersey.client",
             '--add-opens', "$moduleName/org.trellisldp.webdav.impl=org.junit.platform.commons",
             '--add-opens', "$moduleName/org.trellisldp.webdav.impl=org.mockito",
-            '--add-opens', "$moduleName/$moduleName=hk2.utils"
+            '--add-opens', "$moduleName/$moduleName=hk2.utils",
+            '--add-opens', "org.trellisldp.http/org.trellisldp.http=hk2.utils",
         ]
     }
     mustRunAfter(':trellis-http:test')
