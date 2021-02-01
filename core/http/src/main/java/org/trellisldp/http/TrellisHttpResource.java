@@ -26,6 +26,7 @@ import static org.trellisldp.common.HttpConstants.*;
 
 import java.io.InputStream;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import javax.annotation.PostConstruct;
@@ -98,9 +99,7 @@ public class TrellisHttpResource {
 
     protected static final RDF rdf = RDFFactory.getInstance();
 
-    protected final ServiceBundler trellis;
     protected final Map<String, IRI> extensions;
-    protected final String baseUrl;
     protected final String defaultJsonLdProfile;
     protected final boolean weakEtags;
     protected final boolean includeMementoDates;
@@ -108,47 +107,30 @@ public class TrellisHttpResource {
     protected final boolean createUncontained;
     protected final boolean supportsCreateOnPatch;
 
-    /**
-     * Create a Trellis HTTP resource matcher.
-     *
-     * @param trellis the Trellis application bundle
-     */
     @Inject
-    public TrellisHttpResource(final ServiceBundler trellis) {
-        this(trellis, getConfig());
-    }
+    ServiceBundler services;
+
+    @Context
+    Request request;
+
+    @Context
+    UriInfo uriInfo;
+
+    @Context
+    HttpHeaders headers;
+
+    @Context
+    SecurityContext security;
+
+    Optional<String> baseUrl;
 
     /**
-     * For use with RESTeasy and CDI.
-     *
-     * @apiNote This construtor is used by CDI runtimes that require a public, no-argument constructor.
-     *          It should not be invoked directly in user code.
+     * Create a new Trellis HTTP resource matcher.
      */
     public TrellisHttpResource() {
-        this(null);
-    }
-
-    private TrellisHttpResource(final ServiceBundler trellis, final Config config) {
-        this(trellis, TrellisExtensions.buildExtensionMapFromConfig(config),
-                config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class).orElse(null), config);
-    }
-
-    /**
-     * Create a Trellis HTTP resource matcher.
-     *
-     * @param trellis the Trellis application bundle
-     * @param extensions the extension graph mapping
-     * @param baseUrl a base URL
-     */
-    public TrellisHttpResource(final ServiceBundler trellis, final Map<String, IRI> extensions, final String baseUrl) {
-        this(trellis, extensions, baseUrl, getConfig());
-    }
-
-    private TrellisHttpResource(final ServiceBundler trellis, final Map<String, IRI> extensions, final String baseUrl,
-            final Config config) {
-        this.baseUrl = baseUrl;
-        this.trellis = trellis;
-        this.extensions = extensions;
+        final Config config = getConfig();
+        this.baseUrl = config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class);
+        this.extensions = TrellisExtensions.buildExtensionMapFromConfig(config);
         this.defaultJsonLdProfile = config.getOptionalValue(CONFIG_HTTP_JSONLD_PROFILE, String.class).orElse(null);
         this.weakEtags = config.getOptionalValue(CONFIG_HTTP_WEAK_ETAG, Boolean.class).orElse(Boolean.TRUE);
         this.includeMementoDates = config.getOptionalValue(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class)
@@ -176,7 +158,7 @@ public class TrellisHttpResource {
         final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
         try (final Dataset dataset = rdf.createDataset()) {
             LOGGER.debug("Preparing to initialize Trellis at {}", root);
-            trellis.getResourceService().get(root).thenCompose(res -> initialize(root, res, dataset))
+            services.getResourceService().get(root).thenCompose(res -> initialize(root, res, dataset))
                 .exceptionally(err -> {
                     LOGGER.warn("Unable to auto-initialize Trellis: {}. See DEBUG log for more info", err.getMessage());
                     LOGGER.debug("Error auto-initializing Trellis", err);
@@ -190,7 +172,7 @@ public class TrellisHttpResource {
     private CompletionStage<Void> initialize(final IRI id, final Resource res, final Dataset dataset) {
         if (MISSING_RESOURCE.equals(res) || DELETED_RESOURCE.equals(res)) {
             LOGGER.info("Initializing root container: {}", id);
-            return trellis.getResourceService().create(Metadata.builder(id).interactionModel(LDP.BasicContainer)
+            return services.getResourceService().create(Metadata.builder(id).interactionModel(LDP.BasicContainer)
                     .build(), dataset);
         }
         return completedFuture(null);
@@ -201,9 +183,6 @@ public class TrellisHttpResource {
      *
      * @implNote The Memento implemenation pattern exactly follows
      *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
-     * @param uriInfo the URI info
-     * @param headers the HTTP headers
-     * @param request the request
      * @return the async response
      */
     @GET
@@ -222,8 +201,7 @@ public class TrellisHttpResource {
                 responseCode = "200",
                 description = "The linked data resource, serialized as JSON-LD",
                 content = @Content(mediaType = "application/ld+json"))})
-    public CompletionStage<Response> getResource(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers) {
+    public CompletionStage<Response> getResource() {
         return fetchResource(new TrellisRequest(request, uriInfo, headers))
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
@@ -233,17 +211,13 @@ public class TrellisHttpResource {
      *
      * @implNote The Memento implemenation pattern exactly follows
      *           <a href="https://tools.ietf.org/html/rfc7089#section-4.2.1">section 4.2.1 of RFC 7089</a>.
-     * @param uriInfo the URI info
-     * @param headers the HTTP headers
-     * @param request the request
      * @return the async response
      */
     @HEAD
     @Timed
     @Operation(summary = "Get the headers for a linked data resource")
     @APIResponse(description = "The headers for a linked data resource")
-    public CompletionStage<Response> getResourceHeaders(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers) {
+    public CompletionStage<Response> getResourceHeaders() {
         return fetchResource(new TrellisRequest(request, uriInfo, headers))
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
@@ -251,19 +225,15 @@ public class TrellisHttpResource {
     /**
      * Perform an OPTIONS operation on an LDP Resource.
      *
-     * @param uriInfo the URI info
-     * @param headers the HTTP headers
-     * @param request the request
      * @return the async response
      */
     @OPTIONS
     @Timed
     @Operation(summary = "Get the interaction options for a linked data resource")
     @APIResponse(description = "The interaction options for a linked data resource")
-    public CompletionStage<Response> options(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers) {
+    public CompletionStage<Response> options() {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
-        final OptionsHandler optionsHandler = new OptionsHandler(req, trellis, extensions);
+        final OptionsHandler optionsHandler = new OptionsHandler(req, services, extensions);
         return supplyAsync(optionsHandler::ldpOptions).thenApply(ResponseBuilder::build)
             .exceptionally(this::handleException);
     }
@@ -271,28 +241,24 @@ public class TrellisHttpResource {
     /**
      * Perform a PATCH operation on an LDP Resource.
      *
-     * @param uriInfo the URI info
-     * @param secContext the security context
-     * @param headers the HTTP headers
-     * @param request the request
      * @param body the body
      * @return the async response
      */
     @PATCH
     @Timed
     @Operation(summary = "Update a linked data resource")
-    public CompletionStage<Response> updateResource(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers, @Context final SecurityContext secContext,
+    public CompletionStage<Response> updateResource(
             @RequestBody(description = "The update request for RDF resources, typically as SPARQL-Update",
                          required = true,
                          content = @Content(mediaType = "application/sparql-update")) final String body) {
-        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
-        final PatchHandler patchHandler = new PatchHandler(req, body, trellis, extensions, supportsCreateOnPatch,
+        final IRI identifier = services.getResourceService().getResourceIdentifier(urlBase, req.getPath());
+        final PatchHandler patchHandler = new PatchHandler(req, body, services, extensions, supportsCreateOnPatch,
                 defaultJsonLdProfile, urlBase);
 
-        return getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), patchHandler::initialize)
+        return getParent(identifier)
+            .thenCombine(services.getResourceService().get(identifier), patchHandler::initialize)
             .thenCompose(patchHandler::updateResource).thenCompose(patchHandler::updateMemento)
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
@@ -300,24 +266,19 @@ public class TrellisHttpResource {
     /**
      * Perform a DELETE operation on an LDP Resource.
      *
-     * @param uriInfo the URI info
-     * @param secContext the security context
-     * @param headers the HTTP headers
-     * @param request the request
      * @return the async response
      */
     @DELETE
     @Timed
     @Operation(summary = "Delete a linked data resource")
-    public CompletionStage<Response> deleteResource(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers, @Context final SecurityContext secContext) {
-        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
+    public CompletionStage<Response> deleteResource() {
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
-        final DeleteHandler deleteHandler = new DeleteHandler(req, trellis, extensions, urlBase);
+        final IRI identifier = services.getResourceService().getResourceIdentifier(urlBase, req.getPath());
+        final DeleteHandler deleteHandler = new DeleteHandler(req, services, extensions, urlBase);
 
         return getParent(identifier)
-            .thenCombine(trellis.getResourceService().get(identifier), deleteHandler::initialize)
+            .thenCombine(services.getResourceService().get(identifier), deleteHandler::initialize)
             .thenCompose(deleteHandler::deleteResource).thenApply(ResponseBuilder::build)
             .exceptionally(this::handleException);
     }
@@ -325,31 +286,26 @@ public class TrellisHttpResource {
     /**
      * Perform a POST operation on a LDP Resource.
      *
-     * @param uriInfo the URI info
-     * @param secContext the security context
-     * @param headers the HTTP headers
-     * @param request the request
      * @param body the body
      * @return the async response
      */
     @POST
     @Timed
     @Operation(summary = "Create a linked data resource")
-    public CompletionStage<Response> createResource(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers, @Context final SecurityContext secContext,
+    public CompletionStage<Response> createResource(
             @RequestBody(description = "The new resource") final InputStream body) {
-        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String urlBase = getBaseUrl(req);
         final String path = req.getPath();
         final String identifier = getIdentifier(req);
         final String separator = path.isEmpty() ? "" : "/";
 
-        final IRI parent = trellis.getResourceService().getResourceIdentifier(urlBase, path);
-        final IRI child = trellis.getResourceService().getResourceIdentifier(urlBase, path + separator + identifier);
-        final PostHandler postHandler = new PostHandler(req, parent, identifier, body, trellis, extensions, urlBase);
+        final IRI parent = services.getResourceService().getResourceIdentifier(urlBase, path);
+        final IRI child = services.getResourceService().getResourceIdentifier(urlBase, path + separator + identifier);
+        final PostHandler postHandler = new PostHandler(req, parent, identifier, body, services, extensions, urlBase);
 
-        return trellis.getResourceService().get(parent)
-            .thenCombine(trellis.getResourceService().get(child), postHandler::initialize)
+        return services.getResourceService().get(parent)
+            .thenCombine(services.getResourceService().get(child), postHandler::initialize)
             .thenCompose(postHandler::createResource).thenCompose(postHandler::updateMemento)
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
@@ -357,82 +313,78 @@ public class TrellisHttpResource {
     /**
      * Perform a PUT operation on a LDP Resource.
      *
-     * @param uriInfo the URI info
-     * @param secContext the security context
-     * @param headers the HTTP headers
-     * @param request the request
      * @param body the body
      * @return the async response
      */
     @PUT
     @Timed
     @Operation(summary = "Create or update a linked data resource")
-    public CompletionStage<Response> setResource(@Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers, @Context final SecurityContext secContext,
+    public CompletionStage<Response> setResource(
             @RequestBody(description = "The updated resource") final InputStream body) {
-        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, secContext);
+        final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
-        final PutHandler putHandler = new PutHandler(req, body, trellis, extensions, preconditionRequired,
+        final IRI identifier = services.getResourceService().getResourceIdentifier(urlBase, req.getPath());
+        final PutHandler putHandler = new PutHandler(req, body, services, extensions, preconditionRequired,
                 createUncontained, urlBase);
 
-        return getParent(identifier).thenCombine(trellis.getResourceService().get(identifier), putHandler::initialize)
+        return getParent(identifier).thenCombine(services.getResourceService().get(identifier), putHandler::initialize)
             .thenCompose(putHandler::setResource).thenCompose(putHandler::updateMemento)
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
     }
 
     private CompletionStage<? extends Resource> getParent(final IRI identifier) {
-        return getContainer(identifier).map(trellis.getResourceService()::get)
+        return getContainer(identifier).map(services.getResourceService()::get)
             .orElseGet(() -> completedFuture(MISSING_RESOURCE));
     }
 
     private String getBaseUrl(final TrellisRequest req) {
-        return baseUrl != null ? baseUrl : req.getBaseUrl();
+        return baseUrl.orElseGet(req::getBaseUrl);
     }
 
     private CompletionStage<ResponseBuilder> fetchResource(final TrellisRequest req) {
         final String urlBase = getBaseUrl(req);
-        final IRI identifier = trellis.getResourceService().getResourceIdentifier(urlBase, req.getPath());
+        final IRI identifier = services.getResourceService().getResourceIdentifier(urlBase, req.getPath());
         final GetConfiguration config = new GetConfiguration(req.getVersion() != null,
                 weakEtags, includeMementoDates, defaultJsonLdProfile, urlBase);
-        final GetHandler getHandler = new GetHandler(req, trellis, extensions, config);
+        final GetHandler getHandler = new GetHandler(req, services, extensions, config);
 
         // Fetch a memento
         if (req.getVersion() != null) {
             LOGGER.debug("Getting versioned resource: {}", req.getVersion());
-            return trellis.getMementoService().get(identifier, req.getVersion().getInstant())
+            return services.getMementoService().get(identifier, req.getVersion().getInstant())
                 .thenApply(getHandler::initialize).thenApply(getHandler::standardHeaders)
-                .thenCombine(trellis.getMementoService().mementos(identifier), getHandler::addMementoHeaders)
+                .thenCombine(services.getMementoService().mementos(identifier), getHandler::addMementoHeaders)
                 .thenCompose(getHandler::getRepresentation);
 
         // Fetch a timemap
         } else if (TIMEMAP.equals(req.getExt())) {
             LOGGER.debug("Getting timemap resource: {}", req.getPath());
-            return trellis.getResourceService().get(identifier)
-                .thenCombine(trellis.getMementoService().mementos(identifier), (res, mementos) -> {
+            return services.getResourceService().get(identifier)
+                .thenCombine(services.getMementoService().mementos(identifier), (res, mementos) -> {
                     if (MISSING_RESOURCE.equals(res)) {
                         throw new NotFoundException();
                     }
-                    return new MementoResource(trellis, includeMementoDates).getTimeMapBuilder(mementos, req, urlBase);
+                    return new MementoResource(services, includeMementoDates).getTimeMapBuilder(mementos, req, urlBase);
                 });
 
         // Fetch a timegate
         } else if (req.getDatetime() != null) {
             LOGGER.debug("Getting timegate resource: {}", req.getDatetime().getInstant());
-            return trellis.getMementoService().get(identifier, req.getDatetime().getInstant())
-                .thenCombine(trellis.getMementoService().mementos(identifier), (res, mementos) -> {
+            return services.getMementoService().get(identifier, req.getDatetime().getInstant())
+                .thenCombine(services.getMementoService().mementos(identifier), (res, mementos) -> {
                     if (MISSING_RESOURCE.equals(res)) {
                         throw new NotAcceptableException();
                     }
-                    return new MementoResource(trellis, includeMementoDates).getTimeGateBuilder(mementos, req, urlBase);
+                    return new MementoResource(services, includeMementoDates)
+                        .getTimeGateBuilder(mementos, req, urlBase);
                 });
         }
 
         // Fetch the current state of the resource
         LOGGER.debug("Getting resource at: {}", identifier);
-        return trellis.getResourceService().get(identifier).thenApply(getHandler::initialize)
+        return services.getResourceService().get(identifier).thenApply(getHandler::initialize)
             .thenApply(getHandler::standardHeaders)
-            .thenCombine(trellis.getMementoService().mementos(identifier), getHandler::addMementoHeaders)
+            .thenCombine(services.getMementoService().mementos(identifier), getHandler::addMementoHeaders)
             .thenCompose(getHandler::getRepresentation);
     }
 
@@ -441,7 +393,7 @@ public class TrellisHttpResource {
         if (slug != null) {
             return slug;
         }
-        return trellis.getResourceService().generateIdentifier();
+        return services.getResourceService().generateIdentifier();
     }
 
     private Response handleException(final Throwable err) {
