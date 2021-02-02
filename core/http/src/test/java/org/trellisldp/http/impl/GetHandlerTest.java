@@ -48,7 +48,6 @@ import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.api.Syntax.LD_PATCH;
 import static org.trellisldp.common.HttpConstants.ACCEPT_DATETIME;
