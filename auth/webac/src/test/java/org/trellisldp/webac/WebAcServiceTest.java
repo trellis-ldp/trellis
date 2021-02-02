@@ -140,12 +140,12 @@ class WebAcServiceTest {
         setUpRootResource();
         setUpMemberResource();
 
-        when(mockResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
+        when(mockResource.hasMetadata(PreferAccessControl)).thenReturn(false);
         when(mockResource.getIdentifier()).thenReturn(resourceIRI);
         when(mockResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockResource.getMembershipResource()).thenReturn(empty());
 
-        when(mockParentResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
+        when(mockParentResource.hasMetadata(PreferAccessControl)).thenReturn(false);
         when(mockParentResource.getIdentifier()).thenReturn(parentIRI);
         when(mockParentResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockParentResource.getMembershipResource()).thenReturn(empty());
@@ -166,7 +166,7 @@ class WebAcServiceTest {
 
     @Test
     void testInitialize() {
-        when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
+        when(mockRootResource.hasMetadata(PreferAccessControl)).thenReturn(false);
 
         testService.initializeRoot = true;
         assertDoesNotThrow(() -> testService.initialize());
@@ -182,7 +182,7 @@ class WebAcServiceTest {
 
     @Test
     void testDontInitialize() {
-        when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
+        when(mockRootResource.hasMetadata(PreferAccessControl)).thenReturn(true);
 
         assertDoesNotThrow(() -> testService.initialize());
         verify(mockRootResource, never()).stream(PreferUserManaged);
@@ -191,7 +191,7 @@ class WebAcServiceTest {
     @Test
     void testDontInitializeConfig() {
         System.setProperty(WebAcService.CONFIG_WEBAC_INITIALIZE_ROOT_ACL, "false");
-        when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
+        when(mockRootResource.hasMetadata(PreferAccessControl)).thenReturn(false);
 
         assertDoesNotThrow(() -> testService.initialize());
         verify(mockRootResource, never()).stream(PreferUserManaged);
@@ -211,8 +211,8 @@ class WebAcServiceTest {
     @Test
     void testAccessControlGraphError() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
-        when(mockResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
-        when(mockResource.stream(eq(PreferAccessControl))).thenThrow(new RuntimeException("Expected"));
+        when(mockResource.hasMetadata(PreferAccessControl)).thenReturn(true);
+        when(mockResource.stream(PreferAccessControl)).thenThrow(new RuntimeException("Expected"));
 
         assertThrows(TrellisRuntimeException.class, () ->
                 testService.getAuthorizedModes(resourceIRI, mockSession));
@@ -220,7 +220,7 @@ class WebAcServiceTest {
 
     @Test
     void testMissingRootResource() {
-        when(mockResourceService.get(eq(rootIRI))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(rootIRI)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
 
         assertAll("Check readability for " + acoburnIRI,
@@ -232,7 +232,7 @@ class WebAcServiceTest {
 
     @Test
     void testUseDefaultAcl() {
-        when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
+        when(mockRootResource.hasMetadata(PreferAccessControl)).thenReturn(false);
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
 
         assertAll("Check readability for " + acoburnIRI,
@@ -244,7 +244,7 @@ class WebAcServiceTest {
 
     @Test
     void testCanRead1() {
-        when(mockResourceService.get(eq(nonexistentIRI))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockResourceService.get(nonexistentIRI)).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
         assertAll("Check readability for " + acoburnIRI,
                 checkCannotRead(nonexistentIRI),
@@ -540,7 +540,7 @@ class WebAcServiceTest {
 
     @Test
     void testInheritance() {
-        when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockRootResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI8, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI8, ACL.agent, agentIRI),
                 rdf.createQuad(PreferAccessControl, authIRI8, ACL.accessTo, rootIRI),
@@ -558,7 +558,7 @@ class WebAcServiceTest {
 
     @Test
     void testNoInheritance() {
-        when(mockChildResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockChildResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Read),
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Write),
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Control),
@@ -583,14 +583,14 @@ class WebAcServiceTest {
 
     @Test
     void testInheritRoot() {
-        when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockRootResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI8, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI8, ACL.agent, agentIRI),
                 rdf.createQuad(PreferAccessControl, authIRI8, ACL.accessTo, rootIRI),
                 rdf.createQuad(PreferAccessControl, authIRI8, ACL.mode, ACL.Read),
                 rdf.createQuad(PreferAccessControl, authIRI8, ACL.mode, ACL.Append)));
 
-        when(mockChildResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockChildResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Read),
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Write),
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Control),
@@ -609,7 +609,7 @@ class WebAcServiceTest {
     @Test
     void testFoafAgent() {
         when(mockSession.getAgent()).thenReturn(Trellis.AnonymousAgent);
-        when(mockChildResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockChildResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI1, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI1, ACL.mode, ACL.Read),
                 rdf.createQuad(PreferAccessControl, authIRI1, ACL.agentClass, FOAF.Agent),
@@ -650,14 +650,14 @@ class WebAcServiceTest {
 
     @Test
     void testNotInherited() {
-        when(mockParentResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
-        when(mockParentResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockParentResource.hasMetadata(PreferAccessControl)).thenReturn(true);
+        when(mockParentResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(PreferAccessControl, authIRI5, type, ACL.Authorization),
                     rdf.createQuad(PreferAccessControl, authIRI5, ACL.accessTo, parentIRI),
                     rdf.createQuad(PreferAccessControl, authIRI5, ACL.agent, agentIRI),
                     rdf.createQuad(PreferAccessControl, authIRI5, ACL.mode, ACL.Read)));
 
-        when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockRootResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI8, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI8, ACL.mode, ACL.Write),
                 rdf.createQuad(PreferAccessControl, authIRI8, ACL.mode, ACL.Read),
@@ -675,13 +675,13 @@ class WebAcServiceTest {
     @Test
     void testGroup() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
-        when(mockGroupResource.stream(eq(PreferUserManaged))).thenAnswer(inv -> Stream.of(
+        when(mockGroupResource.stream(PreferUserManaged)).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(PreferUserManaged, authIRI1, VCARD.hasMember, acoburnIRI),
                     rdf.createQuad(PreferUserManaged, groupIRI, VCARD.hasMember, addisonIRI),
                     rdf.createQuad(PreferUserManaged, groupIRI, type, VCARD.Group),
                     rdf.createQuad(PreferUserManaged, groupIRI, VCARD.hasMember, acoburnIRI)));
 
-        when(mockChildResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockChildResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI2, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Read),
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.mode, ACL.Write),
@@ -697,7 +697,7 @@ class WebAcServiceTest {
                 rdf.createQuad(PreferAccessControl, authIRI4, ACL.agentGroup, groupIRI),
                 rdf.createQuad(PreferAccessControl, authIRI4, type, ACL.Authorization)));
 
-        when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockRootResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.accessTo, rootIRI),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.agent, addisonIRI),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.mode, ACL.Read),
@@ -714,13 +714,13 @@ class WebAcServiceTest {
     @Test
     void testGroup2() {
         when(mockSession.getAgent()).thenReturn(acoburnIRI);
-        when(mockGroupResource.stream(eq(PreferUserManaged))).thenAnswer(inv -> Stream.of(
+        when(mockGroupResource.stream(PreferUserManaged)).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(PreferUserManaged, authIRI1, VCARD.hasMember, acoburnIRI),
                     rdf.createQuad(PreferUserManaged, groupIRI2, VCARD.hasMember, addisonIRI),
                     rdf.createQuad(PreferUserManaged, groupIRI2, type, VCARD.Group),
                     rdf.createQuad(PreferUserManaged, groupIRI2, VCARD.hasMember, acoburnIRI)));
 
-        when(mockChildResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockChildResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI2, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.agentGroup, groupIRI2),
                 rdf.createQuad(PreferAccessControl, authIRI2, ACL.accessTo, childIRI),
@@ -736,7 +736,7 @@ class WebAcServiceTest {
                 rdf.createQuad(PreferAccessControl, authIRI4, ACL.agentGroup, groupIRI2),
                 rdf.createQuad(PreferAccessControl, authIRI4, type, ACL.Authorization)));
 
-        when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockRootResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI5, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.agent, addisonIRI),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.accessTo, rootIRI),
@@ -753,7 +753,7 @@ class WebAcServiceTest {
 
     @Test
     void testAuthenticatedUser() {
-        when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockRootResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.accessTo, rootIRI),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.agentClass, ACL.AuthenticatedAgent),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.mode, ACL.Read),
@@ -768,7 +768,7 @@ class WebAcServiceTest {
 
     @Test
     void testUnauthenticatedUser() {
-        when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockRootResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.accessTo, rootIRI),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.agentClass, ACL.AuthenticatedAgent),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.mode, ACL.Read),
@@ -897,9 +897,9 @@ class WebAcServiceTest {
 
     @Test
     void testDisconnectedHierarchy() throws Exception {
-        when(mockResourceService.get(eq(parentIRI))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockChildResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
-        when(mockResource.hasMetadata(eq(PreferAccessControl))).thenReturn(false);
+        when(mockResourceService.get(parentIRI)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockChildResource.hasMetadata(PreferAccessControl)).thenReturn(false);
+        when(mockResource.hasMetadata(PreferAccessControl)).thenReturn(false);
         when(mockSession.getAgent()).thenReturn(agentIRI);
 
         assertAll("Test default ACL readability",
@@ -937,7 +937,7 @@ class WebAcServiceTest {
         when(mockChildResource.getIdentifier()).thenReturn(childIRI);
         when(mockChildResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockChildResource.getMembershipResource()).thenReturn(empty());
-        when(mockChildResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockChildResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI1, type, ACL.Authorization),
                 rdf.createQuad(PreferAccessControl, authIRI1, ACL.mode, ACL.Read),
                 rdf.createQuad(PreferAccessControl, authIRI1, ACL.agent, addisonIRI),
@@ -973,11 +973,11 @@ class WebAcServiceTest {
     }
 
     private void setUpRootResource() {
-        when(mockRootResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
+        when(mockRootResource.hasMetadata(PreferAccessControl)).thenReturn(true);
         when(mockRootResource.getIdentifier()).thenReturn(rootIRI);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(empty());
-        when(mockRootResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockRootResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.accessTo, rootIRI),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.agent, addisonIRI),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.mode, ACL.Read),
@@ -996,11 +996,11 @@ class WebAcServiceTest {
     }
 
     private void setUpMemberResource() {
-        when(mockMemberResource.hasMetadata(eq(PreferAccessControl))).thenReturn(true);
+        when(mockMemberResource.hasMetadata(PreferAccessControl)).thenReturn(true);
         when(mockMemberResource.getIdentifier()).thenReturn(memberIRI);
         when(mockMemberResource.getInteractionModel()).thenReturn(LDP.RDFSource);
         when(mockMemberResource.getMembershipResource()).thenReturn(empty());
-        when(mockMemberResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockMemberResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.accessTo, memberIRI),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.agent, addisonIRI),
                 rdf.createQuad(PreferAccessControl, authIRI5, ACL.mode, ACL.Read),
@@ -1019,7 +1019,7 @@ class WebAcServiceTest {
     }
 
     private void setUpResourceService() {
-        when(mockResourceService.get(eq(nonexistentIRI))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(nonexistentIRI)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockResourceService.supportedInteractionModels()).thenReturn(allModels);
         when(mockResourceService.get(resourceIRI)).thenAnswer(inv -> completedFuture(mockResource));
         when(mockResourceService.get(childIRI)).thenAnswer(inv -> completedFuture(mockChildResource));

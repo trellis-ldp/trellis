@@ -130,7 +130,7 @@ class WebAcFilterTest {
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
         when(mockUriInfo.getPath()).thenReturn("");
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
         final WebAcFilter filter = new WebAcFilter();
@@ -148,7 +148,7 @@ class WebAcFilterTest {
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
         when(mockUriInfo.getPath()).thenReturn("");
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
         when(mockPrincipal.getName()).thenReturn(webid);
@@ -185,7 +185,7 @@ class WebAcFilterTest {
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
         when(mockUriInfo.getPath()).thenReturn("container/");
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
         when(mockPrincipal.getName()).thenReturn(webid);
@@ -217,7 +217,7 @@ class WebAcFilterTest {
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
         when(mockUriInfo.getPath()).thenReturn("");
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
         when(mockPrincipal.getName()).thenReturn(webid);
@@ -247,7 +247,7 @@ class WebAcFilterTest {
         when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
@@ -280,11 +280,11 @@ class WebAcFilterTest {
         when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
 
         when(mockContext.getMethod()).thenReturn("PUT");
-        when(mockContext.getHeaderString(eq(PREFER))).thenReturn("return=representation");
+        when(mockContext.getHeaderString(PREFER)).thenReturn("return=representation");
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
         doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
@@ -307,11 +307,11 @@ class WebAcFilterTest {
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockContext.getMethod()).thenReturn("PUT");
-        when(mockContext.getHeaderString(eq(PREFER))).thenReturn("return=minimal");
+        when(mockContext.getHeaderString(PREFER)).thenReturn("return=minimal");
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
         when(mockUriInfo.getPath()).thenReturn("");
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockWebAcService.getAuthorizedModes(any(IRI.class), any(Session.class)))
             .thenReturn(new AuthorizedModes(effectiveAcl, modes));
         doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
@@ -333,7 +333,7 @@ class WebAcFilterTest {
         when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
@@ -366,7 +366,7 @@ class WebAcFilterTest {
         when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
@@ -405,7 +405,7 @@ class WebAcFilterTest {
         when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
@@ -444,7 +444,7 @@ class WebAcFilterTest {
         when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
@@ -483,7 +483,7 @@ class WebAcFilterTest {
         when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
@@ -500,7 +500,7 @@ class WebAcFilterTest {
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(singletonList("acl"));
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(singletonList("acl"));
 
         assertThrows(NotAuthorizedException.class, () -> filter.filter(mockContext),
                 "No expception thrown when not authorized!");
@@ -521,7 +521,7 @@ class WebAcFilterTest {
         when(mockContext.getHeaders()).thenReturn(new MultivaluedHashMap<>());
         when(mockUriInfo.getBaseUri()).thenReturn(create("https://data.example.com/"));
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockSecurityContext.isUserInRole(anyString())).thenReturn(false);
@@ -538,8 +538,8 @@ class WebAcFilterTest {
         modes.add(ACL.Read);
         assertDoesNotThrow(() -> filter.filter(mockContext), "Unexpected exception after adding Read ability!");
 
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
-        when(mockContext.getHeaderString(eq(PREFER)))
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
+        when(mockContext.getHeaderString(PREFER))
             .thenReturn("return=representation; include=\"" + Trellis.PreferAudit.getIRIString() + "\"");
         doCallRealMethod().when(mockResourceService).getResourceIdentifier(any(), any());
 
@@ -559,7 +559,7 @@ class WebAcFilterTest {
     void testFilterChallenges() {
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
 
         when(mockContext.getMethod()).thenReturn("POST");
@@ -601,7 +601,7 @@ class WebAcFilterTest {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
 
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
-        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+        when(mockContext.getProperty(WebAcFilter.SESSION_WEBAC_MODES))
             .thenReturn(new Object());
 
         final WebAcFilter filter = new WebAcFilter();
@@ -618,7 +618,7 @@ class WebAcFilterTest {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
 
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
-        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+        when(mockContext.getProperty(WebAcFilter.SESSION_WEBAC_MODES))
             .thenReturn(new AuthorizedModes(effectiveAcl, singleton(ACL.Read)));
 
         final WebAcFilter filter = new WebAcFilter();
@@ -637,13 +637,13 @@ class WebAcFilterTest {
         stringHeaders.putSingle("Link", "<http://www.w3.org/ns/ldp#BasicContainer>; rel=\"type\"");
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
 
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockResponseContext.getStringHeaders()).thenReturn(stringHeaders);
-        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+        when(mockContext.getProperty(WebAcFilter.SESSION_WEBAC_MODES))
             .thenReturn(new AuthorizedModes(effectiveAcl, allModes));
 
         final WebAcFilter filter = new WebAcFilter();
@@ -669,12 +669,12 @@ class WebAcFilterTest {
         stringHeaders.putSingle("Link", "<http://www.w3.org/ns/ldp#BasicContainer>; rel=\"blah\"");
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockResponseContext.getStringHeaders()).thenReturn(stringHeaders);
-        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+        when(mockContext.getProperty(WebAcFilter.SESSION_WEBAC_MODES))
             .thenReturn(new AuthorizedModes(effectiveAcl, allModes));
 
         final WebAcFilter filter = new WebAcFilter();
@@ -701,7 +701,7 @@ class WebAcFilterTest {
         stringHeaders.putSingle("Link", "<http://www.w3.org/ns/ldp#RDFSource>; rel=\"type\"");
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
 
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
@@ -709,7 +709,7 @@ class WebAcFilterTest {
         when(mockResponseContext.getStringHeaders()).thenReturn(stringHeaders);
         when(mockUriInfo.getPath()).thenReturn("/resource");
 
-        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+        when(mockContext.getProperty(WebAcFilter.SESSION_WEBAC_MODES))
             .thenReturn(new AuthorizedModes(localEffectiveAcl, allModes));
 
         final WebAcFilter filter = new WebAcFilter();
@@ -737,10 +737,10 @@ class WebAcFilterTest {
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
         when(mockUriInfo.getPath()).thenReturn("/container/");
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
-        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+        when(mockContext.getProperty(WebAcFilter.SESSION_WEBAC_MODES))
             .thenReturn(new AuthorizedModes(localEffectiveAcl, allModes));
 
         final WebAcFilter filter = new WebAcFilter();
@@ -764,7 +764,7 @@ class WebAcFilterTest {
         final MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockContext.getMethod()).thenReturn(DELETE);
-        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+        when(mockContext.getProperty(WebAcFilter.SESSION_WEBAC_MODES))
             .thenReturn(new AuthorizedModes(effectiveAcl, allModes));
 
         final WebAcFilter filter = new WebAcFilter();
@@ -782,13 +782,13 @@ class WebAcFilterTest {
         final MultivaluedMap<String, String> stringHeaders = new MultivaluedHashMap<>();
         when(mockContext.getUriInfo()).thenReturn(mockUriInfo);
         when(mockUriInfo.getQueryParameters()).thenReturn(mockQueryParams);
-        when(mockQueryParams.getOrDefault(eq("ext"), eq(emptyList()))).thenReturn(emptyList());
+        when(mockQueryParams.getOrDefault("ext", emptyList())).thenReturn(emptyList());
         when(mockUriInfo.getPath()).thenReturn("");
 
         when(mockResponseContext.getStatusInfo()).thenReturn(OK);
         when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockUriInfo.getPath()).thenReturn("/path");
-        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+        when(mockContext.getProperty(WebAcFilter.SESSION_WEBAC_MODES))
             .thenReturn(new AuthorizedModes(effectiveAcl, allModes));
 
         final WebAcFilter filter = new WebAcFilter();
@@ -822,7 +822,7 @@ class WebAcFilterTest {
         when(mockResponseContext.getHeaders()).thenReturn(headers);
         when(mockUriInfo.getQueryParameters()).thenReturn(params);
         when(mockUriInfo.getPath()).thenReturn("path/");
-        when(mockContext.getProperty(eq(WebAcFilter.SESSION_WEBAC_MODES)))
+        when(mockContext.getProperty(WebAcFilter.SESSION_WEBAC_MODES))
             .thenReturn(new AuthorizedModes(effectiveAcl, allModes));
 
         final WebAcFilter filter = new WebAcFilter();
