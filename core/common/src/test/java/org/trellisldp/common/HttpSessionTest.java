@@ -61,7 +61,7 @@ class HttpSessionTest {
 
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockPrincipal.getName()).thenReturn(agent);
-        when(mockSecurityContext.isUserInRole(eq(TrellisRoles.ADMIN))).thenReturn(true);
+        when(mockSecurityContext.isUserInRole(TrellisRoles.ADMIN)).thenReturn(true);
 
         final Session session = HttpSession.from(mockSecurityContext);
         assertEquals(Trellis.AdministratorAgent, session.getAgent(), "Incorrect agent in admin session");
@@ -76,7 +76,7 @@ class HttpSessionTest {
 
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
         when(mockPrincipal.getName()).thenReturn(agent);
-        when(mockSecurityContext.isUserInRole(eq(TrellisRoles.ADMIN))).thenReturn(false);
+        when(mockSecurityContext.isUserInRole(TrellisRoles.ADMIN)).thenReturn(false);
 
         final Session session = HttpSession.from(mockSecurityContext);
         assertEquals(rdf.createIRI(agent), session.getAgent(), "Incorrect agent in admin session");
@@ -89,7 +89,7 @@ class HttpSessionTest {
         final Principal mockPrincipal = mock(Principal.class);
 
         when(mockSecurityContext.getUserPrincipal()).thenReturn(mockPrincipal);
-        when(mockSecurityContext.isUserInRole(eq(TrellisRoles.ADMIN))).thenReturn(false);
+        when(mockSecurityContext.isUserInRole(TrellisRoles.ADMIN)).thenReturn(false);
 
         final Session session = HttpSession.from(mockSecurityContext);
         assertEquals(Trellis.AnonymousAgent, session.getAgent(), "Incorrect agent");

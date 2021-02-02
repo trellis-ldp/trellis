@@ -103,7 +103,7 @@ class JmsEventServiceTest {
         when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "a-resource")));
         when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
-        when(mockSession.createQueue(eq(queueName))).thenReturn(mockQueue);
+        when(mockSession.createQueue(queueName)).thenReturn(mockQueue);
         when(mockSession.createTextMessage(anyString())).thenReturn(mockMessage);
         when(mockSession.createProducer(any(Queue.class))).thenReturn(mockProducer);
         doNothing().when(mockProducer).send(any(TextMessage.class));
@@ -115,7 +115,7 @@ class JmsEventServiceTest {
         svc.queueName = queueName;
         svc.emit(mockEvent);
 
-        verify(mockProducer).send(eq(mockMessage));
+        verify(mockProducer).send(mockMessage);
     }
 
     @Test
@@ -127,7 +127,7 @@ class JmsEventServiceTest {
         when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "a-resource")));
         when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
-        when(mockSession.createQueue(eq(queueName))).thenReturn(mockQueue);
+        when(mockSession.createQueue(queueName)).thenReturn(mockQueue);
         when(mockSession.createTextMessage(anyString())).thenReturn(mockMessage);
         when(mockSession.createProducer(any(Queue.class))).thenReturn(mockProducer);
         doNothing().when(mockProducer).send(any(TextMessage.class));
@@ -139,8 +139,8 @@ class JmsEventServiceTest {
         svc.queueName = queueName;
         svc.emit(mockEvent);
 
-        verify(mockProducer).send(eq(mockMessage));
-        verify(mockTopicProducer, never()).send(eq(mockMessage));
+        verify(mockProducer).send(mockMessage);
+        verify(mockTopicProducer, never()).send(mockMessage);
     }
 
     @Test
@@ -152,7 +152,7 @@ class JmsEventServiceTest {
         when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "a-resource")));
         when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
-        when(mockSession.createTopic(eq(queueName))).thenReturn(mockTopic);
+        when(mockSession.createTopic(queueName)).thenReturn(mockTopic);
         when(mockSession.createTextMessage(anyString())).thenReturn(mockMessage);
         when(mockSession.createProducer(any(Topic.class))).thenReturn(mockTopicProducer);
 
@@ -163,8 +163,8 @@ class JmsEventServiceTest {
         svc.queueName = queueName;
         svc.emit(mockEvent);
 
-        verify(mockTopicProducer).send(eq(mockMessage));
-        verify(mockProducer, never()).send(eq(mockMessage));
+        verify(mockTopicProducer).send(mockMessage);
+        verify(mockProducer, never()).send(mockMessage);
     }
 
     @Test
@@ -176,11 +176,11 @@ class JmsEventServiceTest {
         when(mockEvent.getObject()).thenReturn(of(rdf.createIRI(TRELLIS_DATA_PREFIX + "a-resource")));
         when(mockEvent.getObjectTypes()).thenReturn(singleton(LDP.RDFSource));
         when(mockEvent.getInbox()).thenReturn(empty());
-        when(mockSession.createQueue(eq(queueName))).thenReturn(mockQueue);
+        when(mockSession.createQueue(queueName)).thenReturn(mockQueue);
         when(mockSession.createTextMessage(anyString())).thenReturn(mockMessage);
         when(mockSession.createProducer(any(Queue.class))).thenReturn(mockProducer);
 
-        doThrow(JMSException.class).when(mockProducer).send(eq(mockMessage));
+        doThrow(JMSException.class).when(mockProducer).send(mockMessage);
 
         final JmsEventService svc = new JmsEventService();
         svc.serializer = serializer;
@@ -189,6 +189,6 @@ class JmsEventServiceTest {
         svc.queueName = queueName;
         svc.emit(mockEvent);
 
-        verify(mockProducer).send(eq(mockMessage));
+        verify(mockProducer).send(mockMessage);
     }
 }

@@ -50,7 +50,7 @@ class BinaryServiceTest {
     void testGetContent() throws IOException {
         final IRI identifier = rdf.createIRI("trellis:data/resource");
         final ByteArrayInputStream inputStream = new ByteArrayInputStream("FooBar".getBytes(UTF_8));
-        when(mockBinaryService.get(eq(identifier))).thenAnswer(inv -> completedFuture(mockBinary));
+        when(mockBinaryService.get(identifier)).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinary.getContent(anyInt(), anyInt())).thenReturn(inputStream);
         try (final InputStream content = mockBinaryService.get(identifier)
                 .thenApply(b -> b.getContent(0, 6)).toCompletableFuture().join()) {

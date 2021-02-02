@@ -170,7 +170,7 @@ class PatchHandlerTest extends BaseTestHandler {
         final Quad quad = rdf.createQuad(PreferUserManaged, identifier, RDFS.label, rdf.createLiteral("A label"));
 
         when(mockTrellisRequest.getContentType()).thenReturn(APPLICATION_SPARQL_UPDATE);
-        when(mockResource.stream(eq(PreferUserManaged))).thenAnswer(x -> of(quad));
+        when(mockResource.stream(PreferUserManaged)).thenAnswer(x -> of(quad));
         when(mockTrellisRequest.getPath()).thenReturn(RESOURCE_NAME);
         when(mockTrellisRequest.getBaseUrl()).thenReturn("http://localhost/");
 

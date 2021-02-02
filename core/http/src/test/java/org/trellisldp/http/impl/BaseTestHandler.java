@@ -243,7 +243,7 @@ class BaseTestHandler {
     }
 
     private void setUpBinaryService() {
-        when(mockBinary.getContent(eq(3), eq(10)))
+        when(mockBinary.getContent(3, 10))
                         .thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent())
                         .thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));
