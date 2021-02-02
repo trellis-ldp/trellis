@@ -241,26 +241,26 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(userDeletedIdentifier), any(Instant.class)))
             .thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
+        when(mockMementoService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE), MAX))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(binaryIdentifier), any(Instant.class)))
             .thenReturn(completedFuture(mockBinaryVersionedResource));
 
         when(mockMementoService.mementos(any(IRI.class))).thenReturn(completedFuture(emptySortedSet()));
-        when(mockMementoService.mementos(eq(identifier)))
+        when(mockMementoService.mementos(identifier))
                 .thenReturn(completedFuture(new TreeSet<>(asList(
                     ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
-        when(mockMementoService.mementos(eq(binaryIdentifier))).thenReturn(completedFuture(new TreeSet<>(asList(
+        when(mockMementoService.mementos(binaryIdentifier)).thenReturn(completedFuture(new TreeSet<>(asList(
                 ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
-        when(mockMementoService.mementos(eq(deletedIdentifier))).thenReturn(completedFuture(emptySortedSet()));
-        when(mockMementoService.mementos(eq(userDeletedIdentifier))).thenReturn(completedFuture(emptySortedSet()));
+        when(mockMementoService.mementos(deletedIdentifier)).thenReturn(completedFuture(emptySortedSet()));
+        when(mockMementoService.mementos(userDeletedIdentifier)).thenReturn(completedFuture(emptySortedSet()));
         when(mockMementoService.put(any())).thenReturn(completedFuture(null));
         doCallRealMethod().when(mockMementoService).put(any(ResourceService.class), any(IRI.class));
     }
 
     private void setUpBinaryService() {
-        when(mockBinaryService.get(eq(binaryInternalIdentifier))).thenAnswer(inv -> completedFuture(mockBinary));
-        when(mockBinary.getContent(eq(3), eq(10)))
+        when(mockBinaryService.get(binaryInternalIdentifier)).thenAnswer(inv -> completedFuture(mockBinary));
+        when(mockBinary.getContent(3, 10))
                         .thenReturn(new ByteArrayInputStream("e input".getBytes(UTF_8)));
         when(mockBinary.getContent())
                         .thenReturn(new ByteArrayInputStream("Some input stream".getBytes(UTF_8)));

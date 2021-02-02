@@ -122,7 +122,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     void testInitializeExistingLdpResourceWithFailure() throws Exception {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
-        when(mockService.get(eq(root))).thenAnswer(inv -> runAsync(() -> {
+        when(mockService.get(root)).thenAnswer(inv -> runAsync(() -> {
             throw new TrellisRuntimeException("Expected exception");
         }));
 
@@ -136,7 +136,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     void testInitializeExistingLdpResource() throws Exception {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
-        when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(mockRootResource));
+        when(mockService.get(root)).thenAnswer(inv -> completedFuture(mockRootResource));
 
         final TrellisHttpResource matcher = new TrellisHttpResource();
         matcher.services = mockBundler;
@@ -148,7 +148,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     void testInitializeoNoLdpResource() throws Exception {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
-        when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockService.get(root)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockService.create(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
 
         final TrellisHttpResource matcher = new TrellisHttpResource();
@@ -166,7 +166,7 @@ class TrellisHttpResourceTest extends AbstractTrellisHttpResourceTest {
     void testInitializeoDeletedLdpResource() throws Exception {
         final ResourceService mockService = mock(ResourceService.class);
         when(mockBundler.getResourceService()).thenReturn(mockService);
-        when(mockService.get(eq(root))).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
+        when(mockService.get(root)).thenAnswer(inv -> completedFuture(DELETED_RESOURCE));
         when(mockService.create(any(Metadata.class), any(Dataset.class))).thenReturn(completedFuture(null));
 
         final TrellisHttpResource matcher = new TrellisHttpResource();

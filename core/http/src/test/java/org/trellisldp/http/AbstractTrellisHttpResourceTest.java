@@ -453,7 +453,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetBinaryErrorSkip() throws IOException {
-        when(mockBinaryService.get(eq(binaryInternalIdentifier))).thenAnswer(inv -> completedFuture(mockBinary));
+        when(mockBinaryService.get(binaryInternalIdentifier)).thenAnswer(inv -> completedFuture(mockBinary));
         when(mockBinary.getContent()).thenReturn(mockInputStream);
         when(mockInputStream.skip(anyLong())).thenThrow(new IOException());
         try (final Response res = target(BINARY_PATH).request().header(RANGE, "bytes=300-400").get()) {
@@ -625,7 +625,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testGetTimeMapLink() throws IOException {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
+        when(mockMementoService.mementos(identifier)).thenReturn(completedFuture(new TreeSet<>(asList(
                 ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
         try (final Response res = target(RESOURCE_PATH).queryParam(EXT, TIMEMAP).request()
                 .accept(APPLICATION_LINK_FORMAT).get()) {
@@ -651,7 +651,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetTimeMapJsonDefault() throws IOException {
-        when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
+        when(mockMementoService.mementos(identifier)).thenReturn(completedFuture(new TreeSet<>(asList(
                 ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
         try (final Response res = target(RESOURCE_PATH).queryParam(EXT, TIMEMAP).request()
                 .accept("application/ld+json").get()) {
@@ -694,7 +694,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetTimeMapJson() throws IOException {
-        when(mockMementoService.mementos(eq(identifier))).thenReturn(completedFuture(new TreeSet<>(asList(
+        when(mockMementoService.mementos(identifier)).thenReturn(completedFuture(new TreeSet<>(asList(
                 ofEpochSecond(timestamp - 2000), ofEpochSecond(timestamp - 1000), time))));
         try (final Response res = target(RESOURCE_PATH).queryParam(EXT, TIMEMAP).request()
                 .accept(EXPANDED_JSONLD).get()) {
@@ -777,7 +777,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetBinaryAcl() {
-        when(mockBinaryResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockBinaryResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(PreferAccessControl, binaryIdentifier, ACL.mode, ACL.Read)));
         try (final Response res = target(BINARY_PATH).queryParam(EXT, ACL_PARAM).request().get()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
@@ -821,7 +821,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetAclJsonCompact() throws IOException {
-        when(mockResource.stream(eq(PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockResource.stream(PreferAccessControl)).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(PreferAccessControl, binaryIdentifier, ACL.mode, ACL.Read)));
         try (final Response res = target(RESOURCE_PATH).queryParam(EXT, ACL_PARAM).request()
                 .accept("application/trig, " + COMPACT_JSONLD).get()) {
@@ -868,7 +868,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetException() {
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> supplyAsync(() -> {
             throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().get()) {
@@ -1060,8 +1060,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPost() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)),
-                    eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE),
+                    MAX)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH).request()
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
@@ -1074,9 +1074,9 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPostWithSpace() {
         when(mockResourceWithSpace.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_WITH_SPACE_PATH + "/"
-                            + RANDOM_VALUE)),
-                    eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_WITH_SPACE_PATH + "/"
+                            + RANDOM_VALUE),
+                    MAX)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_WITH_SPACE_PATH).request()
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
@@ -1092,9 +1092,9 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         final EventService myEventService = mock(EventService.class);
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)), eq(MAX)))
+        when(mockMementoService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE), MAX))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target("").request()
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
@@ -1124,7 +1124,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPostTypeWrongType() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH).request()
                 .header(LINK, "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"non-existent\"")
@@ -1136,7 +1136,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPostTypeMismatch() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH).request()
                 .header(LINK, "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
@@ -1148,7 +1148,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPostConflict() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(mockResource));
         try (final Response res = target(RESOURCE_PATH).request()
                 .header(LINK, "<http://www.w3.org/ns/ldp#NonRDFSource>; rel=\"type\"")
@@ -1160,7 +1160,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPostUnknownLinkType() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH).request()
                 .header(LINK, "<http://example.com/types/Foo>; rel=\"type\"")
@@ -1174,7 +1174,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPostBadContent() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH).request()
                 .post(entity("<> <http://purl.org/dc/terms/title> A title\" .", TEXT_TURTLE_TYPE))) {
@@ -1184,7 +1184,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testPostToLdpRs() {
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)))
                 .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH).request()
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
@@ -1285,7 +1285,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(hashResourceId));
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target().request()
                 .post(entity("<> <http://purl.org/dc/terms/title> \"An indirect container\" .", TEXT_TURTLE_TYPE))) {
@@ -1315,7 +1315,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockBundler.getEventService()).thenReturn(myEventService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(identifier));
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target().request()
                 .post(entity("<> <http://purl.org/dc/terms/title> \"An LDP-IC\" .", TEXT_TURTLE_TYPE))) {
@@ -1372,7 +1372,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPostBadJsonLdSemantics() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH).request()
                 .post(entity("{\"@id\": \"\", \"@type\": \"some type\"}", APPLICATION_LD_JSON_TYPE))) {
@@ -1383,7 +1383,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPostBadJsonLdSyntax() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH).request().post(entity("{\"@id:", APPLICATION_LD_JSON_TYPE))) {
             assertEquals(SC_BAD_REQUEST, res.getStatus(), ERR_RESPONSE_CODE);
@@ -1393,7 +1393,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPostConstraint() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH).request()
                 .post(entity("<> <http://www.w3.org/ns/ldp#inbox> \"Some literal\" .", TEXT_TURTLE_TYPE))) {
@@ -1406,7 +1406,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPostIgnoreContains() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE))))
+        when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + "/" + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH).request()
                 .post(entity("<> <http://www.w3.org/ns/ldp#contains> <./other> . ", TEXT_TURTLE_TYPE))) {
@@ -1459,7 +1459,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPostException() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> supplyAsync(() -> {
             throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().post(entity("", TEXT_TURTLE_TYPE))) {
@@ -1711,7 +1711,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testPutNew() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + TEST_PATH);
         when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
-        when(mockMementoService.get(eq(identifier), eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockMementoService.get(identifier, MAX)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH + TEST_PATH).request()
                 .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
@@ -1949,7 +1949,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testPutException() {
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> supplyAsync(() -> {
             throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().put(entity("", TEXT_TURTLE_TYPE))) {
@@ -2001,7 +2001,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testDeleteNonExistant() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + TEST_PATH);
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(identifier), eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH + TEST_PATH).request().delete()) {
             assertEquals(SC_NOT_FOUND, res.getStatus(), ERR_RESPONSE_CODE);
@@ -2012,7 +2012,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testDeleteWithChildren() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockVersionedResource.stream(eq(LDP.PreferContainment))).thenAnswer(inv -> Stream.of(
+        when(mockVersionedResource.stream(LDP.PreferContainment)).thenAnswer(inv -> Stream.of(
                 rdf.createTriple(identifier, LDP.contains, rdf.createIRI(identifier.getIRIString() + PATH_REL_CHILD))));
         try (final Response res = target(RESOURCE_PATH).request().delete()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
@@ -2022,7 +2022,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testDeleteNoChildren1() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.BasicContainer);
-        when(mockVersionedResource.stream(eq(LDP.PreferContainment))).thenAnswer(inv -> Stream.empty());
+        when(mockVersionedResource.stream(LDP.PreferContainment)).thenAnswer(inv -> Stream.empty());
         try (final Response res = target(RESOURCE_PATH).request().delete()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
         }
@@ -2031,7 +2031,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testDeleteNoChildren2() {
         when(mockVersionedResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockVersionedResource.stream(eq(LDP.PreferContainment))).thenAnswer(inv -> Stream.empty());
+        when(mockVersionedResource.stream(LDP.PreferContainment)).thenAnswer(inv -> Stream.empty());
         try (final Response res = target(RESOURCE_PATH).request().delete()) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
         }
@@ -2065,7 +2065,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testDeleteException() {
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> supplyAsync(() -> {
             throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request().delete()) {
@@ -2245,7 +2245,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPatchNew() {
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + RESOURCE_PATH + TEST_PATH);
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         when(mockMementoService.get(eq(identifier), eq(MAX))).thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
         try (final Response res = target(RESOURCE_PATH + TEST_PATH).request()
                 .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE))) {
@@ -2334,7 +2334,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testPatchException() {
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> supplyAsync(() -> {
             throw new TrellisRuntimeException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request()
@@ -2345,7 +2345,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testPatchConflict() {
-        when(mockResourceService.get(eq(identifier))).thenAnswer(inv -> supplyAsync(() -> {
+        when(mockResourceService.get(identifier)).thenAnswer(inv -> supplyAsync(() -> {
             throw new StorageConflictException(EXPECTED_EXCEPTION);
         }));
         try (final Response res = target(RESOURCE_PATH).request()
