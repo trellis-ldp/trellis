@@ -79,8 +79,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
@@ -151,6 +149,18 @@ public class TrellisWebDAV {
     @ConfigProperty(name = CONFIG_HTTP_EXTENSION_GRAPHS)
     Optional<String> extensionConfig;
 
+    @Context
+    Request request;
+
+    @Context
+    UriInfo uriInfo;
+
+    @Context
+    HttpHeaders headers;
+
+    @Context
+    SecurityContext security;
+
     @PostConstruct
     void init() {
         extensions = extensionConfig.map(TrellisExtensions::buildExtensionMap)
@@ -159,52 +169,40 @@ public class TrellisWebDAV {
 
     /**
      * Copy a resource.
-     * @param response the async response
-     * @param request the request
-     * @param uriInfo the URI info
-     * @param headers the headers
-     * @param security the security context
+     * @return the async response
      */
     @COPY
     @Timed
-    public void copyResource(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext security) {
+    public CompletionStage<Response> copyResource() {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final Session session = HttpSession.from(security);
         final IRI destination = getDestination(headers, getBaseUrl(req));
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         // Default is recursive copy as per RFC-4918
         final Depth.DEPTH depth = getDepth(headers.getHeaderString("Depth"));
-        getParent(destination).thenCombine(services.getResourceService().get(destination), this::checkResources)
+        return getParent(destination).thenCombine(services.getResourceService().get(destination), this::checkResources)
             .thenCompose(parent -> services.getResourceService().touch(parent.getIdentifier()))
             .thenCompose(future -> services.getResourceService().get(identifier))
             .thenApply(this::checkResource)
             .thenCompose(res -> copyTo(res, session, depth, destination, getBaseUrl(req)))
             .thenApply(future -> status(NO_CONTENT).build())
-            .exceptionally(this::handleException).thenApply(response::resume);
+            .exceptionally(this::handleException);
     }
 
     /**
      * Move a resource.
-     * @param response the async response
-     * @param request the request
-     * @param uriInfo the URI info
-     * @param headers the headers
-     * @param security the security context
+     * @return the async response
      */
     @MOVE
     @Timed
-    public void moveResource(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers,
-            @Context final SecurityContext security) {
+    public CompletionStage<Response> moveResource() {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String baseUrl = getBaseUrl(req);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final IRI destination = getDestination(headers, baseUrl);
         final Session session = HttpSession.from(security);
 
-        getParent(destination)
+        return getParent(destination)
             .thenCombine(services.getResourceService().get(destination), this::checkResources)
             .thenCompose(parent -> services.getResourceService().touch(parent.getIdentifier()))
             .thenCompose(future -> services.getResourceService().get(identifier))
@@ -224,54 +222,44 @@ public class TrellisWebDAV {
             .thenRun(() -> services.getEventService().emit(new SimpleEvent(externalUrl(identifier,
                 baseUrl), session.getAgent(), asList(PROV.Activity, AS.Delete), singletonList(LDP.Resource))))
             .thenApply(future -> status(NO_CONTENT).build())
-            .exceptionally(this::handleException).thenApply(response::resume);
+            .exceptionally(this::handleException);
     }
 
     /**
      * Get properties for a resource.
-     * @param response the response
-     * @param request the request
-     * @param uriInfo the URI info
-     * @param headers the headers
      * @param propfind the propfind
+     * @return the response
      * @throws ParserConfigurationException if the XML parser is not properly configured
      */
     @PROPFIND
     @Consumes({APPLICATION_XML})
     @Produces({APPLICATION_XML})
     @Timed
-    public void getProperties(@Suspended final AsyncResponse response, @Context final Request request,
-            @Context final UriInfo uriInfo, @Context final HttpHeaders headers, final DavPropFind propfind)
+    public CompletionStage<Response> getResourceProperties(final DavPropFind propfind)
             throws ParserConfigurationException {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final IRI identifier = rdf.createIRI(TRELLIS_DATA_PREFIX + req.getPath());
         final String location = fromUri(getBaseUrl(req)).path(req.getPath()).build().toString();
         final Document doc = getDocument();
-        services.getResourceService().get(identifier)
+        return services.getResourceService().get(identifier)
             .thenApply(this::checkResource)
             .thenApply(propertiesToMultiStatus(doc, location, propfind))
             .thenApply(multistatus -> status(MULTI_STATUS).entity(multistatus).build())
-            .exceptionally(this::handleException).thenApply(response::resume);
+            .exceptionally(this::handleException);
     }
 
     /**
      * Update properties on a resource.
-     * @param response the async response
-     * @param request the request
-     * @param uriInfo the URI info
-     * @param headers the headers
-     * @param security the security context
      * @param propertyUpdate the property update request
+     * @return the async response
      * @throws ParserConfigurationException if the XML parser is not properly configured
      */
     @PROPPATCH
     @Consumes({APPLICATION_XML})
     @Produces({APPLICATION_XML})
     @Timed
-    public void updateProperties(@Suspended final AsyncResponse response,
-            @Context final Request request, @Context final UriInfo uriInfo,
-            @Context final HttpHeaders headers, @Context final SecurityContext security,
-            final DavPropertyUpdate propertyUpdate) throws ParserConfigurationException {
+    public CompletionStage<Response> updateProperties(final DavPropertyUpdate propertyUpdate)
+            throws ParserConfigurationException {
 
         final Document doc = getDocument();
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
@@ -279,11 +267,11 @@ public class TrellisWebDAV {
         final String baseUrl = getBaseUrl(req);
         final String location = fromUri(baseUrl).path(req.getPath()).build().toString();
         final Session session = HttpSession.from(security);
-        services.getResourceService().get(identifier)
+        return services.getResourceService().get(identifier)
             .thenApply(this::checkResource)
             .thenCompose(resourceToMultiStatus(doc, identifier, location, baseUrl, session, propertyUpdate))
             .thenApply(multistatus -> status(MULTI_STATUS).entity(multistatus).build())
-            .exceptionally(this::handleException).thenApply(response::resume);
+            .exceptionally(this::handleException);
     }
 
     static Function<Element, Stream<Quad>> elementToQuads(final IRI identifier) {
