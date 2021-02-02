@@ -20,7 +20,6 @@ import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.condition.OS.WINDOWS;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
@@ -68,7 +67,7 @@ class ResourceDataTest {
         final ResourceData rd = new ResourceData(mockResultSet);
         assertEquals(LDP.Resource, rd.getInteractionModel());
 
-        when(mockResultSet.getString(eq("interaction_model"))).thenReturn("http://www.w3.org/ns/ldp#RDFSource");
+        when(mockResultSet.getString("interaction_model")).thenReturn("http://www.w3.org/ns/ldp#RDFSource");
 
         final ResourceData rd2 = new ResourceData(mockResultSet);
         assertEquals(LDP.RDFSource, rd2.getInteractionModel());
