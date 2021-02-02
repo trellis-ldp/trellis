@@ -60,8 +60,8 @@ class NoopMementoServiceTest {
         when(mockMementoService.put(any(Resource.class))).thenReturn(completedFuture(null));
 
         mockMementoService.put(mockResourceService, identifier).toCompletableFuture().join();
-        verify(mockResourceService).get(eq(identifier));
-        verify(mockMementoService).put(eq(mockResource));
+        verify(mockResourceService).get(identifier);
+        verify(mockMementoService).put(mockResource);
     }
 
     @Test

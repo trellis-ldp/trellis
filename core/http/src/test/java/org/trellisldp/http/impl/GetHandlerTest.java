@@ -394,7 +394,7 @@ class GetHandlerTest extends BaseTestHandler {
     @Test
     void testGetAcl() {
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
-        when(mockResource.stream(eq(Trellis.PreferAccessControl))).thenAnswer(inv -> Stream.of(
+        when(mockResource.stream(Trellis.PreferAccessControl)).thenAnswer(inv -> Stream.of(
                     rdf.createQuad(Trellis.PreferAccessControl, identifier, ACL.mode, ACL.Read)));
         when(mockTrellisRequest.getExt()).thenReturn("acl");
 

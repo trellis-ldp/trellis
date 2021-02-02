@@ -66,7 +66,7 @@ class ResourceServiceTest {
 
     @Test
     void testRetrievalService() {
-        when(mockRetrievalService.get(eq(existing))).thenAnswer(inv -> completedFuture(mockResource));
+        when(mockRetrievalService.get(existing)).thenAnswer(inv -> completedFuture(mockResource));
         assertEquals(mockResource, mockRetrievalService.get(existing).toCompletableFuture().join(),
                 "Incorrect resource found by retrieval service!");
     }
@@ -77,11 +77,11 @@ class ResourceServiceTest {
         final Metadata metadata = Metadata.builder(existing).container(root).interactionModel(LDP.RDFSource).build();
 
         try (final Dataset dataset = rdf.createDataset()) {
-            when(mockResourceService.replace(eq(metadata), eq(dataset))).thenReturn(completedFuture(null));
+            when(mockResourceService.replace(metadata, dataset)).thenReturn(completedFuture(null));
             doCallRealMethod().when(mockResourceService).create(any(), any());
 
             assertDoesNotThrow(() -> mockResourceService.create(metadata, dataset).toCompletableFuture().join());
-            verify(mockResourceService).replace(eq(metadata), eq(dataset));
+            verify(mockResourceService).replace(metadata, dataset);
         }
     }
 
