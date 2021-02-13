@@ -155,6 +155,10 @@ public class GetHandler extends BaseLdpHandler {
         if (ext != null && !resource.stream(ext).findAny().isPresent()) {
             LOGGER.trace("No stream for extention: {}", ext);
             throw new NotFoundException();
+        } else if (getRequest().getExt() == null && syntax != null &&
+                LDP.NonRDFSource.equals(resource.getInteractionModel())) {
+            throw new RedirectionException(303,
+                    UriBuilder.fromUri(getIdentifier()).queryParam("ext", DESCRIPTION).build());
         }
 
         setResource(resource);

@@ -42,6 +42,7 @@ import static javax.ws.rs.core.MediaType.WILDCARD_TYPE;
 import static javax.ws.rs.core.Response.Status.NOT_ACCEPTABLE;
 import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.SEE_OTHER;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
@@ -74,6 +75,7 @@ import java.util.TreeSet;
 import java.util.stream.Stream;
 
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.RedirectionException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
@@ -333,9 +335,10 @@ class GetHandlerTest extends BaseTestHandler {
 
         final GetConfiguration config = new GetConfiguration(false, true, true, null, null);
         final GetHandler handler = new GetHandler(mockTrellisRequest, mockBundler, extensions, config);
-        try (final Response res = handler.getRepresentation(handler.standardHeaders(handler.initialize(mockResource)))
-                        .toCompletableFuture().join().build()) {
-            assertAll("Check binary description", checkBinaryDescription(res));
+
+        try (final Response res = assertThrows(RedirectionException.class, () -> handler.initialize(mockResource),
+                "No error thrown when content-negotiating a binary!").getResponse()) {
+            assertEquals(SEE_OTHER, res.getStatusInfo(), ERR_RESPONSE_CODE);
         }
     }
 
