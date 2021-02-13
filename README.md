@@ -40,11 +40,6 @@ Or, for the PostgreSQL-based persistence layer
 docker pull trellisldp/trellis-postgresql
 ```
 
-Alternatively, for a more general-purpose container that supports various persistence layer types
-
-```bash
-docker pull trellisldp/trellis
-```
 
 ## Building Trellis
 
@@ -61,6 +56,5 @@ to have Java 11+ available. The software can be built with [Gradle](https://grad
 
 * [py-ldnlib](https://github.com/trellis-ldp/py-ldnlib) A Python3 library for linked data notifications
 * [static-ldp](https://github.com/trellis-ldp/static-ldp) A PHP application that serves static files as LDP resources
-* [trellis-extensions](https://github.com/trellis-ldp/trellis-extensions) Trellis extension modules
 * [camel-ldp-recipes](https://github.com/trellis-ldp/camel-ldp-recipes) Integration workflows built with [Apache Camel](https://camel.apache.org)
 
