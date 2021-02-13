@@ -173,7 +173,9 @@ public class GetHandler extends BaseLdpHandler {
     public ResponseBuilder standardHeaders(final ResponseBuilder builder) {
 
         // Standard HTTP Headers
-        builder.lastModified(from(getResource().getModified()));
+        if (!RDFSyntax.RDFA.equals(syntax)) {
+            builder.lastModified(from(getResource().getModified()));
+        }
 
         if (syntax != null) {
             builder.type(syntax.mediaType());
@@ -302,10 +304,11 @@ public class GetHandler extends BaseLdpHandler {
         final Prefer prefer = getRequest().getPrefer();
 
         // Check for a cache hit
-        final EntityTag etag = generateEtag(getResource(), weakEtags);
-        checkCache(getResource().getModified(), etag);
-
-        builder.tag(etag);
+        if (!RDFSyntax.RDFA.equals(syntax)) {
+            final EntityTag etag = generateEtag(getResource(), weakEtags);
+            checkCache(getResource().getModified(), etag);
+            builder.tag(etag);
+        }
         addAllowHeaders(builder);
 
         if (prefer != null) {

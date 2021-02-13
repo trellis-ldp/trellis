@@ -74,7 +74,7 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
     @Inject
     @ConfigProperty(name = CONFIG_RDFA_ICON,
                     defaultValue = "//www.trellisldp.org/assets/img/trellis.png")
-    String icon;
+    Optional<String> icon;
 
     @Inject
     @ConfigProperty(name = CONFIG_RDFA_CSS,
@@ -108,8 +108,9 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
         try {
             template
                 .execute(writer, new HtmlData(namespaceService, subject, triples.collect(toList()),
-                            css.map(List::of).orElseGet(Collections::emptyList),
-                            js.map(List::of).orElseGet(Collections::emptyList), icon))
+                            css.map(List::of).orElseGet(() -> List.of("//www.trellisldp.org/assets/css/trellis.css")),
+                            js.map(List::of).orElseGet(Collections::emptyList),
+                            icon.orElse(null)))
                 .flush();
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);

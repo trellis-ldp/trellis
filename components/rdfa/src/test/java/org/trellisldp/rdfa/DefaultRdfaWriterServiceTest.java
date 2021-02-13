@@ -72,7 +72,7 @@ class DefaultRdfaWriterServiceTest {
 
         service = new DefaultRdfaWriterService();
         service.namespaceService = mockNamespaceService;
-        service.icon = "//www.trellisldp.org/assets/img/trellis.png";
+        service.icon = Optional.of("//www.trellisldp.org/assets/img/trellis.png");
         service.css = Optional.of(new String[]{"//www.trellisldp.org/assets/css/trellis.css"});
         service.js = Optional.empty();
         service.templateLocation = Optional.empty();
@@ -91,7 +91,7 @@ class DefaultRdfaWriterServiceTest {
     void testDefaultSerializer() {
         final DefaultRdfaWriterService svc = new DefaultRdfaWriterService();
         svc.namespaceService = new NoopNamespaceService();
-        svc.icon = "//www.trellisldp.org/assets/img/trellis.png";
+        svc.icon = Optional.of("//www.trellisldp.org/assets/img/trellis.png");
         svc.css = Optional.empty();
         svc.js = Optional.empty();
         svc.templateLocation = Optional.empty();
@@ -127,6 +127,7 @@ class DefaultRdfaWriterServiceTest {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final DefaultRdfaWriterService svc4 = new DefaultRdfaWriterService();
         svc4.namespaceService = mockNamespaceService;
+        svc4.icon = Optional.empty();
         svc4.css = Optional.empty();
         svc4.js = Optional.empty();
         svc4.templateLocation = Optional.of(path);
@@ -142,6 +143,7 @@ class DefaultRdfaWriterServiceTest {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final DefaultRdfaWriterService svc5 = new DefaultRdfaWriterService();
         svc5.namespaceService = new NoopNamespaceService();
+        svc5.icon = Optional.empty();
         svc5.css = Optional.empty();
         svc5.js = Optional.empty();
         svc5.templateLocation = Optional.of(path);
@@ -157,6 +159,7 @@ class DefaultRdfaWriterServiceTest {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         final DefaultRdfaWriterService svc6 = new DefaultRdfaWriterService();
         svc6.namespaceService = new NoopNamespaceService();
+        svc6.icon = Optional.empty();
         svc6.css = Optional.empty();
         svc6.js = Optional.empty();
         svc6.templateLocation = Optional.of(path);
