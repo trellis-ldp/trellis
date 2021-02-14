@@ -95,7 +95,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.trellisldp.api.EventService;
+import org.trellisldp.api.NotificationService;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.StorageConflictException;
 import org.trellisldp.api.TrellisRuntimeException;
@@ -1092,8 +1092,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testPostRoot() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)))
             .thenAnswer(inv -> completedFuture(MISSING_RESOURCE));
@@ -1104,7 +1104,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(getBaseUrl() + RANDOM_VALUE, res.getLocation().toString(), ERR_LOCATION);
             assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
-            verify(myEventService, times(2)).emit(any());
+            verify(myNotificationService, times(2)).emit(any());
         }
     }
 
@@ -1197,15 +1197,15 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testPostSlug() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockResource.getInteractionModel()).thenReturn(LDP.Container);
         try (final Response res = target(RESOURCE_PATH + "/").request().header(SLUG, "child")
                 .post(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
             assertEquals(getBaseUrl() + CHILD_PATH, res.getLocation().toString(), ERR_LOCATION);
             assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
-            verify(myEventService, times(2)).emit(any());
+            verify(myNotificationService, times(2)).emit(any());
         }
     }
 
@@ -1268,8 +1268,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testPostIndirectContainer() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
@@ -1277,15 +1277,15 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target().request()
                 .post(entity("<> <http://purl.org/dc/terms/title> \"An indirect container\" .", TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(2)).emit(any());
+            verify(myNotificationService, times(2)).emit(any());
         }
     }
 
     @Test
     void testPostIndirectContainerHashUri() {
         final IRI hashResourceId = rdf.createIRI(TRELLIS_DATA_PREFIX + NEW_RESOURCE + "#foo");
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(hashResourceId));
         when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)))
@@ -1293,14 +1293,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target().request()
                 .post(entity("<> <http://purl.org/dc/terms/title> \"An indirect container\" .", TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(2)).emit(any());
+            verify(myNotificationService, times(2)).emit(any());
         }
     }
 
     @Test
     void testPostIndirectContainerSelf() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(root));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
@@ -1308,14 +1308,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target().request()
                 .post(entity("<> <http://purl.org/dc/terms/title> \"A self-contained LDP-IC\" .", TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(2)).emit(any());
+            verify(myNotificationService, times(2)).emit(any());
         }
     }
 
     @Test
     void testPostIndirectContainerResource() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(identifier));
         when(mockResourceService.get(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE)))
@@ -1323,14 +1323,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target().request()
                 .post(entity("<> <http://purl.org/dc/terms/title> \"An LDP-IC\" .", TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(3)).emit(any());
+            verify(myNotificationService, times(3)).emit(any());
         }
     }
 
     @Test
     void testPostDirectContainer() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
@@ -1338,14 +1338,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target().request()
                 .post(entity("<> <http://purl.org/dc/terms/title> \"An LDP-DC\" .", TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(2)).emit(any());
+            verify(myNotificationService, times(2)).emit(any());
         }
     }
 
     @Test
     void testPostDirectContainerSelf() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(root));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
@@ -1353,14 +1353,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target().request()
                 .post(entity("<> <http://purl.org/dc/terms/title> \"A self-contained LDP-DC\" .", TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(2)).emit(any());
+            verify(myNotificationService, times(2)).emit(any());
         }
     }
 
     @Test
     void testPostDirectContainerResource() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(identifier));
         when(mockResourceService.get(eq(rdf.createIRI(TRELLIS_DATA_PREFIX + RANDOM_VALUE))))
@@ -1368,7 +1368,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target().request()
                 .post(entity("<> <http://purl.org/dc/terms/title> \"An LDP-DC resource\" .", TEXT_TURTLE_TYPE))) {
             assertEquals(SC_CREATED, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(3)).emit(any());
+            verify(myNotificationService, times(3)).emit(any());
         }
     }
 
@@ -1509,22 +1509,22 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testPutUncontainedIndirectContainer() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
         when(mockResource.getContainer()).thenReturn(empty());
         try (final Response res = target(RESOURCE_PATH).request()
                 .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(1)).emit(any());
+            verify(myNotificationService, times(1)).emit(any());
         }
     }
 
     @Test
     void testPutUncontainedIndirectContainerSelf() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(root));
         when(mockResource.getContainer()).thenReturn(empty());
@@ -1532,19 +1532,19 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
                 .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             if (getConfig().getOptionalValue(CONFIG_HTTP_PUT_UNCONTAINED, Boolean.class).orElse(Boolean.FALSE)) {
-                // only one event if configured with PUT-UNCONTAINED
-                verify(myEventService, times(1)).emit(any());
+                // only one notification if configured with PUT-UNCONTAINED
+                verify(myNotificationService, times(1)).emit(any());
             } else {
-                verify(myEventService, times(2)).emit(any());
+                verify(myNotificationService, times(2)).emit(any());
             }
         }
     }
 
     @Test
     void testPutUncontainedIndirectContainerResource() {
-        final EventService myEventService = mock(EventService.class);
+        final NotificationService myNotificationService = mock(NotificationService.class);
         final Resource mockChildResource = mock(Resource.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockResourceService.get(childIdentifier)).thenAnswer(inv -> completedFuture(mockChildResource));
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(childIdentifier));
@@ -1552,41 +1552,41 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target(RESOURCE_PATH).request()
                 .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(1)).emit(any());
+            verify(myNotificationService, times(1)).emit(any());
         }
     }
 
     @Test
     void testPutIndirectContainer() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
         try (final Response res = target(RESOURCE_PATH).request()
                 .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(1)).emit(any());
+            verify(myNotificationService, times(1)).emit(any());
         }
     }
 
     @Test
     void testPutIndirectContainerSelf() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(root));
         try (final Response res = target(RESOURCE_PATH).request()
                 .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(2)).emit(any());
+            verify(myNotificationService, times(2)).emit(any());
         }
     }
 
     @Test
     void testPutIndirectContainerResource() {
-        final EventService myEventService = mock(EventService.class);
+        final NotificationService myNotificationService = mock(NotificationService.class);
         final Resource mockChildResource = mock(Resource.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockResourceService.get(childIdentifier)).thenAnswer(inv -> completedFuture(mockChildResource));
         when(mockChildResource.getIdentifier()).thenReturn(childIdentifier);
         when(mockChildResource.getInteractionModel()).thenReturn(LDP.RDFSource);
@@ -1595,46 +1595,46 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         try (final Response res = target(RESOURCE_PATH).request()
                 .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(2)).emit(any());
+            verify(myNotificationService, times(2)).emit(any());
         }
     }
 
     @Test
     void testPutDirectContainer() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(newresourceIdentifier));
         try (final Response res = target(RESOURCE_PATH).request()
                 .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(1)).emit(any());
+            verify(myNotificationService, times(1)).emit(any());
         }
     }
 
     @Test
     void testPutDirectContainerSelf() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(root));
         try (final Response res = target(RESOURCE_PATH).request()
                 .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(1)).emit(any());
+            verify(myNotificationService, times(1)).emit(any());
         }
     }
 
     @Test
     void testPutDirectContainerResource() {
-        final EventService myEventService = mock(EventService.class);
-        when(mockBundler.getEventService()).thenReturn(myEventService);
+        final NotificationService myNotificationService = mock(NotificationService.class);
+        when(mockBundler.getNotificationService()).thenReturn(myNotificationService);
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.DirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(identifier));
         try (final Response res = target(RESOURCE_PATH).request()
                 .put(entity(TITLE_TRIPLE, TEXT_TURTLE_TYPE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
-            verify(myEventService, times(1)).emit(any());
+            verify(myNotificationService, times(1)).emit(any());
         }
     }
 

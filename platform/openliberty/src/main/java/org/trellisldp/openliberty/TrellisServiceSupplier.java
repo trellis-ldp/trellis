@@ -28,15 +28,15 @@ import org.trellisldp.common.TimemapGenerator;
 @ApplicationScoped
 public class TrellisServiceSupplier {
 
-    private EventService eventService = new NoopEventService();
+    private NotificationService notificationService = new NoopNotificationService();
 
     private MementoService mementoService = new NoopMementoService();
 
     private TimemapGenerator timemapGenerator = new DefaultTimemapGenerator();
 
     @Produces
-    EventService getEventService() {
-        return eventService;
+    NotificationService getNotificationService() {
+        return notificationService;
     }
 
     @Produces

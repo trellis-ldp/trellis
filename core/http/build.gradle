@@ -48,7 +48,7 @@ dependencies {
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-constraint')
     testImplementation project(':trellis-jena')
-    testImplementation project(':trellis-event-jackson')
+    testImplementation project(':trellis-notification-jackson')
 
     testRuntimeOnly "jakarta.activation:jakarta.activation-api:$activationApiVersion"
     testRuntimeOnly "ch.qos.logback:logback-classic:$logbackVersion"

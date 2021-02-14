@@ -209,20 +209,20 @@ public class OSGiTest {
     }
 
     @Test
-    public void testEventSerializationInstallation() throws Exception {
-        if (!featuresService.isInstalled(featuresService.getFeature("trellis-event-jackson"))) {
-            featuresService.installFeature("trellis-event-jackson");
+    public void testNotificationSerializationInstallation() throws Exception {
+        if (!featuresService.isInstalled(featuresService.getFeature("trellis-notification-jackson"))) {
+            featuresService.installFeature("trellis-notification-jackson");
         }
         checkTrellisBundlesAreActive();
-        assertTrue("trellis-event-jackson not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-event-jackson")));
+        assertTrue("trellis-notification-jackson not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-notification-jackson")));
     }
 
     @Test
     public void testKafkaInstallation() throws Exception {
         assertFalse("trellis-kafka already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
-        featuresService.installFeature("trellis-event-jackson");
+        featuresService.installFeature("trellis-notification-jackson");
         featuresService.installFeature("trellis-kafka");
         assertTrue("trellis-kafka not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
@@ -232,7 +232,7 @@ public class OSGiTest {
     public void testAmqpInstallation() throws Exception {
         assertFalse("trellis-amqp already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
-        featuresService.installFeature("trellis-event-jackson");
+        featuresService.installFeature("trellis-notification-jackson");
         featuresService.installFeature("trellis-amqp");
         checkTrellisBundlesAreActive();
         assertTrue("trellis-amqp not installed!",
@@ -243,7 +243,7 @@ public class OSGiTest {
     public void testJmsInstallation() throws Exception {
         assertFalse("trellis-jms already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
-        featuresService.installFeature("trellis-event-jackson");
+        featuresService.installFeature("trellis-notification-jackson");
         featuresService.installFeature("trellis-jms");
         assertTrue("trellis-jms not installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
@@ -279,12 +279,12 @@ public class OSGiTest {
     }
 
     @Test
-    public void testEventJsonbInstallation() throws Exception {
-        assertFalse("trellis-event-jsonb already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-event-jsonb")));
-        featuresService.installFeature("trellis-event-jsonb");
-        assertTrue("trellis-event-jsonb not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-event-jsonb")));
+    public void testNotificationJsonbInstallation() throws Exception {
+        assertFalse("trellis-notification-jsonb already installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-notification-jsonb")));
+        featuresService.installFeature("trellis-notification-jsonb");
+        assertTrue("trellis-notification-jsonb not installed!",
+                featuresService.isInstalled(featuresService.getFeature("trellis-notification-jsonb")));
         checkTrellisBundlesAreActive();
     }
 

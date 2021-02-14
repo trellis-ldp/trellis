@@ -27,7 +27,7 @@ public class TestCollector {
 
     private final List<String> list = new CopyOnWriteArrayList<>();
 
-    @Incoming(ReactiveEventService.REACTIVE_DESTINATION)
+    @Incoming(ReactiveNotificationService.REACTIVE_DESTINATION)
     public void sink(final String message) {
         list.add(message);
     }

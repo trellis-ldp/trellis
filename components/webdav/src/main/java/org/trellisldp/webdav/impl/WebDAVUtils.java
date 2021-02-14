@@ -15,8 +15,7 @@
  */
 package org.trellisldp.webdav.impl;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.replaceOnce;
@@ -45,7 +44,7 @@ import org.trellisldp.api.ResourceService;
 import org.trellisldp.api.Session;
 import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.common.ServiceBundler;
-import org.trellisldp.common.SimpleEvent;
+import org.trellisldp.common.SimpleNotification;
 import org.trellisldp.vocabulary.AS;
 import org.trellisldp.vocabulary.LDP;
 import org.trellisldp.vocabulary.PROV;
@@ -81,8 +80,10 @@ public final class WebDAVUtils {
                         .container(identifier).build())
                     .thenCompose(future -> services.getResourceService().add(id, immutable))
                     .whenComplete((a, b) -> closeDataset(immutable))
-                    .thenRun(() -> services.getEventService().emit(new SimpleEvent(externalUrl(id, baseUrl),
-                                session.getAgent(), asList(PROV.Activity, AS.Delete), singletonList(LDP.Resource))));
+                    .thenRun(() -> services.getNotificationService()
+                            .emit(new SimpleNotification(externalUrl(id, baseUrl), session.getAgent(),
+                                    List.of(PROV.Activity, AS.Delete), emptyMap(), List.of(LDP.Resource),
+                                    emptyMap())));
             })
             .map(CompletionStage::toCompletableFuture).forEach(CompletableFuture::join);
     }
@@ -205,9 +206,10 @@ public final class WebDAVUtils {
                     })
                 .thenCompose(future -> services.getMementoService().put(services.getResourceService(),
                             resource.getIdentifier()))
-                .thenRun(() -> services.getEventService().emit(new SimpleEvent(externalUrl(destination, baseUrl),
-                            session.getAgent(), asList(PROV.Activity, AS.Create),
-                            singletonList(resource.getInteractionModel()))));
+                .thenRun(() -> services.getNotificationService()
+                        .emit(new SimpleNotification(externalUrl(destination, baseUrl), session.getAgent(),
+                                List.of(PROV.Activity, AS.Create), emptyMap(), List.of(resource.getInteractionModel()),
+                                emptyMap())));
         }
     }
 

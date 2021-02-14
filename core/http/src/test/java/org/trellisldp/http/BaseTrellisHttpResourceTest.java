@@ -65,11 +65,11 @@ import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.NoopAuditService;
+import org.trellisldp.api.NotificationService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -134,7 +134,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
     protected Binary mockBinary;
 
     @Mock
-    protected EventService mockEventService;
+    protected NotificationService mockNotificationService;
 
     @Mock
     protected Resource mockResource, mockVersionedResource, mockBinaryResource, mockBinaryVersionedResource,
@@ -183,7 +183,7 @@ abstract class BaseTrellisHttpResourceTest extends JerseyTest {
         when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
         when(mockBundler.getMementoService()).thenReturn(mockMementoService);
         when(mockBundler.getAuditService()).thenReturn(auditService);
-        when(mockBundler.getEventService()).thenReturn(mockEventService);
+        when(mockBundler.getNotificationService()).thenReturn(mockNotificationService);
         when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraintService()));
         when(mockBundler.getTimemapGenerator()).thenReturn(new DefaultTimemapGenerator());
     }

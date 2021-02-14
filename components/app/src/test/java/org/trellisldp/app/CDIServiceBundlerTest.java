@@ -98,7 +98,7 @@ class CDIServiceBundlerTest {
     }
 
     @Test
-    void testEventService() {
-        assertNotNull(serviceBundler.getEventService());
+    void testNotificationService() {
+        assertNotNull(serviceBundler.getNotificationService());
     }
 }
