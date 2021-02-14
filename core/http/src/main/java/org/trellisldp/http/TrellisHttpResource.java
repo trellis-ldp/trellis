@@ -61,6 +61,7 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.metrics.annotation.Timed;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
@@ -98,6 +99,10 @@ public class TrellisHttpResource {
     private static final Logger LOGGER = getLogger(TrellisHttpResource.class);
 
     protected static final RDF rdf = RDFFactory.getInstance();
+
+    @Schema(name = "LinkedDataResource", description = "A Linked Data Resource")
+    public static class LinkedDataResource {
+    }
 
     protected final Map<String, IRI> extensions;
     protected final String defaultJsonLdProfile;
@@ -188,19 +193,18 @@ public class TrellisHttpResource {
     @GET
     @Timed
     @Operation(summary = "Get a linked data resource")
-    @APIResponses(
-        value = {
-            @APIResponse(
-                responseCode = "404",
-                description = "Missing resource"),
-            @APIResponse(
-                responseCode = "200",
-                description = "The linked data resource, serialized as Turtle",
-                content = @Content(mediaType = "text/turtle")),
-            @APIResponse(
-                responseCode = "200",
-                description = "The linked data resource, serialized as JSON-LD",
-                content = @Content(mediaType = "application/ld+json"))})
+    @APIResponse(
+        responseCode = "200",
+        description = "The linked data resource",
+        content = {
+            @Content(mediaType = "*/*",
+                     schema = @Schema(implementation = LinkedDataResource.class)),
+            @Content(mediaType = "text/turtle",
+                     schema = @Schema(implementation = LinkedDataResource.class)),
+            @Content(mediaType = "application/ld+json",
+                     schema = @Schema(implementation = LinkedDataResource.class)),
+            @Content(mediaType = "application/n-triples",
+                     schema = @Schema(implementation = LinkedDataResource.class))})
     public CompletionStage<Response> getResource() {
         return fetchResource(new TrellisRequest(request, uriInfo, headers))
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
@@ -216,7 +220,10 @@ public class TrellisHttpResource {
     @HEAD
     @Timed
     @Operation(summary = "Get the headers for a linked data resource")
-    @APIResponse(description = "The headers for a linked data resource")
+    @APIResponse(
+        responseCode = "200",
+        description = "The linked data resource",
+        content = {})
     public CompletionStage<Response> getResourceHeaders() {
         return fetchResource(new TrellisRequest(request, uriInfo, headers))
             .thenApply(ResponseBuilder::build).exceptionally(this::handleException);
@@ -229,8 +236,11 @@ public class TrellisHttpResource {
      */
     @OPTIONS
     @Timed
-    @Operation(summary = "Get the interaction options for a linked data resource")
-    @APIResponse(description = "The interaction options for a linked data resource")
+    @Operation(summary = "Fetch the interaction options for a linked data resource")
+    @APIResponse(
+        responseCode = "204",
+        description = "The options available to the linked data resource",
+        content = {})
     public CompletionStage<Response> options() {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers);
         final OptionsHandler optionsHandler = new OptionsHandler(req, services, extensions);
@@ -246,7 +256,17 @@ public class TrellisHttpResource {
      */
     @PATCH
     @Timed
-    @Operation(summary = "Update a linked data resource")
+    @Operation(summary = "Create or update a linked data resource")
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "201",
+                description = "The linked data resource was successfully created",
+                content = {}),
+            @APIResponse(
+                responseCode = "204",
+                description = "The linked data resource was successfully updated",
+                content = {})})
     public CompletionStage<Response> updateResource(
             @RequestBody(description = "The update request for RDF resources, typically as SPARQL-Update",
                          required = true,
@@ -271,6 +291,10 @@ public class TrellisHttpResource {
     @DELETE
     @Timed
     @Operation(summary = "Delete a linked data resource")
+    @APIResponse(
+        responseCode = "204",
+        description = "The linked data resource was successfully deleted",
+        content = {})
     public CompletionStage<Response> deleteResource() {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String urlBase = getBaseUrl(req);
@@ -292,8 +316,15 @@ public class TrellisHttpResource {
     @POST
     @Timed
     @Operation(summary = "Create a linked data resource")
+    @APIResponse(
+        responseCode = "201",
+        description = "The linked data resource was successfully created",
+        content = {})
     public CompletionStage<Response> createResource(
-            @RequestBody(description = "The new resource") final InputStream body) {
+            @RequestBody(description = "The new resource",
+                         content = @Content(mediaType = "*/*",
+                                            schema = @Schema(implementation = LinkedDataResource.class)))
+            final InputStream body) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String urlBase = getBaseUrl(req);
         final String path = req.getPath();
@@ -319,8 +350,21 @@ public class TrellisHttpResource {
     @PUT
     @Timed
     @Operation(summary = "Create or update a linked data resource")
+    @APIResponses(
+        value = {
+            @APIResponse(
+                responseCode = "201",
+                description = "The linked data resource was successfully created",
+                content = {}),
+            @APIResponse(
+                responseCode = "204",
+                description = "The linked data resource was successfully updated",
+                content = {})})
     public CompletionStage<Response> setResource(
-            @RequestBody(description = "The updated resource") final InputStream body) {
+            @RequestBody(description = "The updated resource",
+                         content = @Content(mediaType = "*/*",
+                                            schema = @Schema(implementation = LinkedDataResource.class)))
+            final InputStream body) {
         final TrellisRequest req = new TrellisRequest(request, uriInfo, headers, security);
         final String urlBase = getBaseUrl(req);
         final IRI identifier = services.getResourceService().getResourceIdentifier(urlBase, req.getPath());
