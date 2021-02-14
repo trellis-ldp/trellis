@@ -202,7 +202,6 @@ class TriplestoreResourceTest {
 
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
-        res.stream().forEach(quad -> System.out.println(quad));
         assertAll("Check resource", checkResource(res, identifier, LDP.RDFSource, false, true, false));
         assertAll("Check LDP properties", checkLdpProperties(res, null, null, null, null));
         assertAll("Check RDF stream",
