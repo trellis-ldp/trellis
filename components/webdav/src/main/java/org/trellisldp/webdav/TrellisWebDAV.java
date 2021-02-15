@@ -19,9 +19,8 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -104,7 +103,7 @@ import org.trellisldp.api.Session;
 import org.trellisldp.common.HttpSession;
 import org.trellisldp.common.LdpResource;
 import org.trellisldp.common.ServiceBundler;
-import org.trellisldp.common.SimpleEvent;
+import org.trellisldp.common.SimpleNotification;
 import org.trellisldp.common.TrellisExtensions;
 import org.trellisldp.common.TrellisRequest;
 import org.trellisldp.vocabulary.AS;
@@ -219,8 +218,9 @@ public class TrellisWebDAV {
                 return services.getResourceService().add(identifier, immutable)
                     .whenComplete((a, b) -> closeDataset(immutable));
             })
-            .thenRun(() -> services.getEventService().emit(new SimpleEvent(externalUrl(identifier,
-                baseUrl), session.getAgent(), asList(PROV.Activity, AS.Delete), singletonList(LDP.Resource))))
+            .thenRun(() -> services.getNotificationService()
+                    .emit(new SimpleNotification(externalUrl(identifier, baseUrl), session.getAgent(),
+                            List.of(PROV.Activity, AS.Delete), emptyMap(), List.of(LDP.Resource), emptyMap())))
             .thenApply(future -> status(NO_CONTENT).build())
             .exceptionally(this::handleException);
     }
@@ -383,14 +383,14 @@ public class TrellisWebDAV {
             response.setPropStats(modifiedProperties.stream().map(predicate -> {
                 final DavPropStat stat = new DavPropStat();
                 final DavProp prop = new DavProp();
-                prop.setNodes(singletonList(doc.createElementNS(namespaceXML(predicate.getIRIString()),
+                prop.setNodes(List.of(doc.createElementNS(namespaceXML(predicate.getIRIString()),
                                 localnameXML(predicate.getIRIString()))));
                 stat.setProp(prop);
                 stat.setStatus(SUCCESS);
                 return stat;
             }).collect(toList()));
             multistatus.setDescription("Response to property update request");
-            multistatus.setResponses(singletonList(response));
+            multistatus.setResponses(List.of(response));
 
             final Dataset immutable = rdf.createDataset();
             services.getAuditService().creation(resource.getIdentifier(), session).stream()
@@ -404,8 +404,9 @@ public class TrellisWebDAV {
                 .whenComplete((a, b) -> closeDataset(immutable))
                 .thenCompose(future ->
                         services.getMementoService().put(services.getResourceService(), resource.getIdentifier()))
-                .thenRun(() -> services.getEventService().emit(new SimpleEvent(location, session.getAgent(),
-                            asList(PROV.Activity, AS.Update), singletonList(resource.getInteractionModel()))))
+                .thenRun(() -> services.getNotificationService()
+                        .emit(new SimpleNotification(location, session.getAgent(), List.of(PROV.Activity, AS.Update),
+                                emptyMap(), List.of(resource.getInteractionModel()), emptyMap())))
                 .thenApply(future -> multistatus);
         };
     }
@@ -439,7 +440,7 @@ public class TrellisWebDAV {
             final DavResponse response = new DavResponse();
             response.setHref(externalUrl(res.getIdentifier(), baseUrl));
             response.setDescription("PROPFIND request for " + externalUrl(res.getIdentifier(), baseUrl));
-            response.setPropStats(singletonList(propstat));
+            response.setPropStats(List.of(propstat));
 
             final List<DavResponse> responses = new ArrayList<>();
             responses.add(response);
@@ -457,7 +458,7 @@ public class TrellisWebDAV {
                         final DavResponse childResponse = new DavResponse();
                         childResponse.setHref(externalUrl(r.getIdentifier(), baseUrl));
                         childResponse.setDescription("PROPFIND request for " + externalUrl(r.getIdentifier(), baseUrl));
-                        childResponse.setPropStats(singletonList(childPropstat));
+                        childResponse.setPropStats(List.of(childPropstat));
 
                         return childResponse;
                     })).map(CompletionStage::toCompletableFuture).map(CompletableFuture::join).forEach(responses::add);

@@ -33,5 +33,5 @@ class TestServices {
     AuditService audit = new NoopAuditService();
 
     @Produces
-    EventService events = new NoopEventService();
+    NotificationService notifications = new NoopNotificationService();
 }

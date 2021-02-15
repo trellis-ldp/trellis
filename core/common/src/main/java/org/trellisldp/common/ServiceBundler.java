@@ -18,9 +18,9 @@ package org.trellisldp.common;
 import org.trellisldp.api.AuditService;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.ConstraintService;
-import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
+import org.trellisldp.api.NotificationService;
 import org.trellisldp.api.ResourceService;
 
 /**
@@ -60,10 +60,10 @@ public interface ServiceBundler {
     MementoService getMementoService();
 
     /**
-     * Get the {@link EventService} for the application.
+     * Get the {@link NotificationService} for the application.
      * @return the service for emiting notifications.
      */
-    EventService getEventService();
+    NotificationService getNotificationService();
 
     /**
      * Get the constraint services for this application.

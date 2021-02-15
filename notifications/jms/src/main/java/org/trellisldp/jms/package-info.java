@@ -16,7 +16,7 @@
 /**
  * Trellis JMS Producer
  *
- * <p>This package implements a JMS event connector.</p>
+ * <p>This package implements a JMS notification connector.</p>
  *
  * @author acoburn
  */

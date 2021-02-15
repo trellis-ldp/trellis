@@ -16,7 +16,7 @@
 /**
  * Trellis AMQP Producer
  *
- * <p>This package implements an AMQP event connector.</p>
+ * <p>This package implements an AMQP notification connector.</p>
  *
  * @author acoburn
  */

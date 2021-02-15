@@ -89,8 +89,8 @@ import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.Metadata;
-import org.trellisldp.api.NoopEventService;
 import org.trellisldp.api.NoopMementoService;
+import org.trellisldp.api.NoopNotificationService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -826,7 +826,7 @@ abstract class AbstractWebDAVTest extends JerseyTest {
         when(mockBundler.getResourceService()).thenReturn(mockResourceService);
         when(mockBundler.getAuditService()).thenReturn(new DefaultAuditService());
         when(mockBundler.getBinaryService()).thenReturn(mockBinaryService);
-        when(mockBundler.getEventService()).thenReturn(new NoopEventService());
+        when(mockBundler.getNotificationService()).thenReturn(new NoopNotificationService());
         when(mockBundler.getMementoService()).thenReturn(new NoopMementoService());
     }
 

@@ -58,8 +58,8 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Quad;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.trellisldp.api.Event;
 import org.trellisldp.api.Metadata;
+import org.trellisldp.api.Notification;
 import org.trellisldp.api.TrellisRuntimeException;
 import org.trellisldp.audit.DefaultAuditService;
 import org.trellisldp.common.Prefer;
@@ -198,10 +198,10 @@ class PatchHandlerTest extends BaseTestHandler {
                 .toCompletableFuture().join().build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
 
-            final ArgumentCaptor<Event> event = ArgumentCaptor.forClass(Event.class);
-            verify(mockEventService).emit(event.capture());
+            final ArgumentCaptor<Notification> notification = ArgumentCaptor.forClass(Notification.class);
+            verify(mockNotificationService).emit(notification.capture());
             assertEquals(Optional.of("http://localhost/resource?ext=acl"),
-                    event.getValue().getObject().map(IRI::getIRIString));
+                    notification.getValue().getObject().map(IRI::getIRIString));
             verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE),
                     eq("http://localhost/resource?ext=acl"));
             verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));
@@ -220,10 +220,10 @@ class PatchHandlerTest extends BaseTestHandler {
                 .toCompletableFuture().join().build()) {
             assertEquals(NO_CONTENT, res.getStatusInfo(), ERR_RESPONSE_CODE);
 
-            final ArgumentCaptor<Event> event = ArgumentCaptor.forClass(Event.class);
-            verify(mockEventService).emit(event.capture());
+            final ArgumentCaptor<Notification> notification = ArgumentCaptor.forClass(Notification.class);
+            verify(mockNotificationService).emit(notification.capture());
             assertEquals(Optional.of("http://localhost/"),
-                    event.getValue().getObject().map(IRI::getIRIString));
+                    notification.getValue().getObject().map(IRI::getIRIString));
             verify(mockIoService).update(any(Graph.class), eq(insert), eq(SPARQL_UPDATE),
                     eq("http://localhost/"));
             verify(mockResourceService).replace(any(Metadata.class), any(Dataset.class));

@@ -40,7 +40,7 @@ public class BaseServiceBundler implements ServiceBundler {
     protected IOService ioService;
 
     @Inject
-    protected EventService eventService;
+    protected NotificationService notificationService;
 
     @Inject
     protected TimemapGenerator timemapGenerator;
@@ -80,8 +80,8 @@ public class BaseServiceBundler implements ServiceBundler {
     }
 
     @Override
-    public EventService getEventService() {
-        return eventService;
+    public NotificationService getNotificationService() {
+        return notificationService;
     }
 
     @Override

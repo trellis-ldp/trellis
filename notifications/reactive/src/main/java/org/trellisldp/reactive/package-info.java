@@ -16,7 +16,7 @@
 /**
  * Trellis Reactive Messaging Producer
  *
- * <p>This package implements a MicroProfile-based event connector.</p>
+ * <p>This package implements a MicroProfile-based notification connector.</p>
  *
  * @author acoburn
  */

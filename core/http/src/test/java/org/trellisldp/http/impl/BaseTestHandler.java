@@ -83,12 +83,12 @@ import org.trellisldp.api.AuditService;
 import org.trellisldp.api.Binary;
 import org.trellisldp.api.BinaryMetadata;
 import org.trellisldp.api.BinaryService;
-import org.trellisldp.api.EventService;
 import org.trellisldp.api.IOService;
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.NoopAuditService;
 import org.trellisldp.api.NoopMementoService;
+import org.trellisldp.api.NotificationService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.ResourceService;
@@ -132,7 +132,7 @@ class BaseTestHandler {
     protected ResourceService mockResourceService;
 
     @Mock
-    protected EventService mockEventService;
+    protected NotificationService mockNotificationService;
 
     @Mock
     protected IOService mockIoService;
@@ -263,7 +263,7 @@ class BaseTestHandler {
         when(mockBundler.getIOService()).thenReturn(mockIoService);
         when(mockBundler.getAuditService()).thenReturn(auditService);
         when(mockBundler.getMementoService()).thenReturn(mementoService);
-        when(mockBundler.getEventService()).thenReturn(mockEventService);
+        when(mockBundler.getNotificationService()).thenReturn(mockNotificationService);
         when(mockBundler.getConstraintServices()).thenReturn(singletonList(new LdpConstraintService()));
         when(mockBundler.getTimemapGenerator()).thenReturn(new DefaultTimemapGenerator());
     }

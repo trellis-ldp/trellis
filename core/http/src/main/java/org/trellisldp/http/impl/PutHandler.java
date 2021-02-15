@@ -277,7 +277,7 @@ public class PutHandler extends MutatingLdpHandler {
 
         return createOrReplace(metadata.build(), mutable, immutable)
             .thenCompose(future -> persistBinaryContent(binary))
-            .thenCompose(future -> handleUpdateEvent(ldpType))
+            .thenCompose(future -> handleUpdateNotification(ldpType))
             .thenApply(future -> decorateResponse(builder));
     }
 
@@ -299,8 +299,8 @@ public class PutHandler extends MutatingLdpHandler {
         return builder;
     }
 
-    private CompletionStage<Void> handleUpdateEvent(final IRI ldpType) {
-        return emitEvent(getInternalId(), getResource() == null ? AS.Create : AS.Update, ldpType);
+    private CompletionStage<Void> handleUpdateNotification(final IRI ldpType) {
+        return emitNotification(getInternalId(), getResource() == null ? AS.Create : AS.Update, ldpType);
     }
 
     private IRI effectiveLdpType(final IRI ldpType) {

@@ -16,7 +16,7 @@
 /**
  * Trellis Kafka Producer
  *
- * <p>This package implements a Kafka event connector.</p>
+ * <p>This package implements a Kafka notification connector.</p>
  *
  * @author acoburn
  */

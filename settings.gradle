@@ -21,8 +21,8 @@ include ':trellis-common'
 include ':trellis-vocabulary'
 
 include ':trellis-amqp'
-include ':trellis-event-jackson'
-include ':trellis-event-jsonb'
+include ':trellis-notification-jackson'
+include ':trellis-notification-jsonb'
 include ':trellis-jms'
 include ':trellis-kafka'
 include ':trellis-reactive'
@@ -56,10 +56,10 @@ project(':trellis-common').projectDir = new File(rootDir, "core/common")
 project(':trellis-vocabulary').projectDir = new File(rootDir, "core/vocabulary")
 
 project(':trellis-amqp').projectDir = new File(rootDir, "notifications/amqp")
-project(':trellis-event-jackson').projectDir = new File(rootDir, "notifications/event-jackson")
-project(':trellis-event-jsonb').projectDir = new File(rootDir, "notifications/event-jsonb")
 project(':trellis-jms').projectDir = new File(rootDir, "notifications/jms")
 project(':trellis-kafka').projectDir = new File(rootDir, "notifications/kafka")
+project(':trellis-notification-jackson').projectDir = new File(rootDir, "notifications/jackson")
+project(':trellis-notification-jsonb').projectDir = new File(rootDir, "notifications/jsonb")
 project(':trellis-reactive').projectDir = new File(rootDir, "notifications/reactive")
 
 project(':trellis-jwt').projectDir = new File(rootDir, "auth/jwt")
