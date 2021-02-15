@@ -48,10 +48,10 @@ class SimpleNotificationTest {
     void testSimpleNotification() {
         final IRI resource = rdf.createIRI(identifier);
         final Instant time = now();
-        final IRI tag = rdf.createIRI("etag:123456");
+        final String state = "etag:123456";
 
         final Notification notification = new SimpleNotification(identifier, agent,
-                List.of(PROV.Activity, AS.Create), List.of(LDP.RDFSource, SKOS.Concept), List.of(tag));
+                List.of(PROV.Activity, AS.Create), List.of(LDP.RDFSource, SKOS.Concept), state);
         assertFalse(time.isAfter(notification.getCreated()), "Non-sequential notifications!");
         assertTrue(notification.getIdentifier().getIRIString()
                 .startsWith("urn:uuid:"), "Incorrect ID prefix for notification!");
@@ -66,15 +66,14 @@ class SimpleNotificationTest {
         assertEquals(2L, notificationTypes.size(), "Incorrect notification type size!");
         assertTrue(notificationTypes.contains(AS.Create), "Missing as:Create from notification type!");
         assertTrue(notificationTypes.contains(PROV.Activity), "Missing prov:Activity from notification type!");
-        assertTrue(notification.getObjectTags().contains(tag));
+        assertEquals(of(state), notification.getObjectState());
     }
 
     @Test
     void testEmptyNotification() {
         final IRI resource = rdf.createIRI(identifier);
 
-        final Notification notification = new SimpleNotification(identifier, agent, emptyList(), emptyList(),
-                emptyList());
+        final Notification notification = new SimpleNotification(identifier, agent, emptyList(), emptyList(), null);
         assertEquals(of(resource), notification.getObject(), "Incorrect target resource!");
         assertTrue(notification.getAgents().contains(agent), "Unexpected agent list!");
         assertTrue(notification.getObjectTypes().isEmpty(), "Unexpected target types!");

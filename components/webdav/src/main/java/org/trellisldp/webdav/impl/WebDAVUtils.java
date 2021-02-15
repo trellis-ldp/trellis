@@ -15,7 +15,6 @@
  */
 package org.trellisldp.webdav.impl;
 
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.replaceOnce;
@@ -82,8 +81,7 @@ public final class WebDAVUtils {
                     .whenComplete((a, b) -> closeDataset(immutable))
                     .thenRun(() -> services.getNotificationService()
                             .emit(new SimpleNotification(externalUrl(id, baseUrl), session.getAgent(),
-                                    List.of(PROV.Activity, AS.Delete), List.of(LDP.Resource),
-                                    emptyList())));
+                                    List.of(PROV.Activity, AS.Delete), List.of(LDP.Resource), null)));
             })
             .map(CompletionStage::toCompletableFuture).forEach(CompletableFuture::join);
     }
@@ -208,8 +206,7 @@ public final class WebDAVUtils {
                             resource.getIdentifier()))
                 .thenRun(() -> services.getNotificationService()
                         .emit(new SimpleNotification(externalUrl(destination, baseUrl), session.getAgent(),
-                                List.of(PROV.Activity, AS.Create), List.of(resource.getInteractionModel()),
-                                emptyList())));
+                                List.of(PROV.Activity, AS.Create), List.of(resource.getInteractionModel()), null)));
         }
     }
 

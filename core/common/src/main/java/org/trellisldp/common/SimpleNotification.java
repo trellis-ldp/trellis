@@ -40,9 +40,9 @@ public class SimpleNotification implements Notification {
     private final IRI object;
     private final Instant created;
     private final IRI agent;
+    private final String objectState;
     private final List<IRI> activityTypes;
     private final List<IRI> objectTypes;
-    private final List<IRI> objectTags;
 
     /**
      * Create a new notification.
@@ -50,17 +50,17 @@ public class SimpleNotification implements Notification {
      * @param agent the agent associated with this notification
      * @param activityTypes the activity types associated with this notification
      * @param objectTypes the rdf types of the resource
-     * @param objectTags any tags for the resource
+     * @param objectState a state indicator for the resource
      */
     public SimpleNotification(final String object, final IRI agent, final List<IRI> activityTypes,
-            final List<IRI> objectTypes, final List<IRI> objectTags) {
+            final List<IRI> objectTypes, final String objectState) {
         this.identifier = rdf.createIRI("urn:uuid:" + randomUUID());
         this.created = now();
         this.agent = agent;
         this.activityTypes = activityTypes;
         this.object = rdf.createIRI(object);
         this.objectTypes = objectTypes;
-        this.objectTags = objectTags;
+        this.objectState = objectState;
     }
 
     @Override
@@ -89,8 +89,8 @@ public class SimpleNotification implements Notification {
     }
 
     @Override
-    public Collection<IRI> getObjectTags() {
-        return objectTags;
+    public Optional<String> getObjectState() {
+        return Optional.of(objectState);
     }
 
     @Override
