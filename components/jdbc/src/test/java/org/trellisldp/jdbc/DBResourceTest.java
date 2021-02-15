@@ -15,7 +15,6 @@
  */
 package org.trellisldp.jdbc;
 
-import static java.io.File.separator;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static java.util.Optional.of;
@@ -31,12 +30,8 @@ import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.vocabulary.RDF.type;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
-
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -49,7 +44,6 @@ import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.text.RandomStringGenerator;
 import org.jdbi.v3.core.Jdbi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
@@ -67,12 +61,6 @@ import org.trellisldp.vocabulary.OA;
 import org.trellisldp.vocabulary.RDFS;
 import org.trellisldp.vocabulary.Trellis;
 
-import liquibase.Contexts;
-import liquibase.Liquibase;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
-
 /**
  * ResourceService tests.
  */
@@ -87,46 +75,16 @@ class DBResourceTest {
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
     private static final Map<String, IRI> extensions = singletonMap("acl", Trellis.PreferAccessControl);
 
-    private static EmbeddedPostgres pg = null;
+    private static DataSource ds = DBTestUtils.setupDatabase();
 
-    private static DBResourceService svc = new DBResourceService();
-
-    static {
-        try {
-            pg = EmbeddedPostgres.builder()
-                .setDataDirectory("build" + separator + "pgdata-" + new RandomStringGenerator
-                            .Builder().withinRange('a', 'z').build().generate(10)).start();
-
-            // Set up database migrations
-            try (final Connection c = pg.getPostgresDatabase().getConnection()) {
-                final Liquibase liquibase = new Liquibase("org/trellisldp/jdbc/migrations.yml",
-                        new ClassLoaderResourceAccessor(),
-                        new JdbcConnection(c));
-                final Contexts ctx = null;
-                liquibase.update(ctx);
-            }
-
-            svc.ds = pg.getPostgresDatabase();
-            svc.extensionConfig = Optional.of(new String[]{
-                "acl=http://www.trellisldp.org/ns/trellis#PreferAccessControl",
-                "test=http://example.com/TestGraph"});
-            svc.batchSize = 1000;
-            svc.includeLdpType = true;
-            svc.supportDirectContainment = true;
-            svc.supportIndirectContainment = true;
-            svc.idService = idService;
-            svc.init();
-        } catch (final IOException | SQLException | LiquibaseException ex) {
-            LOGGER.error("Error setting up tests", ex);
-        }
-    }
+    private static DBResourceService svc = buildResourceService(ds);
 
     @Test
     void testDisableExtendedContainers() {
         assertTrue(svc.supportedInteractionModels().contains(LDP.IndirectContainer));
         assertTrue(svc.supportedInteractionModels().contains(LDP.DirectContainer));
         final DBResourceService svc2 = new DBResourceService();
-        svc2.ds = pg.getPostgresDatabase();
+        svc2.ds = ds;
         svc2.idService = idService;
         svc2.extensionConfig = Optional.empty();
         svc2.init();
@@ -136,14 +94,14 @@ class DBResourceTest {
 
     @Test
     void getRoot() {
-        assertEquals(root, DBResource.findResource(pg.getPostgresDatabase(), root, extensions, false)
+        assertEquals(root, DBResource.findResource(ds, root, extensions, false)
                 .toCompletableFuture().join().getIdentifier(), "Check the root resource");
     }
 
     @Test
     void testReinit() {
         final DBResourceService svc2 = new DBResourceService();
-        svc2.ds = pg.getPostgresDatabase();
+        svc2.ds = ds;
         svc2.idService = idService;
         svc2.extensionConfig = Optional.empty();
         assertDoesNotThrow(svc2::init);
@@ -151,14 +109,14 @@ class DBResourceTest {
 
     @Test
     void getNonExistent() {
-        assertEquals(MISSING_RESOURCE, DBResource.findResource(pg.getPostgresDatabase(),
+        assertEquals(MISSING_RESOURCE, DBResource.findResource(ds,
                     rdf.createIRI(TRELLIS_DATA_PREFIX + "other"), extensions, false).toCompletableFuture().join(),
                 "Check for non-existent resource");
     }
 
     @Test
     void testMetadata() {
-        final Resource res = DBResource.findResource(pg.getPostgresDatabase(), root, extensions, false)
+        final Resource res = DBResource.findResource(ds, root, extensions, false)
             .toCompletableFuture().join();
         assertFalse(res.hasMetadata(Trellis.PreferAccessControl));
         assertFalse(res.hasMetadata(rdf.createIRI("http://example.com/Extension")));
@@ -167,10 +125,10 @@ class DBResourceTest {
     @Test
     void getMembershipQuads() {
         assertAll(
-            () -> DBResource.findResource(Jdbi.create(pg.getPostgresDatabase()), root, extensions, false, true, true)
+            () -> DBResource.findResource(Jdbi.create(ds), root, extensions, false, true, true)
                 .thenAccept(res ->
                     assertEquals(0L, res.stream(LDP.PreferMembership).count())).toCompletableFuture().join(),
-            () -> DBResource.findResource(Jdbi.create(pg.getPostgresDatabase()), root, extensions, false, false, false)
+            () -> DBResource.findResource(Jdbi.create(ds), root, extensions, false, false, false)
                 .thenAccept(res ->
                     assertEquals(0L, res.stream(LDP.PreferMembership).count())).toCompletableFuture().join());
     }
@@ -221,7 +179,7 @@ class DBResourceTest {
     @Test
     void getAclQuads() {
         assertAll(() ->
-            DBResource.findResource(pg.getPostgresDatabase(), root, extensions, true).thenAccept(res -> {
+            DBResource.findResource(ds, root, extensions, true).thenAccept(res -> {
                 assertEquals(0L, res.stream(Trellis.PreferAccessControl).count());
                 assertEquals(0L, res.stream(Trellis.PreferUserManaged).count());
                 assertEquals(1L, res.stream(Trellis.PreferServerManaged).count());
@@ -231,7 +189,7 @@ class DBResourceTest {
     @Test
     void getFilteredServeManagedQuads() {
         assertAll(() ->
-            DBResource.findResource(pg.getPostgresDatabase(), root, extensions, false).thenAccept(res -> {
+            DBResource.findResource(ds, root, extensions, false).thenAccept(res -> {
                 assertEquals(0L, res.stream(Trellis.PreferUserManaged).count());
                 assertEquals(0L, res.stream(Trellis.PreferServerManaged).count());
             }).toCompletableFuture().join());
@@ -412,7 +370,7 @@ class DBResourceTest {
             assertTrue(res.stream(Trellis.PreferUserManaged).anyMatch(triple ->
                     triple.getSubject().equals(identifier) && triple.getPredicate().equals(LDP.inbox) &&
                     triple.getObject().equals(rdf.createIRI(inbox))))).toCompletableFuture().join();
-        DBResource.findResource(pg.getPostgresDatabase(), identifier, extensions, true).thenAccept(res -> {
+        DBResource.findResource(ds, identifier, extensions, true).thenAccept(res -> {
             assertEquals(2L, res.stream(Trellis.PreferUserManaged).count());
             assertEquals(1L, res.stream(Trellis.PreferServerManaged).count());
             assertEquals(2L, res.getExtraLinkRelations().count());
@@ -505,5 +463,20 @@ class DBResourceTest {
             throw new IOException("Expected");
         });
         assertThrows(UncheckedIOException.class, () -> DBResourceService.serializeGraph(mockGraph));
+    }
+
+    static DBResourceService buildResourceService(final DataSource datasource) {
+        final DBResourceService svc = new DBResourceService();
+        svc.ds = datasource;
+        svc.extensionConfig = Optional.of(new String[]{
+            "acl=http://www.trellisldp.org/ns/trellis#PreferAccessControl",
+            "test=http://example.com/TestGraph"});
+        svc.batchSize = 1000;
+        svc.includeLdpType = true;
+        svc.supportDirectContainment = true;
+        svc.supportIndirectContainment = true;
+        svc.idService = idService;
+        svc.init();
+        return svc;
     }
 }

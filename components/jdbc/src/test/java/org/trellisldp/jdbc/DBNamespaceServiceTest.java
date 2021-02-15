@@ -15,59 +15,27 @@
  */
 package org.trellisldp.jdbc;
 
-import static java.io.File.separator;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.condition.OS.WINDOWS;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
+import javax.sql.DataSource;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.slf4j.Logger;
 import org.trellisldp.vocabulary.LDP;
 
-import liquibase.Contexts;
-import liquibase.Liquibase;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
-
 @DisabledOnOs(WINDOWS)
 class DBNamespaceServiceTest {
     private static final Logger LOGGER = getLogger(DBNamespaceService.class);
 
-    private static EmbeddedPostgres pg = null;
-
-    static {
-        try {
-            pg = EmbeddedPostgres.builder()
-                .setDataDirectory("build" + separator + "pgdata-" + new RandomStringGenerator
-                            .Builder().withinRange('a', 'z').build().generate(10)).start();
-
-            // Set up database migrations
-            try (final Connection c = pg.getPostgresDatabase().getConnection()) {
-                final Liquibase liquibase = new Liquibase("org/trellisldp/jdbc/migrations.yml",
-                        new ClassLoaderResourceAccessor(),
-                        new JdbcConnection(c));
-                final Contexts ctx = null;
-                liquibase.update(ctx);
-            }
-
-        } catch (final IOException | SQLException | LiquibaseException ex) {
-            LOGGER.error("Error setting up tests", ex);
-        }
-    }
+    private static DataSource ds = DBTestUtils.setupDatabase();
 
     @Test
     void testNamespaceService() {
         final DBNamespaceService svc = new DBNamespaceService();
-        svc.ds = pg.getPostgresDatabase();
+        svc.ds = ds;
         assertDoesNotThrow(svc::init);
 
         assertTrue(svc.getNamespaces().containsKey("ldp"));

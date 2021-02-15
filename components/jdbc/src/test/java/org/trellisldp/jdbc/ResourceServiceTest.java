@@ -17,8 +17,6 @@ package org.trellisldp.jdbc;
 
 import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
-
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -34,9 +32,7 @@ import org.trellisldp.test.AbstractResourceServiceTests;
 @DisabledOnOs(WINDOWS)
 class ResourceServiceTest extends AbstractResourceServiceTests {
 
-    private static final EmbeddedPostgres pg = DBTestUtils.setupDatabase("build");
-
-    private final ResourceService svc = buildResourceService(pg.getPostgresDatabase());
+    private final ResourceService svc = buildResourceService(DBTestUtils.setupDatabase());
 
     @Override
     public ResourceService getResourceService() {

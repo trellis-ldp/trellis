@@ -15,7 +15,6 @@
  */
 package org.trellisldp.jdbc;
 
-import static java.io.File.separator;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -25,17 +24,13 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.SortedSet;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
-import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,42 +42,16 @@ import org.trellisldp.api.NoopMementoService;
 import org.trellisldp.api.RDFFactory;
 import org.trellisldp.api.Resource;
 
-import liquibase.Contexts;
-import liquibase.Liquibase;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.LiquibaseException;
-import liquibase.resource.ClassLoaderResourceAccessor;
-
 @DisabledOnOs(WINDOWS)
 @ExtendWith(MockitoExtension.class)
 class DBWrappedMementoServiceTest {
     private static final Logger LOGGER = getLogger(DBWrappedMementoService.class);
     private static final RDF rdf = RDFFactory.getInstance();
     private static final IRI root = rdf.createIRI("trellis:data/");
-    private static EmbeddedPostgres pg = null;
+    private static final DataSource ds = DBTestUtils.setupDatabase();
 
     @Mock
     MementoService mockMementoService;
-
-    static {
-        try {
-            pg = EmbeddedPostgres.builder()
-                .setDataDirectory("build" + separator + "pgdata-" + new RandomStringGenerator
-                            .Builder().withinRange('a', 'z').build().generate(10)).start();
-
-            // Set up database migrations
-            try (final Connection c = pg.getPostgresDatabase().getConnection()) {
-                final Liquibase liquibase = new Liquibase("org/trellisldp/jdbc/migrations.yml",
-                        new ClassLoaderResourceAccessor(),
-                        new JdbcConnection(c));
-                final Contexts ctx = null;
-                liquibase.update(ctx);
-            }
-
-        } catch (final IOException | SQLException | LiquibaseException ex) {
-            LOGGER.error("Error setting up tests", ex);
-        }
-    }
 
     @Test
     void testMementoService() {
@@ -91,7 +60,7 @@ class DBWrappedMementoServiceTest {
         when(mockMementoService.put(any(Resource.class))).thenAnswer(inv -> completedFuture(null));
         when(mockMementoService.get(any(IRI.class), any(Instant.class))).thenAnswer(inv ->
                 completedFuture(mockResource));
-        final MementoService svc = new DBWrappedMementoService(pg.getPostgresDatabase(), mockMementoService);
+        final MementoService svc = new DBWrappedMementoService(ds, mockMementoService);
 
         final Instant time = now();
         final IRI identifier = rdf.createIRI("trellis:data/resource");
@@ -125,8 +94,7 @@ class DBWrappedMementoServiceTest {
 
     @Test
     void testNoOpMementoService() {
-        final MementoService svc = new DBWrappedMementoService(pg.getPostgresDatabase(),
-                new NoopMementoService());
+        final MementoService svc = new DBWrappedMementoService(ds, new NoopMementoService());
 
         final Instant time = now();
         final IRI identifier = rdf.createIRI("trellis:data/resource");
@@ -152,7 +120,7 @@ class DBWrappedMementoServiceTest {
         when(mockMementoService.put(any(Resource.class))).thenAnswer(inv -> completedFuture(null));
         when(mockMementoService.get(any(IRI.class), any(Instant.class))).thenAnswer(inv ->
                 completedFuture(mockResource));
-        final MementoService svc = new DBWrappedMementoService(pg.getPostgresDatabase(), mockMementoService);
+        final MementoService svc = new DBWrappedMementoService(ds, mockMementoService);
 
         final Instant time = now();
         final IRI identifier = rdf.createIRI("trellis:data/resource");
