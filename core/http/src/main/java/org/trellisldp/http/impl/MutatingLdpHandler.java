@@ -15,7 +15,7 @@
  */
 package org.trellisldp.http.impl;
 
-import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptyList;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Predicate.isEqual;
@@ -194,15 +194,16 @@ class MutatingLdpHandler extends BaseLdpHandler {
      * @param identifier the resource identifier
      * @param activityType the activity type
      * @param resourceType the resource type
+     * @param revision the resource revision
      * @return the next completion stage
      */
     protected CompletionStage<Void> emitNotification(final IRI identifier, final IRI activityType,
-            final IRI resourceType) {
+            final IRI resourceType, final String revision) {
         // Always notify about updates for the resource in question
         final IRI notificationResourceType = getExtensionGraphName() != null ? LDP.RDFSource : resourceType;
         getServices().getNotificationService().emit(new SimpleNotification(getUrl(identifier, resourceType),
-                    getSession().getAgent(), List.of(PROV.Activity, activityType), emptyMap(),
-                    ldpResourceTypes(notificationResourceType).collect(toList()), emptyMap()));
+                    getSession().getAgent(), List.of(PROV.Activity, activityType),
+                    ldpResourceTypes(notificationResourceType).collect(toList()), emptyList()));
 
         // Further notifications are only relevant for non-extension resources
         if (getExtensionGraphName() == null) {
@@ -217,8 +218,8 @@ class MutatingLdpHandler extends BaseLdpHandler {
                 final IRI id = getParentIdentifier();
                 if (isContainer(model)) {
                     getServices().getNotificationService().emit(new SimpleNotification(getUrl(id, model),
-                                    getSession().getAgent(), List.of(PROV.Activity, AS.Update), emptyMap(),
-                                    ldpResourceTypes(model).collect(toList()), emptyMap()));
+                                    getSession().getAgent(), List.of(PROV.Activity, AS.Update),
+                                    ldpResourceTypes(model).collect(toList()), emptyList()));
                     // If the parent's membership resource is different than the parent itself,
                     // notify about that membership resource, too (if it exists)
                     if (!parent.getMembershipResource().map(TrellisUtils::normalizeIdentifier).filter(isEqual(id))
@@ -330,8 +331,9 @@ class MutatingLdpHandler extends BaseLdpHandler {
                     if (res.getIdentifier() != null) {
                         getServices().getNotificationService()
                             .emit(new SimpleNotification(getUrl(res.getIdentifier(), res.getInteractionModel()),
-                                    getSession().getAgent(), List.of(PROV.Activity, AS.Update), emptyMap(),
-                                    ldpResourceTypes(res.getInteractionModel()).collect(toList()), emptyMap()));
+                                    getSession().getAgent(), List.of(PROV.Activity, AS.Update),
+                                    ldpResourceTypes(res.getInteractionModel()).collect(toList()),
+                                    emptyList()));
                     }
                 }).toCompletableFuture());
         }

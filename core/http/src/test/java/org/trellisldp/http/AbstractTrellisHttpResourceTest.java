@@ -1590,6 +1590,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
         when(mockResourceService.get(childIdentifier)).thenAnswer(inv -> completedFuture(mockChildResource));
         when(mockChildResource.getIdentifier()).thenReturn(childIdentifier);
         when(mockChildResource.getInteractionModel()).thenReturn(LDP.RDFSource);
+        when(mockChildResource.getRevision()).thenReturn("date::identifier");
         when(mockRootResource.getInteractionModel()).thenReturn(LDP.IndirectContainer);
         when(mockRootResource.getMembershipResource()).thenReturn(of(childIdentifier));
         try (final Response res = target(RESOURCE_PATH).request()

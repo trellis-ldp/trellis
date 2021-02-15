@@ -33,11 +33,10 @@ import org.trellisldp.vocabulary.AS;
  *
  * @author acoburn
  */
-@JsonbPropertyOrder({"@context","id", "type", "inbox", "actor", "object", "published"})
+@JsonbPropertyOrder({"@context","id", "type", "actor", "object", "published"})
 public class ActivityStreamMessage {
 
     private String identifier;
-    private String inbox;
     private String published;
     private String context = "https://www.w3.org/ns/activitystreams";
     private List<String> type;
@@ -50,16 +49,19 @@ public class ActivityStreamMessage {
     public static class NotificationResource {
         private final String identifier;
         private final List<String> type;
+        private final List<String> tag;
 
         /**
          * Create a new notification resource.
          *
          * @param id the identifier
          * @param type the types
+         * @param tag the tags
          */
-        public NotificationResource(final String id, final List<String> type) {
+        public NotificationResource(final String id, final List<String> type, final List<String> tag) {
             this.identifier = id;
             this.type = type.isEmpty() ? null : type;
+            this.tag = tag.isEmpty() ? null : tag;
         }
 
         /**
@@ -75,6 +77,13 @@ public class ActivityStreamMessage {
         public List<String> getType() {
             return type;
         }
+
+        /**
+         * @return the resource tags
+         */
+        public List<String> getTag() {
+            return tag;
+        }
     }
 
     /**
@@ -82,13 +91,6 @@ public class ActivityStreamMessage {
      */
     public String getId() {
         return identifier;
-    }
-
-    /**
-     * @return the inbox assocated with the resource
-     */
-    public String getInbox() {
-        return inbox;
     }
 
     /**
@@ -152,7 +154,8 @@ public class ActivityStreamMessage {
 
         notification.getObject().map(IRI::getIRIString).ifPresent(object ->
             msg.object = new NotificationResource(object,
-                    notification.getObjectTypes().stream().map(IRI::getIRIString).collect(toList())));
+                notification.getObjectTypes().stream().map(IRI::getIRIString).collect(toList()),
+                notification.getObjectTags().stream().map(IRI::getIRIString).collect(toList())));
 
         return msg;
     }

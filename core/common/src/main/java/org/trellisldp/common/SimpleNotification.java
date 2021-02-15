@@ -22,7 +22,6 @@ import static java.util.UUID.randomUUID;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
@@ -43,29 +42,25 @@ public class SimpleNotification implements Notification {
     private final IRI agent;
     private final List<IRI> activityTypes;
     private final List<IRI> objectTypes;
-    private final Map<IRI, Collection<IRI>> metadata;
-    private final Map<IRI, Collection<IRI>> objectMetadata;
+    private final List<IRI> objectTags;
 
     /**
      * Create a new notification.
      * @param object the resource
      * @param agent the agent associated with this notification
      * @param activityTypes the activity types associated with this notification
-     * @param metadata additional metadata for the notification
      * @param objectTypes the rdf types of the resource
-     * @param objectMetadata additional metadata for the resource
+     * @param objectTags any tags for the resource
      */
     public SimpleNotification(final String object, final IRI agent, final List<IRI> activityTypes,
-            final Map<IRI, Collection<IRI>> metadata, final List<IRI> objectTypes,
-            final Map<IRI, Collection<IRI>> objectMetadata) {
+            final List<IRI> objectTypes, final List<IRI> objectTags) {
         this.identifier = rdf.createIRI("urn:uuid:" + randomUUID());
         this.created = now();
         this.agent = agent;
         this.activityTypes = activityTypes;
-        this.metadata = metadata;
         this.object = rdf.createIRI(object);
         this.objectTypes = objectTypes;
-        this.objectMetadata = objectMetadata;
+        this.objectTags = objectTags;
     }
 
     @Override
@@ -94,17 +89,12 @@ public class SimpleNotification implements Notification {
     }
 
     @Override
+    public Collection<IRI> getObjectTags() {
+        return objectTags;
+    }
+
+    @Override
     public Instant getCreated() {
         return created;
-    }
-
-    @Override
-    public Map<IRI, Collection<IRI>> getMetadata() {
-        return metadata;
-    }
-
-    @Override
-    public Map<IRI, Collection<IRI>> getObjectMetadata() {
-        return objectMetadata;
     }
 }
