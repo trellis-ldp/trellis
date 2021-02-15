@@ -5,9 +5,13 @@ plugins {
 
 description = 'Trellis JDBC component'
 
+configurations {
+    testcontainers
+}
+
 ext {
     moduleName = 'org.trellisldp.jdbc'
-    testModules = ['smallrye.config', 'org.trellisldp.test', 'liquibase.core']
+    testModules = ['smallrye.config', 'org.trellisldp.test', 'liquibase.core', 'java.naming']
 }
 
 dependencies {
@@ -30,7 +34,6 @@ dependencies {
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion"
     testImplementation "com.google.guava:guava:$guavaVersion"
-    testImplementation "com.opentable.components:otj-pg-embedded:$otjPgVersion"
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation("io.smallrye:smallrye-health:$smallryeHealthVersion") {
         exclude group: 'io.smallrye', module: 'smallrye-health-extension-api'
@@ -40,11 +43,33 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
     testImplementation "org.yaml:snakeyaml:$snakeyamlVersion"
-
     testImplementation "org.liquibase:liquibase-core:$liquibaseVersion"
+    testImplementation "org.postgresql:postgresql:$postgresVersion"
 
     testImplementation project(":trellis-test")
 
-    testRuntimeOnly "org.postgresql:postgresql:$postgresVersion"
+    testcontainers "org.testcontainers:postgresql:$testcontainersVersion"
 }
 
+compileTestJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs += [
+            '--add-reads', "$moduleName=ALL-UNNAMED",
+        ]
+        classpath = files(configurations.testcontainers)
+    }
+}
+
+test {
+    inputs.property("moduleName", moduleName)
+
+    systemProperty "trellis.jdbc.test.postgres-container-version", postgresContainerVersion
+
+    doFirst {
+        jvmArgs += [
+            '--add-reads', "$moduleName=ALL-UNNAMED",
+        ]
+        classpath = files(configurations.testcontainers)
+    }
+}

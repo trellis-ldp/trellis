@@ -24,12 +24,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Map;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
@@ -48,14 +48,14 @@ class ResourceDataTest {
 
     private static final RDF rdf = RDFFactory.getInstance();
     private static final IRI root = rdf.createIRI(TRELLIS_DATA_PREFIX);
-    private static final EmbeddedPostgres pg = DBTestUtils.setupDatabase("build");
+    private final DataSource datastore = DBTestUtils.setupDatabase();
 
     private final Map<String, IRI> extensions = singletonMap("acl", Trellis.PreferAccessControl);
 
     @Test
     void testTimestampOnRootIsRecent() {
-        final Instant time = now().minusSeconds(1L);
-        final Resource res = DBResource.findResource(pg.getPostgresDatabase(), root, extensions, false)
+        final Instant time = now().minusSeconds(10L);
+        final Resource res = DBResource.findResource(datastore, root, extensions, false)
             .toCompletableFuture().join();
         assertEquals(root, res.getIdentifier());
         assertTrue(res.getModified().isAfter(time));
