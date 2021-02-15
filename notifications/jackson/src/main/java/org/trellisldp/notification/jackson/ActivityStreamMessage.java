@@ -53,18 +53,19 @@ class ActivityStreamMessage {
     static class NotificationResource {
         private final String id;
         private final List<String> type;
-        private final List<String> tag;
+        private final String state;
 
         /**
          * Create a new resource for the notification.
          *
          * @param id the identifier
          * @param type the types
+         * @param state the resource state
          */
-        public NotificationResource(final String id, final List<String> type, final List<String> tag) {
+        public NotificationResource(final String id, final List<String> type, final String state) {
             this.id = id;
             this.type = type.isEmpty() ? null : type;
-            this.tag = tag.isEmpty() ? null : tag;
+            this.state = state;
         }
 
         /**
@@ -82,10 +83,11 @@ class ActivityStreamMessage {
         }
 
         /**
-         * @return the resource tags
+         * @return the resource state
          */
-        public List<String> getTag() {
-            return tag;
+        @JsonProperty("http://www.trellisldp/ns/trellis#resourceState")
+        public String getState() {
+            return state;
         }
     }
 
@@ -156,7 +158,7 @@ class ActivityStreamMessage {
         notification.getObject().map(IRI::getIRIString).ifPresent(object ->
             msg.object = new NotificationResource(object,
                 notification.getObjectTypes().stream().map(IRI::getIRIString).collect(toList()),
-                notification.getObjectTags().stream().map(IRI::getIRIString).collect(toList())));
+                notification.getObjectState().orElse(null)));
 
         return msg;
     }

@@ -75,9 +75,9 @@ public interface Notification {
     Collection<IRI> getObjectTypes();
 
     /**
-     * Get object tags for this notification.
+     * Get a state value for the object, if one exists.
      *
-     * @return any tags associated with the resource that is the object of this notification
+     * @return a state value for the resource, if relevant
      */
-    Collection<IRI> getObjectTags();
+    Optional<String> getObjectState();
 }
