@@ -69,7 +69,7 @@ class DefaultNotificationSerializationServiceTest {
         when(mockNotification.getCreated()).thenReturn(time);
 
         final String json = svc.serialize(mockNotification);
-        assertTrue(json.contains("resourceState\":\"etag:1234567\""), "state not in serialization!");
+        assertTrue(json.contains("\"state\":\"etag:1234567\""), "state not in serialization!");
     }
 
     @Test
@@ -107,7 +107,8 @@ class DefaultNotificationSerializationServiceTest {
         assertTrue(types.contains("Create"), "as:Create not in type list!");
         assertTrue(types.contains(Activity.getIRIString()), "prov:Activity not in type list!");
 
-        assertTrue(AS.getNamespace().contains((String) map.get("@context")), "AS namespace not in @context!");
+        final List<?> contexts = (List<?>) map.get("@context");
+        assertTrue(contexts.contains(AS.getNamespace().replace("#", "")), "AS namespace not in @context!");
 
         final List<?> actor = (List<?>) map.get("actor");
         assertTrue(actor.contains("info:user/test"), "actor property has incorrect value!");
@@ -145,7 +146,8 @@ class DefaultNotificationSerializationServiceTest {
         assertTrue(obj.containsKey("id"), "object id property not in JSON structure!");
         assertFalse(obj.containsKey("type"), "empty object type unexpectedly in JSON structure!");
 
-        assertTrue(AS.getNamespace().contains((String) map.get("@context")), "AS namespace not in @context!");
+        final List<?> contexts = (List<?>) map.get("@context");
+        assertTrue(contexts.contains(AS.getNamespace().replace("#", "")), "AS namespace not in @context!");
 
         assertEquals("info:notification/12345", map.get("id"), "id property has incorrect value!");
         assertEquals(time.toString(), map.get("published"), "published property has incorrect value!");

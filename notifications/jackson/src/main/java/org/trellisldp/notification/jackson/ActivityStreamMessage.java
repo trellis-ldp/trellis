@@ -39,7 +39,8 @@ import org.trellisldp.vocabulary.AS;
 @JsonPropertyOrder({"@context","id", "type", "actor", "object", "published"})
 class ActivityStreamMessage {
 
-    private String context = "https://www.w3.org/ns/activitystreams";
+    private List<String> contexts = List.of("https://www.w3.org/ns/activitystreams",
+            "https://www.trellisldp/ns/trellis.jsonld");
     private String id;
     private List<String> type;
     private List<String> actor;
@@ -85,7 +86,6 @@ class ActivityStreamMessage {
         /**
          * @return the resource state
          */
-        @JsonProperty("http://www.trellisldp/ns/trellis#resourceState")
         public String getState() {
             return state;
         }
@@ -95,8 +95,8 @@ class ActivityStreamMessage {
      * @return the JSON-LD context
      */
     @JsonProperty("@context")
-    public String getContext() {
-        return context;
+    public List<String> getContext() {
+        return contexts;
     }
 
     /**
