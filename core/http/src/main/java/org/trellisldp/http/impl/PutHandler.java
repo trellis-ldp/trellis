@@ -274,10 +274,11 @@ public class PutHandler extends MutatingLdpHandler {
                 builder.link(type, Link.TYPE);
             });
         LOGGER.trace("Persisting mutable data for {} with data: {}", internalId, mutable);
+        final Metadata m = metadata.build();
 
-        return createOrReplace(metadata.build(), mutable, immutable)
+        return createOrReplace(m, mutable, immutable)
             .thenCompose(future -> persistBinaryContent(binary))
-            .thenCompose(future -> handleUpdateNotification(ldpType))
+            .thenCompose(future -> handleUpdateNotification(ldpType, m.getRevision().orElse(null)))
             .thenApply(future -> decorateResponse(builder));
     }
 
@@ -299,8 +300,8 @@ public class PutHandler extends MutatingLdpHandler {
         return builder;
     }
 
-    private CompletionStage<Void> handleUpdateNotification(final IRI ldpType) {
-        return emitNotification(getInternalId(), getResource() == null ? AS.Create : AS.Update, ldpType);
+    private CompletionStage<Void> handleUpdateNotification(final IRI ldpType, final String revision) {
+        return emitNotification(getInternalId(), getResource() == null ? AS.Create : AS.Update, ldpType, revision);
     }
 
     private IRI effectiveLdpType(final IRI ldpType) {

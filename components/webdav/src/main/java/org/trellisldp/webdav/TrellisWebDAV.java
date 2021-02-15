@@ -19,7 +19,7 @@ import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
@@ -220,7 +220,7 @@ public class TrellisWebDAV {
             })
             .thenRun(() -> services.getNotificationService()
                     .emit(new SimpleNotification(externalUrl(identifier, baseUrl), session.getAgent(),
-                            List.of(PROV.Activity, AS.Delete), emptyMap(), List.of(LDP.Resource), emptyMap())))
+                            List.of(PROV.Activity, AS.Delete), List.of(LDP.Resource), emptyList())))
             .thenApply(future -> status(NO_CONTENT).build())
             .exceptionally(this::handleException);
     }
@@ -406,7 +406,7 @@ public class TrellisWebDAV {
                         services.getMementoService().put(services.getResourceService(), resource.getIdentifier()))
                 .thenRun(() -> services.getNotificationService()
                         .emit(new SimpleNotification(location, session.getAgent(), List.of(PROV.Activity, AS.Update),
-                                emptyMap(), List.of(resource.getInteractionModel()), emptyMap())))
+                                List.of(resource.getInteractionModel()), emptyList())))
                 .thenApply(future -> multistatus);
         };
     }

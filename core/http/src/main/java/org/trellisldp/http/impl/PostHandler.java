@@ -204,7 +204,7 @@ public class PostHandler extends MutatingLdpHandler {
 
         return handleResourceCreation(metadata, mutable, immutable)
             .thenCompose(future -> persistBinaryContent(binary))
-            .thenCompose(future -> emitNotification(internalId, AS.Create, ldpType))
+            .thenCompose(future -> emitNotification(internalId, AS.Create, ldpType, null))
             .thenApply(future -> {
                 ldpResourceTypes(ldpType).map(IRI::getIRIString).forEach(type -> builder.link(type, Link.TYPE));
                 return builder.location(UriBuilder.fromUri(getIdentifier()).build());

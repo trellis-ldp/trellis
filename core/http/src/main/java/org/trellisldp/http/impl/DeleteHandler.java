@@ -133,10 +133,12 @@ public class DeleteHandler extends MutatingLdpHandler {
     private CompletionStage<Void> handleDeletion(final Dataset mutable, final Dataset immutable) {
         if (getExtensionGraphName() != null) {
             return handleSubGraphDeletion(mutable, immutable).thenCompose(future ->
-                emitNotification(getInternalId(), AS.Delete, getResource().getInteractionModel()));
+                emitNotification(getInternalId(), AS.Delete, getResource().getInteractionModel(),
+                    getResource().getRevision()));
         }
         return handleResourceDeletion(immutable).thenCompose(future ->
-                emitNotification(getInternalId(), AS.Delete, getResource().getInteractionModel()));
+                emitNotification(getInternalId(), AS.Delete, getResource().getInteractionModel(),
+                    getResource().getRevision()));
     }
 
     private CompletionStage<Void> handleSubGraphDeletion(final Dataset mutable, final Dataset immutable) {

@@ -53,6 +53,7 @@ class ActivityStreamMessage {
     static class NotificationResource {
         private final String id;
         private final List<String> type;
+        private final List<String> tag;
 
         /**
          * Create a new resource for the notification.
@@ -60,9 +61,10 @@ class ActivityStreamMessage {
          * @param id the identifier
          * @param type the types
          */
-        public NotificationResource(final String id, final List<String> type) {
+        public NotificationResource(final String id, final List<String> type, final List<String> tag) {
             this.id = id;
             this.type = type.isEmpty() ? null : type;
+            this.tag = tag.isEmpty() ? null : tag;
         }
 
         /**
@@ -77,6 +79,13 @@ class ActivityStreamMessage {
          */
         public List<String> getType() {
             return type;
+        }
+
+        /**
+         * @return the resource tags
+         */
+        public List<String> getTag() {
+            return tag;
         }
     }
 
@@ -146,7 +155,8 @@ class ActivityStreamMessage {
 
         notification.getObject().map(IRI::getIRIString).ifPresent(object ->
             msg.object = new NotificationResource(object,
-                notification.getObjectTypes().stream().map(IRI::getIRIString).collect(toList())));
+                notification.getObjectTypes().stream().map(IRI::getIRIString).collect(toList()),
+                notification.getObjectTags().stream().map(IRI::getIRIString).collect(toList())));
 
         return msg;
     }

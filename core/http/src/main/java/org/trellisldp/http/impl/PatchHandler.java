@@ -276,7 +276,8 @@ public class PatchHandler extends MutatingLdpHandler {
 
         return createOrReplace(metadata, mutable, immutable)
             .thenCompose(future -> emitNotification(metadata.getIdentifier(),
-                        getResource() == null ? AS.Create : AS.Update, getLdpType()))
+                        getResource() == null ? AS.Create : AS.Update, getLdpType(),
+                        metadata.getRevision().orElse(null)))
             .thenApply(future -> {
                 final RDFSyntax outputSyntax = getSyntax(getServices().getIOService(),
                         getRequest().getAcceptableMediaTypes(), null);

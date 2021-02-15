@@ -17,7 +17,6 @@ package org.trellisldp.api;
 
 import java.time.Instant;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.rdf.api.IRI;
@@ -62,13 +61,6 @@ public interface Notification {
     Collection<IRI> getAgents();
 
     /**
-     * Get metadata for this notification.
-     *
-     * @return metadata for the notification
-     */
-    Map<IRI, Collection<IRI>> getMetadata();
-
-    /**
      * Get the resource identifier, if one exists.
      *
      * @return an identifier for the resource that is the object of this notification
@@ -83,9 +75,9 @@ public interface Notification {
     Collection<IRI> getObjectTypes();
 
     /**
-     * Get object metadata for this notification.
+     * Get object tags for this notification.
      *
-     * @return metadata for the resource that is the object of this notification
+     * @return any tags associated with the resource that is the object of this notification
      */
-    Map<IRI, Collection<IRI>> getObjectMetadata();
+    Collection<IRI> getObjectTags();
 }

@@ -16,14 +16,13 @@
 package org.trellisldp.common;
 
 import static java.time.Instant.now;
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;
@@ -49,9 +48,10 @@ class SimpleNotificationTest {
     void testSimpleNotification() {
         final IRI resource = rdf.createIRI(identifier);
         final Instant time = now();
+        final IRI tag = rdf.createIRI("etag:123456");
 
         final Notification notification = new SimpleNotification(identifier, agent,
-                asList(PROV.Activity, AS.Create), emptyMap(), asList(LDP.RDFSource, SKOS.Concept), emptyMap());
+                List.of(PROV.Activity, AS.Create), List.of(LDP.RDFSource, SKOS.Concept), List.of(tag));
         assertFalse(time.isAfter(notification.getCreated()), "Non-sequential notifications!");
         assertTrue(notification.getIdentifier().getIRIString()
                 .startsWith("urn:uuid:"), "Incorrect ID prefix for notification!");
@@ -66,14 +66,15 @@ class SimpleNotificationTest {
         assertEquals(2L, notificationTypes.size(), "Incorrect notification type size!");
         assertTrue(notificationTypes.contains(AS.Create), "Missing as:Create from notification type!");
         assertTrue(notificationTypes.contains(PROV.Activity), "Missing prov:Activity from notification type!");
+        assertTrue(notification.getObjectTags().contains(tag));
     }
 
     @Test
     void testEmptyNotification() {
         final IRI resource = rdf.createIRI(identifier);
 
-        final Notification notification = new SimpleNotification(identifier, agent, emptyList(), emptyMap(),
-                emptyList(), emptyMap());
+        final Notification notification = new SimpleNotification(identifier, agent, emptyList(), emptyList(),
+                emptyList());
         assertEquals(of(resource), notification.getObject(), "Incorrect target resource!");
         assertTrue(notification.getAgents().contains(agent), "Unexpected agent list!");
         assertTrue(notification.getObjectTypes().isEmpty(), "Unexpected target types!");

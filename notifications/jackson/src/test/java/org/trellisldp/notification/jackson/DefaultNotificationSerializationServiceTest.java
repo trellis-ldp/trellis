@@ -18,7 +18,6 @@ package org.trellisldp.notification.jackson;
 import static java.time.Instant.now;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -62,14 +61,15 @@ class DefaultNotificationSerializationServiceTest {
     @Test
     void testSerialization() {
         when(mockNotification.getIdentifier()).thenReturn(rdf.createIRI("info:notification/12345"));
-        when(mockNotification.getAgents()).thenReturn(singleton(rdf.createIRI("info:user/test")));
+        when(mockNotification.getAgents()).thenReturn(List.of(rdf.createIRI("info:user/test")));
         when(mockNotification.getObject()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
-        when(mockNotification.getTypes()).thenReturn(singleton(Create));
-        when(mockNotification.getObjectTypes()).thenReturn(singleton(Container));
+        when(mockNotification.getTypes()).thenReturn(List.of(Create));
+        when(mockNotification.getObjectTypes()).thenReturn(List.of(Container));
+        when(mockNotification.getObjectTags()).thenReturn(List.of(rdf.createIRI("etag:1234567")));
         when(mockNotification.getCreated()).thenReturn(time);
 
         final String json = svc.serialize(mockNotification);
-        assertTrue(json.contains("\"actor\":[\"info:user/test\"]"), "actor not in serialization!");
+        assertTrue(json.contains("\"tag\":[\"etag:1234567\"]"), "tag not in serialization!");
     }
 
     @Test
@@ -85,9 +85,9 @@ class DefaultNotificationSerializationServiceTest {
     @Test
     void testSerializationStructure() throws Exception {
         when(mockNotification.getIdentifier()).thenReturn(rdf.createIRI("info:notification/12345"));
-        when(mockNotification.getAgents()).thenReturn(singleton(rdf.createIRI("info:user/test")));
+        when(mockNotification.getAgents()).thenReturn(List.of(rdf.createIRI("info:user/test")));
         when(mockNotification.getObject()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
-        when(mockNotification.getObjectTypes()).thenReturn(singleton(Container));
+        when(mockNotification.getObjectTypes()).thenReturn(List.of(Container));
         when(mockNotification.getCreated()).thenReturn(time);
         when(mockNotification.getTypes()).thenReturn(asList(Create, Activity));
 
@@ -120,7 +120,7 @@ class DefaultNotificationSerializationServiceTest {
     void testSerializationStructureNoEmptyElements() throws Exception {
         when(mockNotification.getIdentifier()).thenReturn(rdf.createIRI("info:notification/12345"));
         when(mockNotification.getObject()).thenReturn(of(rdf.createIRI("trellis:data/resource")));
-        when(mockNotification.getTypes()).thenReturn(singleton(Create));
+        when(mockNotification.getTypes()).thenReturn(List.of(Create));
         when(mockNotification.getCreated()).thenReturn(time);
         when(mockNotification.getAgents()).thenReturn(emptyList());
         when(mockNotification.getObjectTypes()).thenReturn(emptyList());

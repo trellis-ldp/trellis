@@ -175,6 +175,15 @@ class BaseLdpHandler {
     }
 
     /**
+     * Create a strong entity tag from a resource's revision value.
+     * @param revision the revision value
+     * @return an etag
+     */
+    protected EntityTag generateEtag(final String revision) {
+        return new EntityTag(sha256Hex(revision), false);
+    }
+
+    /**
      * Create an entity tag from a resource's revision value.
      * @param res the resource
      * @param weakEtag set this as true to generate a weak etag; false for a strong etag
