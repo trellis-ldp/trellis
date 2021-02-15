@@ -38,7 +38,8 @@ public class ActivityStreamMessage {
 
     private String identifier;
     private String published;
-    private String context = "https://www.w3.org/ns/activitystreams";
+    private List<String> contexts = List.of("https://www.w3.org/ns/activitystreams",
+            "https://www.trellisldp/ns/trellis.jsonld");
     private List<String> type;
     private List<String> actor;
     private NotificationResource object;
@@ -81,7 +82,6 @@ public class ActivityStreamMessage {
         /**
          * @return the resource state
          */
-        @JsonbProperty("http://www.trellisldp/ns/trellis#resourceState")
         public String getState() {
             return state;
         }
@@ -106,8 +106,8 @@ public class ActivityStreamMessage {
      * @return the JSON-LD context
      */
     @JsonbProperty("@context")
-    public String getContext() {
-        return context;
+    public List<String> getContext() {
+        return contexts;
     }
 
     /**
