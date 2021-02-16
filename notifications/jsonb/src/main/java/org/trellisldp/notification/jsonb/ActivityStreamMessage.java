@@ -39,7 +39,7 @@ public class ActivityStreamMessage {
     private String identifier;
     private String published;
     private List<String> contexts = List.of("https://www.w3.org/ns/activitystreams",
-            "https://www.trellisldp/ns/trellis.jsonld");
+            "https://www.trellisldp.org/ns/trellis.jsonld");
     private List<String> type;
     private List<String> actor;
     private NotificationResource object;

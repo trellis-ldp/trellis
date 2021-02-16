@@ -40,7 +40,7 @@ import org.trellisldp.vocabulary.AS;
 class ActivityStreamMessage {
 
     private List<String> contexts = List.of("https://www.w3.org/ns/activitystreams",
-            "https://www.trellisldp/ns/trellis.jsonld");
+            "https://www.trellisldp.org/ns/trellis.jsonld");
     private String id;
     private List<String> type;
     private List<String> actor;
