@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.rdf.api.IRI;
 import org.trellisldp.api.Notification;
@@ -39,8 +40,8 @@ import org.trellisldp.vocabulary.AS;
 @JsonPropertyOrder({"@context","id", "type", "actor", "object", "published"})
 class ActivityStreamMessage {
 
-    private List<String> contexts = List.of("https://www.w3.org/ns/activitystreams",
-            "https://www.trellisldp.org/ns/trellis.jsonld");
+    private List<Object> contexts = List.of("https://www.w3.org/ns/activitystreams",
+            Map.of("state", Map.of("@id", "http://www.w3.org/2011/http-headers#etag")));
     private String id;
     private List<String> type;
     private List<String> actor;
@@ -95,7 +96,7 @@ class ActivityStreamMessage {
      * @return the JSON-LD context
      */
     @JsonProperty("@context")
-    public List<String> getContext() {
+    public List<Object> getContext() {
         return contexts;
     }
 
