@@ -18,6 +18,7 @@ package org.trellisldp.notification.jsonb;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.json.bind.annotation.JsonbProperty;
 import javax.json.bind.annotation.JsonbPropertyOrder;
@@ -38,8 +39,8 @@ public class ActivityStreamMessage {
 
     private String identifier;
     private String published;
-    private List<String> contexts = List.of("https://www.w3.org/ns/activitystreams",
-            "https://www.trellisldp.org/ns/trellis.jsonld");
+    private List<Object> contexts = List.of("https://www.w3.org/ns/activitystreams",
+            Map.of("state", Map.of("@id", "http://www.w3.org/2011/http-headers#etag")));
     private List<String> type;
     private List<String> actor;
     private NotificationResource object;
@@ -106,7 +107,7 @@ public class ActivityStreamMessage {
      * @return the JSON-LD context
      */
     @JsonbProperty("@context")
-    public List<String> getContext() {
+    public List<Object> getContext() {
         return contexts;
     }
 

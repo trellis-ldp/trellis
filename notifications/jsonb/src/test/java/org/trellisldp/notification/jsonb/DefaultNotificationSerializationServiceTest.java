@@ -68,7 +68,6 @@ class DefaultNotificationSerializationServiceTest {
         when(mockNotification.getCreated()).thenReturn(time);
 
         final String json = svc.serialize(mockNotification);
-        System.out.println(json);
         assertTrue(json.contains("\"state\":\"etag:1234567\""), "state not in serialization!");
     }
 
