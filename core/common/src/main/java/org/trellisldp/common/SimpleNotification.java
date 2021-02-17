@@ -90,7 +90,7 @@ public class SimpleNotification implements Notification {
 
     @Override
     public Optional<String> getObjectState() {
-        return Optional.of(objectState);
+        return Optional.ofNullable(objectState);
     }
 
     @Override

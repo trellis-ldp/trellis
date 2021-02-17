@@ -19,7 +19,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static javax.ws.rs.client.Entity.entity;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
-import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
@@ -108,26 +107,13 @@ public interface LdpBinaryTests extends CommonTests {
         final EntityTag etag = getETag(getResourceLocation());
 
         // Fetch the description
-        try (final Response res = target(getResourceLocation()).request().accept(TEXT_TURTLE).get()) {
-
-            if (REDIRECTION.equals(res.getStatusInfo().getFamily())) {
-                try (final Response redirect = target(res.getLocation().toString()).request().accept(TEXT_TURTLE)
-                            .get();
-                        final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
-                    assertAll("Check binary description", checkRdfResponse(redirect, LDP.RDFSource, TEXT_TURTLE_TYPE));
-                    assertTrue(g.size() >= 0L, "Assert that the graph isn't empty");
-                    assertTrue(redirect.getEntityTag().isWeak(), "Check for a weak ETag");
-                    assertNotEquals(etag, redirect.getEntityTag(), "Check for different ETag values");
-
-                }
-            } else {
-                try (final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
+        try (final Response res = target(getResourceLocation()).queryParam("ext", "description")
+                .request().accept(TEXT_TURTLE).get();
+             final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
                     assertAll("Check binary description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
                     assertTrue(g.size() >= 0L, "Assert that the graph isn't empty");
                     assertTrue(res.getEntityTag().isWeak(), "Check for a weak ETag");
                     assertNotEquals(etag, res.getEntityTag(), "Check for different ETag values");
-                }
-            }
         }
     }
 

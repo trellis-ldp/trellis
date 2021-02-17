@@ -399,7 +399,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetBinaryDescription() {
-        try (final Response res = target(BINARY_PATH).request().accept("application/trig, text/turtle").get()) {
+        try (final Response res = target(BINARY_PATH).queryParam("ext", "description").request()
+                .accept("application/trig, text/turtle").get()) {
             // ignore redirects to example.com
             assumeTrue(res.getStatus() != 404);
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
@@ -811,7 +812,8 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
 
     @Test
     void testGetBinaryDescriptionLinks() {
-        try (final Response res = target(BINARY_PATH).request().accept("text/turtle").get()) {
+        try (final Response res = target(BINARY_PATH).queryParam("ext", "description").request()
+                .accept("text/turtle").get()) {
             assumeTrue(res.getStatus() != 404);
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
             assertTrue(getLinks(res).stream().anyMatch(l -> l.getRel().equals(DESCRIBES)), "Missing rel=describes");
