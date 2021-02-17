@@ -146,19 +146,17 @@ public class GetHandler extends BaseLdpHandler {
 
         LOGGER.debug("Acceptable media types: {}", getRequest().getAcceptableMediaTypes());
 
-        this.syntax = getSyntax(getServices().getIOService(),
-            getRequest().getAcceptableMediaTypes(), resource.getBinaryMetadata()
-                .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
-                .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)).orElse(null));
+        if (!LDP.NonRDFSource.equals(resource.getInteractionModel()) || getRequest().getExt() != null) {
+            this.syntax = getSyntax(getServices().getIOService(),
+                getRequest().getAcceptableMediaTypes(), resource.getBinaryMetadata()
+                    .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
+                    .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)).orElse(null));
+        }
 
         final IRI ext = getExtensionGraphName();
         if (ext != null && !resource.stream(ext).findAny().isPresent()) {
             LOGGER.trace("No stream for extention: {}", ext);
             throw new NotFoundException();
-        } else if (getRequest().getExt() == null && syntax != null &&
-                LDP.NonRDFSource.equals(resource.getInteractionModel())) {
-            throw new RedirectionException(303,
-                    UriBuilder.fromUri(getIdentifier()).queryParam("ext", DESCRIPTION).build());
         }
 
         setResource(resource);
