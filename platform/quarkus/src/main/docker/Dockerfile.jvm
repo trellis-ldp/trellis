@@ -19,8 +19,10 @@ LABEL maintainer="Aaron Coburn <acoburn@apache.org>"
 
 ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -XX:+ExitOnOutOfMemeoryError -Dcom.github.jsonldjava.disallowRemoteContextLoading=true"
 
-COPY build/lib/* /trellis/lib/
-COPY build/*-runner.jar /trellis/app.jar
+COPY build/quarkus-app/lib/ /trellis/lib/
+COPY build/quarkus-app/app/ /trellis/app/
+COPY build/quarkus-app/quarkus/ /trellis/quarkus/
+COPY build/quarkus-app/quarkus-run.jar /trellis/app.jar
 
 WORKDIR /trellis/
 
