@@ -63,7 +63,7 @@ ext {
     hamcrestVersion = "2.2"
     logbackVersion = "1.2.3"
     mockitoVersion = "3.7.7"
-    qpidVersion = "8.0.3"
+    qpidVersion = "8.0.4"
     sleepycatVersion = "18.3.12"
     smallryeConfigVersion = "2.1.0"
     smallryeHealthVersion = "2.2.5"
