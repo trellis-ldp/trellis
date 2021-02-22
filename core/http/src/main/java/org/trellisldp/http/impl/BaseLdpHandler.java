@@ -167,30 +167,21 @@ class BaseLdpHandler {
 
     /**
      * Create a strong entity tag from a resource's revision value.
-     * @param res the resource
+     * @param revision the revision value
      * @return an etag
      */
-    protected EntityTag generateEtag(final Resource res) {
-        return generateEtag(res, false);
+    protected EntityTag generateEtag(final String revision) {
+        return generateEtag(revision, false);
     }
 
     /**
      * Create a strong entity tag from a resource's revision value.
      * @param revision the revision value
+     * @param weakEtag a weakness indicator
      * @return an etag
      */
-    protected EntityTag generateEtag(final String revision) {
-        return new EntityTag(sha256Hex(revision), false);
-    }
-
-    /**
-     * Create an entity tag from a resource's revision value.
-     * @param res the resource
-     * @param weakEtag set this as true to generate a weak etag; false for a strong etag
-     * @return an etag
-     */
-    protected EntityTag generateEtag(final Resource res, final boolean weakEtag) {
-        return new EntityTag(sha256Hex(res.getRevision()), weakEtag);
+    protected EntityTag generateEtag(final String revision, final boolean weakEtag) {
+        return new EntityTag(sha256Hex(revision), weakEtag);
     }
 
     static String getRequestBaseUrl(final TrellisRequest req, final String baseUrl) {

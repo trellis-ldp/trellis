@@ -137,7 +137,7 @@ public class TrellisHttpResource {
         this.baseUrl = config.getOptionalValue(CONFIG_HTTP_BASE_URL, String.class);
         this.extensions = TrellisExtensions.buildExtensionMapFromConfig(config);
         this.defaultJsonLdProfile = config.getOptionalValue(CONFIG_HTTP_JSONLD_PROFILE, String.class).orElse(null);
-        this.weakEtags = config.getOptionalValue(CONFIG_HTTP_WEAK_ETAG, Boolean.class).orElse(Boolean.TRUE);
+        this.weakEtags = config.getOptionalValue(CONFIG_HTTP_WEAK_ETAG, Boolean.class).orElse(Boolean.FALSE);
         this.includeMementoDates = config.getOptionalValue(CONFIG_HTTP_MEMENTO_HEADER_DATES, Boolean.class)
             .orElse(Boolean.TRUE);
         this.preconditionRequired = config.getOptionalValue(CONFIG_HTTP_PRECONDITION_REQUIRED, Boolean.class)

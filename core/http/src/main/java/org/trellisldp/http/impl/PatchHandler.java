@@ -144,7 +144,7 @@ public class PatchHandler extends MutatingLdpHandler {
         }
         // Check the cache headers
         if (exists(resource)) {
-            checkCache(resource.getModified(), generateEtag(resource));
+            checkCache(resource.getModified(), generateEtag(resource.getRevision()));
 
             setResource(resource);
             resource.getContainer().ifPresent(p -> setParent(parent));

@@ -220,7 +220,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
                     getServices().getNotificationService().emit(new SimpleNotification(getUrl(id, model),
                                     getSession().getAgent(), List.of(PROV.Activity, AS.Update),
                                     ldpResourceTypes(model).collect(toList()),
-                                    generateEtag(parent).getValue()));
+                                    generateEtag(parent.getRevision()).getValue()));
                     // If the parent's membership resource is different than the parent itself,
                     // notify about that membership resource, too (if it exists)
                     if (!parent.getMembershipResource().map(TrellisUtils::normalizeIdentifier).filter(isEqual(id))
@@ -334,7 +334,7 @@ class MutatingLdpHandler extends BaseLdpHandler {
                             .emit(new SimpleNotification(getUrl(res.getIdentifier(), res.getInteractionModel()),
                                     getSession().getAgent(), List.of(PROV.Activity, AS.Update),
                                     ldpResourceTypes(res.getInteractionModel()).collect(toList()),
-                                    generateEtag(res).getValue()));
+                                    generateEtag(res.getRevision()).getValue()));
                     }
                 }).toCompletableFuture());
         }

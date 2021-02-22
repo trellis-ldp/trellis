@@ -253,7 +253,7 @@ public interface LdpRdfTests extends CommonTests {
                     "Check for a skos:prefLabel triple");
             assertTrue(g.contains(identifier, DC.subject, rdf.createIRI("http://example.org/subject/1")),
                     "Check for a dc:subject triple");
-            assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
+            assertFalse(res.getEntityTag().isWeak(), "Check that the ETag is strong");
         }
     }
 
@@ -284,7 +284,7 @@ public interface LdpRdfTests extends CommonTests {
                     "Check the graph size");
             assertTrue(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
                     "Check for a dc:title triple");
-            assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
+            assertFalse(res.getEntityTag().isWeak(), "Check that the ETag is strong");
             assertNotEquals(initialETag, res.getEntityTag(), "Compare the first and second ETags");
         }
 
@@ -305,7 +305,7 @@ public interface LdpRdfTests extends CommonTests {
                     "Check the graph size, absent any type triples");
             assertFalse(g.contains(rdf.createIRI(getResourceLocation()), DC.title, rdf.createLiteral("Title")),
                     "Check for a dc:title triple");
-            assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
+            assertFalse(res.getEntityTag().isWeak(), "Check that the ETag is strong");
             assertNotEquals(etag2, res.getEntityTag(), "Compare the second and third ETags");
         }
     }

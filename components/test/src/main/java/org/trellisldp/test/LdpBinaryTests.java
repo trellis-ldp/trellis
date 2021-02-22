@@ -112,8 +112,7 @@ public interface LdpBinaryTests extends CommonTests {
              final Graph g = readEntityAsGraph(res.getEntity(), getBaseURL(), TURTLE)) {
                     assertAll("Check binary description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
                     assertTrue(g.size() >= 0L, "Assert that the graph isn't empty");
-                    assertTrue(res.getEntityTag().isWeak(), "Check for a weak ETag");
-                    assertNotEquals(etag, res.getEntityTag(), "Check for different ETag values");
+                    assertFalse(res.getEntityTag().isWeak(), "Check for a strong ETag");
         }
     }
 
@@ -152,7 +151,7 @@ public interface LdpBinaryTests extends CommonTests {
             assertAll("Check an LDP-NR description", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             size = g.size();
             descriptionETag = res.getEntityTag();
-            assertTrue(descriptionETag.isWeak(), "Check for a weak ETag");
+            assertFalse(descriptionETag.isWeak(), "Check for a strong ETag");
         }
         // wait for enough time so that the ETags will surely be different
         await().pollDelay(2, SECONDS).until(() -> true);
