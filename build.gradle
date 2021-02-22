@@ -43,14 +43,14 @@ ext {
     liquibaseVersion = "4.3.1"
     mustacheVersion = "0.9.6"
     quarkusVersion = "1.12.0.Final"
-    rabbitMqVersion = "5.10.0"
+    rabbitMqVersion = "5.11.0"
     rxjavaVersion = "2.2.21"
-    snakeyamlVersion = "1.27"
+    snakeyamlVersion = "1.28"
 
     // Databases
     h2Version = "1.4.200"
     mariadbVersion = "2.7.1"
-    postgresVersion = "42.2.18"
+    postgresVersion = "42.2.19"
 
     // Testing
     awaitilityVersion = "4.0.3"
@@ -63,7 +63,7 @@ ext {
     hamcrestVersion = "2.2"
     logbackVersion = "1.2.3"
     mockitoVersion = "3.7.7"
-    qpidVersion = "8.0.3"
+    qpidVersion = "8.0.4"
     sleepycatVersion = "18.3.12"
     smallryeConfigVersion = "2.1.0"
     smallryeHealthVersion = "2.2.5"
