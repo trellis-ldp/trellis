@@ -45,7 +45,7 @@ ext {
     quarkusVersion = "1.12.0.Final"
     rabbitMqVersion = "5.10.0"
     rxjavaVersion = "2.2.21"
-    snakeyamlVersion = "1.27"
+    snakeyamlVersion = "1.28"
 
     // Databases
     h2Version = "1.4.200"
