@@ -290,6 +290,12 @@ public class GetHandler extends BaseLdpHandler {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS));
         } else if (getExtensionGraphName() != null) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH));
+        } else if (getResource().getInteractionModel().equals(LDP.NonRDFSource)) {
+            if (getRequest().getExt() != null) {
+                builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE));
+            } else {
+                builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PUT, DELETE));
+            }
         } else if (getResource().getInteractionModel().equals(LDP.RDFSource)) {
             builder.header(ALLOW, join(",", GET, HEAD, OPTIONS, PATCH, PUT, DELETE));
         } else {
