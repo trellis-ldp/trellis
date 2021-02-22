@@ -67,7 +67,6 @@ test {
     systemProperty 'trellis.file.memento-path', "$buildDir/data/mementos"
     systemProperty 'trellis.namespace.mapping', 'dc11=http://purl.org/dc/elements/1.1/,,foo= , =bar,baz, = '
     systemProperty 'mp.jwt.verify.publickey.location', 'https://www.trellisldp.org/tests/jwks.json'
-    systemProperty 'trellis.http.weak-etag', 'true'
 
     if (project.hasProperty("triplestore")) {
         systemProperty 'trellis.triplestore.rdf-location', "$buildDir/data/rdf"

@@ -167,7 +167,7 @@ public interface LdpBasicContainerTests extends CommonTests {
             assertAll("Check an LDP-BC response", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             final IRI identifier = rdf.createIRI(getContainerLocation());
             assertAll("Check the RDF graph", checkRdfGraph(g, identifier));
-            assertTrue(res.getEntityTag().isWeak(), "Verify that the ETag is weak");
+            assertFalse(res.getEntityTag().isWeak(), "Verify that the ETag is strong");
         }
     }
 
@@ -229,7 +229,7 @@ public interface LdpBasicContainerTests extends CommonTests {
             final EntityTag etag = res.getEntityTag();
             assertAll("Check the LDP-BC graph", checkRdfGraph(g, identifier));
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child3)));
-            assertTrue(etag.isWeak(), "Verify that the ETag is weak");
+            assertFalse(etag.isWeak(), "Verify that the ETag is strong");
             assertNotEquals(initialETag, etag, "Check that the ETag has been changed");
         }
     }
@@ -270,7 +270,7 @@ public interface LdpBasicContainerTests extends CommonTests {
                         "Check for the presence of an ldp:contains triple");
                 assertNotEquals(initialETag, etag, "Check ETags");
             }
-            assertTrue(etag.isWeak(), "Check for a weak ETag");
+            assertFalse(etag.isWeak(), "Check for a strong ETag");
         }
     }
 
@@ -305,7 +305,7 @@ public interface LdpBasicContainerTests extends CommonTests {
             final EntityTag etag = res.getEntityTag();
             assertAll("Check the resulting Graph", checkRdfGraph(g, identifier));
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child5)), "Check for an ldp:contains triple");
-            assertTrue(etag.isWeak(), "Check for a weak ETag");
+            assertFalse(etag.isWeak(), "Check for a strong ETag");
             assertNotEquals(initialETag, etag, "Compare ETags 1 and 4");
         }
     }
@@ -336,7 +336,7 @@ public interface LdpBasicContainerTests extends CommonTests {
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(childResource)),
                     "Check for the presence of an ldp:contains triple");
             etag = res.getEntityTag();
-            assertTrue(etag.isWeak(), "Verify that the ETag is weak");
+            assertFalse(etag.isWeak(), "Verify that the ETag is strong");
         }
 
         // Delete one of the child resources
@@ -354,7 +354,7 @@ public interface LdpBasicContainerTests extends CommonTests {
             assertAll("Check the parent container", checkRdfResponse(res, LDP.BasicContainer, TEXT_TURTLE_TYPE));
             assertFalse(g.contains(rdf.createIRI(getContainerLocation()), LDP.contains,
                         rdf.createIRI(childResource)), "Check the graph doesn't contain the deleted resource");
-            assertTrue(res.getEntityTag().isWeak(), "Check that the ETag is weak");
+            assertFalse(res.getEntityTag().isWeak(), "Check that the ETag is strong");
             assertNotEquals(etag, res.getEntityTag(), "Verify that the ETag value is different");
         }
     }

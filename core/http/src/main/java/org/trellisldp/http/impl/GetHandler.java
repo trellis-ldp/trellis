@@ -224,12 +224,12 @@ public class GetHandler extends BaseLdpHandler {
         // Add a "self" link header
         builder.link(getSelfIdentifier(), "self");
 
-        // NonRDFSources responses (strong ETags, etc)
+        // NonRDFSources responses
         if (getResource().getBinaryMetadata().isPresent() && syntax == null) {
             return getLdpNr(builder.header(VARY, buildVaryHeader(false)));
         }
 
-        // RDFSource responses (weak ETags, etc)
+        // RDFSource responses
         final IRI profile = getProfile(getRequest().getAcceptableMediaTypes(), syntax);
         return completedFuture(getLdpRs(builder.header(VARY, buildVaryHeader(true)), syntax, profile));
     }
@@ -303,7 +303,7 @@ public class GetHandler extends BaseLdpHandler {
 
         // Check for a cache hit
         if (!RDFSyntax.RDFA.equals(syntax)) {
-            final EntityTag etag = generateEtag(getResource(), weakEtags);
+            final EntityTag etag = generateEtag(getResource().getRevision(), weakEtags);
             checkCache(getResource().getModified(), etag);
             builder.tag(etag);
         }
@@ -349,7 +349,7 @@ public class GetHandler extends BaseLdpHandler {
 
     private CompletionStage<ResponseBuilder> getLdpNr(final ResponseBuilder builder) {
 
-        final EntityTag etag = generateEtag(getResource());
+        final EntityTag etag = generateEtag(getResource().getRevision());
         checkCache(getResource().getModified(), etag);
 
         final IRI dsid = getResource().getBinaryMetadata().map(BinaryMetadata::getIdentifier).orElse(null);

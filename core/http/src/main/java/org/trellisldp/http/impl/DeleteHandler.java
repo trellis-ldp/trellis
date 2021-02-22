@@ -104,7 +104,7 @@ public class DeleteHandler extends MutatingLdpHandler {
         }
 
         // Check the cache
-        checkCache(resource.getModified(), generateEtag(resource));
+        checkCache(resource.getModified(), generateEtag(resource.getRevision()));
 
         setResource(resource);
         resource.getContainer().ifPresent(p -> setParent(parent));

@@ -338,7 +338,7 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     void testGetIfMatch() {
         final String etag = target("").request().get().getEntityTag().getValue();
         try (final Response res = target("").request().header(IF_MATCH, "\"" + etag + "\"").get()) {
-            assertEquals(SC_PRECONDITION_FAILED, res.getStatus(), ERR_RESPONSE_CODE);
+            assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
         }
     }
 

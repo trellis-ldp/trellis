@@ -228,7 +228,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
             assertAll("Check the member LDP-RS", checkRdfResponse(res, LDP.RDFSource, TEXT_TURTLE_TYPE));
             assertFalse(g.contains(rdf.createIRI(getMemberLocation()), LDP.member, null), "Check for no ldp:member");
             etag1 = res.getEntityTag();
-            assertTrue(etag1.isWeak(), "Check that the ETag is weak");
+            assertFalse(etag1.isWeak(), "Check that the ETag is strong");
         }
 
         // Fetch the container resource
@@ -238,7 +238,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
             assertFalse(g.contains(rdf.createIRI(getIndirectContainerLocation()), LDP.contains, null),
                     "Check for no ldp:contains property");
             etag4 = res.getEntityTag();
-            assertTrue(etag4.isWeak(), "Check that ETag 4 is weak");
+            assertFalse(etag4.isWeak(), "Check that ETag 4 is strong");
         }
 
 
@@ -268,7 +268,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
             assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child1 + hash)), "Check for a member triple");
             assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child2 + hash)), "Check for a member triple");
             etag2 = res.getEntityTag();
-            assertTrue(etag2.isWeak(), "Verify that the second ETag is weak");
+            assertFalse(etag2.isWeak(), "Verify that the second ETag is strong");
             assertNotEquals(etag1, etag2, "Compare the first and second ETags");
         }
 
@@ -280,7 +280,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child1)), "Check for first ldp:contains");
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)), "Check for second ldp:contains");
             etag5 = res.getEntityTag();
-            assertTrue(etag5.isWeak(), "Check that the fifth ETag is weak");
+            assertFalse(etag5.isWeak(), "Check that the fifth ETag is strong");
             assertNotEquals(etag4, etag5, "Compare ETags 4 and 5");
         }
 
@@ -307,7 +307,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
             assertTrue(g.contains(identifier, LDP.member, rdf.createIRI(child2 + hash)),
                     "Verify that the second child is still contained");
             etag3 = res.getEntityTag();
-            assertTrue(etag3.isWeak(), "Check that the third ETag is weak");
+            assertFalse(etag3.isWeak(), "Check that the third ETag is strong");
             assertNotEquals(etag1, etag3, "Compare the first and third ETags");
             assertNotEquals(etag2, etag3, "Compare the second and third ETags");
         }
@@ -322,7 +322,7 @@ public interface LdpIndirectContainerTests extends CommonTests {
             assertTrue(g.contains(identifier, LDP.contains, rdf.createIRI(child2)),
                     "Check that the second child is contained");
             etag6 = res.getEntityTag();
-            assertTrue(etag6.isWeak(), "Verify that the sixth ETag is weak");
+            assertFalse(etag6.isWeak(), "Verify that the sixth ETag is strong");
             assertNotEquals(etag5, etag6, "Compare ETags 5 and 6");
             assertNotEquals(etag4, etag6, "Compare ETags 4 and 6");
         }

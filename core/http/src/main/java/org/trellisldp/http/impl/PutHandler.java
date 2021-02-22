@@ -120,7 +120,7 @@ public class PutHandler extends MutatingLdpHandler {
             // Check the cache
             checkRequiredPreconditions(preconditionRequired, getRequest().getHeaders().getFirst(IF_MATCH),
                     getRequest().getHeaders().getFirst(IF_UNMODIFIED_SINCE));
-            checkCache(modified, generateEtag(getResource()));
+            checkCache(modified, generateEtag(getResource().getRevision()));
         }
 
         // One cannot put binaries into extension graphs
