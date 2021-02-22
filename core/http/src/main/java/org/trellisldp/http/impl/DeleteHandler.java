@@ -27,6 +27,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import static org.trellisldp.api.Resource.SpecialResources.DELETED_RESOURCE;
 import static org.trellisldp.api.Resource.SpecialResources.MISSING_RESOURCE;
 import static org.trellisldp.common.HttpConstants.CONFIG_HTTP_PURGE_BINARY_ON_DELETE;
+import static org.trellisldp.common.HttpConstants.DESCRIPTION;
 import static org.trellisldp.http.impl.HttpUtils.closeDataset;
 import static org.trellisldp.http.impl.HttpUtils.skolemizeQuads;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
@@ -131,7 +132,7 @@ public class DeleteHandler extends MutatingLdpHandler {
     }
 
     private CompletionStage<Void> handleDeletion(final Dataset mutable, final Dataset immutable) {
-        if (getExtensionGraphName() != null) {
+        if (getExtensionGraphName() != null || DESCRIPTION.equals(getRequest().getExt())) {
             return handleSubGraphDeletion(mutable, immutable).thenCompose(future ->
                 emitNotification(getInternalId(), AS.Delete, getResource().getInteractionModel(),
                     getResource().getRevision()));

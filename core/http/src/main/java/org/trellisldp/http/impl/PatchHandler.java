@@ -16,6 +16,7 @@
 package org.trellisldp.http.impl;
 
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.HttpMethod.*;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.CONFLICT;
@@ -48,6 +49,7 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.NotSupportedException;
 import javax.ws.rs.core.Link;
@@ -144,6 +146,10 @@ public class PatchHandler extends MutatingLdpHandler {
         }
         // Check the cache headers
         if (exists(resource)) {
+            if (LDP.NonRDFSource.equals(resource.getInteractionModel()) && getRequest().getExt() == null) {
+                throw new NotAllowedException(GET, new String[]{HEAD, OPTIONS, PUT, DELETE});
+            }
+
             checkCache(resource.getModified(), generateEtag(resource.getRevision()));
 
             setResource(resource);

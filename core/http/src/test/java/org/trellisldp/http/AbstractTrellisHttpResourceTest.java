@@ -410,9 +410,9 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
             assertTrue(res.getMediaType().isCompatible(TEXT_TURTLE_TYPE), ERR_CONTENT_TYPE + res.getMediaType());
             assertNull(res.getHeaderString(ACCEPT_RANGES), "Unexpected Accept-Ranges header!");
             assertNull(res.getHeaderString(MEMENTO_DATETIME), ERR_MEMENTO_DATETIME);
-            assertAll(CHECK_VARY_HEADERS, checkVary(res, asList(ACCEPT_DATETIME, PREFER)));
+            assertAll(CHECK_VARY_HEADERS, checkVary(res, List.of(ACCEPT_DATETIME, PREFER)));
             assertAll(CHECK_ALLOWED_METHODS,
-                    checkAllowedMethods(res, asList(PATCH, PUT, DELETE, GET, HEAD, OPTIONS, POST)));
+                    checkAllowedMethods(res, List.of(PATCH, PUT, DELETE, GET, HEAD, OPTIONS)));
             assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
         }
     }
@@ -2184,6 +2184,14 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     @Test
     void testPatchExistingBinary() {
         try (final Response res = target(BINARY_PATH).request()
+                .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE))) {
+            assertEquals(SC_METHOD_NOT_ALLOWED, res.getStatus(), ERR_RESPONSE_CODE);
+        }
+    }
+
+    @Test
+    void testPatchExistingBinaryDescription() {
+        try (final Response res = target(BINARY_PATH).queryParam("ext", "description").request()
                 .method(PATCH, entity(INSERT_TITLE, APPLICATION_SPARQL_UPDATE))) {
             assertEquals(SC_NO_CONTENT, res.getStatus(), ERR_RESPONSE_CODE);
             assertAll(CHECK_LDP_LINKS, checkLdpTypeHeaders(res, LDP.RDFSource));
