@@ -115,6 +115,9 @@ public final class HttpConstants {
     /** The name of the HTTP response code for a Precondition Required error. */
     public static final int PRECONDITION_REQUIRED = 428;
 
+    /** The name of the HTTP request header indicating a browser's origin. */
+    public static final String ORIGIN = "Origin";
+
     /** The name of the HTTP request header used to influence what information is included in responses. */
     public static final String PREFER = "Prefer";
 
