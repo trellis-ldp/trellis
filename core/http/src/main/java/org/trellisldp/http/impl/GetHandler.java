@@ -47,6 +47,7 @@ import static org.trellisldp.common.HttpConstants.ACCEPT_POST;
 import static org.trellisldp.common.HttpConstants.ACCEPT_RANGES;
 import static org.trellisldp.common.HttpConstants.DESCRIPTION;
 import static org.trellisldp.common.HttpConstants.MEMENTO_DATETIME;
+import static org.trellisldp.common.HttpConstants.ORIGIN;
 import static org.trellisldp.common.HttpConstants.PREFER;
 import static org.trellisldp.common.HttpConstants.PREFERENCE_APPLIED;
 import static org.trellisldp.common.HttpConstants.RANGE;
@@ -391,6 +392,7 @@ public class GetHandler extends BaseLdpHandler {
     private String buildVaryHeader(final boolean isLdpRs) {
         final List<String> variants = new ArrayList<>();
         variants.add(ACCEPT);
+        variants.add(ORIGIN);
         if (!isMemento) {
             variants.add(ACCEPT_DATETIME);
         }
