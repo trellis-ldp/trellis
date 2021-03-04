@@ -246,7 +246,8 @@ public class WebAcService {
 
     private AuthorizedModes getModesFor(final IRI identifier, final IRI agent) {
         return getNearestResource(identifier).map(resource -> {
-            final Authorizations authorizations = getAllAuthorizationsFor(resource, false);
+            final Authorizations authorizations = getAllAuthorizationsFor(resource,
+                    !identifier.equals(resource.getIdentifier()));
             return new AuthorizedModes(authorizations.getIdentifier(), authorizations.stream()
                     .filter(agentFilter(agent)).flatMap(auth -> auth.getMode().stream()).collect(toSet()));
         }).orElseGet(() -> new AuthorizedModes(root, emptySet()));

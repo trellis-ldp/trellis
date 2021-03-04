@@ -600,6 +600,7 @@ class WebAcServiceTest {
         when(mockSession.getAgent()).thenReturn(agentIRI);
 
         assertAll("Test default ACL writability",
+                checkCannotWrite(nonexistentIRI),
                 checkCannotWrite(resourceIRI),
                 checkCanWrite(childIRI),
                 checkCannotWrite(parentIRI),
