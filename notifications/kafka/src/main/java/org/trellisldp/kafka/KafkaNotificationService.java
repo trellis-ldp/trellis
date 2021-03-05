@@ -31,7 +31,10 @@ import org.trellisldp.api.NotificationService;
 
 /**
  * A Kafka message producer capable of publishing messages to a Kafka cluster.
+ *
+ * @deprecated Please use the trellis-reactive project instead
  */
+@Deprecated
 public class KafkaNotificationService implements NotificationService {
 
     private static final Logger LOGGER = getLogger(KafkaNotificationService.class);

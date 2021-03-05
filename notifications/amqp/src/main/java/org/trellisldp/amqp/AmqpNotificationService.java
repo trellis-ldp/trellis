@@ -35,7 +35,10 @@ import org.trellisldp.api.NotificationService;
 /**
  * An AMQP message producer capable of publishing messages to an AMQP broker such as
  * RabbitMQ or Qpid.
+ *
+ * @deprecated Please use the trellis-reactive project instead
  */
+@Deprecated
 public class AmqpNotificationService implements NotificationService {
 
     private static final Logger LOGGER = getLogger(AmqpNotificationService.class);
