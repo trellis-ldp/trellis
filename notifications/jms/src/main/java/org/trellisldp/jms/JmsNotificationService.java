@@ -33,7 +33,9 @@ import org.trellisldp.api.NotificationService;
  * A JMS message producer capable of publishing messages to a JMS broker such as ActiveMQ.
  *
  * @author acoburn
+ * @deprecated Please use the trellis-reactive project instead
  */
+@Deprecated
 public class JmsNotificationService implements NotificationService {
 
     /** The configuration key controlling the JMS queue name. */
