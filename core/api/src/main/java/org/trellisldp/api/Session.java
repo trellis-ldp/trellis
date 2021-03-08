@@ -48,7 +48,18 @@ public interface Session {
      *
      * @return the user who delegated access
      */
-    Optional<IRI> getDelegatedBy();
+    default Optional<IRI> getDelegatedBy() {
+        return Optional.empty();
+    }
+
+    /**
+     * Get the client identifier, if one exists.
+     *
+     * @return the client identifier
+     */
+    default Optional<String> getClientIdentifier() {
+        return Optional.empty();
+    }
 
     /**
      * Get the date when the session was created.
