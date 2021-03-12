@@ -75,6 +75,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 
 import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.RedirectionException;
 import javax.ws.rs.core.EntityTag;
@@ -147,11 +148,16 @@ public class GetHandler extends BaseLdpHandler {
 
         LOGGER.debug("Acceptable media types: {}", getRequest().getAcceptableMediaTypes());
 
-        if (!LDP.NonRDFSource.equals(resource.getInteractionModel()) || getRequest().getExt() != null) {
-            this.syntax = getSyntax(getServices().getIOService(),
-                getRequest().getAcceptableMediaTypes(), resource.getBinaryMetadata()
-                    .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
-                    .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)).orElse(null));
+        // Get the requested syntax
+        this.syntax = getSyntax(getServices().getIOService(),
+            getRequest().getAcceptableMediaTypes(), resource.getBinaryMetadata()
+                .filter(b -> !DESCRIPTION.equals(getRequest().getExt()))
+                .map(b -> b.getMimeType().orElse(APPLICATION_OCTET_STREAM)).orElse(null));
+
+        // For LDP-NRs, if there is a negotiated RDF syntax, throw a 406 error
+        if (LDP.NonRDFSource.equals(resource.getInteractionModel()) && getRequest().getExt() == null &&
+                this.syntax != null) {
+            throw new NotAcceptableException();
         }
 
         final IRI ext = getExtensionGraphName();
@@ -362,8 +368,8 @@ public class GetHandler extends BaseLdpHandler {
         final IRI dsid = getResource().getBinaryMetadata().map(BinaryMetadata::getIdentifier).orElse(null);
 
         // Add standard headers
-        builder.header(ACCEPT_RANGES, "bytes").tag(etag)
-            .header(ALLOW, isMemento ? join(",", GET, HEAD, OPTIONS) : join(",", GET, HEAD, OPTIONS, PUT, DELETE));
+        builder.header(ACCEPT_RANGES, "bytes").tag(etag);
+        addAllowHeaders(builder);
 
         // Short circuit HEAD requests
         if (HEAD.equals(getRequest().getMethod())) {

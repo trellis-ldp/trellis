@@ -432,6 +432,13 @@ abstract class AbstractTrellisHttpResourceTest extends BaseTrellisHttpResourceTe
     }
 
     @Test
+    void testGetBinaryBadConneg() throws IOException {
+        try (final Response res = target(BINARY_PATH).request().header(ACCEPT, "text/turtle").get()) {
+            assertEquals(SC_NOT_ACCEPTABLE, res.getStatus(), ERR_RESPONSE_CODE);
+        }
+    }
+
+    @Test
     void testGetBinaryHeaders() {
         try (final Response res = target(BINARY_PATH).request().head()) {
             assertEquals(SC_OK, res.getStatus(), ERR_RESPONSE_CODE);
