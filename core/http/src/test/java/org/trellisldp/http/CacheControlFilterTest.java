@@ -17,6 +17,7 @@ package org.trellisldp.http;
 
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -40,7 +41,10 @@ class CacheControlFilterTest {
     private ContainerResponseContext mockResponse;
 
     @Mock
-    private MultivaluedMap<String, Object> mockHeaders;
+    private MultivaluedMap<String, Object> mockResponseHeaders;
+
+    @Mock
+    private MultivaluedMap<String, String> mockRequestHeaders;
 
     @BeforeEach
     void setUp() {
@@ -64,8 +68,27 @@ class CacheControlFilterTest {
     void testCacheControlHead() {
 
         when(mockRequest.getMethod()).thenReturn(HEAD);
+        when(mockRequest.getHeaders()).thenReturn(mockRequestHeaders);
         when(mockResponse.getStatusInfo()).thenReturn(OK);
-        when(mockResponse.getHeaders()).thenReturn(mockHeaders);
+        when(mockResponse.getHeaders()).thenReturn(mockResponseHeaders);
+
+        final CacheControlFilter filter = new CacheControlFilter();
+        filter.setMaxAge(180);
+        filter.setMustRevalidate(false);
+        filter.setNoCache(true);
+
+        filter.filter(mockRequest, mockResponse);
+        verify(mockResponse).getHeaders();
+    }
+
+    @Test
+    void testCacheControlPrivate() {
+
+        when(mockRequest.getMethod()).thenReturn(HEAD);
+        when(mockRequest.getHeaders()).thenReturn(mockRequestHeaders);
+        when(mockResponse.getStatusInfo()).thenReturn(OK);
+        when(mockResponse.getHeaders()).thenReturn(mockResponseHeaders);
+        when(mockRequestHeaders.containsKey(AUTHORIZATION)).thenReturn(true);
 
         final CacheControlFilter filter = new CacheControlFilter();
         filter.setMaxAge(180);
