@@ -17,6 +17,7 @@ package org.trellisldp.http;
 
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static javax.ws.rs.core.HttpHeaders.CACHE_CONTROL;
 import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
@@ -93,6 +94,9 @@ public class CacheControlFilter implements ContainerResponseFilter {
             cc.setMaxAge(maxAge);
             cc.setMustRevalidate(mustRevalidate);
             cc.setNoCache(noCache);
+            if (req.getHeaders().containsKey(AUTHORIZATION)) {
+                cc.setPrivate(true);
+            }
             res.getHeaders().add(CACHE_CONTROL, cc);
         }
     }
