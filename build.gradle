@@ -36,7 +36,7 @@ ext {
     activeMqVersion = "5.16.1"
     guavaVersion = "30.1.1-jre"
     jacksonVersion = "2.12.2"
-    jdbiVersion = "3.18.0"
+    jdbiVersion = "3.18.1"
     jenaVersion = "3.17.0"
     jsonldVersion = "0.13.0"
     kafkaVersion = "2.7.0"
