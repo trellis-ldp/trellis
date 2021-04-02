@@ -229,16 +229,6 @@ public class OSGiTest {
     }
 
     @Test
-    public void testJmsInstallation() throws Exception {
-        assertFalse("trellis-jms already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
-        featuresService.installFeature("trellis-notification-jackson");
-        featuresService.installFeature("trellis-jms");
-        assertTrue("trellis-jms not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-jms")));
-    }
-
-    @Test
     public void testJwtAuthAuthInstallation() throws Exception {
         assertFalse("trellis-jwt already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-jwt")));

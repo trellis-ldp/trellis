@@ -236,20 +236,6 @@
     <bundle>mvn:org.trellisldp/trellis-kafka/${project.version}</bundle>
   </feature>
 
-  <feature name="trellis-jms" version="${project.version}">
-    <details>Installs the Trellis JMS service bundle</details>
-
-    <feature dependency="true">trellis-api</feature>
-    <feature dependency="true">transaction</feature>
-    <feature dependency="true">activemq-client</feature>
-
-    <bundle dependency="true">mvn:jakarta.jms/jakarta.jms-api/${jmsApiVersion}</bundle>
-    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_2</bundle>
-    <bundle dependency="true">mvn:org.eclipse.microprofile.config/microprofile-config-api/${microprofileConfigVersion}</bundle>
-
-    <bundle>mvn:org.trellisldp/trellis-jms/${project.version}</bundle>
-  </feature>
-
   <feature name="trellis-notification-jackson" version="${project.version}">
     <details>Installs the Trellis jackson Notification Serialization bundle</details>
 
