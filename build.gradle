@@ -88,7 +88,7 @@ ext {
     elVersion = "3.0.3"
     failureaccessVersion = "1.0.1"
     interceptorVersion = "1.2.5"
-    jenaVersionRange = "[3.16,4)"
+    jenaVersionRange = "[4,5)"
     kafkaOsgiVersion = "2.5.0_1"
     karafVersion = "4.3.0"
     microprofileConfigVersion = "1.4"
