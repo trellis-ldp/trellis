@@ -216,16 +216,6 @@ public class OSGiTest {
     }
 
     @Test
-    public void testKafkaInstallation() throws Exception {
-        assertFalse("trellis-kafka already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
-        featuresService.installFeature("trellis-notification-jackson");
-        featuresService.installFeature("trellis-kafka");
-        assertTrue("trellis-kafka not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-kafka")));
-    }
-
-    @Test
     public void testJwtAuthAuthInstallation() throws Exception {
         assertFalse("trellis-jwt already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-jwt")));
