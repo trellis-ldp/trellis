@@ -65,7 +65,6 @@ public class OSGiTest {
         final String rmiServerPort = cm.getProperty("karaf.rmiServer.port");
         final String sshPort = cm.getProperty("karaf.ssh.port");
         final String jenaVersion = cm.getProperty("jena.version");
-        final String activemqVersion = cm.getProperty("activemq.version");
         final String karafVersion = cm.getProperty("karaf.version");
 
         return new Option[] {
@@ -82,8 +81,6 @@ public class OSGiTest {
                         .version(karafVersion).classifier("features").type("xml"), "scr"),
             features(maven().groupId("org.apache.karaf.features").artifactId("spring-legacy")
                         .version(karafVersion).classifier("features").type("xml"), "spring"),
-            features(maven().groupId("org.apache.activemq").artifactId("activemq-karaf")
-                        .version(activemqVersion).classifier("features").type("xml")),
             features(maven().groupId("org.apache.jena").artifactId("jena-osgi-features")
                         .version(jenaVersion).classifier("features").type("xml")),
             features(maven().groupId("org.trellisldp").artifactId("trellis-karaf")
