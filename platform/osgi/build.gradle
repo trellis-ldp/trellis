@@ -55,7 +55,6 @@ dependencies {
     testImplementation project(':trellis-http')
     testImplementation project(':trellis-jdbc')
     testImplementation project(':trellis-jena')
-    testImplementation project(':trellis-jms')
     testImplementation project(':trellis-kafka')
     testImplementation project(':trellis-namespace')
     testImplementation project(':trellis-notification-jackson')
