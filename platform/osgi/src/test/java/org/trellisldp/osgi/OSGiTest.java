@@ -229,17 +229,6 @@ public class OSGiTest {
     }
 
     @Test
-    public void testAmqpInstallation() throws Exception {
-        assertFalse("trellis-amqp already installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
-        featuresService.installFeature("trellis-notification-jackson");
-        featuresService.installFeature("trellis-amqp");
-        checkTrellisBundlesAreActive();
-        assertTrue("trellis-amqp not installed!",
-                featuresService.isInstalled(featuresService.getFeature("trellis-amqp")));
-    }
-
-    @Test
     public void testJmsInstallation() throws Exception {
         assertFalse("trellis-jms already installed!",
                 featuresService.isInstalled(featuresService.getFeature("trellis-jms")));

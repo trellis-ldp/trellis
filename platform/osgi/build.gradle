@@ -46,7 +46,6 @@ dependencies {
 
     testImplementation "jakarta.inject:jakarta.inject-api:$injectApiVersion"
     testImplementation project(':trellis-api')
-    testImplementation project(':trellis-amqp')
     testImplementation project(':trellis-app')
     testImplementation project(':trellis-audit')
     testImplementation project(':trellis-cache')
