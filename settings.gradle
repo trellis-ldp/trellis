@@ -22,7 +22,6 @@ include ':trellis-vocabulary'
 
 include ':trellis-notification-jackson'
 include ':trellis-notification-jsonb'
-include ':trellis-kafka'
 include ':trellis-reactive'
 
 include ':trellis-jwt'
@@ -53,7 +52,6 @@ project(':trellis-http').projectDir = new File(rootDir, "core/http")
 project(':trellis-common').projectDir = new File(rootDir, "core/common")
 project(':trellis-vocabulary').projectDir = new File(rootDir, "core/vocabulary")
 
-project(':trellis-kafka').projectDir = new File(rootDir, "notifications/kafka")
 project(':trellis-notification-jackson').projectDir = new File(rootDir, "notifications/jackson")
 project(':trellis-notification-jsonb').projectDir = new File(rootDir, "notifications/jsonb")
 project(':trellis-reactive').projectDir = new File(rootDir, "notifications/reactive")

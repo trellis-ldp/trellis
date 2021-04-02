@@ -5,7 +5,6 @@ dependencies {
     implementation project(':trellis-http')
     implementation project(':trellis-vocabulary')
 
-    implementation project(':trellis-kafka')
     implementation project(':trellis-notification-jackson')
     implementation project(':trellis-notification-jsonb')
     implementation project(':trellis-reactive')

@@ -37,7 +37,6 @@ ext {
     jdbiVersion = "3.18.1"
     jenaVersion = "4.0.0"
     jsonldVersion = "0.13.0"
-    kafkaVersion = "2.7.0"
     liquibaseVersion = "4.3.2"
     mustacheVersion = "0.9.6"
     quarkusVersion = "1.13.0.Final"
@@ -86,7 +85,6 @@ ext {
     failureaccessVersion = "1.0.1"
     interceptorVersion = "1.2.5"
     jenaVersionRange = "[4,5)"
-    kafkaOsgiVersion = "2.5.0_1"
     karafVersion = "4.3.0"
     microprofileConfigVersion = "1.4"
     microprofileHealthVersion = "2.2"
@@ -451,7 +449,6 @@ subprojects { subproj ->
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
             links 'https://commons.apache.org/proper/commons-codec/apidocs/'
             links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
-            links 'https://kafka.apache.org/20/javadoc/'
         }
     }
 
@@ -491,7 +488,6 @@ configure(rootProject) {
             links 'https://commons.apache.org/proper/commons-rdf/apidocs/'
             links 'https://commons.apache.org/proper/commons-codec/apidocs/'
             links 'https://jena.apache.org/documentation/javadoc/rdfconnection/'
-            links 'https://kafka.apache.org/20/javadoc/'
         }
 
         source subprojects.collect { project -> project.sourceSets.main.allJava }
