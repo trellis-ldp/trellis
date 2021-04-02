@@ -110,7 +110,6 @@ task generateDependsFile {
 test {
     systemProperty 'karaf.version', karafVersion
     systemProperty 'jena.version', jenaVersion
-    systemProperty 'activemq.version', activeMqVersion
 
     systemProperty 'karaf.ssh.port', randomPort()
     systemProperty 'karaf.rmiServer.port', randomPort()
