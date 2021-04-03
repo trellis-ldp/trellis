@@ -332,15 +332,16 @@ public class DBResourceService implements ResourceService {
         dataset.getGraph(PreferUserManaged).ifPresent(graph -> {
             final String query = "INSERT INTO extra (resource_id, predicate, object) VALUES (?, ?, ?)";
             try (final PreparedBatch batch = handle.prepareBatch(query)) {
-                graph.stream(identifier, LDP.inbox, null).map(Triple::getObject).filter(t -> t instanceof IRI)
-                    .map(t -> ((IRI) t).getIRIString()).findFirst().ifPresent(iri ->
+                graph.stream(identifier, LDP.inbox, null).map(Triple::getObject).filter(IRI.class::isInstance)
+                    .map(IRI.class::cast).map(IRI::getIRIString).findFirst().ifPresent(iri ->
                             batch.bind(0, resourceId)
                                  .bind(1, LDP.inbox.getIRIString())
                                  .bind(2, iri)
                                  .add());
 
                 graph.stream(identifier, OA.annotationService, null).map(Triple::getObject)
-                     .filter(t -> t instanceof IRI).map(t -> ((IRI) t).getIRIString()).findFirst().ifPresent(iri ->
+                    .filter(IRI.class::isInstance).map(IRI.class::cast).map(IRI::getIRIString).findFirst()
+                    .ifPresent(iri ->
                             batch.bind(0, resourceId)
                                  .bind(1, OA.annotationService.getIRIString())
                                  .bind(2, iri).add());
