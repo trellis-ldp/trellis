@@ -42,6 +42,7 @@ jobs:
     - name: Set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v2
       with:
+        distribution: 'adopt'
         java-version: ${{ matrix.java }}
 
     - name: Cache
@@ -80,6 +81,7 @@ jobs:
     - name: Set up JDK 11
       uses: actions/setup-java@v2
       with:
+        distribution: 'adopt'
         java-version: 11
 
     - name: Cache
@@ -108,6 +110,7 @@ jobs:
     - name: Set up JDK 11
       uses: actions/setup-java@v2
       with:
+        distribution: 'adopt'
         java-version: 11
     - name: Cache
       uses: actions/cache@v2
@@ -131,6 +134,7 @@ jobs:
     - name: Set up JDK 11
       uses: actions/setup-java@v2
       with:
+        distribution: 'adopt'
         java-version: 11
 
     - name: Test the Quarkus app with a Triplestore
@@ -157,6 +161,7 @@ jobs:
     - name: Set up JDK 11
       uses: actions/setup-java@v2
       with:
+        distribution: 'adopt'
         java-version: 11
 
     - name: Test the Quarkus app with PostgreSQL
@@ -175,6 +180,7 @@ jobs:
     - name: Set up JDK 11
       uses: actions/setup-java@v2
       with:
+        distribution: 'adopt'
         java-version: 11
     - name: Cache
       uses: actions/cache@v2
