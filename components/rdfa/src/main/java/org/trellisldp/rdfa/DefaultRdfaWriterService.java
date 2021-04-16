@@ -18,6 +18,7 @@ package org.trellisldp.rdfa;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -25,10 +26,12 @@ import com.github.mustachejava.MustacheFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.Collections;
@@ -42,6 +45,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Triple;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RDFaWriterService;
 
@@ -51,6 +55,7 @@ import org.trellisldp.api.RDFaWriterService;
 @ApplicationScoped
 public class DefaultRdfaWriterService implements RDFaWriterService {
 
+    private static final Logger LOGGER = getLogger(DefaultRdfaWriterService.class);
     private static final MustacheFactory mf = new DefaultMustacheFactory();
 
     /** The configuration key controlling the HTML template to use. */
@@ -68,8 +73,9 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
     private Mustache template;
 
     @Inject
-    @ConfigProperty(name = CONFIG_RDFA_TEMPLATE)
-    Optional<String> templateLocation;
+    @ConfigProperty(name = CONFIG_RDFA_TEMPLATE,
+                    defaultValue = "/org/trellisldp/rdfa/resource.mustache")
+    String templateLocation;
 
     @Inject
     @ConfigProperty(name = CONFIG_RDFA_ICON,
@@ -90,9 +96,10 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
 
     @PostConstruct
     void init() {
-        final String templatePath = templateLocation.orElse("org/trellisldp/rdfa/resource.mustache");
-        final File file = new File(templatePath);
-        template = file.exists() ? mf.compile(templatePath) : mf.compile(getReader(templatePath), templatePath);
+        LOGGER.info("Using RDFa writer template: {}", templateLocation);
+        final File file = new File(templateLocation);
+        template = file.exists() ? mf.compile(templateLocation) :
+            mf.compile(getClasspathReader(templateLocation), templateLocation);
     }
 
     /**
@@ -117,8 +124,40 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
         }
     }
 
-    static Reader getReader(final String template) {
-        return new InputStreamReader(Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(template), UTF_8);
+    static Reader getClasspathReader(final String template) {
+        final InputStream is = getClasspathResource(template);
+        if (is != null) {
+            return new InputStreamReader(is, UTF_8);
+        }
+        LOGGER.warn("Unable to load RDFa writer template from [{}], falling back to default", template);
+        return getDefaultTemplateReader();
+    }
+
+    static Reader getDefaultTemplateReader() {
+        return new StringReader("<!DOCTYPE html>\n" +
+            "<html>\n" +
+            "<head><title>{{title}}</title></head>\n" +
+            "<body><h1>{{title}}</h1>\n" +
+            "<main>\n" +
+            "{{#triples}}\n" +
+            "<p>\n" +
+            "{{subject}} <a href=\"{{predicate}}\">{{predicateLabel}}</a>\n" +
+            "{{#objectIsIRI}}\n" +
+            "<a href=\"{{object}}\">{{objectLabel}}</a>\n" +
+            "{{/objectIsIRI}}\n" +
+            "{{^objectIsIRI}}\n" +
+            "{{objectLabel}}\n" +
+            "{{/objectIsIRI}}\n" +
+            "</p>\n" +
+            "{{/triples}}\n" +
+            "</main></body></html>\n");
+    }
+
+    static InputStream getClasspathResource(final String location) {
+        final InputStream is = DefaultRdfaWriterService.class.getResourceAsStream(location);
+        if (is == null) {
+            return Thread.currentThread().getContextClassLoader().getResourceAsStream(location);
+        }
+        return is;
     }
 }

@@ -45,6 +45,7 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
@@ -109,6 +110,7 @@ public interface LdpRdfTests extends CommonTests {
         return Stream.of(this::testGetJsonLdDefault,
                 this::testGetJsonLdCompacted,
                 this::testGetNTriples,
+                this::testGetRDFa,
                 this::testGetRDF,
                 this::testRdfContainment,
                 this::testPostJsonLd,
@@ -216,6 +218,12 @@ public interface LdpRdfTests extends CommonTests {
     default void testGetNTriples() {
         try (final Response res = target(getResourceLocation()).request().accept("application/n-triples").get()) {
             assertAll("Check for N-Triples", checkRdfResponse(res, LDP.RDFSource, APPLICATION_N_TRIPLES_TYPE));
+        }
+    }
+
+    default void testGetRDFa() {
+        try (final Response res = target(getResourceLocation()).request().accept(MediaType.TEXT_HTML).get()) {
+            assertAll("Check for RDFa", checkRdfResponse(res, LDP.RDFSource, MediaType.TEXT_HTML_TYPE));
         }
     }
 
