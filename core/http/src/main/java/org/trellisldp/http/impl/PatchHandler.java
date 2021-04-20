@@ -69,6 +69,7 @@ import org.trellisldp.api.ConstraintViolation;
 import org.trellisldp.api.Metadata;
 import org.trellisldp.api.Resource;
 import org.trellisldp.api.TrellisRuntimeException;
+import org.trellisldp.api.TrellisUtils;
 import org.trellisldp.common.Prefer;
 import org.trellisldp.common.ServiceBundler;
 import org.trellisldp.common.TrellisRequest;
@@ -270,7 +271,7 @@ public class PatchHandler extends MutatingLdpHandler {
         final Metadata metadata;
         if (getResource() == null) {
             metadata = metadataBuilder(getInternalId(), LDP.RDFSource, mutable)
-                .container(getParentIdentifier()).build();
+                .container(TrellisUtils.getContainer(getInternalId()).orElse(null)).build();
         } else {
             final Metadata.Builder mbuilder = metadataBuilder(getResource().getIdentifier(),
                     getResource().getInteractionModel(), mutable);
