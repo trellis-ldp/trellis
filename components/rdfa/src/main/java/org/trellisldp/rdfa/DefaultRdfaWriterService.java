@@ -18,17 +18,15 @@ package org.trellisldp.rdfa;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static org.slf4j.LoggerFactory.getLogger;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.Collections;
@@ -42,6 +40,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Triple;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
 import org.trellisldp.api.NamespaceService;
 import org.trellisldp.api.RDFaWriterService;
 
@@ -51,7 +50,7 @@ import org.trellisldp.api.RDFaWriterService;
 @ApplicationScoped
 public class DefaultRdfaWriterService implements RDFaWriterService {
 
-    private static final MustacheFactory mf = new DefaultMustacheFactory();
+    private static final Logger LOGGER = getLogger(DefaultRdfaWriterService.class);
 
     /** The configuration key controlling the HTML template to use. */
     public static final String CONFIG_RDFA_TEMPLATE = "trellis.rdfa.template";
@@ -65,6 +64,7 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
     /** The configuration key controlling the JS URLs to use. */
     public static final String CONFIG_RDFA_JS = "trellis.rdfa.js";
 
+    private MustacheFactory mf;
     private Mustache template;
 
     @Inject
@@ -90,9 +90,10 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
 
     @PostConstruct
     void init() {
-        final String templatePath = templateLocation.orElse("org/trellisldp/rdfa/resource.mustache");
-        final File file = new File(templatePath);
-        template = file.exists() ? mf.compile(templatePath) : mf.compile(getReader(templatePath), templatePath);
+        final String resource = templateLocation.orElse("org/trellisldp/rdfa/resource.mustache");
+        LOGGER.info("Using RDFa writer template: {}", resource);
+        mf = new DefaultMustacheFactory();
+        template = mf.compile(resource);
     }
 
     /**
@@ -115,10 +116,5 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
         } catch (final IOException ex) {
             throw new UncheckedIOException(ex);
         }
-    }
-
-    static Reader getReader(final String template) {
-        return new InputStreamReader(Thread.currentThread().getContextClassLoader()
-                    .getResourceAsStream(template), UTF_8);
     }
 }
