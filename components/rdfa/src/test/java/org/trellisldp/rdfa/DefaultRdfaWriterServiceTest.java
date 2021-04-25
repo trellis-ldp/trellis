@@ -75,7 +75,7 @@ class DefaultRdfaWriterServiceTest {
         service.icon = Optional.of("//www.trellisldp.org/assets/img/trellis.png");
         service.css = Optional.of(new String[]{"//www.trellisldp.org/assets/css/trellis.css"});
         service.js = Optional.empty();
-        service.templateLocation = "/org/trellisldp/rdf/resource.mustache";
+        service.templateLocation = Optional.empty();
         service.init();
     }
 
@@ -94,7 +94,7 @@ class DefaultRdfaWriterServiceTest {
         svc.icon = Optional.of("//www.trellisldp.org/assets/img/trellis.png");
         svc.css = Optional.empty();
         svc.js = Optional.empty();
-        svc.templateLocation = "/org/trellisldp/rdf/resource.mustache";
+        svc.templateLocation = Optional.empty();
         svc.init();
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         svc.write(getTriples2(), out, "http://example.com/");
@@ -130,7 +130,7 @@ class DefaultRdfaWriterServiceTest {
         svc4.icon = Optional.empty();
         svc4.css = Optional.empty();
         svc4.js = Optional.empty();
-        svc4.templateLocation = "/org/trellisldp/rdf/resource.mustache";
+        svc4.templateLocation = Optional.of(path);
         svc4.init();
 
         svc4.write(getTriples(), out, "http://example.com/");
@@ -146,7 +146,7 @@ class DefaultRdfaWriterServiceTest {
         svc5.icon = Optional.empty();
         svc5.css = Optional.empty();
         svc5.js = Optional.empty();
-        svc5.templateLocation = path;
+        svc5.templateLocation = Optional.of(path);
         svc5.init();
 
         svc5.write(getTriples2(), out, "http://example.com/");
@@ -162,7 +162,7 @@ class DefaultRdfaWriterServiceTest {
         svc6.icon = Optional.empty();
         svc6.css = Optional.empty();
         svc6.js = Optional.empty();
-        svc6.templateLocation = path;
+        svc6.templateLocation = Optional.of(path);
         svc6.init();
 
         svc6.write(getTriples2(), out, "http://example.com/");
