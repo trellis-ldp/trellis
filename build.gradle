@@ -61,7 +61,7 @@ ext {
     mockitoVersion = "3.10.0"
     qpidVersion = "8.0.4"
     sleepycatVersion = "18.3.12"
-    smallryeConfigVersion = "2.2.0"
+    smallryeConfigVersion = "2.3.0"
     smallryeHealthVersion = "2.2.5"
     smallryeJwtVersion = "2.4.3"
     smallryeReactiveVersion = "1.0.8"
