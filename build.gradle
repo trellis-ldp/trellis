@@ -38,7 +38,7 @@ ext {
     jenaVersion = "4.0.0"
     jsonldVersion = "0.13.3"
     liquibaseVersion = "4.3.5"
-    mustacheVersion = "0.9.7"
+    mustacheVersion = "0.9.10"
     quarkusVersion = "1.13.5.Final"
     rxjavaVersion = "2.2.21"
     snakeyamlVersion = "1.28"
