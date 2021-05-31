@@ -29,7 +29,7 @@ ext {
 
     // MicroProfile
     microprofileVersion = "3.3"
-    microprofileReactiveMessagingVersion = "1.0"
+    microprofileReactiveMessagingVersion = "2.0"
 
     // Component dependencies
     guavaVersion = "30.1.1-jre"
