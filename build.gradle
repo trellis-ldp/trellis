@@ -39,7 +39,7 @@ ext {
     jsonldVersion = "0.13.3"
     liquibaseVersion = "4.3.5"
     mustacheVersion = "0.9.10"
-    quarkusVersion = "1.13.6.Final"
+    quarkusVersion = "1.13.7.Final"
     rxjavaVersion = "2.2.21"
     snakeyamlVersion = "1.29"
 
