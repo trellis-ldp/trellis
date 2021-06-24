@@ -83,6 +83,7 @@ liberty {
                                'default.https.port': testServerHttpsPort,
                                'trellis.triplestore.rdf-location': 'data/resources',
                                'trellis.file.memento-path': 'data/mementos',
+                               'trellis.file.namespace-path': 'data/namespaces',
                                'trellis.file.binary-path': 'data/binary',
                                'app.context.root': warContext]
         packageLiberty {

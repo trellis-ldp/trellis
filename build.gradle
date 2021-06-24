@@ -28,7 +28,7 @@ ext {
     validationApiVersion = "2.0.2"
 
     // MicroProfile
-    microprofileVersion = "3.3"
+    microprofileVersion = "4.0"
     microprofileReactiveMessagingVersion = "1.0"
 
     // Component dependencies
@@ -39,7 +39,7 @@ ext {
     jsonldVersion = "0.13.3"
     liquibaseVersion = "4.4.0"
     mustacheVersion = "0.9.10"
-    quarkusVersion = "1.13.7.Final"
+    quarkusVersion = "2.0.0.Final"
     rxjavaVersion = "2.2.21"
     snakeyamlVersion = "1.29"
 
@@ -62,8 +62,8 @@ ext {
     qpidVersion = "8.0.4"
     sleepycatVersion = "18.3.12"
     smallryeConfigVersion = "2.3.0"
-    smallryeHealthVersion = "2.2.5"
-    smallryeJwtVersion = "2.4.3"
+    smallryeHealthVersion = "3.0.2"
+    smallryeJwtVersion = "3.2.0"
     smallryeReactiveVersion = "1.0.8"
     smallryeReactiveOperatorsVersion = "1.0.13"
     testcontainersVersion = "1.15.3"

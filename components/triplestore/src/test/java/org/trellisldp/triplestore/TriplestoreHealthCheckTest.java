@@ -35,7 +35,7 @@ class TriplestoreHealthCheckTest {
     @Test
     void testUnhealthyDefault() {
         final HealthCheck check = new TriplestoreHealthCheck();
-        assertEquals(HealthCheckResponse.State.DOWN, check.call().getState(), "RDFConnection isn't healthy!");
+        assertEquals(HealthCheckResponse.Status.DOWN, check.call().getStatus(), "RDFConnection isn't healthy!");
     }
 
     @Test
@@ -43,7 +43,7 @@ class TriplestoreHealthCheckTest {
         final Dataset dataset = rdf.createDataset();
         final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
         final HealthCheck check = new TriplestoreHealthCheck(rdfConnection);
-        assertEquals(HealthCheckResponse.State.UP, check.call().getState(), "RDFConnection isn't healthy!");
+        assertEquals(HealthCheckResponse.Status.UP, check.call().getStatus(), "RDFConnection isn't healthy!");
     }
 
     @Test
@@ -52,7 +52,7 @@ class TriplestoreHealthCheckTest {
         final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
         rdfConnection.close();
         final HealthCheck check = new TriplestoreHealthCheck(rdfConnection);
-        assertEquals(HealthCheckResponse.State.DOWN, check.call().getState(),
+        assertEquals(HealthCheckResponse.Status.DOWN, check.call().getStatus(),
                 "Closed RDFConnection doesn't report as unhealthy!");
     }
 }

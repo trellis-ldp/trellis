@@ -61,7 +61,7 @@ public class DBHealthCheck implements HealthCheck {
         if (dataSource != null) {
             try (final Connection conn = dataSource.getConnection()) {
                 return HealthCheckResponse.named(DBHealthCheck.class.getSimpleName())
-                    .state(!conn.isClosed()).build();
+                    .status(!conn.isClosed()).build();
             } catch (final SQLException ex) {
                 return HealthCheckResponse.named(DBHealthCheck.class.getSimpleName())
                     .withData("exception", ex.getMessage()).down().build();
