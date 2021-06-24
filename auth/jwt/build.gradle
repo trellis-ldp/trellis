@@ -35,6 +35,7 @@ dependencies {
         exclude group: "org.jboss.spec.javax.interceptor", module: "jboss-interceptors-api_1.2_spec"
         exclude group: "org.jboss.spec.javax.el", module: "jboss-el-api_3.0_spec"
     }
+    testImplementation "jakarta.el:jakarta.el-api:$elVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito:mockito-junit-jupiter:$mockitoVersion"
 

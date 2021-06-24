@@ -34,7 +34,7 @@ class DBHealthCheckTest {
     @Test
     void testUnhealthyDefault() {
         final HealthCheck check = new DBHealthCheck();
-        assertEquals(HealthCheckResponse.State.DOWN, check.call().getState(), "Database connection isn't healthy!");
+        assertEquals(HealthCheckResponse.Status.DOWN, check.call().getStatus(), "Database connection isn't healthy!");
     }
 
     @Test
@@ -45,7 +45,7 @@ class DBHealthCheckTest {
         when(mockConnection.isClosed()).thenReturn(false);
 
         final HealthCheck check = new DBHealthCheck(mockDataSource);
-        assertEquals(HealthCheckResponse.State.UP, check.call().getState(), "Database connection isn't healthy!");
+        assertEquals(HealthCheckResponse.Status.UP, check.call().getStatus(), "Database connection isn't healthy!");
     }
 
     @Test
@@ -54,7 +54,7 @@ class DBHealthCheckTest {
         doThrow(SQLException.class).when(mockDataSource).getConnection();
 
         final HealthCheck check = new DBHealthCheck(mockDataSource);
-        assertEquals(HealthCheckResponse.State.DOWN, check.call().getState(), "Database connection isn't healthy!");
+        assertEquals(HealthCheckResponse.Status.DOWN, check.call().getStatus(), "Database connection isn't healthy!");
     }
 
     @Test
@@ -65,7 +65,7 @@ class DBHealthCheckTest {
         when(mockConnection.isClosed()).thenReturn(true);
 
         final HealthCheck check = new DBHealthCheck(mockDataSource);
-        assertEquals(HealthCheckResponse.State.DOWN, check.call().getState(),
+        assertEquals(HealthCheckResponse.Status.DOWN, check.call().getStatus(),
                 "Database connection doesn't report as unhealthy!");
     }
 }

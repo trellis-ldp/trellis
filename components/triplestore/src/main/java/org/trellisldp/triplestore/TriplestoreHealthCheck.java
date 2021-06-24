@@ -56,6 +56,6 @@ public class TriplestoreHealthCheck implements HealthCheck {
     @Override
     public HealthCheckResponse call() {
         return HealthCheckResponse.named(TriplestoreHealthCheck.class.getSimpleName())
-            .state(rdfConnection != null && !rdfConnection.isClosed()).build();
+            .status(rdfConnection != null && !rdfConnection.isClosed()).build();
     }
 }

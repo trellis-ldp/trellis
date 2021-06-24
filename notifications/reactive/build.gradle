@@ -23,6 +23,7 @@ dependencies {
     testImplementation "io.smallrye.config:smallrye-config:$smallryeConfigVersion"
     testImplementation "io.smallrye.reactive:smallrye-reactive-streams-operators:$smallryeReactiveOperatorsVersion"
     testImplementation "io.smallrye.reactive:smallrye-reactive-messaging-provider:$smallryeReactiveVersion"
+    testImplementation "jakarta.el:jakarta.el-api:$elVersion"
     testImplementation "org.apache.commons:commons-rdf-simple:$commonsRdfVersion"
     testImplementation("org.awaitility:awaitility:$awaitilityVersion") {
         exclude group: "org.hamcrest", module: 'hamcrest-core'

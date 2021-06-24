@@ -31,21 +31,21 @@ class ApplicationTest {
 
     @Test
     void healthCheckTest() {
-        given().when().get("/health").then().assertThat()
+        given().when().get("/q/health").then().assertThat()
             .contentType(ContentType.JSON)
             .statusCode(200);
     }
 
     @Test
     void readinessCheckTest() {
-        given().when().get("/health/ready").then().assertThat()
+        given().when().get("/q/health/ready").then().assertThat()
             .contentType(ContentType.JSON)
             .statusCode(200);
     }
 
     @Test
     void livenessCheckTest() {
-        given().when().get("/health/live").then().assertThat()
+        given().when().get("/q/health/live").then().assertThat()
             .contentType(ContentType.JSON)
             .statusCode(200);
     }
