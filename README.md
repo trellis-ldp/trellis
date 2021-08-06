@@ -39,7 +39,6 @@ Or, for the PostgreSQL-based persistence layer
 docker pull trellisldp/trellis-postgresql
 ```
 
-
 ## Building Trellis
 
 In most cases, you won't need to compile Trellis. Released components are available on Maven Central,
