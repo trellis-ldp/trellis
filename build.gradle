@@ -85,7 +85,7 @@ ext {
     failureaccessVersion = "1.0.1"
     interceptorVersion = "1.2.5"
     jenaVersionRange = "[4,5)"
-    karafVersion = "4.3.2"
+    karafVersion = "4.3.3"
     microprofileConfigVersion = "2.0"
     microprofileHealthVersion = "3.0"
     microprofileMetricsVersion = "3.0"
