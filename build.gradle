@@ -147,7 +147,6 @@ allprojects { subproj ->
 
         testImplementation "org.junit.jupiter:junit-jupiter-api"
         testImplementation "org.junit.jupiter:junit-jupiter-params"
-        testImplementation "org.apiguardian:apiguardian-api"
         testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
         testRuntimeOnly "org.junit.platform:junit-platform-launcher"
     }
