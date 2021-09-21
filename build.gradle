@@ -36,7 +36,7 @@ ext {
     guavaVersion = "30.1.1-jre"
     jacksonVersion = "2.12.5"
     jdbiVersion = "3.22.0"
-    jenaVersion = "4.1.0"
+    jenaVersion = "4.2.0"
     jsonldVersion = "0.13.3"
     liquibaseVersion = "4.4.3"
     mustacheVersion = "0.9.10"
@@ -81,33 +81,14 @@ ext {
     pitestJunitPluginVersion = "0.12"
     pmdToolVersion = "6.24.0"
 
-    // OSGi
-    failureaccessVersion = "1.0.1"
-    interceptorVersion = "1.2.5"
-    jenaVersionRange = "[4,5)"
-    karafVersion = "4.3.3"
-    microprofileConfigVersion = "2.0"
-    microprofileHealthVersion = "3.0"
-    microprofileMetricsVersion = "3.0"
-    microprofileJwtVersion = "1.2"
-    microprofileOpenapiVersion = "2.0"
-    mustacheOsgiVersion = "0.9.6_1"
-    osgiVersion = "8.0.0"
-    osgiCompendiumVersion = "5.0.0"
-    paxExamVersion = "4.13.4"
-    spiflyVersion = "1.3.2"
-
     omitFromJacocoReporting = [
         'trellis-bom',
-        'trellis-karaf',
         'trellis-openliberty',
-        'trellis-osgi',
         'trellis-quarkus',
         'trellis-test'
     ]
 
     omitFromMavenPublishing = [
-        'trellis-osgi',
         'trellis-quarkus',
         'trellis-openliberty'
     ]
@@ -178,6 +159,13 @@ allprojects { subproj ->
     configurations.all {
         exclude group: 'commons-logging', module: 'commons-logging'
         exclude group: 'com.google.code.findbugs', module: 'jsr305'
+        // Titanium requires JakartaEE 9+
+        exclude group: 'com.apicatalog', module: 'titanium-json-ld'
+
+        resolutionStrategy {
+            // Use the JakartaEE 8 version of json-p
+            force "org.glassfish:jakarta.json:$jsonApiVersion"
+        }
 
         resolutionStrategy.dependencySubstitution {
             substitute module("org.apache.geronimo.specs:geronimo-annotation_1.2_spec") with module ("jakarta.annotation:jakarta.annotation-api:$annotationApiVersion")
