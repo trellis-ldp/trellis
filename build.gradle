@@ -181,6 +181,11 @@ allprojects { subproj ->
         // Titanium requires JakartaEE 9+
         exclude group: 'com.apicatalog', module: 'titanium-json-ld'
 
+        resolutionStrategy {
+            // Use the JakartaEE 8 version of json-p
+            force "org.glassfish:jakarta.json:$jsonApiVersion"
+        }
+
         resolutionStrategy.dependencySubstitution {
             substitute module("org.apache.geronimo.specs:geronimo-annotation_1.2_spec") with module ("jakarta.annotation:jakarta.annotation-api:$annotationApiVersion")
             substitute module("org.apache.geronimo.specs:geronimo-j2ee-management_1.1_spec") with module("jakarta.management.j2ee:jakarta.management.j2ee-api:$managementApiVersion")
@@ -188,8 +193,6 @@ allprojects { subproj ->
             substitute module("javax.enterprise:cdi-api") with module("jakarta.enterprise:jakarta.enterprise.cdi-api:$cdiApiVersion")
             substitute module("javax.annotation:javax.annotation-api") with module("jakarta.annotation:jakarta.annotation-api:$annotationApiVersion")
             substitute module("javax.inject:javax.inject") with module("jakarta.inject:jakarta.inject-api:$injectApiVersion")
-            // Use the JakartaEE 8 version of json-p
-            force "org.glassfish:jakarta.json:$jsonApiVersion"
         }
     }
 }
