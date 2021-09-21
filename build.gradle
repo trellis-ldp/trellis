@@ -81,33 +81,14 @@ ext {
     pitestJunitPluginVersion = "0.12"
     pmdToolVersion = "6.24.0"
 
-    // OSGi
-    failureaccessVersion = "1.0.1"
-    interceptorVersion = "1.2.5"
-    jenaVersionRange = "[4,5)"
-    karafVersion = "4.3.3"
-    microprofileConfigVersion = "2.0"
-    microprofileHealthVersion = "3.0"
-    microprofileMetricsVersion = "3.0"
-    microprofileJwtVersion = "1.2"
-    microprofileOpenapiVersion = "2.0"
-    mustacheOsgiVersion = "0.9.6_1"
-    osgiVersion = "8.0.0"
-    osgiCompendiumVersion = "5.0.0"
-    paxExamVersion = "4.13.4"
-    spiflyVersion = "1.3.2"
-
     omitFromJacocoReporting = [
         'trellis-bom',
-        'trellis-karaf',
         'trellis-openliberty',
-        'trellis-osgi',
         'trellis-quarkus',
         'trellis-test'
     ]
 
     omitFromMavenPublishing = [
-        'trellis-osgi',
         'trellis-quarkus',
         'trellis-openliberty'
     ]
