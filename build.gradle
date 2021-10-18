@@ -20,7 +20,7 @@ ext {
     annotationApiVersion = "1.3.5"
     cdiApiVersion = "2.0.2"
     elVersion = "3.0.3"
-    injectApiVersion = "1.0.1"
+    injectApiVersion = "2.0.1"
     jaxbApiVersion = "2.3.3"
     jaxrsApiVersion = "2.1.6"
     jsonApiVersion = "1.1.6"
