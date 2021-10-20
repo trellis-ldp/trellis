@@ -47,7 +47,7 @@ ext {
     // Databases
     h2Version = "1.4.200"
     mariadbVersion = "2.7.1"
-    postgresVersion = "42.2.24"
+    postgresVersion = "42.3.0"
 
     // Testing
     awaitilityVersion = "4.1.0"
