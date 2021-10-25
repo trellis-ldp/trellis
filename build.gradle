@@ -50,7 +50,7 @@ ext {
     postgresVersion = "42.3.0"
 
     // Testing
-    awaitilityVersion = "4.1.0"
+    awaitilityVersion = "4.1.1"
     bouncycastleVersion = "1.68"
     commonsTextVersion = "1.9"
     cxfVersion = "3.4.5"
