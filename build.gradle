@@ -63,7 +63,7 @@ ext {
     qpidVersion = "8.0.4"
     sleepycatVersion = "18.3.12"
     smallryeConfigVersion = "2.6.0"
-    smallryeHealthVersion = "3.1.1"
+    smallryeHealthVersion = "3.1.2"
     smallryeJwtVersion = "3.3.0"
     smallryeReactiveVersion = "1.0.8"
     smallryeReactiveOperatorsVersion = "1.0.13"
