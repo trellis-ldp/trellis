@@ -69,7 +69,7 @@ ext {
     smallryeReactiveOperatorsVersion = "1.0.13"
     testcontainersVersion = "1.16.2"
     weldVersion = "2.0.2.Final"
-    yassonVersion = "1.0.8"
+    yassonVersion = "2.0.3"
 
     // Containers
     postgresContainerVersion = "10.8"
