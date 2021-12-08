@@ -29,7 +29,7 @@ ext {
     validationApiVersion = "2.0.2"
 
     // MicroProfile
-    microprofileVersion = "4.1"
+    microprofileVersion = "5.0"
     microprofileReactiveMessagingVersion = "2.0.1"
 
     // Component dependencies
