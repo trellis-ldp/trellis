@@ -46,8 +46,9 @@ import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.Literal;
 import org.apache.commons.rdf.api.RDF;
 import org.apache.jena.rdfconnection.RDFConnection;
-import org.apache.jena.rdfconnection.RDFConnectionLocal;
-import org.apache.jena.rdfconnection.RDFConnectionRemote;
+import org.apache.jena.rdflink.RDFConnectionAdapter;
+import org.apache.jena.rdflink.RDFLinkDataset;
+import org.apache.jena.rdflink.RDFLinkHTTP;
 import org.apache.jena.update.UpdateRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -1320,7 +1321,7 @@ class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection(null);
         assertNotNull(rdfConnection, "Missing RDFConnection, using in-memory dataset!");
         assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");
-        assertTrue(rdfConnection instanceof RDFConnectionLocal, "Incorrect type");
+        assertTrue(((RDFConnectionAdapter) rdfConnection).getLink() instanceof RDFLinkDataset, "Incorrect type");
     }
 
     @Test
@@ -1329,7 +1330,7 @@ class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection(dir.getAbsolutePath());
         assertNotNull(rdfConnection, "Missing RDFConnection, using local file!");
         assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");
-        assertTrue(rdfConnection instanceof RDFConnectionLocal, "Incorrect type");
+        assertTrue(((RDFConnectionAdapter) rdfConnection).getLink() instanceof RDFLinkDataset, "Incorrect type");
     }
 
     @Test
@@ -1337,7 +1338,7 @@ class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection("http://localhost/sparql");
         assertNotNull(rdfConnection, "Missing RDFConnection, using local HTTP!");
         assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");
-        assertTrue(rdfConnection instanceof RDFConnectionRemote, "Incorrect type");
+        assertTrue(((RDFConnectionAdapter) rdfConnection).getLink() instanceof RDFLinkHTTP, "Incorrect type");
     }
 
     @Test
@@ -1345,7 +1346,7 @@ class TriplestoreResourceServiceTest {
         final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection("https://localhost/sparql");
         assertNotNull(rdfConnection, "Missing RDFConnection, using local HTTP!");
         assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");
-        assertTrue(rdfConnection instanceof RDFConnectionRemote, "Incorrect type");
+        assertTrue(((RDFConnectionAdapter) rdfConnection).getLink() instanceof RDFLinkHTTP, "Incorrect type");
     }
 
     @Test
