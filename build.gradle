@@ -37,7 +37,7 @@ ext {
     jacksonVersion = "2.13.0"
     jdbiVersion = "3.25.0"
     jenaVersion = "4.2.0"
-    jsonldVersion = "0.13.3"
+    jsonldVersion = "0.13.4"
     liquibaseVersion = "4.6.2"
     mustacheVersion = "0.9.10"
     quarkusVersion = "2.5.2.Final"
