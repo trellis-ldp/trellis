@@ -58,6 +58,7 @@ import org.apache.jena.atlas.AtlasException;
 import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.atlas.web.TypedInputStream;
 import org.apache.jena.commonsrdf.JenaCommonsRDF;
+import org.apache.jena.http.HttpOp;
 import org.apache.jena.query.QueryParseException;
 import org.apache.jena.riot.JsonLDWriteContext;
 import org.apache.jena.riot.Lang;
@@ -67,7 +68,6 @@ import org.apache.jena.riot.RDFParser;
 import org.apache.jena.riot.RDFWriter;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.system.StreamRDF;
-import org.apache.jena.riot.web.HttpOp;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.update.UpdateException;
@@ -281,7 +281,7 @@ public class JenaIOService implements IOService {
         if (canUseCustomJsonLdProfile(profile)) {
             LOGGER.debug("Setting JSON-LD context with profile: {}", profile);
             final String c = cache.get(profile, p -> {
-                try (final TypedInputStream res = HttpOp.execHttpGet(profile)) {
+                try (final TypedInputStream res = HttpOp.httpGet(profile)) {
                     return IOUtils.toString(res.getInputStream(), UTF_8);
                 } catch (final IOException | HttpException ex) {
                     LOGGER.warn("Error fetching profile {}: {}", p, ex.getMessage());

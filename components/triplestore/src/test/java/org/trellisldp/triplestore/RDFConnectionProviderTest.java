@@ -20,8 +20,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.File;
 import java.util.Optional;
 
-import org.apache.jena.rdfconnection.RDFConnectionLocal;
-import org.apache.jena.rdfconnection.RDFConnectionRemote;
+import org.apache.jena.rdflink.RDFConnectionAdapter;
+import org.apache.jena.rdflink.RDFLinkDataset;
+import org.apache.jena.rdflink.RDFLinkHTTP;
 import org.junit.jupiter.api.Test;
 
 class RDFConnectionProviderTest {
@@ -31,7 +32,7 @@ class RDFConnectionProviderTest {
         final RDFConnectionProvider provider = new RDFConnectionProvider();
         provider.connectionString = Optional.empty();
         provider.init();
-        assertTrue(provider.getRdfConnection() instanceof RDFConnectionLocal);
+        assertTrue(((RDFConnectionAdapter) provider.getRdfConnection()).getLink() instanceof RDFLinkDataset);
     }
 
     @Test
@@ -39,7 +40,7 @@ class RDFConnectionProviderTest {
         final RDFConnectionProvider provider = new RDFConnectionProvider();
         provider.connectionString = Optional.of("http://example.com/sparql");
         provider.init();
-        assertTrue(provider.getRdfConnection() instanceof RDFConnectionRemote);
+        assertTrue(((RDFConnectionAdapter) provider.getRdfConnection()).getLink() instanceof RDFLinkHTTP);
     }
 
     @Test
@@ -48,6 +49,6 @@ class RDFConnectionProviderTest {
         final RDFConnectionProvider provider = new RDFConnectionProvider();
         provider.connectionString = Optional.of(dir.getAbsolutePath());
         provider.init();
-        assertTrue(provider.getRdfConnection() instanceof RDFConnectionLocal);
+        assertTrue(((RDFConnectionAdapter) provider.getRdfConnection()).getLink() instanceof RDFLinkDataset);
     }
 }
