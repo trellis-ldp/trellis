@@ -36,7 +36,7 @@ ext {
     guavaVersion = "31.0.1-jre"
     jacksonVersion = "2.13.1"
     jdbiVersion = "3.25.0"
-    jenaVersion = "4.2.0"
+    jenaVersion = "4.3.2"
     jsonldVersion = "0.13.4"
     liquibaseVersion = "4.6.2"
     mustacheVersion = "0.9.10"
