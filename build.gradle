@@ -35,7 +35,7 @@ ext {
     // Component dependencies
     guavaVersion = "31.0.1-jre"
     jacksonVersion = "2.13.1"
-    jdbiVersion = "3.26.1"
+    jdbiVersion = "3.27.0"
     jenaVersion = "4.3.2"
     jsonldVersion = "0.13.4"
     liquibaseVersion = "4.6.2"
