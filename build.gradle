@@ -16,7 +16,7 @@ ext {
     slf4jVersion = "1.7.35"
 
     // JakartaEE
-    activationApiVersion = "1.2.2"
+    activationApiVersion = "2.1.0"
     annotationApiVersion = "1.3.5"
     cdiApiVersion = "2.0.2"
     elVersion = "3.0.3"
