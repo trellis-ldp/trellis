@@ -33,7 +33,7 @@ ext {
     microprofileReactiveMessagingVersion = "2.0.1"
 
     // Component dependencies
-    guavaVersion = "31.0.1-jre"
+    guavaVersion = "31.1-jre"
     jacksonVersion = "2.13.1"
     jdbiVersion = "3.27.2"
     jenaVersion = "4.4.0"
