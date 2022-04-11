@@ -21,7 +21,7 @@ ext {
     cdiApiVersion = "2.0.2"
     elVersion = "3.0.3"
     injectApiVersion = "1.0.1"
-    jaxbApiVersion = "2.3.3"
+    jaxbApiVersion = "4.0.0"
     jaxrsApiVersion = "2.1.6"
     jsonApiVersion = "1.1.6"
     jsonbApiVersion = "1.0.2"
