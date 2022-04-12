@@ -53,7 +53,7 @@ ext {
     awaitilityVersion = "4.2.0"
     bouncycastleVersion = "1.68"
     commonsTextVersion = "1.9"
-    cxfVersion = "3.5.1"
+    cxfVersion = "3.5.2"
     glassfishJaxbVersion = "2.3.3"
     jerseyVersion = "2.32"
     junitVersion = "5.8.2"
