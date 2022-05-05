@@ -21,13 +21,27 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.graph.Graph;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RDFParserRegistry;
+import org.apache.jena.riot.ReaderRIOT;
+import org.apache.jena.riot.ReaderRIOTFactory;
+import org.apache.jena.riot.lang.LangJSONLD10;
+import org.apache.jena.riot.system.ParserProfile;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author acoburn
  */
 class ASTest extends AbstractVocabularyTest {
+
+    @BeforeAll
+    static void setup() {
+        final var jsonldParser = new ReaderRIOTFactoryJSONLD10();
+        RDFParserRegistry.registerLangTriples(Lang.JSONLD, jsonldParser);
+        RDFParserRegistry.registerLangQuads(Lang.JSONLD, jsonldParser);
+    }
 
     @Override
     String namespace() {
@@ -69,5 +83,13 @@ class ASTest extends AbstractVocabularyTest {
     void checkUri() {
         getVocabulary(namespace());
         assertEquals(namespace(), AS.getNamespace(), "AS namespace doesn't match expected value!");
+    }
+
+    private static class ReaderRIOTFactoryJSONLD10 implements ReaderRIOTFactory {
+        @Override
+        public ReaderRIOT create(final Lang language, final ParserProfile profile) {
+            // force the use of jsonld-java (i.e., JSON-LD 1.0)
+            return new LangJSONLD10(language, profile, profile.getErrorHandler());
+        }
     }
 }

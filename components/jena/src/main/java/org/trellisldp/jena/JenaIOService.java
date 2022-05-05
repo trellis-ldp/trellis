@@ -23,9 +23,9 @@ import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.apache.jena.graph.Factory.createDefaultGraph;
 import static org.apache.jena.riot.Lang.JSONLD;
-import static org.apache.jena.riot.RDFFormat.JSONLD_COMPACT_FLAT;
-import static org.apache.jena.riot.RDFFormat.JSONLD_EXPAND_FLAT;
-import static org.apache.jena.riot.RDFFormat.JSONLD_FLATTEN_FLAT;
+import static org.apache.jena.riot.RDFFormat.JSONLD10_COMPACT_FLAT;
+import static org.apache.jena.riot.RDFFormat.JSONLD10_EXPAND_FLAT;
+import static org.apache.jena.riot.RDFFormat.JSONLD10_FLATTEN_FLAT;
 import static org.apache.jena.riot.system.StreamRDFWriter.defaultSerialization;
 import static org.apache.jena.riot.system.StreamRDFWriter.getWriterStream;
 import static org.apache.jena.update.UpdateAction.execute;
@@ -65,8 +65,14 @@ import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RDFParserRegistry;
 import org.apache.jena.riot.RDFWriter;
+import org.apache.jena.riot.RDFWriterRegistry;
+import org.apache.jena.riot.ReaderRIOT;
+import org.apache.jena.riot.ReaderRIOTFactory;
 import org.apache.jena.riot.RiotException;
+import org.apache.jena.riot.lang.LangJSONLD10;
+import org.apache.jena.riot.system.ParserProfile;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
@@ -101,9 +107,9 @@ public class JenaIOService implements IOService {
 
     private static final Logger LOGGER = getLogger(JenaIOService.class);
     private static final Map<IRI, RDFFormat> JSONLD_FORMATS = Map.of(
-                compacted, JSONLD_COMPACT_FLAT,
-                flattened, JSONLD_FLATTEN_FLAT,
-                expanded, JSONLD_EXPAND_FLAT);
+                compacted, JSONLD10_COMPACT_FLAT,
+                flattened, JSONLD10_FLATTEN_FLAT,
+                expanded, JSONLD10_EXPAND_FLAT);
 
     private final List<RDFSyntax> readable = List.of(TURTLE, RDFSyntax.JSONLD, NTRIPLES, RDFA);
     private final List<RDFSyntax> writable = List.of(TURTLE, RDFSyntax.JSONLD, NTRIPLES);
@@ -140,6 +146,13 @@ public class JenaIOService implements IOService {
         allowedContexts = allowedContextsConfig.map(Set::of).orElseGet(Collections::emptySet);
         allowedContextDomains = allowedDomainsConfig.map(Set::of).orElseGet(Collections::emptySet);
         relativeIRIs = relativeIriConfig.orElse(Boolean.FALSE);
+
+        // Use JSON-LD 1.0 parser
+        final var jsonldParser = new ReaderRIOTFactoryJSONLD10();
+        RDFParserRegistry.registerLangTriples(Lang.JSONLD, jsonldParser);
+        RDFParserRegistry.registerLangQuads(Lang.JSONLD, jsonldParser);
+        RDFWriterRegistry.register(Lang.JSONLD, RDFFormat.JSONLD10);
+
         LOGGER.info("Using Jena IO Service");
     }
 
@@ -276,7 +289,8 @@ public class JenaIOService implements IOService {
 
     private void writeJsonLd(final OutputStream output, final DatasetGraph graph, final IRI... profiles) {
         final String profile = getCustomJsonLdProfile(profiles);
-        final RDFFormat format = canUseCustomJsonLdProfile(profile) ? JSONLD_COMPACT_FLAT : getJsonLdProfile(profiles);
+        final RDFFormat format = canUseCustomJsonLdProfile(profile) ? JSONLD10_COMPACT_FLAT
+            : getJsonLdProfile(profiles);
         final JsonLDWriteContext ctx = new JsonLDWriteContext();
         if (canUseCustomJsonLdProfile(profile)) {
             LOGGER.debug("Setting JSON-LD context with profile: {}", profile);
@@ -354,5 +368,13 @@ public class JenaIOService implements IOService {
             }
         }
         return defaultValue;
+    }
+
+    private static class ReaderRIOTFactoryJSONLD10 implements ReaderRIOTFactory {
+        @Override
+        public ReaderRIOT create(final Lang language, final ParserProfile profile) {
+            // force the use of jsonld-java (i.e., JSON-LD 1.0)
+            return new LangJSONLD10(language, profile, profile.getErrorHandler());
+        }
     }
 }
