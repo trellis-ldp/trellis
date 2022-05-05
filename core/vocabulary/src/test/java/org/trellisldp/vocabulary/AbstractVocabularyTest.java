@@ -33,9 +33,18 @@ import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RDFParserRegistry;
+import org.apache.jena.riot.RDFWriterRegistry;
+import org.apache.jena.riot.ReaderRIOT;
+import org.apache.jena.riot.ReaderRIOTFactory;
 import org.apache.jena.riot.RiotException;
 import org.apache.jena.riot.RiotNotFoundException;
+import org.apache.jena.riot.lang.LangJSONLD10;
+import org.apache.jena.riot.system.ParserProfile;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -66,6 +75,15 @@ abstract class AbstractVocabularyTest {
         }
         assumeTrue(graph.size() > 0, "Remote vocabulary has no terms! Skip the test for " + url);
         return graph;
+    }
+
+    @BeforeAll
+    static void init() {
+        // Use JSON-LD 1.0 parser
+        final var jsonldParser = new ReaderRIOTFactoryJSONLD10();
+        RDFParserRegistry.registerLangTriples(Lang.JSONLD, jsonldParser);
+        RDFParserRegistry.registerLangQuads(Lang.JSONLD, jsonldParser);
+        RDFWriterRegistry.register(Lang.JSONLD, RDFFormat.JSONLD10);
     }
 
     @Test
@@ -111,5 +129,13 @@ abstract class AbstractVocabularyTest {
         return stream(vocabulary().getFields()).map(Field::getName).map(name ->
                 name.endsWith("_") ? name.substring(0, name.length() - 1) : name)
             .map(name -> name.replaceAll("_", "-"));
+    }
+
+    private static class ReaderRIOTFactoryJSONLD10 implements ReaderRIOTFactory {
+        @Override
+        public ReaderRIOT create(final Lang language, final ParserProfile profile) {
+            // force the use of jsonld-java (i.e., JSON-LD 1.0)
+            return new LangJSONLD10(language, profile, profile.getErrorHandler());
+        }
     }
 }
