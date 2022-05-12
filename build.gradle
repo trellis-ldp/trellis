@@ -19,7 +19,7 @@ ext {
     activationApiVersion = "1.2.2"
     annotationApiVersion = "1.3.5"
     cdiApiVersion = "2.0.2"
-    elVersion = "3.0.3"
+    elVersion = "5.0.0"
     injectApiVersion = "1.0.1"
     jaxbApiVersion = "2.3.3"
     jaxrsApiVersion = "2.1.6"
