@@ -68,7 +68,7 @@ ext {
     smallryeReactiveVersion = "1.0.8"
     smallryeReactiveOperatorsVersion = "1.0.13"
     testcontainersVersion = "1.17.2"
-    weldVersion = "2.0.2.Final"
+    weldVersion = "4.0.0.Final"
     yassonVersion = "1.0.8"
 
     // Containers
