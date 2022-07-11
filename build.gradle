@@ -40,7 +40,7 @@ ext {
     jsonldVersion = "0.13.4"
     liquibaseVersion = "4.10.0"
     mustacheVersion = "0.9.10"
-    quarkusVersion = "2.9.2.Final"
+    quarkusVersion = "2.10.2.Final"
     rxjavaVersion = "2.2.21"
     snakeyamlVersion = "1.30"
 
@@ -67,7 +67,7 @@ ext {
     smallryeJwtVersion = "3.5.1"
     smallryeReactiveVersion = "1.0.8"
     smallryeReactiveOperatorsVersion = "1.0.13"
-    testcontainersVersion = "1.17.2"
+    testcontainersVersion = "1.17.3"
     weldVersion = "2.0.2.Final"
     yassonVersion = "1.0.8"
 
