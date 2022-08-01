@@ -35,12 +35,12 @@ ext {
     // Component dependencies
     guavaVersion = "31.1-jre"
     jacksonVersion = "2.13.3"
-    jdbiVersion = "3.30.0"
+    jdbiVersion = "3.32.0"
     jenaVersion = "4.5.0"
     jsonldVersion = "0.13.4"
     liquibaseVersion = "4.10.0"
     mustacheVersion = "0.9.10"
-    quarkusVersion = "2.10.2.Final"
+    quarkusVersion = "2.11.1.Final"
     rxjavaVersion = "2.2.21"
     snakeyamlVersion = "1.30"
 
