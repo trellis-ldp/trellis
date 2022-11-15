@@ -42,7 +42,7 @@ ext {
     mustacheVersion = "0.9.10"
     quarkusVersion = "2.13.0.Final"
     rxjavaVersion = "2.2.21"
-    snakeyamlVersion = "1.30"
+    snakeyamlVersion = "1.33"
 
     // Databases
     h2Version = "1.4.200"
