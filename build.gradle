@@ -52,7 +52,7 @@ ext {
     // Testing
     awaitilityVersion = "4.2.0"
     bouncycastleVersion = "1.68"
-    commonsTextVersion = "1.9"
+    commonsTextVersion = "1.10.0"
     cxfVersion = "3.5.4"
     glassfishJaxbVersion = "2.3.3"
     jerseyVersion = "2.32"
