@@ -55,7 +55,7 @@ ext {
     commonsTextVersion = "1.9"
     cxfVersion = "3.5.4"
     glassfishJaxbVersion = "2.3.3"
-    jerseyVersion = "2.32"
+    jerseyVersion = "3.1.0"
     junitVersion = "5.9.1"
     hamcrestVersion = "2.2"
     logbackVersion = "1.2.11"
