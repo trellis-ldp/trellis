@@ -64,7 +64,7 @@ ext {
     sleepycatVersion = "18.3.12"
     smallryeConfigVersion = "2.10.0"
     smallryeHealthVersion = "3.2.1"
-    smallryeJwtVersion = "3.5.1"
+    smallryeJwtVersion = "4.0.0"
     smallryeReactiveVersion = "1.0.8"
     smallryeReactiveOperatorsVersion = "1.0.13"
     testcontainersVersion = "1.17.3"
