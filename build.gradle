@@ -58,7 +58,7 @@ ext {
     jerseyVersion = "2.32"
     junitVersion = "5.9.1"
     hamcrestVersion = "2.2"
-    logbackVersion = "1.2.11"
+    logbackVersion = "1.4.8"
     mockitoVersion = "4.6.1"
     qpidVersion = "8.0.4"
     sleepycatVersion = "18.3.12"
