@@ -24,6 +24,7 @@ module org.trellisldp.webdav {
     requires org.apache.commons.rdf.api;
     requires org.apache.commons.lang3;
     requires org.apache.jena.arq;
+    requires org.apache.jena.core;
     requires org.slf4j;
     requires microprofile.metrics.api;
 

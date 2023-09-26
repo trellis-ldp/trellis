@@ -3,7 +3,7 @@
 #
 # Before building the docker image run:
 #
-# ./gradlew assemble
+# ./mvnw package
 #
 # Then, build the image with:
 #
@@ -14,15 +14,15 @@
 # docker run -i --rm -p 8080:8080 trellisldp/trellis-<name-of-image>
 #
 ###
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:17-jre-alpine
 LABEL maintainer="Aaron Coburn <acoburn@apache.org>"
 
 ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager -XX:+ExitOnOutOfMemoryError -Dcom.github.jsonldjava.disallowRemoteContextLoading=true"
 
-COPY build/quarkus-app/lib/ /trellis/lib/
-COPY build/quarkus-app/app/ /trellis/app/
-COPY build/quarkus-app/quarkus/ /trellis/quarkus/
-COPY build/quarkus-app/quarkus-run.jar /trellis/app.jar
+COPY target/quarkus-app/lib/ /trellis/lib/
+COPY target/quarkus-app/app/ /trellis/app/
+COPY target/quarkus-app/quarkus/ /trellis/quarkus/
+COPY target/quarkus-app/quarkus-run.jar /trellis/app.jar
 
 WORKDIR /trellis/
 

@@ -1326,7 +1326,8 @@ class TriplestoreResourceServiceTest {
 
     @Test
     void testBuildRDFConnectionTDB() throws Exception {
-        final File dir = new File(new File(getClass().getResource("/logback-test.xml").toURI()).getParent(), "data");
+        final File dir = new File(new File(getClass().getResource("/simplelogger.properties").toURI()).getParent(),
+                "data");
         final RDFConnection rdfConnection = TriplestoreResourceService.buildRDFConnection(dir.getAbsolutePath());
         assertNotNull(rdfConnection, "Missing RDFConnection, using local file!");
         assertFalse(rdfConnection.isClosed(), "RDFConnection has been closed!");

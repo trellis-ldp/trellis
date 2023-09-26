@@ -25,11 +25,13 @@ import static org.mockito.Mockito.when;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 
 import io.smallrye.config.inject.ConfigProducer;
-import io.smallrye.reactive.messaging.MediatorFactory;
-import io.smallrye.reactive.messaging.extension.MediatorManager;
-import io.smallrye.reactive.messaging.extension.ReactiveMessagingExtension;
-import io.smallrye.reactive.messaging.impl.ConfiguredChannelFactory;
-import io.smallrye.reactive.messaging.impl.InternalChannelRegistry;
+import io.smallrye.reactive.messaging.providers.MediatorFactory;
+import io.smallrye.reactive.messaging.providers.connectors.WorkerPoolRegistry;
+import io.smallrye.reactive.messaging.providers.extension.HealthCenter;
+import io.smallrye.reactive.messaging.providers.extension.MediatorManager;
+import io.smallrye.reactive.messaging.providers.extension.ReactiveMessagingExtension;
+import io.smallrye.reactive.messaging.providers.impl.InternalChannelRegistry;
+import io.smallrye.reactive.messaging.providers.wiring.Wiring;
 
 import java.time.Instant;
 
@@ -63,11 +65,13 @@ class ReactiveNotificationServiceTest {
                                        .beanClasses(
                                            MediatorFactory.class,
                                            MediatorManager.class,
+                                           HealthCenter.class,
                                            InternalChannelRegistry.class,
-                                           ConfiguredChannelFactory.class,
                                            TestCollector.class,
                                            NotificationCollector.class,
                                            ReactiveNotificationService.class,
+                                           WorkerPoolRegistry.class,
+                                           Wiring.class,
                                            DefaultNotificationSerializationService.class,
                                            ConfigProducer.class)
                                        .extensions(new ReactiveMessagingExtension()));

@@ -45,7 +45,8 @@ class RDFConnectionProviderTest {
 
     @Test
     void testRDFConnectionLocal() throws Exception {
-        final File dir = new File(new File(getClass().getResource("/logback-test.xml").toURI()).getParent(), "data2");
+        final File dir = new File(new File(getClass().getResource("/simplelogger.properties").toURI()).getParent(),
+                "data2");
         final RDFConnectionProvider provider = new RDFConnectionProvider();
         provider.connectionString = Optional.of(dir.getAbsolutePath());
         provider.init();

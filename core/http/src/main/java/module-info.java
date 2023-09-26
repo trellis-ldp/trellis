@@ -31,4 +31,5 @@ module org.trellisldp.http {
     requires java.ws.rs;
     requires java.xml.bind;
     requires microprofile.metrics.api;
+    requires microprofile.openapi.api;
 }

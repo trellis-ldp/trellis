@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -159,7 +160,8 @@ public final class TestUtils {
      */
     public static List<Link> getLinks(final Response res) {
         // Jersey's client doesn't parse complex link headers correctly
-        return res.getStringHeaders().get(LINK).stream().map(Link::valueOf).collect(toList());
+        return res.getStringHeaders().getOrDefault(LINK, Collections.emptyList()).stream().map(Link::valueOf)
+            .collect(toList());
     }
 
     /**

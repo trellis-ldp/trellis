@@ -18,7 +18,7 @@ module org.trellisldp.reactive {
 
     requires io.reactivex.rxjava2;
     requires jakarta.inject;
-    requires microprofile.reactive.messaging.api;
+    requires smallrye.reactive.messaging.api;
     requires org.slf4j;
     requires org.apache.commons.rdf.api;
     requires org.trellisldp.api;
