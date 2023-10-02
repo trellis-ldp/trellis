@@ -21,7 +21,6 @@
       <exclude name="SimplifyStartsWith"/>
     </rule>
     <rule ref="category/java/errorprone.xml">
-      <exclude name="BeanMembersShouldSerialize"/>
       <exclude name="AvoidLiteralsInIfCondition"/>
       <exclude name="AvoidFieldNameMatchingTypeName"/>
       <exclude name="AvoidFieldNameMatchingMethodName"/>

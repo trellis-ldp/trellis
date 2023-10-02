@@ -8,28 +8,9 @@ on:
       - trellis-[0-9]+.[0-9]+.[0-9]+
 
 jobs:
-  validation:
-    name: Gradle Validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: gradle/wrapper-validation-action@v1
-
   build:
     name: Java 11 environment
     runs-on: ubuntu-latest
-    needs: [validation]
-
-    services:
-      postgres:
-        image: postgres:10.8
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: trellis
-        ports:
-        - 5432:5432
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
@@ -40,32 +21,10 @@ jobs:
       with:
         distribution: 'adopt'
         java-version: 11
+        cache: 'maven'
 
-    - name: Build with Gradle
-      run: ./gradlew check assemble javadoc
-      env:
-        QUARKUS_DATASOURCE_USERNAME: postgres
-        QUARKUS_DATASOURCE_PASSWORD: postgres
-        QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost/trellis
-
-  security:
-    name: Security analysis
-    needs: [build]
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Run Snyk to check for vulnerabilities
-      env:
-        PROJECT_PATH: /project/trellis
-        SNYK_ORG: ${{ secrets.SNYK_ORG }}
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      # Only run security scans if integration is set up
-      run: |
-          if [ "$SNYK_ORG" != "" ]; then
-            # don't fail the build if snyk doesn't complete successfully
-            docker run --name snyk -e SNYK_TOKEN -e PROJECT_PATH -v "/home/runner/work/trellis":"/project" snyk/snyk-cli:gradle-5.4 "monitor --all-sub-projects --org=$SNYK_ORG" || true
-          fi
+    - name: Build with Maven
+      run: ./mvnw verify javadoc:javadoc
 
   sonatype:
     name: Deploy artifacts to Sonatype
@@ -78,6 +37,7 @@ jobs:
       with:
         distribution: 'adopt'
         java-version: 11
+        cache: "maven"
     - name: Publish to Sonatype
       run: if [[ $(./gradlew -q getVersion) == *SNAPSHOT* ]]; then ./gradlew publish ; fi
       env:
@@ -96,6 +56,7 @@ jobs:
       with:
         distribution: 'adopt'
         java-version: 11
+        cache: "maven"
 
     - name: Publish Docker Containers
       run: |

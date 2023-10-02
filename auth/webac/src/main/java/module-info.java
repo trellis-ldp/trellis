@@ -21,6 +21,9 @@ module org.trellisldp.webac {
     requires org.trellisldp.vocabulary;
 
     requires org.apache.commons.rdf.api;
+    requires org.apache.jena.core;
+    requires org.apache.jena.arq;
+    requires org.apache.jena.commonsrdf;
     requires org.slf4j;
 
     requires jakarta.enterprise.cdi.api;
@@ -29,6 +32,7 @@ module org.trellisldp.webac {
     requires java.xml.bind;
     requires java.ws.rs;
     requires microprofile.config.api;
+    requires microprofile.metrics.api;
 
     uses org.trellisldp.api.ResourceService;
     uses org.trellisldp.api.IOService;

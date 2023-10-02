@@ -21,6 +21,7 @@ module org.trellisldp.common {
 
     requires org.apache.commons.codec;
     requires org.apache.commons.rdf.api;
+    requires org.apache.commons.lang3;
     requires org.slf4j;
 
     requires microprofile.config.api;

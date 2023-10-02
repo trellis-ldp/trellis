@@ -23,5 +23,7 @@ module org.trellisldp.app {
     requires jakarta.inject;
     requires jakarta.enterprise.cdi.api;
 
+    requires org.slf4j;
+
     opens org.trellisldp.app;
 }

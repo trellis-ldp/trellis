@@ -370,7 +370,7 @@ public class JenaIOService implements IOService {
         return defaultValue;
     }
 
-    private static class ReaderRIOTFactoryJSONLD10 implements ReaderRIOTFactory {
+    private static final class ReaderRIOTFactoryJSONLD10 implements ReaderRIOTFactory {
         @Override
         public ReaderRIOT create(final Lang language, final ParserProfile profile) {
             // force the use of jsonld-java (i.e., JSON-LD 1.0)

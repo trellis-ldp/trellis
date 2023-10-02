@@ -1,27 +1,17 @@
 #!/bin/bash
 
-VERSION=$(./gradlew -q getVersion)
+VERSION=$(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout)
 
 # Publish releases only
 if [[ $VERSION != *SNAPSHOT* ]]; then
+
+    ./mvnw package -pl platform/quarkus -am
 
     cd platform/quarkus
     ##################################
     # Quarkus-based triplestore image
     ##################################
     IMAGE=docker.pkg.github.com/trellis-ldp/trellis/trellis-triplestore
-
-    ../../gradlew assemble -Ptriplestore
-
-    docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$VERSION" .
-    docker push "$IMAGE:$VERSION"
-
-    ###############################
-    # Quarkus-based database image
-    ###############################
-    IMAGE=docker.pkg.github.com/trellis-ldp/trellis/trellis-postgresql
-
-    ../../gradlew assemble
 
     docker build -f src/main/docker/Dockerfile.jvm -t "$IMAGE:$VERSION" .
     docker push "$IMAGE:$VERSION"

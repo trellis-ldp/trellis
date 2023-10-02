@@ -22,10 +22,12 @@ module org.trellisldp.rdfa {
     requires com.github.mustachejava;
     requires jakarta.enterprise.cdi.api;
     requires jakarta.inject;
+    requires java.annotation;
     requires microprofile.config.api;
     requires org.apache.commons.rdf.api;
     requires org.apache.jena.arq;
     requires org.apache.jena.core;
+    requires org.slf4j;
 
     uses org.trellisldp.api.NamespaceService;
 

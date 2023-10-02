@@ -4,11 +4,6 @@
     "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 <module name="Checker">
 
-  <!-- Suppress -->
-  <module name="SuppressionFilter">
-    <property name="file" value="${checkstyleConfigDir}/suppressions.xml"/>
-  </module>
-
   <!-- Ignore module-info.java files when compiling with JDK 9 -->
   <module name="BeforeExecutionExclusionFileFilter">
     <property name="fileNamePattern" value="module\-info\.java$"/>
@@ -87,7 +82,7 @@
     </module>
 
     <module name="JavadocMethod">
-      <property name="scope" value="public"/>
+      <property name="accessModifiers" value="public"/>
     </module>
 
     <module name="JavadocStyle">

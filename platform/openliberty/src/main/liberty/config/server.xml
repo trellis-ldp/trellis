@@ -4,10 +4,15 @@
       <feature>microProfile-4.0</feature>
     </featureManager>
     <logging consoleLogLevel="INFO"/>
+
+    <variable name="default.http.port" defaultValue="9080"/>
+    <variable name="default.https.port" defaultValue="9443"/>
+    <variable name="app.context.root" defaultValue="/trellis/"/>
+
     <httpEndpoint httpPort="${default.http.port}" httpsPort="${default.https.port}"
       id="defaultHttpEndpoint" host="*">
       <accessLogging filepath="${server.output.dir}/logs/access.log"/>
     </httpEndpoint>
-    <webApplication location="trellis-openliberty.war" contextRoot="/"/>
+    <webApplication location="trellis-openliberty.war" contextRoot="${app.context.root}"/>
 </server>
 

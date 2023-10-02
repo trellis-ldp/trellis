@@ -22,12 +22,14 @@ module org.trellisldp.jdbc {
     requires org.apache.commons.lang3;
     requires org.apache.commons.rdf.api;
     requires org.apache.jena.arq;
+    requires org.apache.jena.core;
     requires org.apache.jena.commonsrdf;
     requires org.jdbi.v3.core;
     requires org.slf4j;
 
     requires jakarta.enterprise.cdi.api;
     requires jakarta.inject;
+    requires java.naming;
     requires java.annotation;
     requires java.sql;
     requires microprofile.config.api;
