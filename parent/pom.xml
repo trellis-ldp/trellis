@@ -60,7 +60,7 @@
     <postgres.version>42.4.0</postgres.version>
     <snakeyaml.version>1.33</snakeyaml.version>
     <jaxb.version>2.3.3</jaxb.version>
-    <quarkus.version>2.13.0.Final</quarkus.version>
+    <quarkus.version>2.16.0.Final</quarkus.version>
 
     <!-- testing -->
     <awaitility.version>4.2.0</awaitility.version>
