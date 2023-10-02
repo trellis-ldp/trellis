@@ -41,7 +41,7 @@
     <jakarta.xml.bind.version>2.3.3</jakarta.xml.bind.version>
 
     <jdbi.version>3.35.0</jdbi.version>
-    <jersey.version>2.32</jersey.version>
+    <jersey.version>2.34</jersey.version>
     <jena.version>4.9.0</jena.version>
     <mustache.version>0.9.10</mustache.version>
     <smallrye.config.version>2.12.0</smallrye.config.version>
