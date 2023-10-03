@@ -47,7 +47,7 @@
     <smallrye.config.version>2.12.0</smallrye.config.version>
     <smallrye.health.version>3.2.1</smallrye.health.version>
     <smallrye.jwt.version>3.5.1</smallrye.jwt.version>
-    <smallrye.reactive.version>3.21.0</smallrye.reactive.version>
+    <smallrye.reactive.version>4.10.1</smallrye.reactive.version>
     <smallrye.reactive.operators.version>1.0.13</smallrye.reactive.operators.version>
     <slf4j.version>2.0.9</slf4j.version>
     <rxjava.version>2.2.21</rxjava.version>
