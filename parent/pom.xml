@@ -38,7 +38,7 @@
     <jakarta.json.bind.version>1.0.2</jakarta.json.bind.version>
     <jakarta.json.version>1.1.6</jakarta.json.version>
     <jakarta.ws.rs.version>2.1.6</jakarta.ws.rs.version>
-    <jakarta.xml.bind.version>2.3.3</jakarta.xml.bind.version>
+    <jakarta.xml.bind.version>4.0.1</jakarta.xml.bind.version>
 
     <jdbi.version>3.35.0</jdbi.version>
     <jersey.version>2.34</jersey.version>
