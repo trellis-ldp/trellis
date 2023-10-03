@@ -31,7 +31,7 @@
     <jackson.version>2.15.2</jackson.version>
 
     <jakarta.activation.version>1.2.2</jakarta.activation.version>
-    <jakarta.annotation.version>1.3.5</jakarta.annotation.version>
+    <jakarta.annotation.version>2.1.1</jakarta.annotation.version>
     <jakarta.cdi.version>2.0.2</jakarta.cdi.version>
     <jakarta.el.version>3.0.3</jakarta.el.version>
     <jakarta.inject.version>1.0.1</jakarta.inject.version>
