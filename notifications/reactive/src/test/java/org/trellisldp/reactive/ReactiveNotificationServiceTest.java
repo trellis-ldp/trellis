@@ -33,9 +33,9 @@ import io.smallrye.reactive.messaging.providers.extension.ReactiveMessagingExten
 import io.smallrye.reactive.messaging.providers.impl.InternalChannelRegistry;
 import io.smallrye.reactive.messaging.providers.wiring.Wiring;
 
-import java.time.Instant;
+import jakarta.inject.Inject;
 
-import javax.inject.Inject;
+import java.time.Instant;
 
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;

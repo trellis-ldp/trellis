@@ -23,7 +23,7 @@ module org.trellisldp.notification.jackson {
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.datatype.jsr310;
     requires com.fasterxml.jackson.annotation;
-    requires jakarta.enterprise.cdi.api;
+    requires jakarta.cdi;
     requires org.apache.commons.rdf.api;
 
     opens org.trellisldp.notification.jackson to com.fasterxml.jackson.databind;

@@ -26,11 +26,11 @@ module org.trellisldp.webac {
     requires org.apache.jena.commonsrdf;
     requires org.slf4j;
 
-    requires jakarta.enterprise.cdi.api;
+    requires jakarta.cdi;
     requires jakarta.inject;
-    requires java.annotation;
-    requires java.xml.bind;
-    requires java.ws.rs;
+    requires jakarta.annotation;
+    requires jakarta.xml.bind;
+    requires jakarta.ws.rs;
     requires microprofile.config.api;
     requires microprofile.metrics.api;
 

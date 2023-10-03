@@ -23,12 +23,12 @@ import static org.trellisldp.common.HttpConstants.MEMENTO;
 import static org.trellisldp.common.HttpConstants.UNTIL;
 import static org.trellisldp.vocabulary.RDF.type;
 
+import jakarta.enterprise.inject.Alternative;
+import jakarta.ws.rs.core.Link;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
-import javax.enterprise.inject.Alternative;
-import javax.ws.rs.core.Link;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;

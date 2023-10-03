@@ -37,6 +37,10 @@ import static org.trellisldp.api.TrellisUtils.TRELLIS_DATA_PREFIX;
 import static org.trellisldp.api.TrellisUtils.getContainer;
 import static org.trellisldp.api.TrellisUtils.toGraph;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -49,10 +53,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.Graph;
@@ -367,7 +367,7 @@ public class WebAcService {
     @java.lang.annotation.Documented
     @java.lang.annotation.Retention(RUNTIME)
     @java.lang.annotation.Target({TYPE, METHOD, FIELD, PARAMETER})
-    @javax.inject.Qualifier
+    @jakarta.inject.Qualifier
     public @interface TrellisAuthorizationCache { }
 
 

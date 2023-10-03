@@ -19,10 +19,10 @@ import static java.util.Objects.requireNonNull;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.IntStream.rangeClosed;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 import java.util.StringJoiner;
 import java.util.function.Supplier;
-
-import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The IdentifierService provides a mechanism for creating new identifiers.

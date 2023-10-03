@@ -15,15 +15,15 @@
  */
 package org.trellisldp.test;
 
+import static jakarta.ws.rs.client.Entity.entity;
+import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static jakarta.ws.rs.core.HttpHeaders.LINK;
+import static jakarta.ws.rs.core.Link.TYPE;
+import static jakarta.ws.rs.core.Link.fromUri;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Stream.concat;
 import static java.util.stream.Stream.of;
-import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
-import static javax.ws.rs.core.HttpHeaders.LINK;
-import static javax.ws.rs.core.Link.TYPE;
-import static javax.ws.rs.core.Link.fromUri;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.common.HttpConstants.SLUG;
@@ -34,10 +34,10 @@ import static org.trellisldp.test.TestUtils.buildJwt;
 import static org.trellisldp.test.TestUtils.checkEventGraph;
 import static org.trellisldp.test.TestUtils.getResourceAsString;
 
+import jakarta.ws.rs.core.Response;
+
 import java.util.Set;
 import java.util.stream.Stream;
-
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;

@@ -15,7 +15,7 @@
  */
 package org.trellisldp.test;
 
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.JSONLD;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -27,10 +27,10 @@ import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 
-import java.util.stream.Stream;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.function.Executable;

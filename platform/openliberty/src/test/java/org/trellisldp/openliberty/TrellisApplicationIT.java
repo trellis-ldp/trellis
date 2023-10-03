@@ -15,11 +15,11 @@
  */
 package org.trellisldp.openliberty;
 
+import static jakarta.ws.rs.client.ClientBuilder.newBuilder;
 import static java.lang.Integer.getInteger;
-import static javax.ws.rs.client.ClientBuilder.newBuilder;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
-import javax.ws.rs.client.Client;
+import jakarta.ws.rs.client.Client;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

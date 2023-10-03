@@ -94,6 +94,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <argLine>
+              --add-modules jakarta.el
               --add-opens java.base/java.lang=ALL-UNNAMED
           </argLine>
         </configuration>

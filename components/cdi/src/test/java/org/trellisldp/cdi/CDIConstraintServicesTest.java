@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.smallrye.config.inject.ConfigProducer;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.weld.junit5.WeldInitiator;
 import org.jboss.weld.junit5.WeldJunit5Extension;

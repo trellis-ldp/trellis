@@ -20,9 +20,9 @@ module org.trellisldp.namespace {
     requires transitive org.trellisldp.vocabulary;
 
     requires org.apache.commons.rdf.api;
-    requires jakarta.enterprise.cdi.api;
+    requires jakarta.cdi;
     requires jakarta.inject;
-    requires java.annotation;
+    requires jakarta.annotation;
     requires microprofile.config.api;
     requires org.slf4j;
 

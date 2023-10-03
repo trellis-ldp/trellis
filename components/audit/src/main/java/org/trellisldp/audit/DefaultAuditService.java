@@ -19,10 +19,10 @@ import static java.util.Arrays.asList;
 import static org.trellisldp.vocabulary.RDF.type;
 import static org.trellisldp.vocabulary.Trellis.PreferAudit;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.enterprise.context.ApplicationScoped;
 
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.IRI;
@@ -42,7 +42,7 @@ import org.trellisldp.vocabulary.XSD;
  * <p>This class makes use of the {@link PROV} vocabulary and {@link BlankNode}
  * objects in a {@code http://www.trellisldp.org/ns/trellis#PreferAudit} named
  * graph.
- * 
+ *
  * @author acoburn
  */
 @ApplicationScoped

@@ -33,10 +33,10 @@
       <groupId>jakarta.inject</groupId>
       <artifactId>jakarta.inject-api</artifactId>
     </dependency>
-    <!--<dependency>-->
-      <!--<groupId>jakarta.xml.bind</groupId>-->
-      <!--<artifactId>jakarta.xml.bind-api</artifactId>-->
-    <!--</dependency>-->
+    <dependency>
+      <groupId>org.eclipse.microprofile.config</groupId>
+      <artifactId>microprofile-config-api</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.reactivex.rxjava2</groupId>
       <artifactId>rxjava</artifactId>
@@ -46,8 +46,12 @@
       <artifactId>smallrye-reactive-messaging-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.microprofile.config</groupId>
-      <artifactId>microprofile-config-api</artifactId>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>smallrye-reactive-messaging-provider</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.smallrye.reactive</groupId>
+      <artifactId>mutiny-reactive-streams-operators</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -103,16 +107,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.smallrye.reactive</groupId>
-      <artifactId>smallrye-reactive-streams-operators</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.smallrye.reactive</groupId>
-      <artifactId>smallrye-reactive-messaging-provider</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-rdf-simple</artifactId>
       <scope>test</scope>
@@ -136,6 +130,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <argLine>
+              --add-modules jakarta.el
               --add-opens java.base/java.lang=ALL-UNNAMED
           </argLine>
         </configuration>

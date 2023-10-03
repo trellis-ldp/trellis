@@ -17,7 +17,7 @@ package org.trellisldp.test;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import javax.ws.rs.client.Client;
+import jakarta.ws.rs.client.Client;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

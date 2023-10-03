@@ -15,8 +15,8 @@
  */
 package org.trellisldp.app;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import org.trellisldp.api.*;
 import org.trellisldp.common.*;

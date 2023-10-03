@@ -17,7 +17,7 @@ package org.trellisldp.webdav.xml;
 
 import static org.trellisldp.webdav.xml.DavUtils.DAV_NAMESPACE;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * A PROPFIND propname class.

@@ -15,9 +15,9 @@
  */
 package org.trellisldp.test;
 
+import static jakarta.ws.rs.client.Entity.entity;
+import static jakarta.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static java.util.function.Predicate.isEqual;
-import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.Response.Status.Family.CLIENT_ERROR;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
@@ -38,15 +38,15 @@ import static org.trellisldp.vocabulary.RDF.type;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.core.EntityTag;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;

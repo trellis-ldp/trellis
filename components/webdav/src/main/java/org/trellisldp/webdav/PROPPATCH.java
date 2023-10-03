@@ -18,11 +18,11 @@ package org.trellisldp.webdav;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import jakarta.ws.rs.HttpMethod;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
-import javax.ws.rs.HttpMethod;
 
 /**
  * PROPPATCH HTTP method.

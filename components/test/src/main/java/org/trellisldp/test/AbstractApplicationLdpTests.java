@@ -18,9 +18,9 @@ package org.trellisldp.test;
 import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import java.util.Set;
+import jakarta.ws.rs.client.Client;
 
-import javax.ws.rs.client.Client;
+import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

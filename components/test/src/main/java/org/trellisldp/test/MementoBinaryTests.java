@@ -15,18 +15,18 @@
  */
 package org.trellisldp.test;
 
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.readEntityAsString;
+
+import jakarta.ws.rs.core.Response;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.function.Executable;
 import org.trellisldp.vocabulary.LDP;

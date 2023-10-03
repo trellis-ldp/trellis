@@ -15,11 +15,11 @@
  */
 package org.trellisldp.cdi;
 
-import java.util.Iterator;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
+import java.util.Iterator;
 
 import org.trellisldp.api.ConstraintService;
 import org.trellisldp.app.ConstraintServices;

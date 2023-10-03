@@ -15,11 +15,11 @@
  */
 package org.trellisldp.http.impl;
 
+import static jakarta.ws.rs.core.Link.fromUri;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
+import static jakarta.ws.rs.core.Response.Status.NO_CONTENT;
 import static java.util.Collections.emptySet;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static javax.ws.rs.core.Link.fromUri;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
-import static javax.ws.rs.core.Response.Status.NO_CONTENT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.common.HttpConstants.ACL;
@@ -27,11 +27,11 @@ import static org.trellisldp.common.HttpConstants.CONFIG_HTTP_PURGE_BINARY_ON_DE
 import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE;
 import static org.trellisldp.vocabulary.Trellis.UnsupportedInteractionModel;
 
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;

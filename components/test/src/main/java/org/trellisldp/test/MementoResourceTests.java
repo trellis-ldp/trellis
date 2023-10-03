@@ -15,10 +15,10 @@
  */
 package org.trellisldp.test;
 
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.common.HttpConstants.MEMENTO_DATETIME;
@@ -26,13 +26,13 @@ import static org.trellisldp.test.TestUtils.getLinks;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.vocabulary.RDF.type;
 
+import jakarta.ws.rs.core.Response;
+
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.IRI;

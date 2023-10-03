@@ -18,11 +18,11 @@ package org.trellisldp.quarkus;
 import static com.google.common.cache.CacheBuilder.newBuilder;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.util.function.Function;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import java.util.function.Function;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.trellisldp.api.CacheService;

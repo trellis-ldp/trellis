@@ -15,15 +15,15 @@
  */
 package org.trellisldp.common;
 
+import static jakarta.ws.rs.core.Link.fromUri;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Link.fromUri;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.vocabulary.RDF.type;
 
-import java.util.List;
+import jakarta.ws.rs.core.Link;
 
-import javax.ws.rs.core.Link;
+import java.util.List;
 
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.api.Triple;

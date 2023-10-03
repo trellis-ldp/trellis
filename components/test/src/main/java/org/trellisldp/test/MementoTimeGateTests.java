@@ -15,22 +15,22 @@
  */
 package org.trellisldp.test;
 
+import static jakarta.ws.rs.core.HttpHeaders.VARY;
+import static jakarta.ws.rs.core.Response.Status.Family.REDIRECTION;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static java.time.Instant.from;
 import static java.time.Instant.now;
 import static java.time.ZoneOffset.UTC;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
-import static javax.ws.rs.core.HttpHeaders.VARY;
-import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.common.HttpConstants.ACCEPT_DATETIME;
 import static org.trellisldp.common.HttpConstants.MEMENTO_DATETIME;
 import static org.trellisldp.test.TestUtils.getLinks;
 
+import jakarta.ws.rs.core.Response;
+
 import java.time.Instant;
 import java.util.stream.Stream;
-
-import javax.ws.rs.core.Response;
 
 import org.junit.jupiter.api.function.Executable;
 

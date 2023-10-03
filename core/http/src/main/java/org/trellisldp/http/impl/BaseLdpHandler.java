@@ -15,21 +15,21 @@
  */
 package org.trellisldp.http.impl;
 
+import static jakarta.ws.rs.core.HttpHeaders.IF_MATCH;
+import static jakarta.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
+import static jakarta.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
+import static jakarta.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
-import static javax.ws.rs.core.HttpHeaders.IF_MATCH;
-import static javax.ws.rs.core.HttpHeaders.IF_MODIFIED_SINCE;
-import static javax.ws.rs.core.HttpHeaders.IF_NONE_MATCH;
-import static javax.ws.rs.core.HttpHeaders.IF_UNMODIFIED_SINCE;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.trellisldp.api.TrellisUtils.normalizePath;
 import static org.trellisldp.vocabulary.Trellis.PreferUserManaged;
 
+import jakarta.ws.rs.core.EntityTag;
+
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
-
-import javax.ws.rs.core.EntityTag;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;

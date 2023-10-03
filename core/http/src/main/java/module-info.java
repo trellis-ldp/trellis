@@ -24,12 +24,12 @@ module org.trellisldp.http {
     requires org.apache.commons.rdf.api;
     requires org.slf4j;
 
-    requires microprofile.config.api;
-    requires jakarta.enterprise.cdi.api;
+    requires jakarta.cdi;
     requires jakarta.inject;
-    requires java.annotation;
-    requires java.ws.rs;
-    requires java.xml.bind;
+    requires jakarta.annotation;
+    requires jakarta.ws.rs;
+    requires jakarta.xml.bind;
+    requires microprofile.config.api;
     requires microprofile.metrics.api;
     requires microprofile.openapi.api;
 }

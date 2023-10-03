@@ -15,13 +15,13 @@
  */
 package org.trellisldp.test;
 
+import static jakarta.ws.rs.client.Entity.entity;
+import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static jakarta.ws.rs.core.HttpHeaders.LINK;
+import static jakarta.ws.rs.core.Link.fromUri;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Stream.of;
-import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
-import static javax.ws.rs.core.HttpHeaders.LINK;
-import static javax.ws.rs.core.Link.fromUri;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.common.HttpConstants.SLUG;
@@ -33,9 +33,9 @@ import static org.trellisldp.vocabulary.RDF.type;
 
 import io.smallrye.jwt.build.Jwt;
 
-import java.util.stream.Stream;
+import jakarta.ws.rs.core.Response;
 
-import javax.ws.rs.core.Response;
+import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Graph;

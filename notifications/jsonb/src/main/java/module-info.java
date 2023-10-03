@@ -19,8 +19,8 @@ module org.trellisldp.notification.jsonb {
     requires org.trellisldp.api;
     requires org.trellisldp.vocabulary;
 
-    requires jakarta.enterprise.cdi.api;
-    requires java.json.bind;
+    requires jakarta.cdi;
+    requires jakarta.json.bind;
     requires org.apache.commons.rdf.api;
 
     provides org.trellisldp.api.NotificationSerializationService

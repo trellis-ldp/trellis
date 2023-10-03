@@ -21,10 +21,10 @@ import static java.util.UUID.randomUUID;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_SESSION_PREFIX;
 import static org.trellisldp.vocabulary.Trellis.AnonymousAgent;
 
+import jakarta.ws.rs.core.SecurityContext;
+
 import java.time.Instant;
 import java.util.Optional;
-
-import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.commons.rdf.api.RDF;

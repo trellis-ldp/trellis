@@ -18,7 +18,7 @@ package org.trellisldp.http;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.trellisldp.common.HttpConstants.CONFIG_HTTP_BASE_URL;
 
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.core.Application;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;

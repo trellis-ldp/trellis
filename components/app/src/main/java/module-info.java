@@ -21,7 +21,7 @@ module org.trellisldp.app {
     requires org.trellisldp.vocabulary;
 
     requires jakarta.inject;
-    requires jakarta.enterprise.cdi.api;
+    requires jakarta.cdi;
 
     requires org.slf4j;
 

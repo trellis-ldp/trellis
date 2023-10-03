@@ -15,16 +15,16 @@
  */
 package org.trellisldp.http.impl;
 
+import static jakarta.ws.rs.core.Response.Status.PRECONDITION_FAILED;
+import static jakarta.ws.rs.core.Response.notModified;
+import static jakarta.ws.rs.core.Response.status;
+import static jakarta.ws.rs.core.UriBuilder.fromUri;
 import static java.time.ZonedDateTime.parse;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Arrays.stream;
 import static java.util.function.Predicate.isEqual;
 import static java.util.stream.Collectors.toSet;
-import static javax.ws.rs.core.Response.Status.PRECONDITION_FAILED;
-import static javax.ws.rs.core.Response.notModified;
-import static javax.ws.rs.core.Response.status;
-import static javax.ws.rs.core.UriBuilder.fromUri;
 import static org.apache.commons.lang3.StringUtils.strip;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
@@ -34,6 +34,13 @@ import static org.trellisldp.api.TrellisUtils.normalizePath;
 import static org.trellisldp.common.HttpConstants.*;
 import static org.trellisldp.vocabulary.JSONLD.compacted;
 
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.NotAcceptableException;
+import jakarta.ws.rs.RedirectionException;
+import jakarta.ws.rs.core.EntityTag;
+import jakarta.ws.rs.core.MediaType;
+
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.HashSet;
@@ -41,13 +48,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.RedirectionException;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.rdf.api.BlankNodeOrIRI;
 import org.apache.commons.rdf.api.Dataset;

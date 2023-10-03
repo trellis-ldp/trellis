@@ -15,11 +15,11 @@
  */
 package org.trellisldp.reactive;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.ObservesAsync;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.ObservesAsync;
 
 import org.trellisldp.api.Notification;
 

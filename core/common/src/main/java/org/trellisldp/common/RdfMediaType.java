@@ -15,7 +15,7 @@
  */
 package org.trellisldp.common;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  * RDF-based {@link MediaType} definitions.

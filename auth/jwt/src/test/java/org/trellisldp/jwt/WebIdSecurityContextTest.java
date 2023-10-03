@@ -22,9 +22,9 @@ import static org.mockito.Mockito.*;
 
 import io.smallrye.jwt.auth.principal.DefaultJWTCallerPrincipal;
 
-import java.util.List;
+import jakarta.ws.rs.core.SecurityContext;
 
-import javax.ws.rs.core.SecurityContext;
+import java.util.List;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jose4j.jwt.JwtClaims;

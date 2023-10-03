@@ -15,9 +15,9 @@
  */
 package org.trellisldp.notification.jsonb;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
 
 import org.trellisldp.api.Notification;
 import org.trellisldp.api.NotificationSerializationService;

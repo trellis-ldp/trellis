@@ -17,8 +17,8 @@ package org.trellisldp.quarkus;
 
 import io.quarkus.arc.DefaultBean;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
 
 import org.trellisldp.api.MementoService;
 import org.trellisldp.api.NoopMementoService;

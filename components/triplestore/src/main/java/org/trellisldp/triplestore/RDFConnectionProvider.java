@@ -18,12 +18,12 @@ package org.trellisldp.triplestore;
 import static org.trellisldp.triplestore.TriplestoreResourceService.CONFIG_TRIPLESTORE_RDF_LOCATION;
 import static org.trellisldp.triplestore.TriplestoreResourceService.buildRDFConnection;
 
-import java.util.Optional;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
+import java.util.Optional;
 
 import org.apache.jena.rdfconnection.RDFConnection;
 import org.eclipse.microprofile.config.inject.ConfigProperty;

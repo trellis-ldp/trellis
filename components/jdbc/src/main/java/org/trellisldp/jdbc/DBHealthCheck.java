@@ -15,11 +15,12 @@
  */
 package org.trellisldp.jdbc;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.sql.DataSource;
 
 import org.eclipse.microprofile.health.HealthCheck;

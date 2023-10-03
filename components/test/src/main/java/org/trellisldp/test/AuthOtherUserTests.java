@@ -15,18 +15,18 @@
  */
 package org.trellisldp.test;
 
-import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
-import static javax.ws.rs.core.Response.Status.fromStatusCode;
+import static jakarta.ws.rs.client.Entity.entity;
+import static jakarta.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static jakarta.ws.rs.core.Response.Status.FORBIDDEN;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
+import static jakarta.ws.rs.core.Response.Status.fromStatusCode;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.trellisldp.common.RdfMediaType.APPLICATION_SPARQL_UPDATE;
 import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE;
 
-import java.util.stream.Stream;
+import jakarta.ws.rs.core.Response;
 
-import javax.ws.rs.core.Response;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.function.Executable;
 

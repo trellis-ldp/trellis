@@ -22,6 +22,10 @@ import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,10 +33,6 @@ import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 import org.apache.commons.rdf.api.IRI;
 import org.apache.jena.util.URIref;

@@ -15,13 +15,13 @@
  */
 package org.trellisldp.http.impl;
 
+import static jakarta.ws.rs.core.Link.TYPE;
+import static jakarta.ws.rs.core.Link.fromUri;
 import static java.time.Instant.now;
 import static java.time.ZoneOffset.UTC;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.Link.TYPE;
-import static javax.ws.rs.core.Link.fromUri;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.common.HttpConstants.DATETIME;
 import static org.trellisldp.common.HttpConstants.FROM;
@@ -29,12 +29,12 @@ import static org.trellisldp.common.HttpConstants.MEMENTO;
 import static org.trellisldp.common.HttpConstants.TIMEMAP;
 import static org.trellisldp.common.HttpConstants.UNTIL;
 
+import jakarta.ws.rs.core.Link;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import javax.ws.rs.core.Link;
 
 import org.junit.jupiter.api.Test;
 

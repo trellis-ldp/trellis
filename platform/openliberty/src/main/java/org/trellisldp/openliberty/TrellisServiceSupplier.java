@@ -15,8 +15,8 @@
  */
 package org.trellisldp.openliberty;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
 
 import org.trellisldp.api.*;
 import org.trellisldp.common.DefaultTimemapGenerator;

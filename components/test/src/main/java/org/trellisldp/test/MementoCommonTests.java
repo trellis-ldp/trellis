@@ -15,15 +15,15 @@
  */
 package org.trellisldp.test;
 
+import static jakarta.ws.rs.client.Entity.entity;
+import static jakarta.ws.rs.core.HttpHeaders.LINK;
+import static jakarta.ws.rs.core.Link.TYPE;
+import static jakarta.ws.rs.core.Link.fromUri;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
+import static jakarta.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
-import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.HttpHeaders.LINK;
-import static javax.ws.rs.core.Link.TYPE;
-import static javax.ws.rs.core.Link.fromUri;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static javax.ws.rs.core.Response.Status.Family.SUCCESSFUL;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.trellisldp.common.HttpConstants.SLUG;
 import static org.trellisldp.common.RdfMediaType.APPLICATION_SPARQL_UPDATE;
@@ -33,10 +33,10 @@ import static org.trellisldp.test.TestUtils.hasType;
 import static org.trellisldp.test.TestUtils.meanwhile;
 import static org.trellisldp.vocabulary.RDF.type;
 
+import jakarta.ws.rs.core.Response;
+
 import java.util.Set;
 import java.util.stream.Stream;
-
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.IRI;

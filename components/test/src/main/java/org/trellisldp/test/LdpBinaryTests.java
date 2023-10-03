@@ -15,10 +15,10 @@
  */
 package org.trellisldp.test;
 
+import static jakarta.ws.rs.client.Entity.entity;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN;
+import static jakarta.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.ws.rs.client.Entity.entity;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
-import static javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,10 +29,10 @@ import static org.trellisldp.common.RdfMediaType.TEXT_TURTLE_TYPE;
 import static org.trellisldp.test.TestUtils.readEntityAsGraph;
 import static org.trellisldp.test.TestUtils.readEntityAsString;
 
-import java.util.stream.Stream;
+import jakarta.ws.rs.core.EntityTag;
+import jakarta.ws.rs.core.Response;
 
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.Response;
+import java.util.stream.Stream;
 
 import org.apache.commons.rdf.api.Graph;
 import org.apache.commons.rdf.api.RDF;

@@ -15,10 +15,10 @@
  */
 package org.trellisldp.test;
 
+import static jakarta.ws.rs.core.HttpHeaders.LINK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.Instant.now;
 import static java.util.stream.Collectors.toList;
-import static javax.ws.rs.core.HttpHeaders.LINK;
 import static org.awaitility.Awaitility.await;
 import static org.trellisldp.vocabulary.RDF.type;
 
@@ -27,6 +27,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.smallrye.jwt.build.Jwt;
 
+import jakarta.ws.rs.core.Link;
+import jakarta.ws.rs.core.Response;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -34,9 +37,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
-
-import javax.ws.rs.core.Link;
-import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.Graph;

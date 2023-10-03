@@ -21,14 +21,14 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 import static org.trellisldp.vocabulary.RDF.type;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import javax.enterprise.context.ApplicationScoped;
 
 import org.apache.commons.rdf.api.BlankNode;
 import org.apache.commons.rdf.api.Graph;

@@ -17,10 +17,10 @@ package org.trellisldp.webdav.xml;
 
 import static org.trellisldp.webdav.xml.DavUtils.DAV_NAMESPACE;
 
-import java.util.List;
+import jakarta.xml.bind.annotation.XmlAnyElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
-import javax.xml.bind.annotation.XmlAnyElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
 
 import org.w3c.dom.Element;
 

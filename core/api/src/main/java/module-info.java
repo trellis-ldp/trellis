@@ -16,7 +16,7 @@
 module org.trellisldp.api {
     exports org.trellisldp.api;
 
-    requires jakarta.enterprise.cdi.api;
+    requires jakarta.cdi;
     requires jakarta.inject;
     requires org.apache.commons.rdf.api;
 

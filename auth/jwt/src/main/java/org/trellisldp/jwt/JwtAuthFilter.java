@@ -15,18 +15,18 @@
  */
 package org.trellisldp.jwt;
 
-import static javax.ws.rs.Priorities.AUTHENTICATION;
+import static jakarta.ws.rs.Priorities.AUTHENTICATION;
 import static org.eclipse.microprofile.config.ConfigProvider.getConfig;
 import static org.slf4j.LoggerFactory.getLogger;
 
+import jakarta.annotation.Priority;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.ext.Provider;
+
 import java.io.IOException;
 import java.util.Set;
-
-import javax.annotation.Priority;
-import javax.inject.Inject;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.ext.Provider;
 
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.slf4j.Logger;

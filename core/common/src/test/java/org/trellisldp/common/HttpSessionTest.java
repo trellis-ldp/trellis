@@ -22,10 +22,10 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.trellisldp.api.TrellisUtils.TRELLIS_SESSION_PREFIX;
 
+import jakarta.ws.rs.core.SecurityContext;
+
 import java.security.Principal;
 import java.time.Instant;
-
-import javax.ws.rs.core.SecurityContext;
 
 import org.apache.commons.rdf.api.RDF;
 import org.junit.jupiter.api.Test;

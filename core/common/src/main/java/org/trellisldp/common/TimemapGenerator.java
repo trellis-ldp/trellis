@@ -15,10 +15,10 @@
  */
 package org.trellisldp.common;
 
+import jakarta.ws.rs.core.Link;
+
 import java.util.List;
 import java.util.stream.Stream;
-
-import javax.ws.rs.core.Link;
 
 import org.apache.commons.rdf.api.Triple;
 

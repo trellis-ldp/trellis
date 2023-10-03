@@ -17,12 +17,13 @@ package org.trellisldp.jdbc;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.inject.Alternative;
+import jakarta.inject.Inject;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.inject.Alternative;
-import javax.inject.Inject;
 import javax.sql.DataSource;
 
 import org.jdbi.v3.core.Jdbi;

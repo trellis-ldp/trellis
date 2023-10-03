@@ -21,11 +21,11 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Qualifier;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Qualifier;
 
 /**
  * Marks a no-op implementation of a Trellis component.

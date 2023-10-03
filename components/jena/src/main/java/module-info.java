@@ -25,9 +25,9 @@ module org.trellisldp.jena {
     requires org.apache.jena.base;
     requires org.apache.jena.commonsrdf;
     requires org.apache.jena.core;
-    requires jakarta.enterprise.cdi.api;
+    requires jakarta.cdi;
     requires jakarta.inject;
-    requires java.annotation;
+    requires jakarta.annotation;
     requires microprofile.config.api;
     requires org.slf4j;
 

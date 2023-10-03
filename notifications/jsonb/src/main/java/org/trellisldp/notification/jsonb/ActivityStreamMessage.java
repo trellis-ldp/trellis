@@ -17,11 +17,11 @@ package org.trellisldp.notification.jsonb;
 
 import static java.util.stream.Collectors.toList;
 
+import jakarta.json.bind.annotation.JsonbProperty;
+import jakarta.json.bind.annotation.JsonbPropertyOrder;
+
 import java.util.List;
 import java.util.Map;
-
-import javax.json.bind.annotation.JsonbProperty;
-import javax.json.bind.annotation.JsonbPropertyOrder;
 
 import org.apache.commons.rdf.api.IRI;
 import org.trellisldp.api.Notification;

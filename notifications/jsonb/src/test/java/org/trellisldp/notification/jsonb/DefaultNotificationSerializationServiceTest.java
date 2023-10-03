@@ -24,13 +24,13 @@ import static org.trellisldp.vocabulary.AS.Create;
 import static org.trellisldp.vocabulary.LDP.Container;
 import static org.trellisldp.vocabulary.PROV.Activity;
 
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
 
 import org.apache.commons.rdf.api.RDF;
 import org.apache.commons.rdf.simple.SimpleRDF;

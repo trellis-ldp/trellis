@@ -17,9 +17,9 @@ package org.trellisldp.webdav;
 
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import java.util.Optional;
+import jakarta.ws.rs.core.Application;
 
-import javax.ws.rs.core.Application;
+import java.util.Optional;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;

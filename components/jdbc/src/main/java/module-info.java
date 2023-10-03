@@ -27,10 +27,10 @@ module org.trellisldp.jdbc {
     requires org.jdbi.v3.core;
     requires org.slf4j;
 
-    requires jakarta.enterprise.cdi.api;
+    requires jakarta.cdi;
     requires jakarta.inject;
+    requires jakarta.annotation;
     requires java.naming;
-    requires java.annotation;
     requires java.sql;
     requires microprofile.config.api;
     requires microprofile.health.api;

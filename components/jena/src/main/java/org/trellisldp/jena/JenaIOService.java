@@ -37,6 +37,10 @@ import static org.trellisldp.vocabulary.JSONLD.expanded;
 import static org.trellisldp.vocabulary.JSONLD.flattened;
 import static org.trellisldp.vocabulary.JSONLD.getNamespace;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,10 +48,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Stream;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.rdf.api.Graph;

@@ -48,7 +48,7 @@ public interface CacheService<K, V> {
     @java.lang.annotation.Documented
     @java.lang.annotation.Retention(RUNTIME)
     @java.lang.annotation.Target({TYPE, METHOD, FIELD, PARAMETER})
-    @javax.inject.Qualifier
+    @jakarta.inject.Qualifier
     @interface TrellisProfileCache { }
 
 }

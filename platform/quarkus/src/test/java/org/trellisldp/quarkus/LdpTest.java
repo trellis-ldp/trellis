@@ -15,14 +15,14 @@
  */
 package org.trellisldp.quarkus;
 
-import static javax.ws.rs.client.ClientBuilder.newBuilder;
+import static jakarta.ws.rs.client.ClientBuilder.newBuilder;
 
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.quarkus.test.junit.QuarkusTest;
 
-import java.net.URL;
+import jakarta.ws.rs.client.Client;
 
-import javax.ws.rs.client.Client;
+import java.net.URL;
 
 import org.trellisldp.test.AbstractApplicationLdpTests;
 
