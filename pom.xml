@@ -14,10 +14,29 @@
   <packaging>pom</packaging>
 
   <modules>
-      <module>auth</module>
-      <module>core</module>
-      <module>components</module>
-      <module>notifications</module>
-      <module>platform</module>
+      <module>trellis-api</module>
+      <module>trellis-app</module>
+      <module>trellis-audit</module>
+      <module>trellis-bom</module>
+      <module>trellis-cache</module>
+      <module>trellis-cdi</module>
+      <module>trellis-common</module>
+      <module>trellis-constraint</module>
+      <module>trellis-file</module>
+      <module>trellis-http</module>
+      <module>trellis-jdbc</module>
+      <module>trellis-jena</module>
+      <module>trellis-jwt</module>
+      <module>trellis-namespace</module>
+      <module>trellis-notification-jackson</module>
+      <module>trellis-notification-jsonb</module>
+      <module>trellis-rdfa</module>
+      <module>trellis-reactive</module>
+      <module>trellis-test</module>
+      <module>trellis-triplestore</module>
+      <module>trellis-vocabulary</module>
+      <module>trellis-webac</module>
+      <module>trellis-webdav</module>
+      <module>apps</module>
   </modules>
 </project>

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" child.project.url.inherit.append.path="false">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.trellisldp</groupId>
+    <artifactId>trellis-parent</artifactId>
+    <version>0.20.0-SNAPSHOT</version>
+    <relativePath>../trellis-parent</relativePath>
+  </parent>
+
+  <groupId>org.trellisldp</groupId>
+  <artifactId>trellis-apps-parent</artifactId>
+  <version>0.20.0-SNAPSHOT</version>
+  <name>Trellis Apps parent</name>
+  <url>https://www.trellisldp.org</url>
+
+  <description>
+      Trellis LDP server: apps parent
+  </description>
+  <packaging>pom</packaging>
+
+  <modules>
+      <module>quarkus</module>
+      <module>openliberty</module>
+  </modules>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
