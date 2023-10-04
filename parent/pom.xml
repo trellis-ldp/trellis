@@ -505,7 +505,6 @@
               <link>https://javaee.github.io/javaee-spec/javadocs/</link>
               <link>https://jena.apache.org/documentation/javadoc/jena/</link>
               <link>https://jena.apache.org/documentation/javadoc/arq/</link>
-              <link>http://www.javadoc.io/doc/com.fasterxml.jackson.core/jackson-databind/</link>
             </links>
             <header>
               <![CDATA[
