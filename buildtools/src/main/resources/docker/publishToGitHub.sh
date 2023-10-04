@@ -5,9 +5,9 @@ VERSION=$(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout)
 # Publish releases only
 if [[ $VERSION != *SNAPSHOT* ]]; then
 
-    ./mvnw package -pl platform/quarkus -am
+    ./mvnw package -pl apps/quarkus -am
 
-    cd platform/quarkus
+    cd apps/quarkus
     ##################################
     # Quarkus-based triplestore image
     ##################################
