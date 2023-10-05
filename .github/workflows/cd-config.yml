@@ -60,7 +60,7 @@ jobs:
         java-version: 11
         cache: "maven"
     - name: Publish to SonarCloud
-      run: ./mvnw verify sonar:sonar -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
+      run: ./mvnw verify sonar:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
   dockerhub:
     name: Deploy Docker containers to DockerHub
