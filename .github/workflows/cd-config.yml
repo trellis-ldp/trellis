@@ -38,11 +38,14 @@ jobs:
         distribution: 'temurin'
         java-version: 11
         cache: "maven"
+        server-id: 'ossrh'
+        server-username: MAVEN_REPO_USERNAME
+        server-password: MAVEN_REPO_TOKEN
     - name: Publish to Sonatype
       run: if [[ $(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout) == *SNAPSHOT* ]]; then ./mvnw deploy ; fi
       env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          MAVEN_REPO_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          MAVEN_REPO_TOKEN: ${{ secrets.SONATYPE_PASSWORD }}
 
   sonar:
     name: Send analysis to SonarCloud
@@ -112,9 +115,9 @@ jobs:
 
     - name: Build API documentation
       run: |
-          ./gradlew apidocs
-          mkdir -p docs/trellis/$(./gradlew -q getVersion)
-          mv docs/apidocs/$(./gradlew -q getVersion) docs/trellis/$(./gradlew -q getVersion)/apidocs
+          ./mvnw clean verify site site:stage
+          mkdir -p docs/trellis/$(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout)
+          mv target/staging/apidocs docs/trellis/$(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout)/apidocs
 
     - name: Sync to AWS S3
       uses: jakejarvis/s3-sync-action@v0.5.1

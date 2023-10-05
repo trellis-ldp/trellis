@@ -81,6 +81,23 @@
       <module>apps</module>
   </modules>
 
+  <distributionManagement>
+    <snapshotRepository>
+      <name>Snapshot Repository</name>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <name>Staging Repository</name>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2</url>
+    </repository>
+    <site child.site.url.inherit.append.path="false">
+      <id>${project.artifactId}</id>
+      <url>${project.baseUri}</url>
+    </site>
+  </distributionManagement>
+
   <build>
     <pluginManagement>
       <plugins>
@@ -610,6 +627,9 @@
           <reportSet>
             <id>aggregate</id>
             <inherited>false</inherited>
+            <configuration>
+                <skippedModules>trellis-test,trellis-quarkus,trellis-openliberty</skippedModules>
+            </configuration>
             <reports>
               <report>aggregate</report>
             </reports>
