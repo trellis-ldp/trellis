@@ -51,6 +51,7 @@ jobs:
     name: Send analysis to SonarCloud
     needs: [build]
     runs-on: ubuntu-latest
+    if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 11
