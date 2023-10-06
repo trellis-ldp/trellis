@@ -45,7 +45,7 @@
     <surefire.plugin.version>3.1.2</surefire.plugin.version>
 
     <!-- tooling -->
-    <checkstyle.tool.version>10.12.3</checkstyle.tool.version>
+    <checkstyle.tool.version>10.12.4</checkstyle.tool.version>
 
     <!-- sonar -->
     <sonar.projectKey>trellis</sonar.projectKey>
