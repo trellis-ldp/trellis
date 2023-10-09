@@ -187,7 +187,7 @@
       <plugin>
         <groupId>io.openliberty.tools</groupId>
         <artifactId>liberty-maven-plugin</artifactId>
-        <version>3.8.2</version>
+        <version>3.9</version>
         <executions>
           <execution>
             <id>start-liberty</id>
