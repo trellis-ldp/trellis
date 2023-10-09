@@ -58,7 +58,7 @@
     <microprofile.openapi.version>3.1.1</microprofile.openapi.version>
     <microprofile.reactive.version>3.0</microprofile.reactive.version>
     <postgres.version>42.6.0</postgres.version>
-    <snakeyaml.version>2.0</snakeyaml.version>
+    <snakeyaml.version>2.2</snakeyaml.version>
     <jaxb.version>4.0.3</jaxb.version>
     <quarkus.version>3.4.2</quarkus.version>
 
