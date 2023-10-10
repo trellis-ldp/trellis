@@ -30,14 +30,7 @@
     <guava.version>32.1.2-jre</guava.version>
     <jackson.version>2.15.2</jackson.version>
 
-    <jakarta.activation.version>2.1.2</jakarta.activation.version>
-    <jakarta.annotation.version>2.1.1</jakarta.annotation.version>
-    <jakarta.cdi.version>4.0.1</jakarta.cdi.version>
-    <jakarta.el.version>5.0.1</jakarta.el.version>
-    <jakarta.inject.version>2.0.1</jakarta.inject.version>
-    <jakarta.json.bind.version>3.0.0</jakarta.json.bind.version>
-    <jakarta.json.version>2.1.2</jakarta.json.version>
-    <jakarta.ws.rs.version>3.1.0</jakarta.ws.rs.version>
+    <jakarta.platform.version>10.0.0</jakarta.platform.version>
     <jakarta.xml.bind.version>4.0.1</jakarta.xml.bind.version>
 
     <jdbi.version>3.41.3</jdbi.version>
@@ -93,34 +86,14 @@
         <version>${commons.lang3.version}</version>
       </dependency>
       <dependency>
-        <groupId>jakarta.inject</groupId>
-        <artifactId>jakarta.inject-api</artifactId>
-        <version>${jakarta.inject.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>jakarta.enterprise</groupId>
-        <artifactId>jakarta.enterprise.cdi-api</artifactId>
-        <version>${jakarta.cdi.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>jakarta.ws.rs</groupId>
-        <artifactId>jakarta.ws.rs-api</artifactId>
-        <version>${jakarta.ws.rs.version}</version>
+        <groupId>jakarta.platform</groupId>
+        <artifactId>jakarta.jakartaee-core-api</artifactId>
+        <version>${jakarta.platform.version}</version>
       </dependency>
       <dependency>
         <groupId>jakarta.xml.bind</groupId>
         <artifactId>jakarta.xml.bind-api</artifactId>
         <version>${jakarta.xml.bind.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>jakarta.activation</groupId>
-        <artifactId>jakarta.activation-api</artifactId>
-        <version>${jakarta.activation.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>jakarta.el</groupId>
-        <artifactId>jakarta.el-api</artifactId>
-        <version>${jakarta.el.version}</version>
       </dependency>
       <dependency>
           <groupId>org.eclipse.microprofile.config</groupId>
@@ -173,11 +146,6 @@
         <version>${jena.version}</version>
       </dependency>
       <dependency>
-        <groupId>jakarta.annotation</groupId>
-        <artifactId>jakarta.annotation-api</artifactId>
-        <version>${jakarta.annotation.version}</version>
-      </dependency>
-      <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
@@ -226,16 +194,6 @@
         <groupId>org.liquibase</groupId>
         <artifactId>liquibase-core</artifactId>
         <version>${liquibase.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>jakarta.json.bind</groupId>
-        <artifactId>jakarta.json.bind-api</artifactId>
-        <version>${jakarta.json.bind.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>jakarta.json</groupId>
-        <artifactId>jakarta.json-api</artifactId>
-        <version>${jakarta.json.version}</version>
       </dependency>
       <dependency>
         <groupId>io.reactivex.rxjava2</groupId>
