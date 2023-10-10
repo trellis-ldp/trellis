@@ -24,7 +24,7 @@ jobs:
         cache: 'maven'
 
     - name: Build with Maven
-      run: ./mvnw verify javadoc:javadoc
+      run: ./mvnw -B -ntp verify javadoc:javadoc
 
   sonatype:
     name: Deploy artifacts to Sonatype
@@ -42,7 +42,7 @@ jobs:
         server-username: MAVEN_REPO_USERNAME
         server-password: MAVEN_REPO_TOKEN
     - name: Publish to Sonatype
-      run: if [[ $(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout) == *SNAPSHOT* ]]; then ./mvnw deploy ; fi
+      run: if [[ $(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout) == *SNAPSHOT* ]]; then ./mvnw -B -ntp deploy ; fi
       env:
           MAVEN_REPO_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_REPO_TOKEN: ${{ secrets.SONATYPE_PASSWORD }}
@@ -61,7 +61,7 @@ jobs:
         java-version: 11
         cache: "maven"
     - name: Publish to SonarCloud
-      run: ./mvnw verify sonar:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+      run: ./mvnw -B -ntp verify sonar:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
   dockerhub:
     name: Deploy Docker containers to DockerHub
@@ -116,7 +116,7 @@ jobs:
 
     - name: Build API documentation
       run: |
-          ./mvnw clean verify site site:stage
+          ./mvnw -B -ntp clean verify site site:stage
           mkdir -p docs/trellis/$(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout)
           mv target/staging/apidocs docs/trellis/$(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout)/apidocs
 

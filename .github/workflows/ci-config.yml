@@ -24,7 +24,7 @@ jobs:
         cache: 'maven'
 
     - name: Build with Maven
-      run: ./mvnw verify javadoc:javadoc
+      run: ./mvnw -B -ntp verify javadoc:javadoc
       env:
         QUARKUS_DATASOURCE_USERNAME: postgres
         QUARKUS_DATASOURCE_PASSWORD: postgres
@@ -44,5 +44,5 @@ jobs:
 
     - name: Build with Maven
       shell: bash
-      run: ./mvnw.cmd verify
+      run: ./mvnw.cmd -B -ntp verify
 
