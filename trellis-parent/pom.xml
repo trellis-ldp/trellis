@@ -30,6 +30,7 @@
     <guava.version>32.1.2-jre</guava.version>
     <jackson.version>2.15.2</jackson.version>
 
+    <microprofile.version>6.0</microprofile.version>
     <jakarta.platform.version>10.0.0</jakarta.platform.version>
     <jakarta.xml.bind.version>4.0.1</jakarta.xml.bind.version>
 
@@ -44,12 +45,6 @@
     <smallrye.reactive.operators.version>2.5.1</smallrye.reactive.operators.version>
     <slf4j.version>2.0.9</slf4j.version>
     <rxjava.version>2.2.21</rxjava.version>
-    <microprofile.jwt.version>2.1</microprofile.jwt.version>
-    <microprofile.config.version>3.0.3</microprofile.config.version>
-    <microprofile.health.version>4.0.1</microprofile.health.version>
-    <microprofile.metrics.version>4.0.1</microprofile.metrics.version>
-    <microprofile.openapi.version>3.1.1</microprofile.openapi.version>
-    <microprofile.reactive.version>3.0</microprofile.reactive.version>
     <postgres.version>42.6.0</postgres.version>
     <snakeyaml.version>2.2</snakeyaml.version>
     <jaxb.version>4.0.3</jaxb.version>
@@ -71,9 +66,15 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-rdf-api</artifactId>
-        <version>${commons.rdf.version}</version>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>${jakarta.xml.bind.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.microprofile</groupId>
+        <artifactId>microprofile</artifactId>
+        <type>pom</type>
+        <version>${microprofile.version}</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
@@ -82,48 +83,13 @@
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
+        <artifactId>commons-rdf-api</artifactId>
+        <version>${commons.rdf.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>${commons.lang3.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>jakarta.platform</groupId>
-        <artifactId>jakarta.jakartaee-core-api</artifactId>
-        <version>${jakarta.platform.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>jakarta.xml.bind</groupId>
-        <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>${jakarta.xml.bind.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>org.eclipse.microprofile.config</groupId>
-          <artifactId>microprofile-config-api</artifactId>
-          <version>${microprofile.config.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
-        <artifactId>microprofile-reactive-messaging-api</artifactId>
-        <version>${microprofile.reactive.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>org.eclipse.microprofile.jwt</groupId>
-          <artifactId>microprofile-jwt-auth-api</artifactId>
-          <version>${microprofile.jwt.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>org.eclipse.microprofile.health</groupId>
-          <artifactId>microprofile-health-api</artifactId>
-          <version>${microprofile.health.version}</version>
-      </dependency>
-       <dependency>
-          <groupId>org.eclipse.microprofile.openapi</groupId>
-          <artifactId>microprofile-openapi-api</artifactId>
-          <version>${microprofile.openapi.version}</version>
-      </dependency>
-       <dependency>
-          <groupId>org.eclipse.microprofile.metrics</groupId>
-          <artifactId>microprofile-metrics-api</artifactId>
-          <version>${microprofile.metrics.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.jena</groupId>
