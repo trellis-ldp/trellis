@@ -54,7 +54,7 @@
     <microprofile.jwt.version>2.1</microprofile.jwt.version>
     <microprofile.config.version>3.0.3</microprofile.config.version>
     <microprofile.health.version>4.0.1</microprofile.health.version>
-    <microprofile.metrics.version>4.0.1</microprofile.metrics.version>
+    <microprofile.metrics.version>5.0.1</microprofile.metrics.version>
     <microprofile.openapi.version>3.1.1</microprofile.openapi.version>
     <microprofile.reactive.version>3.0</microprofile.reactive.version>
     <postgres.version>42.6.0</postgres.version>
