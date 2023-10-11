@@ -32,23 +32,17 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <dependency>
+        <groupId>org.eclipse.microprofile</groupId>
+        <artifactId>microprofile</artifactId>
+        <version>${microprofile.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
-    <dependency>
-      <groupId>jakarta.platform</groupId>
-      <artifactId>jakarta.jakartaee-api</artifactId>
-      <version>${jakarta.platform.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.microprofile</groupId>
-      <artifactId>microprofile</artifactId>
-      <type>pom</type>
-      <scope>provided</scope>
-    </dependency>
-
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-api</artifactId>
@@ -133,6 +127,12 @@
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-triplestore</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.platform</groupId>
+      <artifactId>jakarta.jakartaee-api</artifactId>
+      <version>${jakarta.platform.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- testing -->

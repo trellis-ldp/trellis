@@ -201,13 +201,13 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-            <systemProperties>
-                <com.arjuna.ats.arjuna.objectstore.objectStoreDir>${project.build.directory}</com.arjuna.ats.arjuna.objectstore.objectStoreDir>
-                <trellis.file.binary-path>${project.build.directory}/data/binaries</trellis.file.binary-path>
-                <trellis.file.memento-path>${project.build.directory}/data/mementos</trellis.file.memento-path>
-                <mp.jwt.verify.publickey.location>https://www.trellisldp.org/tests/jwks.json</mp.jwt.verify.publickey.location>
-                <trellis.triplestore.rdf-location>${project.build.directory}/data/rdf</trellis.triplestore.rdf-location>
-            </systemProperties>
+          <systemPropertyVariables>
+            <com.arjuna.ats.arjuna.objectstore.objectStoreDir>${project.build.directory}</com.arjuna.ats.arjuna.objectstore.objectStoreDir>
+            <trellis.file.binary-path>${project.build.directory}/data/binaries</trellis.file.binary-path>
+            <trellis.file.memento-path>${project.build.directory}/data/mementos</trellis.file.memento-path>
+            <mp.jwt.verify.publickey.location>https://www.trellisldp.org/tests/jwks.json</mp.jwt.verify.publickey.location>
+            <trellis.triplestore.rdf-location>${project.build.directory}/data/rdf</trellis.triplestore.rdf-location>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
     </plugins>
