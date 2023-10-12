@@ -10,26 +10,14 @@
   </parent>
 
   <groupId>org.trellisldp</groupId>
-  <artifactId>trellis-app</artifactId>
+  <artifactId>trellis-report</artifactId>
   <version>0.20.0-SNAPSHOT</version>
-  <name>Trellis Application</name>
+  <name>Trellis Report</name>
   <url>https://www.trellisldp.org</url>
   <description>
-      Trellis LDP Application
+      Trellis LDP Reports
   </description>
-  <packaging>jar</packaging>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.eclipse.microprofile</groupId>
-        <artifactId>microprofile</artifactId>
-        <version>${microprofile.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+  <packaging>pom</packaging>
 
   <dependencies>
     <dependency>
@@ -44,104 +32,110 @@
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-http</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.trellisldp</groupId>
       <artifactId>trellis-vocabulary</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>jakarta.platform</groupId>
-      <artifactId>jakarta.jakartaee-core-api</artifactId>
-      <scope>provided</scope>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-notification-jackson</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-      <scope>provided</scope>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-notification-jsonb</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-rdf-api</artifactId>
-      <scope>provided</scope>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-reactive</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-jwt</artifactId>
+      <version>${project.version}</version>
     </dependency>
-
-    <!-- testing -->
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-webac</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-app</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-audit</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
-      <artifactId>trellis-jena</artifactId>
+      <artifactId>trellis-cache</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-cdi</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-constraint</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.trellisldp</groupId>
-      <artifactId>trellis-triplestore</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.trellisldp</groupId>
-      <artifactId>trellis-rdfa</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.trellisldp</groupId>
       <artifactId>trellis-file</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-jdbc</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.smallrye.config</groupId>
-      <artifactId>smallrye-config</artifactId>
-      <scope>test</scope>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-jena</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.jboss.weld</groupId>
-      <artifactId>weld-junit5</artifactId>
-      <scope>test</scope>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-namespace</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-junit-jupiter</artifactId>
-      <scope>test</scope>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-rdfa</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <scope>test</scope>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-triplestore</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <scope>test</scope>
+      <groupId>org.trellisldp</groupId>
+      <artifactId>trellis-webdav</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 </project>

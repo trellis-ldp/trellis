@@ -48,7 +48,7 @@
     <checkstyle.tool.version>10.12.4</checkstyle.tool.version>
 
     <!-- sonar -->
-    <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/trellis-bom/target/site/jacoco-merged/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+    <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/report/target/site/jacoco-merged/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     <sonar.projectKey>trellis</sonar.projectKey>
     <sonar.moduleKey>${project.artifactId}</sonar.moduleKey>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -80,6 +80,7 @@
       <module>trellis-webac</module>
       <module>trellis-webdav</module>
       <module>apps</module>
+      <module>report</module>
   </modules>
 
   <distributionManagement>
