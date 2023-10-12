@@ -42,7 +42,7 @@ jobs:
         server-username: MAVEN_REPO_USERNAME
         server-password: MAVEN_REPO_TOKEN
     - name: Publish to Sonatype
-      run: if [[ $(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout) == *SNAPSHOT* ]]; then ./mvnw -B -ntp deploy ; fi
+      run: if [[ $(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout) == *SNAPSHOT* ]]; then ./mvnw -B -ntp deploy -Ppublish ; fi
       env:
           MAVEN_REPO_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_REPO_TOKEN: ${{ secrets.SONATYPE_PASSWORD }}

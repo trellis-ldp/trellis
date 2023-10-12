@@ -8,7 +8,7 @@ BRANCH=$(git branch 2>/dev/null | sed -n -e 's/^\* \(.*\)/\1/p')
 ##################################
 IMAGE=trellisldp/trellis-triplestore
 
-./mvnw package -pl apps/quarkus -am
+./mvnw package -pl apps/quarkus -am -Ppublish
 
 TAG=latest
 # Use the develop tag for snapshots

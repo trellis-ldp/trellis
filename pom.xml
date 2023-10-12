@@ -644,6 +644,19 @@
     </plugins>
   </reporting>
 
+  <profiles>
+    <profile>
+      <id>publish</id>
+      <properties>
+        <skipTests>true</skipTests>
+        <pmd.skip>true</pmd.skip>
+        <cpd.skip>true</cpd.skip>
+        <jacoco.skip>true</jacoco.skip>
+        <checkstyle.skip>true</checkstyle.skip>
+      </properties>
+    </profile>
+  </profiles>
+
   <developers>
     <developer>
       <id>acoburn</id>

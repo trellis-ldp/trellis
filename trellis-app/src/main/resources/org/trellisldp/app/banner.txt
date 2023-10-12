@@ -18,5 +18,5 @@ tttttt:::::::tttttt   rr::::::rrrrr::::::re::::::e     e:::::el::::l  l::::l  i:
         tt:::::::::::ttr:::::r              ee:::::::::::::e l::::::ll::::::li::::::i s:::::::::::ss
           ttttttttttt  rrrrrrr                eeeeeeeeeeeeee lllllllllllllllliiiiiiii  sssssssssss
 
-version: $version
+version: ${project.version}
 

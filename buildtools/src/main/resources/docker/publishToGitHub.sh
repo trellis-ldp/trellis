@@ -5,7 +5,7 @@ VERSION=$(./mvnw -q help:evaluate -Dexpression=project.version -DforceStdout)
 # Publish releases only
 if [[ $VERSION != *SNAPSHOT* ]]; then
 
-    ./mvnw package -pl apps/quarkus -am
+    ./mvnw package -pl apps/quarkus -am -Ppublish
 
     cd apps/quarkus
     ##################################
