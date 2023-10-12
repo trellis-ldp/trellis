@@ -263,14 +263,6 @@ public abstract class AbstractApplicationAuthTests {
             this.privateContainerChild = location;
         }
 
-        private void setDefaultContainer(final String location) {
-            this.defaultContainer = location;
-        }
-
-        private void setDefaultContainerChild(final String location) {
-            this.defaultContainerChild = location;
-        }
-
         private void setGroupContainer(final String location) {
             this.groupContainer = location;
         }

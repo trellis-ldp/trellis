@@ -16,13 +16,11 @@
 package org.trellisldp.rdfa;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -64,7 +62,6 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
     /** The configuration key controlling the JS URLs to use. */
     public static final String CONFIG_RDFA_JS = "trellis.rdfa.js";
 
-    private MustacheFactory mf;
     private Mustache template;
 
     @Inject
@@ -92,8 +89,7 @@ public class DefaultRdfaWriterService implements RDFaWriterService {
     void init() {
         final String resource = templateLocation.orElse("org/trellisldp/rdfa/resource.mustache");
         LOGGER.info("Using RDFa writer template: {}", resource);
-        mf = new DefaultMustacheFactory();
-        template = mf.compile(resource);
+        template = new DefaultMustacheFactory().compile(resource);
     }
 
     /**

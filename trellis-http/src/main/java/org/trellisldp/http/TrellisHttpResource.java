@@ -453,7 +453,8 @@ public class TrellisHttpResource {
             LOGGER.debug("Redirection: {}", err.getMessage());
             LOGGER.trace("Redirection: ", err);
         } else {
-            LOGGER.error("Error:", err);
+            LOGGER.debug("Error: {}", err.getMessage());
+            LOGGER.trace("Error: ", err);
         }
         return cause instanceof WebApplicationException
                         ? ((WebApplicationException) cause).getResponse()
