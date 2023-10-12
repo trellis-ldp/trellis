@@ -40,6 +40,7 @@ import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.RedirectionException;
 import jakarta.ws.rs.core.EntityTag;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.ext.RuntimeDelegate;
 
 import java.time.DateTimeException;
 import java.time.Instant;
@@ -305,7 +306,8 @@ public final class HttpUtils {
             return;
         }
         try {
-            if (etag.isWeak() || items.stream().map(EntityTag::valueOf).noneMatch(isEqual(etag))) {
+            final var etagDelegate = RuntimeDelegate.getInstance().createHeaderDelegate(EntityTag.class);
+            if (etag.isWeak() || items.stream().map(etagDelegate::fromString).noneMatch(isEqual(etag))) {
                     throw new ClientErrorException(status(PRECONDITION_FAILED).build());
             }
         } catch (final IllegalArgumentException ex) {
@@ -325,13 +327,14 @@ public final class HttpUtils {
         }
 
         final Set<String> items = stream(ifNoneMatch.split(",")).map(String::trim).collect(toSet());
+        final var etagDelegate = RuntimeDelegate.getInstance().createHeaderDelegate(EntityTag.class);
         if (isGetOrHead(method)) {
-            if ("*".equals(ifNoneMatch) || items.stream().map(EntityTag::valueOf)
+            if ("*".equals(ifNoneMatch) || items.stream().map(etagDelegate::fromString)
                     .anyMatch(e -> e.equals(etag) || e.equals(new EntityTag(etag.getValue(), !etag.isWeak())))) {
                 throw new RedirectionException(notModified().build());
             }
         } else {
-            if ("*".equals(ifNoneMatch) || items.stream().map(EntityTag::valueOf).anyMatch(isEqual(etag))) {
+            if ("*".equals(ifNoneMatch) || items.stream().map(etagDelegate::fromString).anyMatch(isEqual(etag))) {
                 throw new ClientErrorException(status(PRECONDITION_FAILED).build());
             }
         }
