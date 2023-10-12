@@ -26,7 +26,6 @@ import static java.util.function.Predicate.isEqual;
 import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.query.DatasetFactory.create;
 import static org.apache.jena.query.DatasetFactory.wrap;
-import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.trellisldp.vocabulary.RDF.type;
@@ -90,7 +89,8 @@ class TriplestoreResourceTest {
 
     @Test
     void testEmptyResource() {
-        final TriplestoreResource res = new TriplestoreResource(connect(create()), identifier, extensions, false);
+        final TriplestoreResource res = new TriplestoreResource(RDFConnection.connect(create()), identifier,
+                extensions, false);
         res.fetchData();
         assertFalse(res.exists(), "Unexpected resource!");
     }
@@ -99,7 +99,7 @@ class TriplestoreResourceTest {
     void testPartialResource() {
         final Dataset dataset = rdf.createDataset();
         dataset.add(Trellis.PreferServerManaged, identifier, DC.modified, rdf.createLiteral(time, XSD.dateTime));
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
+        final TriplestoreResource res = new TriplestoreResource(RDFConnection.connect(wrap(toJena(dataset))),
                 identifier, extensions, false);
         res.fetchData();
         assertFalse(res.exists(), "Unexpected resource!");
@@ -108,7 +108,7 @@ class TriplestoreResourceTest {
     @Test
     void testMinimalResource() {
         final Dataset dataset = buildLdpDataset(LDP.RDFSource);
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
+        final TriplestoreResource res = new TriplestoreResource(RDFConnection.connect(wrap(toJena(dataset))),
                 identifier, extensions, false);
 
         res.fetchData();
@@ -127,7 +127,7 @@ class TriplestoreResourceTest {
         final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
+        final TriplestoreResource res = new TriplestoreResource(RDFConnection.connect(wrap(toJena(dataset))),
                 identifier, extensions, false);
 
         res.fetchData();
@@ -146,7 +146,7 @@ class TriplestoreResourceTest {
         final Dataset dataset = buildLdpDataset(LDP.RDFSource);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
+        final TriplestoreResource res = new TriplestoreResource(RDFConnection.connect(wrap(toJena(dataset))),
                 identifier, extensions, true);
 
         res.fetchData();
@@ -168,7 +168,7 @@ class TriplestoreResourceTest {
         dataset.add(aclId, aclSubject, ACL.accessTo, identifier);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
+        final TriplestoreResource res = new TriplestoreResource(RDFConnection.connect(wrap(toJena(dataset))),
                 identifier, extensions, false);
 
         res.fetchData();
@@ -197,7 +197,7 @@ class TriplestoreResourceTest {
         dataset.add(aclId, aclSubject, ACL.accessTo, identifier);
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
+        final TriplestoreResource res = new TriplestoreResource(RDFConnection.connect(wrap(toJena(dataset))),
                 identifier, ext, false);
 
         res.fetchData();
@@ -232,7 +232,7 @@ class TriplestoreResourceTest {
         auditService.creation(identifier, mockSession).forEach(q ->
                 dataset.add(auditId, q.getSubject(), q.getPredicate(), q.getObject()));
 
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
+        final TriplestoreResource res = new TriplestoreResource(RDFConnection.connect(wrap(toJena(dataset))),
                 identifier, extensions, true);
 
         res.fetchData();
@@ -255,7 +255,7 @@ class TriplestoreResourceTest {
             dataset.add(Trellis.PreferServerManaged, c, type, LDP.RDFSource);
         });
 
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
+        final TriplestoreResource res = new TriplestoreResource(RDFConnection.connect(wrap(toJena(dataset))),
                 identifier, extensions, false);
 
         res.fetchData();
@@ -271,7 +271,7 @@ class TriplestoreResourceTest {
         dataset.add(Trellis.PreferServerManaged, identifier, DC.isPartOf, root);
         getChildIRIs().forEach(c -> dataset.add(Trellis.PreferServerManaged, c, DC.isPartOf, identifier));
 
-        final TriplestoreResource res = new TriplestoreResource(connect(wrap(toJena(dataset))),
+        final TriplestoreResource res = new TriplestoreResource(RDFConnection.connect(wrap(toJena(dataset))),
                 identifier, extensions, true);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
@@ -295,7 +295,7 @@ class TriplestoreResourceTest {
             dataset.add(Trellis.PreferServerManaged, c, type, LDP.RDFSource);
         });
 
-        final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
+        final RDFConnection rdfConnection = RDFConnection.connect(wrap(toJena(dataset)));
         final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier, extensions, true);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");
@@ -332,7 +332,7 @@ class TriplestoreResourceTest {
             dataset.add(c, c, DC.subject, rdf.createIRI("http://example.org/" + randomUUID()));
         });
 
-        final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
+        final RDFConnection rdfConnection = RDFConnection.connect(wrap(toJena(dataset)));
         final TriplestoreResource res = new TriplestoreResource(rdfConnection, identifier, extensions, false);
         res.fetchData();
         assertTrue(res.exists(), "Missing resource!");

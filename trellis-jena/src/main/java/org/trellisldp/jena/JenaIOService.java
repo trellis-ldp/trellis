@@ -21,7 +21,7 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.rdf.api.RDFSyntax.NTRIPLES;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
-import static org.apache.jena.graph.Factory.createDefaultGraph;
+import static org.apache.jena.graph.GraphMemFactory.createDefaultGraph;
 import static org.apache.jena.riot.Lang.JSONLD;
 import static org.apache.jena.riot.RDFFormat.JSONLD10_COMPACT_FLAT;
 import static org.apache.jena.riot.RDFFormat.JSONLD10_EXPAND_FLAT;

@@ -15,33 +15,19 @@
  */
 package org.trellisldp.vocabulary;
 
-import static org.apache.jena.graph.Factory.createDefaultGraph;
+import static org.apache.jena.graph.GraphMemFactory.createDefaultGraph;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.graph.Graph;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFParser;
-import org.apache.jena.riot.RDFParserRegistry;
-import org.apache.jena.riot.ReaderRIOT;
-import org.apache.jena.riot.ReaderRIOTFactory;
-import org.apache.jena.riot.lang.LangJSONLD10;
-import org.apache.jena.riot.system.ParserProfile;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author acoburn
  */
 class ASTest extends AbstractVocabularyTest {
-
-    @BeforeAll
-    static void setup() {
-        final var jsonldParser = new ReaderRIOTFactoryJSONLD10();
-        RDFParserRegistry.registerLangTriples(Lang.JSONLD, jsonldParser);
-        RDFParserRegistry.registerLangQuads(Lang.JSONLD, jsonldParser);
-    }
 
     @Override
     String namespace() {
@@ -57,7 +43,7 @@ class ASTest extends AbstractVocabularyTest {
     Graph getVocabulary(final String url) {
         final Graph graph = createDefaultGraph();
         try {
-            RDFParser.source(url).httpAccept("application/ld+json").parse(graph);
+            RDFParser.source(url).acceptHeader("application/ld+json").parse(graph);
         } catch (final HttpException ex) {
             LOGGER.warn("Could not fetch {}: {}", url, ex.getMessage());
             assumeTrue(false, "Error fetching the URL (" + url + "): skip the test");
@@ -83,13 +69,5 @@ class ASTest extends AbstractVocabularyTest {
     void checkUri() {
         getVocabulary(namespace());
         assertEquals(namespace(), AS.getNamespace(), "AS namespace doesn't match expected value!");
-    }
-
-    private static final class ReaderRIOTFactoryJSONLD10 implements ReaderRIOTFactory {
-        @Override
-        public ReaderRIOT create(final Lang language, final ParserProfile profile) {
-            // force the use of jsonld-java (i.e., JSON-LD 1.0)
-            return new LangJSONLD10(language, profile, profile.getErrorHandler());
-        }
     }
 }

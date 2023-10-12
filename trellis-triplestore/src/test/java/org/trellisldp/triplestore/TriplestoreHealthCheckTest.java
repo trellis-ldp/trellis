@@ -17,7 +17,6 @@ package org.trellisldp.triplestore;
 
 import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.query.DatasetFactory.wrap;
-import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.apache.commons.rdf.api.Dataset;
@@ -41,7 +40,7 @@ class TriplestoreHealthCheckTest {
     @Test
     void testHealthy() {
         final Dataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
+        final RDFConnection rdfConnection = RDFConnection.connect(wrap(toJena(dataset)));
         final HealthCheck check = new TriplestoreHealthCheck(rdfConnection);
         assertEquals(HealthCheckResponse.Status.UP, check.call().getStatus(), "RDFConnection isn't healthy!");
     }
@@ -49,7 +48,7 @@ class TriplestoreHealthCheckTest {
     @Test
     void testUnhealthy() {
         final Dataset dataset = rdf.createDataset();
-        final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
+        final RDFConnection rdfConnection = RDFConnection.connect(wrap(toJena(dataset)));
         rdfConnection.close();
         final HealthCheck check = new TriplestoreHealthCheck(rdfConnection);
         assertEquals(HealthCheckResponse.Status.DOWN, check.call().getStatus(),

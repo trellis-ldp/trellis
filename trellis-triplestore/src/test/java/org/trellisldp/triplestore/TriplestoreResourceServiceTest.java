@@ -22,7 +22,6 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.function.Predicate.isEqual;
 import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.query.DatasetFactory.wrap;
-import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 import static org.awaitility.Awaitility.await;
 import static org.awaitility.Awaitility.setDefaultPollInterval;
 import static org.junit.jupiter.api.Assertions.*;
@@ -133,7 +132,7 @@ class TriplestoreResourceServiceTest {
         dataset.add(Trellis.PreferServerManaged, root, type, LDP.BasicContainer);
         dataset.add(Trellis.PreferServerManaged, root, DC.modified, rdf.createLiteral(early.toString(), XSD.dateTime));
 
-        final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
+        final RDFConnection rdfConnection = RDFConnection.connect(wrap(toJena(dataset)));
         final TriplestoreResourceService svc = new TriplestoreResourceService();
         svc.rdfConnection = rdfConnection;
         svc.idService = idService;
@@ -148,7 +147,7 @@ class TriplestoreResourceServiceTest {
     void testUpdateRoot() {
         final Instant early = now();
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -203,7 +202,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpRs() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -229,7 +228,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpRsWithoutBaseUrl() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -252,7 +251,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpNr() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -303,7 +302,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpC() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -368,7 +367,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testAddAuditTriples() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -397,7 +396,7 @@ class TriplestoreResourceServiceTest {
     void testPutDeleteLdpC() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
         svc.idService = idService;
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -461,7 +460,7 @@ class TriplestoreResourceServiceTest {
     void testPutLdpBc() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
         svc.idService = idService;
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.initialize();
 
         final Dataset dataset = rdf.createDataset();
@@ -524,7 +523,7 @@ class TriplestoreResourceServiceTest {
     void testPutLdpDcSelf() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
         svc.idService = idService;
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.initialize();
 
         final IRI container = rdf.createIRI(resource.getIRIString() + "/");
@@ -574,7 +573,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpDc() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -646,7 +645,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpDcMultiple() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -784,7 +783,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpDcMultipleInverse() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -915,7 +914,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpIc() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -1007,7 +1006,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpIcDefaultContent() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -1085,7 +1084,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpIcMultipleStatements() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 
@@ -1170,7 +1169,7 @@ class TriplestoreResourceServiceTest {
     @Test
     void testPutLdpIcMultipleResources() {
         final TriplestoreResourceService svc = new TriplestoreResourceService();
-        svc.rdfConnection = connect(wrap(toJena(rdf.createDataset())));
+        svc.rdfConnection = RDFConnection.connect(wrap(toJena(rdf.createDataset())));
         svc.idService = idService;
         svc.initialize();
 

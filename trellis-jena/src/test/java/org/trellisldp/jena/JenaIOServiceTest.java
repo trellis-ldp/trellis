@@ -23,7 +23,7 @@ import static org.apache.commons.rdf.api.RDFSyntax.RDFA;
 import static org.apache.commons.rdf.api.RDFSyntax.RDFXML;
 import static org.apache.commons.rdf.api.RDFSyntax.TURTLE;
 import static org.apache.jena.commonsrdf.JenaCommonsRDF.fromJena;
-import static org.apache.jena.graph.Factory.createDefaultGraph;
+import static org.apache.jena.graph.GraphMemFactory.createDefaultGraph;
 import static org.apache.jena.graph.NodeFactory.createBlankNode;
 import static org.apache.jena.graph.NodeFactory.createLiteral;
 import static org.apache.jena.graph.NodeFactory.createURI;

@@ -21,29 +21,22 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import jakarta.ws.rs.client.Client;
 
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.test.AbstractApplicationLdpTests;
 
 @TestInstance(PER_CLASS)
-class TrellisApplicationIT {
+class TrellisApplicationIT extends AbstractApplicationLdpTests {
 
     private final Client CLIENT = newBuilder().build();
     private final String TRELLIS_URL = "http://localhost:" + getInteger("trellis.port", 9080) + "/trellis/";
 
-    @Nested
-    @DisplayName("Trellis LDP Tests")
-    class LdpTests extends AbstractApplicationLdpTests {
+    @Override
+    public Client getClient() {
+        return this.CLIENT;
+    }
 
-        @Override
-        public Client getClient() {
-            return TrellisApplicationIT.this.CLIENT;
-        }
-
-        @Override
-        public String getBaseURL() {
-            return TrellisApplicationIT.this.TRELLIS_URL;
-        }
+    @Override
+    public String getBaseURL() {
+        return this.TRELLIS_URL;
     }
 }

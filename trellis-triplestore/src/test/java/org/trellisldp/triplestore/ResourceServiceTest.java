@@ -17,7 +17,6 @@ package org.trellisldp.triplestore;
 
 import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.query.DatasetFactory.wrap;
-import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
 
 import org.apache.commons.rdf.api.Dataset;
 import org.apache.commons.rdf.api.RDF;
@@ -35,7 +34,7 @@ public class ResourceServiceTest extends AbstractResourceServiceTests {
     private static final RDF rdf = RDFFactory.getInstance();
 
     private final Dataset dataset = rdf.createDataset();
-    private final RDFConnection rdfConnection = connect(wrap(toJena(dataset)));
+    private final RDFConnection rdfConnection = RDFConnection.connect(wrap(toJena(dataset)));
     private final ResourceService svc = buildResourceService(rdfConnection);
 
     @Override

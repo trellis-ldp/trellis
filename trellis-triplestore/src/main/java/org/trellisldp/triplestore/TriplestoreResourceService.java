@@ -27,7 +27,7 @@ import static org.apache.jena.commonsrdf.JenaCommonsRDF.toJena;
 import static org.apache.jena.graph.NodeFactory.createURI;
 import static org.apache.jena.query.DatasetFactory.createTxnMem;
 import static org.apache.jena.query.DatasetFactory.wrap;
-import static org.apache.jena.rdfconnection.RDFConnectionFactory.connect;
+import static org.apache.jena.rdfconnection.RDFConnectionRemote.service;
 import static org.apache.jena.system.Txn.executeWrite;
 import static org.apache.jena.tdb2.DatabaseMgr.connectDatasetGraph;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -428,15 +428,15 @@ public class TriplestoreResourceService implements ResourceService {
             if (location.startsWith("http://") || location.startsWith("https://")) {
                 // Remote
                 LOGGER.info("Using remote Triplestore for persistence at {}", location);
-                return connect(location);
+                return service(location).build();
             }
             // TDB2
             LOGGER.info("Using local TDB2 database at {}", location);
-            return connect(wrap(connectDatasetGraph(location)));
+            return RDFConnection.connect(wrap(connectDatasetGraph(location)));
         }
         // in-memory
         LOGGER.info("Using an in-memory dataset for resources");
-        return connect(createTxnMem());
+        return RDFConnection.connect(createTxnMem());
     }
 
     /**

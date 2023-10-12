@@ -28,8 +28,11 @@ module org.trellisldp.jena {
     requires jakarta.cdi;
     requires jakarta.inject;
     requires jakarta.annotation;
+    requires jakarta.json;
     requires microprofile.config.api;
     requires org.slf4j;
+
+    opens org.trellisldp.jena to org.apache.jena.arq;
 
     provides org.trellisldp.api.IOService
         with org.trellisldp.jena.JenaIOService;

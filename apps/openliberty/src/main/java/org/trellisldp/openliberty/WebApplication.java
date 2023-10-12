@@ -20,7 +20,6 @@ import static org.trellisldp.app.AppUtils.printBanner;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
 
@@ -32,18 +31,9 @@ import org.trellisldp.http.*;
 /**
  * Web Application wrapper.
  */
-@ApplicationPath("/")
+@ApplicationPath("trellis")
 @ApplicationScoped
 public class WebApplication extends Application {
-
-    @Inject
-    private TrellisHttpResource httpResource;
-
-    @Inject
-    private TrellisHttpFilter httpFilter;
-
-    @Inject
-    private CacheControlFilter cacheFilter;
 
     @PostConstruct
     void init() {
@@ -51,7 +41,7 @@ public class WebApplication extends Application {
     }
 
     @Override
-    public Set<Object> getSingletons() {
-        return new HashSet<>(asList(httpResource, httpFilter, cacheFilter));
+    public Set<Class<?>> getClasses() {
+        return new HashSet<>(asList(TrellisHttpResource.class, TrellisHttpFilter.class, CacheControlFilter.class));
     }
 }
