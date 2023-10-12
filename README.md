@@ -3,7 +3,7 @@
 A scalable platform for building [linked data](https://www.w3.org/TR/ldp/) applications.
 
 [![GitHub CD](https://github.com/trellis-ldp/trellis/actions/workflows/cd-config.yml/badge.svg)](https://github.com/trellis-ldp/trellis/actions/workflows/cd-config.yml)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.trellisldp%3Atrellis&metric=coverage)](https://sonarcloud.io/dashboard?id=org.trellisldp%3Atrellis)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=trellis&metric=coverage)](https://sonarcloud.io/summary/new_code?id=trellis)
 ![Maven Central](https://img.shields.io/maven-central/v/org.trellisldp/trellis-api.svg)
 
 Trellis is a rock-solid, enterprise-ready linked data server.
