@@ -22,7 +22,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <!-- platform -->
-    <microprofile.version>6.0</microprofile.version>
+    <microprofile.version>6.1</microprofile.version>
     <jakarta.platform.version>10.0.0</jakarta.platform.version>
 
     <!-- dependencies -->
