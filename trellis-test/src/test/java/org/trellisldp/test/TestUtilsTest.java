@@ -71,8 +71,8 @@ class TestUtilsTest {
     @Test
     void testReadEntityAsJsonError() {
         final InputStream is = new ByteArrayInputStream("{\"invalid JSON\" }".getBytes(UTF_8));
-        assertThrows(UncheckedIOException.class, () ->
-                TestUtils.readEntityAsJson(is, new TypeReference<Map<String, Object>>(){}),
+        final var ref = new TypeReference<Map<String, Object>>(){};
+        assertThrows(UncheckedIOException.class, () -> TestUtils.readEntityAsJson(is, ref),
                 "Check converting malformed JSON");
     }
 }
