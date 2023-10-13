@@ -72,6 +72,7 @@
       <module>trellis-namespace</module>
       <module>trellis-notification-jackson</module>
       <module>trellis-notification-jsonb</module>
+      <module>trellis-parent</module>
       <module>trellis-rdfa</module>
       <module>trellis-reactive</module>
       <module>trellis-test</module>
