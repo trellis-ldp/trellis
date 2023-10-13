@@ -26,6 +26,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.junit.jupiter.api.TestInstance;
 import org.trellisldp.common.ServiceBundler;
 import org.trellisldp.http.TrellisHttpResource;
+import org.trellisldp.http.WebApplicationExceptionMapper;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WebDAVTest extends AbstractWebDAVTest {
@@ -42,7 +43,7 @@ class WebDAVTest extends AbstractWebDAVTest {
         dav.init();
 
         config.register(dav);
-        config.register(new DebugExceptionMapper());
+        config.register(new WebApplicationExceptionMapper());
         config.register(new TrellisWebDAVRequestFilter());
         config.register(new TrellisWebDAVResponseFilter());
         config.register(new TrellisHttpResource());

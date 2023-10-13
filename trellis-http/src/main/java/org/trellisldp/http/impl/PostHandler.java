@@ -148,7 +148,6 @@ public class PostHandler extends MutatingLdpHandler {
             throw new BadRequestException("Unsupported interaction model provided", status(BAD_REQUEST)
                 .link(UnsupportedInteractionModel.getIRIString(), LDP.constrainedBy.getIRIString()).build());
         } else if (ldpType.equals(LDP.NonRDFSource) && rdfSyntax != null) {
-            LOGGER.error("Cannot save {} as a NonRDFSource with RDF syntax", getIdentifier());
             throw new BadRequestException("Cannot save resource as a NonRDFSource with RDF syntax");
         }
 

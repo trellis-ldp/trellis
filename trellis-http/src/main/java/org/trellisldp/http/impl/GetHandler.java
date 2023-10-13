@@ -63,6 +63,7 @@ import static org.trellisldp.http.impl.HttpUtils.triplePreferences;
 import static org.trellisldp.http.impl.HttpUtils.unskolemizeTriples;
 
 import jakarta.ws.rs.ClientErrorException;
+import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotAcceptableException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.RedirectionException;
@@ -383,8 +384,12 @@ public class GetHandler extends BaseLdpHandler {
     }
 
     private static void copy(final InputStream from, final OutputStream to) throws IOException {
-        from.transferTo(to);
-        from.close();
+        if (from != null) {
+            from.transferTo(to);
+            from.close();
+        } else {
+            throw new InternalServerErrorException("Invalid data stream");
+        }
     }
 
     private CompletionStage<InputStream> getBinaryStream(final IRI dsid, final TrellisRequest req) {

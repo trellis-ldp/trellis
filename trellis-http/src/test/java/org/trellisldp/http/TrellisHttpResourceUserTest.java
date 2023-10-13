@@ -39,6 +39,7 @@ class TrellisHttpResourceUserTest extends AbstractTrellisHttpResourceTest {
         System.clearProperty(CONFIG_HTTP_BASE_URL);
 
         final ResourceConfig config = new ResourceConfig();
+        config.register(new WebApplicationExceptionMapper());
         config.register(new TrellisHttpResource());
         config.register(new TestAuthenticationFilter("testUser", "group"));
         config.register(new CacheControlFilter());

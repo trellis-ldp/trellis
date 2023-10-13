@@ -160,7 +160,6 @@ public class PutHandler extends MutatingLdpHandler {
 
         // It is not possible to change the LDP type to a type that is not a subclass
         if (hasInteractionModelChangeRestriction(ldpType)) {
-            LOGGER.error("Cannot change the LDP type to {} for {}", ldpType, getIdentifier());
             throw new ClientErrorException("Cannot change the LDP type to " + ldpType, status(CONFLICT).build());
         }
 

@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.trellisldp.webdav;
-
-import static java.util.Optional.of;
+package org.trellisldp.http;
 
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Provider
-public class DebugExceptionMapper implements ExceptionMapper<Exception> {
+public class WebApplicationExceptionMapper implements ExceptionMapper<WebApplicationException> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebApplicationExceptionMapper.class);
 
     @Override
-    public Response toResponse(final Exception err) {
-        err.printStackTrace();
+    public Response toResponse(final WebApplicationException err) {
+        LOGGER.debug("Unhandled web application exception", err);
 
-        if (err instanceof WebApplicationException) {
-            return ((WebApplicationException) err).getResponse();
-        }
-        return of(err).map(Throwable::getCause).filter(WebApplicationException.class::isInstance)
-            .map(WebApplicationException.class::cast).orElseGet(() -> new WebApplicationException(err)).getResponse();
-
+        return err.getResponse();
     }
 }

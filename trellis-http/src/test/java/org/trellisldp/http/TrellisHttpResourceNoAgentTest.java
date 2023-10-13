@@ -46,6 +46,7 @@ class TrellisHttpResourceNoAgentTest extends AbstractTrellisHttpResourceTest {
         System.setProperty(CONFIG_HTTP_BASE_URL, baseUri);
 
         final ResourceConfig config = new ResourceConfig();
+        config.register(new WebApplicationExceptionMapper());
         config.register(new TrellisHttpResource());
         config.register(new CacheControlFilter());
         config.register(new WebSubHeaderFilter());

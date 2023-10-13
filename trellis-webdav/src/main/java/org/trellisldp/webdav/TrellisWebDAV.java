@@ -337,8 +337,8 @@ public class TrellisWebDAV {
     private Response handleException(final Throwable err) {
         final Throwable cause = err.getCause();
         if (cause instanceof WebApplicationException) return ((WebApplicationException) cause).getResponse();
-        LOGGER.error("Trellis WebDAV Error: {}", err.getMessage());
-        LOGGER.debug("WebDAV error", err);
+        LOGGER.debug("WebDAV error: {}", err.getMessage());
+        LOGGER.trace("WebDAV error", err);
         return new WebApplicationException(err).getResponse();
     }
 
