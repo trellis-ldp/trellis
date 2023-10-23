@@ -49,7 +49,7 @@
     <jaxb.version>4.0.4</jaxb.version>
     <quarkus.version>3.5.0</quarkus.version>
     <glassfish.json.version>2.0.1</glassfish.json.version>
-    <parsson.version>1.1.4</parsson.version>
+    <parsson.version>1.1.5</parsson.version>
 
     <!-- testing -->
     <awaitility.version>4.2.0</awaitility.version>
