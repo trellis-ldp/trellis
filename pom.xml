@@ -30,7 +30,7 @@
     <enforcer.plugin.version>3.4.1</enforcer.plugin.version>
     <install.plugin.version>3.1.1</install.plugin.version>
     <gpg.plugin.version>3.1.0</gpg.plugin.version>
-    <jacoco.plugin.version>0.8.10</jacoco.plugin.version>
+    <jacoco.plugin.version>0.8.11</jacoco.plugin.version>
     <jar.plugin.version>3.3.0</jar.plugin.version>
     <javadoc.plugin.version>3.6.0</javadoc.plugin.version>
     <license.plugin.version>4.3</license.plugin.version>
