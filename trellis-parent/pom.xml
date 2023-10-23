@@ -46,7 +46,7 @@
     <rxjava.version>2.2.21</rxjava.version>
     <postgres.version>42.6.0</postgres.version>
     <snakeyaml.version>2.2</snakeyaml.version>
-    <jaxb.version>4.0.3</jaxb.version>
+    <jaxb.version>4.0.4</jaxb.version>
     <quarkus.version>3.5.0</quarkus.version>
     <glassfish.json.version>2.0.1</glassfish.json.version>
     <parsson.version>1.1.4</parsson.version>
