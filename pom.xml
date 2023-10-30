@@ -25,7 +25,7 @@
     <checkstyle.plugin.version>3.3.0</checkstyle.plugin.version>
     <clean.plugin.version>3.3.1</clean.plugin.version>
     <compiler.plugin.version>3.11.0</compiler.plugin.version>
-    <dependency.plugin.version>3.6.0</dependency.plugin.version>
+    <dependency.plugin.version>3.6.1</dependency.plugin.version>
     <deploy.plugin.version>3.1.1</deploy.plugin.version>
     <enforcer.plugin.version>3.4.1</enforcer.plugin.version>
     <install.plugin.version>3.1.1</install.plugin.version>
