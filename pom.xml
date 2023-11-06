@@ -36,7 +36,7 @@
     <license.plugin.version>4.3</license.plugin.version>
     <nexus.plugin.version>1.6.13</nexus.plugin.version>
     <projectinfo.plugin.version>3.4.5</projectinfo.plugin.version>
-    <pmd.plugin.version>3.21.0</pmd.plugin.version>
+    <pmd.plugin.version>3.21.2</pmd.plugin.version>
     <site.plugin.version>3.12.1</site.plugin.version>
     <release.plugin.version>3.0.1</release.plugin.version>
     <resources.plugin.version>3.3.1</resources.plugin.version>
