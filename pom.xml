@@ -42,7 +42,7 @@
     <resources.plugin.version>3.3.1</resources.plugin.version>
     <sonar.plugin.version>3.10.0.2594</sonar.plugin.version>
     <source.plugin.version>3.3.0</source.plugin.version>
-    <surefire.plugin.version>3.2.1</surefire.plugin.version>
+    <surefire.plugin.version>3.2.2</surefire.plugin.version>
 
     <!-- tooling -->
     <checkstyle.tool.version>10.12.4</checkstyle.tool.version>
