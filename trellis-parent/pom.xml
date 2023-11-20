@@ -39,7 +39,7 @@
     <mustache.version>0.9.11</mustache.version>
     <smallrye.config.version>3.4.4</smallrye.config.version>
     <smallrye.health.version>4.0.4</smallrye.health.version>
-    <smallrye.jwt.version>4.3.1</smallrye.jwt.version>
+    <smallrye.jwt.version>4.4.0</smallrye.jwt.version>
     <smallrye.reactive.version>4.11.0</smallrye.reactive.version>
     <smallrye.reactive.operators.version>2.5.1</smallrye.reactive.operators.version>
     <slf4j.version>2.0.9</slf4j.version>
