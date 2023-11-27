@@ -35,7 +35,7 @@
     <javadoc.plugin.version>3.6.2</javadoc.plugin.version>
     <license.plugin.version>4.3</license.plugin.version>
     <nexus.plugin.version>1.6.13</nexus.plugin.version>
-    <projectinfo.plugin.version>3.4.5</projectinfo.plugin.version>
+    <projectinfo.plugin.version>3.5.0</projectinfo.plugin.version>
     <pmd.plugin.version>3.21.2</pmd.plugin.version>
     <site.plugin.version>3.12.1</site.plugin.version>
     <release.plugin.version>3.0.1</release.plugin.version>
