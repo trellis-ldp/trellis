@@ -44,7 +44,7 @@
     <smallrye.reactive.operators.version>2.5.1</smallrye.reactive.operators.version>
     <slf4j.version>2.0.9</slf4j.version>
     <rxjava.version>2.2.21</rxjava.version>
-    <postgres.version>42.6.0</postgres.version>
+    <postgres.version>42.7.0</postgres.version>
     <snakeyaml.version>2.2</snakeyaml.version>
     <jaxb.version>4.0.4</jaxb.version>
     <quarkus.version>3.5.1</quarkus.version>
