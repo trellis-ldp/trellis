@@ -27,7 +27,7 @@
 
     <!-- dependencies -->
     <commons.codec.version>1.16.0</commons.codec.version>
-    <commons.io.version>2.15.0</commons.io.version>
+    <commons.io.version>2.15.1</commons.io.version>
     <commons.lang3.version>3.13.0</commons.lang3.version>
     <commons.rdf.version>0.5.0</commons.rdf.version>
     <commons.text.version>1.11.0</commons.text.version>
