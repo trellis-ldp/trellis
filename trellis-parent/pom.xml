@@ -58,7 +58,7 @@
     <jersey.version>3.1.4</jersey.version>
     <liquibase.version>4.25.0</liquibase.version>
     <mockito.version>5.8.0</mockito.version>
-    <restassured.version>5.3.2</restassured.version>
+    <restassured.version>5.4.0</restassured.version>
     <testcontainers.version>1.19.3</testcontainers.version>
     <yasson.version>3.0.3</yasson.version>
     <weld.version>4.0.1.Final</weld.version>
