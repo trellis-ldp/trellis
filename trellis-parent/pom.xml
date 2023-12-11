@@ -41,7 +41,7 @@
     <smallrye.health.version>4.0.4</smallrye.health.version>
     <smallrye.jwt.version>4.4.0</smallrye.jwt.version>
     <smallrye.reactive.version>4.12.0</smallrye.reactive.version>
-    <smallrye.reactive.operators.version>2.5.1</smallrye.reactive.operators.version>
+    <smallrye.reactive.operators.version>2.5.2</smallrye.reactive.operators.version>
     <slf4j.version>2.0.9</slf4j.version>
     <rxjava.version>2.2.21</rxjava.version>
     <postgres.version>42.7.0</postgres.version>
