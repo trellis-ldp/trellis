@@ -42,7 +42,7 @@
     <smallrye.jwt.version>4.4.0</smallrye.jwt.version>
     <smallrye.reactive.version>4.15.0</smallrye.reactive.version>
     <smallrye.reactive.operators.version>2.5.3</smallrye.reactive.operators.version>
-    <slf4j.version>2.0.10</slf4j.version>
+    <slf4j.version>2.0.11</slf4j.version>
     <rxjava.version>2.2.21</rxjava.version>
     <postgres.version>42.7.1</postgres.version>
     <snakeyaml.version>2.2</snakeyaml.version>
