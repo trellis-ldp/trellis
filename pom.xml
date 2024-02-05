@@ -45,7 +45,7 @@
     <surefire.plugin.version>3.2.5</surefire.plugin.version>
 
     <!-- tooling -->
-    <checkstyle.tool.version>10.12.7</checkstyle.tool.version>
+    <checkstyle.tool.version>10.13.0</checkstyle.tool.version>
 
     <!-- sonar -->
     <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/report/target/site/jacoco-merged/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
