@@ -59,7 +59,7 @@
     <liquibase.version>4.25.1</liquibase.version>
     <mockito.version>5.10.0</mockito.version>
     <restassured.version>5.4.0</restassured.version>
-    <testcontainers.version>1.19.4</testcontainers.version>
+    <testcontainers.version>1.19.5</testcontainers.version>
     <yasson.version>3.0.3</yasson.version>
     <weld.version>4.0.1.Final</weld.version>
 
