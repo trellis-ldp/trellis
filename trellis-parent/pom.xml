@@ -34,7 +34,7 @@
     <guava.version>33.0.0-jre</guava.version>
     <jackson.version>2.16.1</jackson.version>
     <jakarta.xml.bind.version>4.0.1</jakarta.xml.bind.version>
-    <jdbi.version>3.44.0</jdbi.version>
+    <jdbi.version>3.45.0</jdbi.version>
     <jena.version>4.10.0</jena.version>
     <mustache.version>0.9.11</mustache.version>
     <smallrye.config.version>3.5.2</smallrye.config.version>
