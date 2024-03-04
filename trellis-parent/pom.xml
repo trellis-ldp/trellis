@@ -57,7 +57,7 @@
     <hamcrest.version>2.2</hamcrest.version>
     <jersey.version>3.1.5</jersey.version>
     <liquibase.version>4.26.0</liquibase.version>
-    <mockito.version>5.10.0</mockito.version>
+    <mockito.version>5.11.0</mockito.version>
     <restassured.version>5.4.0</restassured.version>
     <testcontainers.version>1.19.6</testcontainers.version>
     <yasson.version>3.0.3</yasson.version>
