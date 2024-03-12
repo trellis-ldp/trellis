@@ -32,7 +32,7 @@
     <commons.rdf.version>0.5.0</commons.rdf.version>
     <commons.text.version>1.11.0</commons.text.version>
     <guava.version>33.0.0-jre</guava.version>
-    <jackson.version>2.16.1</jackson.version>
+    <jackson.version>2.16.2</jackson.version>
     <jakarta.xml.bind.version>4.0.1</jakarta.xml.bind.version>
     <jdbi.version>3.45.0</jdbi.version>
     <jena.version>4.10.0</jena.version>
