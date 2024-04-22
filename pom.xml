@@ -24,7 +24,7 @@
     <assembly.plugin.version>3.6.0</assembly.plugin.version>
     <checkstyle.plugin.version>3.3.1</checkstyle.plugin.version>
     <clean.plugin.version>3.3.2</clean.plugin.version>
-    <compiler.plugin.version>3.12.1</compiler.plugin.version>
+    <compiler.plugin.version>3.13.0</compiler.plugin.version>
     <dependency.plugin.version>3.6.1</dependency.plugin.version>
     <deploy.plugin.version>3.1.1</deploy.plugin.version>
     <enforcer.plugin.version>3.4.1</enforcer.plugin.version>
