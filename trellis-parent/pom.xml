@@ -52,7 +52,7 @@
     <parsson.version>1.1.5</parsson.version>
 
     <!-- testing -->
-    <awaitility.version>4.2.0</awaitility.version>
+    <awaitility.version>4.2.1</awaitility.version>
     <junit.version>5.10.2</junit.version>
     <hamcrest.version>2.2</hamcrest.version>
     <jersey.version>3.1.6</jersey.version>
