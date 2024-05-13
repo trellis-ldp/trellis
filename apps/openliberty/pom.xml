@@ -19,7 +19,7 @@
   <packaging>war</packaging>
 
   <properties>
-      <cxf.version>4.0.3</cxf.version>
+      <cxf.version>4.0.4</cxf.version>
       <openliberty.version>23.0.0.9</openliberty.version>
   </properties>
 
