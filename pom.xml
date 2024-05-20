@@ -29,7 +29,7 @@
     <deploy.plugin.version>3.1.1</deploy.plugin.version>
     <enforcer.plugin.version>3.4.1</enforcer.plugin.version>
     <install.plugin.version>3.1.1</install.plugin.version>
-    <gpg.plugin.version>3.2.2</gpg.plugin.version>
+    <gpg.plugin.version>3.2.4</gpg.plugin.version>
     <jacoco.plugin.version>0.8.11</jacoco.plugin.version>
     <jar.plugin.version>3.4.1</jar.plugin.version>
     <javadoc.plugin.version>3.6.3</javadoc.plugin.version>
