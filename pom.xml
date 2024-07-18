@@ -38,7 +38,7 @@
     <projectinfo.plugin.version>3.5.0</projectinfo.plugin.version>
     <pmd.plugin.version>3.21.2</pmd.plugin.version>
     <site.plugin.version>3.12.1</site.plugin.version>
-    <release.plugin.version>3.0.1</release.plugin.version>
+    <release.plugin.version>3.1.1</release.plugin.version>
     <resources.plugin.version>3.3.1</resources.plugin.version>
     <sonar.plugin.version>4.0.0.4121</sonar.plugin.version>
     <source.plugin.version>3.3.1</source.plugin.version>
