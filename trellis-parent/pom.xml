@@ -36,7 +36,7 @@
     <jakarta.xml.bind.version>4.0.2</jakarta.xml.bind.version>
     <jdbi.version>3.45.0</jdbi.version>
     <jena.version>4.10.0</jena.version>
-    <mustache.version>0.9.11</mustache.version>
+    <mustache.version>0.9.14</mustache.version>
     <smallrye.config.version>3.5.4</smallrye.config.version>
     <smallrye.health.version>4.1.0</smallrye.health.version>
     <smallrye.jwt.version>4.4.0</smallrye.jwt.version>
